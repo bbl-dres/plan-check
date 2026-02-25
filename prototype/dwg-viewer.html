@@ -706,16 +706,98 @@
                     }
 
                     case 'HATCH': {
+                        // Determine if this is a solid-fill hatch (rooms etc.)
+                        const isSolidFill = e.solidFill === 1 || e.solidFill === true
+                            || (e.patternName && e.patternName.toUpperCase() === 'SOLID');
+                        const paths = []; // collect boundary polygons for fill
+
                         if (e.boundaryPaths) {
                             for (const bp of e.boundaryPaths) {
-                                if (bp.edges) {
+                                if (bp.edges && bp.edges.length > 0) {
+                                    // Assemble all edges into a single connected polygon
+                                    const verts = [];
                                     for (const edge of bp.edges) {
-                                        if (edge.type === 'line' && edge.start && edge.end) {
+                                        const etype = typeof edge.type === 'string' ? edge.type : edge.type;
+                                        // Line edge (type 1 or 'line')
+                                        if ((etype === 1 || etype === 'line') && edge.start && edge.end) {
                                             const p1 = tp(edge.start.x, edge.start.y);
+                                            if (verts.length === 0) verts.push(p1);
                                             const p2 = tp(edge.end.x, edge.end.y);
-                                            expand(p1.x, p1.y); expand(p2.x, p2.y);
-                                            renderList.push({ t: 'line', l, et, handle, x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, c: color });
+                                            verts.push(p2);
                                         }
+                                        // Arc edge (type 2 or 'arc' / 'circular_arc')
+                                        else if ((etype === 2 || etype === 'arc' || etype === 'circular_arc') && edge.center && edge.radius != null) {
+                                            const cx = edge.center.x, cy = edge.center.y;
+                                            const r = edge.radius;
+                                            let sa = edge.startAngle || 0;
+                                            let ea = edge.endAngle || Math.PI * 2;
+                                            const ccw = edge.isCCW !== false; // default CCW
+                                            // Tessellate arc into line segments
+                                            let sweep = ccw ? (ea - sa) : (sa - ea);
+                                            if (sweep <= 0) sweep += Math.PI * 2;
+                                            const steps = Math.max(8, Math.ceil(Math.abs(sweep) / (Math.PI / 16)));
+                                            for (let si = 0; si <= steps; si++) {
+                                                const frac = si / steps;
+                                                const angle = ccw ? (sa + sweep * frac) : (sa - sweep * frac);
+                                                const px = cx + r * Math.cos(angle);
+                                                const py = cy + r * Math.sin(angle);
+                                                const pt = tp(px, py);
+                                                // Skip first point if it duplicates the last vertex
+                                                if (si === 0 && verts.length > 0) {
+                                                    const last = verts[verts.length - 1];
+                                                    if (Math.abs(last.x - pt.x) < 1e-4 && Math.abs(last.y - pt.y) < 1e-4) continue;
+                                                }
+                                                verts.push(pt);
+                                            }
+                                        }
+                                        // Ellipse edge (type 3 or 'ellipse' / 'elliptic_arc')
+                                        else if ((etype === 3 || etype === 'ellipse' || etype === 'elliptic_arc') && edge.center) {
+                                            const cx = edge.center.x, cy = edge.center.y;
+                                            const majorEnd = edge.end || { x: 1, y: 0 };
+                                            const majorLen = Math.hypot(majorEnd.x, majorEnd.y);
+                                            const minorLen = (edge.lengthOfMinorAxis || 0.5) * (majorLen || 1);
+                                            const rot = Math.atan2(majorEnd.y, majorEnd.x);
+                                            let sa = edge.startAngle || 0;
+                                            let ea = edge.endAngle || Math.PI * 2;
+                                            const ccw = edge.isCCW !== false;
+                                            let sweep = ccw ? (ea - sa) : (sa - ea);
+                                            if (sweep <= 0) sweep += Math.PI * 2;
+                                            const steps = Math.max(12, Math.ceil(Math.abs(sweep) / (Math.PI / 16)));
+                                            for (let si = 0; si <= steps; si++) {
+                                                const frac = si / steps;
+                                                const angle = ccw ? (sa + sweep * frac) : (sa - sweep * frac);
+                                                // Ellipse point in local coords, then rotate
+                                                const lx = majorLen * Math.cos(angle);
+                                                const ly = minorLen * Math.sin(angle);
+                                                const px = cx + lx * Math.cos(rot) - ly * Math.sin(rot);
+                                                const py = cy + lx * Math.sin(rot) + ly * Math.cos(rot);
+                                                const pt = tp(px, py);
+                                                if (si === 0 && verts.length > 0) {
+                                                    const last = verts[verts.length - 1];
+                                                    if (Math.abs(last.x - pt.x) < 1e-4 && Math.abs(last.y - pt.y) < 1e-4) continue;
+                                                }
+                                                verts.push(pt);
+                                            }
+                                        }
+                                        // Spline edge (type 4 or 'spline')
+                                        else if ((etype === 4 || etype === 'spline')) {
+                                            const pts = edge.fitDatum || edge.controlPoints || [];
+                                            for (let si = 0; si < pts.length; si++) {
+                                                const sp = pts[si];
+                                                const pt = tp(sp.x, sp.y);
+                                                if (si === 0 && verts.length > 0) {
+                                                    const last = verts[verts.length - 1];
+                                                    if (Math.abs(last.x - pt.x) < 1e-4 && Math.abs(last.y - pt.y) < 1e-4) continue;
+                                                }
+                                                verts.push(pt);
+                                            }
+                                        }
+                                    }
+                                    if (verts.length > 1) {
+                                        for (const v of verts) expand(v.x, v.y);
+                                        const polyVerts = verts.map(v => ({ x: v.x, y: v.y, bulge: 0 }));
+                                        renderList.push({ t: 'poly', l, et, handle, verts: polyVerts, closed: true, c: color });
+                                        if (isSolidFill) paths.push(polyVerts);
                                     }
                                 }
                                 if (bp.polyline && bp.polyline.length > 1) {
@@ -724,8 +806,13 @@
                                         : bp.polyline;
                                     for (const v of verts) expand(v.x, v.y);
                                     renderList.push({ t: 'poly', l, et, handle, verts, closed: true, c: color });
+                                    if (isSolidFill) paths.push(verts);
                                 }
                             }
+                        }
+                        // Push a fill primitive for solid-fill hatches
+                        if (isSolidFill && paths.length > 0) {
+                            renderList.push({ t: 'hatchfill', l, et, handle, paths, c: color });
                         }
                         break;
                     }
@@ -1022,6 +1109,38 @@
                     case 'point': {
                         const sz = 3 / cam.zoom;
                         ctx.fillRect(item.x - sz/2, item.y - sz/2, sz, sz);
+                        break;
+                    }
+
+                    case 'hatchfill': {
+                        // Render solid-fill hatch as semi-transparent filled polygon
+                        ctx.save();
+                        ctx.globalAlpha = 0.25;
+                        ctx.beginPath();
+                        for (const path of item.paths) {
+                            if (path.length < 2) continue;
+                            ctx.moveTo(path[0].x, path[0].y);
+                            for (let i = 1; i < path.length; i++) {
+                                const v = path[i];
+                                const prev = path[i - 1];
+                                if (prev.bulge && prev.bulge !== 0) {
+                                    drawBulgeArc(ctx, prev.x, prev.y, v.x, v.y, prev.bulge);
+                                } else {
+                                    ctx.lineTo(v.x, v.y);
+                                }
+                            }
+                            // Close back to first vertex
+                            const last = path[path.length - 1];
+                            const first = path[0];
+                            if (last.bulge && last.bulge !== 0) {
+                                drawBulgeArc(ctx, last.x, last.y, first.x, first.y, last.bulge);
+                            } else {
+                                ctx.lineTo(first.x, first.y);
+                            }
+                            ctx.closePath();
+                        }
+                        ctx.fill();
+                        ctx.restore();
                         break;
                     }
 
