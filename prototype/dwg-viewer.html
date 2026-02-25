@@ -476,15 +476,18 @@
             let insertCount = 0;
 
             // Helper: transform a point from block-local to world coords
+            // Matches reference: T(insertion) * R(rotation) * S(scale) * T(-basePoint)
             function transformPoint(px, py, ins) {
                 const sx = (ins.xScale || 1);
                 const sy = (ins.yScale || 1);
                 const rot = (ins.rotation || 0) * Math.PI / 180;
                 const cos = Math.cos(rot);
                 const sin = Math.sin(rot);
-                // Scale then rotate then translate
-                const rx = px * sx;
-                const ry = py * sy;
+                // Subtract block base point, then scale, then rotate, then translate
+                const bx = ins.baseX || 0;
+                const by = ins.baseY || 0;
+                const rx = (px - bx) * sx;
+                const ry = (py - by) * sy;
                 return {
                     x: rx * cos - ry * sin + ins.insertionPoint.x,
                     y: rx * sin + ry * cos + ins.insertionPoint.y
@@ -523,7 +526,12 @@
                                 ? e.vertices.map(v => { const p = tp(v.x, v.y); return { x: p.x, y: p.y, bulge: v.bulge }; })
                                 : e.vertices;
                             for (const v of verts) expand(v.x, v.y);
-                            const closed = (e.flag & 1) === 1;
+                            // Check closed flag, or detect implicit closure (first == last vertex)
+                            let closed = !!(e.flag & 1);
+                            if (!closed && verts.length > 2) {
+                                const f = verts[0], la = verts[verts.length - 1];
+                                if (Math.abs(f.x - la.x) < 1e-6 && Math.abs(f.y - la.y) < 1e-6) closed = true;
+                            }
                             renderList.push({ t: 'poly', l, et, handle, verts, closed, c: color });
                         }
                         break;
@@ -605,14 +613,18 @@
                     }
 
                     case 'TEXT': {
-                        const pt = e.startPoint || e.insertionPoint;
-                        if (pt && e.text) {
-                            const p = tp(pt.x, pt.y);
-                            const scale = Math.abs(tf ? (tf.xScale || 1) : 1);
-                            const rotDeg = (e.rotation || 0) + (tf ? (tf.rotation || 0) : 0);
-                            expand(p.x, p.y);
-                            renderList.push({ t: 'text', l, et, handle, x: p.x, y: p.y, text: e.text, h: (e.textHeight || 2.5) * scale, rot: rotDeg, c: color });
-                        }
+                        // TEXT entities from convertEx have DwgTextBase spread flat:
+                        // e.text = string, e.startPoint, e.endPoint, e.halign, e.valign, etc.
+                        if (!e.text) break;
+                        // For non-left/non-baseline alignment, endPoint is the actual position
+                        const useEnd = ((e.halign || 0) > 0 || (e.valign || 0) > 0);
+                        const pt = useEnd ? (e.endPoint || e.startPoint) : (e.startPoint || e.insertionPoint);
+                        if (!pt) break;
+                        const p = tp(pt.x, pt.y);
+                        const scale = Math.abs(tf ? (tf.xScale || 1) : 1);
+                        const rotRad = ((e.rotation || 0) + (tf ? (tf.rotation || 0) : 0)) * Math.PI / 180;
+                        expand(p.x, p.y);
+                        renderList.push({ t: 'text', l, et, handle, x: p.x, y: p.y, text: e.text, h: (e.textHeight || 2.5) * scale, rot: rotRad, c: color });
                         break;
                     }
 
@@ -621,53 +633,55 @@
                         if (pt && e.text) {
                             const p = tp(pt.x, pt.y);
                             const scale = Math.abs(tf ? (tf.xScale || 1) : 1);
-                            const rotDeg = (e.rotation || 0) + (tf ? (tf.rotation || 0) : 0);
+                            const rotRad = ((e.rotation || 0) + (tf ? (tf.rotation || 0) : 0)) * Math.PI / 180;
                             expand(p.x, p.y);
-                            // Clean MTEXT formatting codes more carefully:
-                            // \P = paragraph break, \~ = non-breaking space
-                            // \fArial|...; = font change, \H1.5; = height, \W0.8; = width
-                            // \A1; = alignment, \C4; = color, \T1.5; = tracking
-                            // \S...^...; = stacked fractions, \L...\l = underline
-                            // \O...\o = overline, \K...\k = strikethrough
-                            // {} = grouping
+                            // Clean MTEXT formatting codes
                             const clean = e.text
-                                .replace(/\\P/g, '\n')          // paragraph break -> newline
-                                .replace(/\\~/g, ' ')           // non-breaking space
-                                .replace(/\\[fFHWACcTQpq][^;]*;/g, '')  // formatting codes with semicolons
-                                .replace(/\\S([^^;]*)\^([^;]*);/g, '$1/$2') // stacked fractions
-                                .replace(/\\[LlOoKk]/g, '')    // underline/overline/strikethrough toggles
-                                .replace(/[{}]/g, '')           // grouping braces
-                                .replace(/\\\\/g, '\\');        // escaped backslash
-                            renderList.push({ t: 'text', l, et: 'MTEXT', handle, x: p.x, y: p.y, text: clean, h: (e.textHeight || 2.5) * scale, rot: rotDeg, c: color });
+                                .replace(/\\P/g, '\n')
+                                .replace(/\\~/g, ' ')
+                                .replace(/\\[fFHWACcTQpq][^;]*;/g, '')
+                                .replace(/\\S([^^;]*)\^([^;]*);/g, '$1/$2')
+                                .replace(/\\[LlOoKk]/g, '')
+                                .replace(/[{}]/g, '')
+                                .replace(/\\\\/g, '\\');
+                            renderList.push({ t: 'text', l, et: 'MTEXT', handle, x: p.x, y: p.y, text: clean, h: (e.textHeight || 2.5) * scale, rot: rotRad, c: color });
                         }
                         break;
                     }
 
-                    case 'ATTRIB':
-                    case 'ATTDEF': {
+                    case 'ATTRIB': {
                         // Skip invisible attributes (flags bit 0 = invisible)
                         if (e.flags && (e.flags & 1)) break;
 
-                        // Extract text from DwgTextBase structure: e.text is a DwgTextBase object with .text string
+                        // ATTRIB entities from convertEx have text as DwgTextBase object:
+                        // e.text = { text, startPoint, endPoint, textHeight, rotation, halign, valign, ... }
                         const textObj = e.text;
                         const txt = typeof textObj === 'string' ? textObj
-                            : (textObj?.text || textObj?.content || textObj?.value || null);
+                            : (textObj?.text || e.tag || null);
                         if (!txt) break;
 
-                        // Use alignment point if available (for centered/right-aligned text),
-                        // fall back to text's own startPoint, then entity-level insertionPoint
-                        const pt = (textObj?.endPoint?.x != null && (textObj?.halign || 0) > 0 ? textObj.endPoint : null)
-                            || e.alignmentPoint
-                            || textObj?.startPoint
-                            || e.insertionPoint
-                            || e.startPoint;
+                        // For non-left/non-baseline alignment, endPoint is the actual position;
+                        // startPoint may be at (0,0) for centered/right-aligned text
+                        const halign = textObj?.halign || 0;
+                        const valign = textObj?.valign || 0;
+                        const useEnd = (halign > 0 || valign > 0);
+                        const pt = useEnd
+                            ? (textObj?.endPoint || e.alignmentPoint || textObj?.startPoint)
+                            : (textObj?.startPoint || e.insertionPoint);
                         if (!pt) break;
 
-                        const p = tp(pt.x ?? (pt[0] || 0), pt.y ?? (pt[1] || 0));
-                        const scale = Math.abs(tf ? (tf.xScale || 1) : 1);
-                        const h = (textObj?.textHeight || e.textHeight || 2.5) * scale;
+                        const p = tp(pt.x ?? 0, pt.y ?? 0);
+                        const h = textObj?.textHeight || e.textHeight || 2.5;
+                        const rotRad = ((textObj?.rotation || 0) + (tf ? (tf.rotation || 0) : 0)) * Math.PI / 180;
+
                         expand(p.x, p.y);
-                        renderList.push({ t: 'text', l, et: e.type, handle, x: p.x, y: p.y, text: txt, h, rot: (textObj?.rotation || 0) + (tf ? (tf.rotation || 0) : 0), c: color });
+                        renderList.push({ t: 'text', l, et: e.type, handle, x: p.x, y: p.y, text: txt, h, rot: rotRad, c: color });
+                        break;
+                    }
+
+                    case 'ATTDEF': {
+                        // ATTDEFs are template definitions inside blocks — never rendered directly.
+                        // ATTRIBs on the INSERT replace them with actual values.
                         break;
                     }
 
@@ -821,23 +835,42 @@
                         if (!block || !block.entities) break;
 
                         // Compose transforms if nested
+                        // Reference: T(insertion) * R(rotation) * S(scale) * T(-basePoint)
+                        const origin = block.origin || block.basePoint;
                         const ins = {
                             insertionPoint: tf ? transformPoint(e.insertionPoint.x, e.insertionPoint.y, tf) : e.insertionPoint,
                             xScale: (e.xScale || 1) * (tf ? (tf.xScale || 1) : 1),
                             yScale: (e.yScale || 1) * (tf ? (tf.yScale || 1) : 1),
-                            rotation: (e.rotation || 0) + (tf ? (tf.rotation || 0) : 0)
+                            rotation: (e.rotation || 0) + (tf ? (tf.rotation || 0) : 0),
+                            baseX: origin?.x || 0,
+                            baseY: origin?.y || 0
                         };
 
-                        // Render block sub-entities
+                        const hasAttribs = e.attribs && e.attribs.length > 0;
+
+                        // Render block sub-entities; always skip ATTDEFs (they are templates,
+                        // never rendered — ATTRIBs on the INSERT replace them)
                         for (const be of block.entities) {
+                            if (be.type === 'ATTDEF' || be.type === 'ATTRIB') continue;
                             addEntity(be, ins, l);
                         }
 
                         // Render INSERT's own ATTRIBs (actual attribute values for room tags etc.)
-                        // ATTRIBs already have world-space positions, so don't apply block transform
-                        if (e.attribs && e.attribs.length > 0) {
+                        // ATTRIB positions are already in WCS (pre-computed by CAD software),
+                        // so do NOT apply the INSERT transform — only pass through the parent
+                        // transform (tf) for any outer nesting.
+                        if (hasAttribs) {
+                            // Debug: log first INSERT with attribs to help diagnose positioning
+                            if (insertCount <= 3) {
+                                console.log(`INSERT "${e.name}" attribs:`, e.attribs.map(a => ({
+                                    type: a.type, tag: a.tag, flags: a.flags,
+                                    text: a.text,
+                                    insertionPoint: a.insertionPoint,
+                                    alignmentPoint: a.alignmentPoint
+                                })));
+                            }
                             for (const attr of e.attribs) {
-                                addEntity(attr, null, l);
+                                addEntity(attr, tf, l);
                             }
                         }
                         break;
@@ -846,7 +879,10 @@
             }
 
             // Process all top-level entities
+            // Skip standalone ATTRIB/ATTDEF — they are duplicates of ATTRIBs
+            // already attached to INSERT entities in the entity stream
             for (const e of entities) {
+                if (e.type === 'ATTRIB' || e.type === 'ATTDEF') continue;
                 addEntity(e, null, null);
             }
 
@@ -926,7 +962,6 @@
                         ctx.beginPath();
                         ctx.moveTo(item.verts[0].x, item.verts[0].y);
                         for (let i = 1; i < item.verts.length; i++) {
-                            ctx.moveTo(item.verts[i - 1].x, item.verts[i - 1].y);
                             const v = item.verts[i];
                             const prev = item.verts[i - 1];
                             // Handle bulge (arc segments)
@@ -969,7 +1004,11 @@
 
                     case 'text': {
                         // Text needs to be flipped back upright (we're in Y-flipped coords)
-                        const fontSize = Math.max(item.h, 0.5);
+                        // Use actual text height — no minimum clamp, as small text (e.g. 0.075
+                        // in meter-scale drawings) is correct and clamping distorts proportions.
+                        // Text that's too small to read simply disappears at low zoom, which is fine.
+                        const fontSize = item.h;
+                        if (fontSize * cam.zoom < 1.5) break; // skip text too small to render on screen
                         ctx.save();
                         ctx.translate(item.x, item.y);
                         ctx.scale(1, -1); // flip text back

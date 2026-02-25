@@ -18,7 +18,9 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "WebFetch(domain:cdn.jsdelivr.net)",
       "WebFetch(domain:unpkg.com)",
-      "WebFetch(domain:mlightcad.github.io)"
+      "WebFetch(domain:mlightcad.github.io)",
+      "Bash(gh api repos/mlightcad/libredwg-web/contents/src/database/entities)",
+      "Bash(python3 -c \"import sys,json; [print\\(x[''name'']\\) for x in json.loads\\(sys.stdin.read\\(\\)\\)]\")"
     ]
   }
 }
