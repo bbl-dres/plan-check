@@ -8,7 +8,17 @@
       "Bash(openssl dgst:*)",
       "Bash(openssl base64:*)",
       "Bash(node --check:*)",
-      "Bash(node -e:*)"
+      "Bash(node -e:*)",
+      "WebFetch(domain:mlightcad.gitlab.io)",
+      "Bash(du -sh */)",
+      "WebFetch(domain:medium.com)",
+      "WebFetch(domain:www.npmjs.com)",
+      "WebFetch(domain:gitlab.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:cdn.jsdelivr.net)",
+      "WebFetch(domain:unpkg.com)",
+      "WebFetch(domain:mlightcad.github.io)"
     ]
   }
 }
