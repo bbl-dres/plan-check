@@ -497,7 +497,8 @@
             // Helper: add a primitive entity to render list, applying optional transform
             function addEntity(e, tf, parentLayer) {
                 // Skip invisible entities
-                if (e.isVisible === false) return;
+                // API: isVisible is 0 (visible) or 1 (invisible)
+                if (e.isVisible === 1) return;
 
                 const color = getColor(e);
                 const l = e.layer || parentLayer || '0';
@@ -585,7 +586,7 @@
                         if (e.center && e.majorAxisEndPoint) {
                             const c = tp(e.center.x, e.center.y);
                             const rx = Math.hypot(e.majorAxisEndPoint.x, e.majorAxisEndPoint.y) * Math.abs(tf ? (tf.xScale || 1) : 1);
-                            const ry = rx * (e.minorToMajorRatio || 0.5);
+                            const ry = rx * (e.axisRatio || e.minorToMajorRatio || 0.5);
                             const rot = Math.atan2(e.majorAxisEndPoint.y, e.majorAxisEndPoint.x) + (tf ? (tf.rotation || 0) * Math.PI / 180 : 0);
                             expand(c.x - rx, c.y - rx); expand(c.x + rx, c.y + rx);
                             renderList.push({ t: 'ellipse', l, et, handle, cx: c.x, cy: c.y, rx, ry, rot, c: color });
@@ -706,31 +707,38 @@
                     }
 
                     case 'HATCH': {
-                        // Determine if this is a solid-fill hatch (rooms etc.)
-                        const isSolidFill = e.solidFill === 1 || e.solidFill === true
+                        // libredwg-web API types (from @mlightcad/libredwg-web hatch.d.ts):
+                        //   e.solidFill: DwgHatchSolidFill enum (0=PatternFill, 1=SolidFill)
+                        //   e.boundaryPaths: DwgBoundaryPath[] — union of:
+                        //     DwgPolylineBoundaryPath { boundaryPathTypeFlag, vertices[], isClosed, hasBulge }
+                        //     DwgEdgeBoundaryPath     { boundaryPathTypeFlag, edges[] }
+                        //   Edge type enum (DwgBoundaryPathEdgeType): Line=1, Circular=2, Elliptic=3, Spline=4
+                        const isSolidFill = e.solidFill === 1
                             || (e.patternName && e.patternName.toUpperCase() === 'SOLID');
                         const paths = []; // collect boundary polygons for fill
 
                         if (e.boundaryPaths) {
                             for (const bp of e.boundaryPaths) {
+                                // --- Edge-based boundary path (DwgEdgeBoundaryPath) ---
                                 if (bp.edges && bp.edges.length > 0) {
                                     // Assemble all edges into a single connected polygon
                                     const verts = [];
                                     for (const edge of bp.edges) {
-                                        const etype = typeof edge.type === 'string' ? edge.type : edge.type;
-                                        // Line edge (type 1 or 'line')
-                                        if ((etype === 1 || etype === 'line') && edge.start && edge.end) {
+                                        const etype = edge.type; // numeric enum: 1,2,3,4
+
+                                        // Line edge (DwgBoundaryPathEdgeType.Line = 1)
+                                        if (etype === 1 && edge.start && edge.end) {
                                             const p1 = tp(edge.start.x, edge.start.y);
                                             if (verts.length === 0) verts.push(p1);
                                             const p2 = tp(edge.end.x, edge.end.y);
                                             verts.push(p2);
                                         }
-                                        // Arc edge (type 2 or 'arc' / 'circular_arc')
-                                        else if ((etype === 2 || etype === 'arc' || etype === 'circular_arc') && edge.center && edge.radius != null) {
+                                        // Arc edge (DwgBoundaryPathEdgeType.Circular = 2)
+                                        else if (etype === 2 && edge.center && edge.radius != null) {
                                             const cx = edge.center.x, cy = edge.center.y;
                                             const r = edge.radius;
-                                            let sa = edge.startAngle || 0;
-                                            let ea = edge.endAngle || Math.PI * 2;
+                                            const sa = edge.startAngle || 0;
+                                            const ea = edge.endAngle || Math.PI * 2;
                                             const ccw = edge.isCCW !== false; // default CCW
                                             // Tessellate arc into line segments
                                             let sweep = ccw ? (ea - sa) : (sa - ea);
@@ -742,7 +750,6 @@
                                                 const px = cx + r * Math.cos(angle);
                                                 const py = cy + r * Math.sin(angle);
                                                 const pt = tp(px, py);
-                                                // Skip first point if it duplicates the last vertex
                                                 if (si === 0 && verts.length > 0) {
                                                     const last = verts[verts.length - 1];
                                                     if (Math.abs(last.x - pt.x) < 1e-4 && Math.abs(last.y - pt.y) < 1e-4) continue;
@@ -750,15 +757,16 @@
                                                 verts.push(pt);
                                             }
                                         }
-                                        // Ellipse edge (type 3 or 'ellipse' / 'elliptic_arc')
-                                        else if ((etype === 3 || etype === 'ellipse' || etype === 'elliptic_arc') && edge.center) {
+                                        // Ellipse edge (DwgBoundaryPathEdgeType.Elliptic = 3)
+                                        // API: { center, end (major axis endpoint), lengthOfMinorAxis, startAngle, endAngle, isCCW }
+                                        else if (etype === 3 && edge.center) {
                                             const cx = edge.center.x, cy = edge.center.y;
                                             const majorEnd = edge.end || { x: 1, y: 0 };
                                             const majorLen = Math.hypot(majorEnd.x, majorEnd.y);
                                             const minorLen = (edge.lengthOfMinorAxis || 0.5) * (majorLen || 1);
                                             const rot = Math.atan2(majorEnd.y, majorEnd.x);
-                                            let sa = edge.startAngle || 0;
-                                            let ea = edge.endAngle || Math.PI * 2;
+                                            const sa = edge.startAngle || 0;
+                                            const ea = edge.endAngle || Math.PI * 2;
                                             const ccw = edge.isCCW !== false;
                                             let sweep = ccw ? (ea - sa) : (sa - ea);
                                             if (sweep <= 0) sweep += Math.PI * 2;
@@ -766,7 +774,6 @@
                                             for (let si = 0; si <= steps; si++) {
                                                 const frac = si / steps;
                                                 const angle = ccw ? (sa + sweep * frac) : (sa - sweep * frac);
-                                                // Ellipse point in local coords, then rotate
                                                 const lx = majorLen * Math.cos(angle);
                                                 const ly = minorLen * Math.sin(angle);
                                                 const px = cx + lx * Math.cos(rot) - ly * Math.sin(rot);
@@ -779,8 +786,9 @@
                                                 verts.push(pt);
                                             }
                                         }
-                                        // Spline edge (type 4 or 'spline')
-                                        else if ((etype === 4 || etype === 'spline')) {
+                                        // Spline edge (DwgBoundaryPathEdgeType.Spline = 4)
+                                        // API: { fitDatum[], controlPoints[], degree, knots[], ... }
+                                        else if (etype === 4) {
                                             const pts = edge.fitDatum || edge.controlPoints || [];
                                             for (let si = 0; si < pts.length; si++) {
                                                 const sp = pts[si];
@@ -800,12 +808,17 @@
                                         if (isSolidFill) paths.push(polyVerts);
                                     }
                                 }
-                                if (bp.polyline && bp.polyline.length > 1) {
+
+                                // --- Polyline boundary path (DwgPolylineBoundaryPath) ---
+                                // API: bp.vertices[] = { x, y, bulge }[],  bp.isClosed: boolean
+                                // Detect via boundaryPathTypeFlag bit 2, or presence of bp.vertices
+                                if (bp.vertices && bp.vertices.length > 1) {
                                     const verts = tf
-                                        ? bp.polyline.map(v => { const p = tp(v.x, v.y); return { x: p.x, y: p.y, bulge: v.bulge }; })
-                                        : bp.polyline;
+                                        ? bp.vertices.map(v => { const p = tp(v.x, v.y); return { x: p.x, y: p.y, bulge: v.bulge || 0 }; })
+                                        : bp.vertices.map(v => ({ x: v.x, y: v.y, bulge: v.bulge || 0 }));
                                     for (const v of verts) expand(v.x, v.y);
-                                    renderList.push({ t: 'poly', l, et, handle, verts, closed: true, c: color });
+                                    const closed = bp.isClosed !== false; // default closed for hatch boundaries
+                                    renderList.push({ t: 'poly', l, et, handle, verts, closed, c: color });
                                     if (isSolidFill) paths.push(verts);
                                 }
                             }
