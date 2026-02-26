@@ -139,12 +139,20 @@ export async function downloadPdfReport() {
         }
 
         function addImage(imgData, y, maxH) {
-            const imgH = Math.min(contentW * imgAspect, maxH || 95);
+            let imgW = contentW;
+            let imgH = contentW * imgAspect;
+            // If taller than maxH, scale both dimensions to preserve aspect ratio
+            if (maxH && imgH > maxH) {
+                imgW = maxH / imgAspect;
+                imgH = maxH;
+            }
+            // Center horizontally if width was reduced
+            const offsetX = (contentW - imgW) / 2;
             // Light border around image
             doc.setDrawColor(...border);
             doc.setLineWidth(0.3);
-            doc.rect(mx, y, contentW, imgH);
-            doc.addImage(imgData, 'PNG', mx + 0.3, y + 0.3, contentW - 0.6, imgH - 0.6);
+            doc.rect(mx + offsetX, y, imgW, imgH);
+            doc.addImage(imgData, 'PNG', mx + offsetX + 0.3, y + 0.3, imgW - 0.6, imgH - 0.6);
             return y + imgH;
         }
 
