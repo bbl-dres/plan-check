@@ -13,7 +13,7 @@
 
 ## Demo
 
-**Live Demo:** https://bbl-dres.github.io/plan-check/
+**Live Demo (Working Viewer and Checking Engine):** https://bbl-dres.github.io/plan-check/
 
 **Prototype (Project and IAM Management):** https://bbl-dres.github.io/plan-check/prototype1/
 
