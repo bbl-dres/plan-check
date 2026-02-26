@@ -104,6 +104,7 @@ plan-check/
 - **Configurable Rule Sets** — Interchangeable checking configurations and rule definitions loaded from external files, replacing the currently hard-coded validation rules.
 - **Advanced Geometry Checks** — Geometry consistency validation including duplicate detection, overlapping polygons, gap analysis, and self-intersection checks.
 - **Auto-Corrections** — Suggesting fixes and automatically applying corrections to the drawing — closing open polygons, snapping endpoints, removing duplicate entities.
+- **Plugins for Authoring Tools** — Integration with CAD/BIM authoring tools via plugins. Investigating [Speckle](https://speckle.systems/) and similar platforms for interoperability with AutoCAD, Revit, and other design software.
 
 ## Documentation
 

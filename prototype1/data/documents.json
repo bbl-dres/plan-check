@@ -150,8 +150,8 @@
     "createdAt": "2022-03-18T09:00:00.000Z",
     "lastEditedBy": 7,
     "lastEditedAt": "2022-03-21T15:00:00.000Z",
-    "status": "processing",
-    "score": 0
+    "status": "validated",
+    "score": 75
   },
   {
     "id": 15,
@@ -238,8 +238,8 @@
     "createdAt": "2022-06-19T10:30:00.000Z",
     "lastEditedBy": 4,
     "lastEditedAt": "2022-06-28T09:45:00.000Z",
-    "status": "processing",
-    "score": 0
+    "status": "validated",
+    "score": 85
   },
   {
     "id": 23,

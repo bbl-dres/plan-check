@@ -789,19 +789,47 @@ async function loadData() {
 // Do not declare duplicate let variables here.
 
 // === URL ROUTING ===
+
+/**
+ * Builds query string from current view type and active filters.
+ * Only includes parameters that differ from defaults.
+ */
+function buildHashParams() {
+    const params = new URLSearchParams();
+
+    // View type (only on projects view)
+    if (currentView === 'projects') {
+        const activeBtn = document.querySelector('.view-toggle__btn--active');
+        const viewType = activeBtn ? activeBtn.dataset.view : 'grid';
+        if (viewType !== 'grid') params.set('view', viewType);
+    }
+
+    // Filters (persist across all project-level views)
+    const region = (document.getElementById('filter-region') || {}).value || '';
+    const status = (document.getElementById('filter-status') || {}).value || '';
+    const quality = (document.getElementById('filter-quality') || {}).value || '';
+    if (region) params.set('region', region);
+    if (status) params.set('status', status);
+    if (quality) params.set('quality', quality);
+
+    const qs = params.toString();
+    return qs ? `?${qs}` : '';
+}
+
 function updateUrlHash() {
     if (isNavigatingFromHash) return;
 
     let hash = '';
+    const params = buildHashParams();
 
     if (currentView === 'projects') {
-        hash = '#/projects';
+        hash = `#/projects${params}`;
     } else if (currentView === 'project-detail' && currentProject) {
-        hash = `#/project/${currentProject.id}`;
+        hash = `#/project/${currentProject.id}${params}`;
     } else if (currentView === 'validation' && currentProject && currentDocument) {
-        hash = `#/project/${currentProject.id}/document/${currentDocument.id}`;
+        hash = `#/project/${currentProject.id}/document/${currentDocument.id}${params}`;
     } else if (currentView === 'results' && currentProject && currentDocument) {
-        hash = `#/project/${currentProject.id}/document/${currentDocument.id}/results`;
+        hash = `#/project/${currentProject.id}/document/${currentDocument.id}/results${params}`;
     } else if (currentView === 'login') {
         hash = '#/login';
     }
@@ -828,6 +856,59 @@ function parseUrlHash() {
     };
 }
 
+/**
+ * Parses query parameters from the hash string.
+ * E.g. "#/projects?view=map&region=Bern" → { view: "map", region: "Bern" }
+ */
+function parseHashParams(hash) {
+    const qIndex = hash.indexOf('?');
+    if (qIndex === -1) return {};
+    const qs = hash.substring(qIndex + 1);
+    const params = {};
+    new URLSearchParams(qs).forEach((value, key) => { params[key] = value; });
+    return params;
+}
+
+/**
+ * Applies filter parameters from the URL to the filter dropdowns.
+ */
+function applyFiltersFromParams(params) {
+    const regionSel = document.getElementById('filter-region');
+    const statusSel = document.getElementById('filter-status');
+    const qualitySel = document.getElementById('filter-quality');
+
+    if (regionSel) regionSel.value = params.region || '';
+    if (statusSel) statusSel.value = params.status || '';
+    if (qualitySel) qualitySel.value = params.quality || '';
+
+    applyFilters();
+    updateFilterBadge();
+
+    // Auto-open filter panel if any filter is active
+    const hasActiveFilters = params.region || params.status || params.quality;
+    if (hasActiveFilters) {
+        const toggleBtn = document.getElementById('filter-toggle-btn');
+        const filterPanel = document.getElementById('filter-panel');
+        if (toggleBtn && filterPanel) {
+            filterPanel.hidden = false;
+            filterPanel.offsetHeight;
+            toggleBtn.setAttribute('aria-expanded', 'true');
+            filterPanel.classList.add('filter-panel--open');
+        }
+    }
+}
+
+/**
+ * Applies the view type parameter (grid/list/map/dashboard) from the URL.
+ */
+function applyViewTypeFromParams(params) {
+    const viewType = params.view || 'grid';
+    const btn = document.querySelector(`.view-toggle__btn[data-view="${viewType}"]`);
+    if (btn) {
+        btn.click();
+    }
+}
+
 function navigateFromHash() {
     // Cancel any pending navigation to prevent race conditions
     if (_navigationTimeoutId) {
@@ -838,18 +919,32 @@ function navigateFromHash() {
     isNavigatingFromHash = true;
     const hash = window.location.hash || '';
 
-    // Parse the hash more directly
-    const projectMatch = hash.match(/#\/project\/(\d+)/);
-    const documentMatch = hash.match(/\/document\/(\d+)/);
-    const isResults = hash.includes('/results');
+    // Strip query params for route matching
+    const hashPath = hash.split('?')[0];
+    const params = parseHashParams(hash);
 
-    if (hash === '#/projects' || hash === '') {
+    // Parse the hash path
+    const projectMatch = hashPath.match(/#\/project\/(\d+)/);
+    const documentMatch = hashPath.match(/\/document\/(\d+)/);
+    const isResults = hashPath.includes('/results');
+
+    if (hashPath === '#/projects' || hashPath === '' || hash.startsWith('#/projects?')) {
         switchView('projects');
         renderProjects();
-    } else if (hash === '#/login') {
+        applyFiltersFromParams(params);
+        // Defer view type switch so DOM is ready
+        requestAnimationFrame(() => {
+            applyViewTypeFromParams(params);
+            isNavigatingFromHash = false;
+        });
+        return;
+    } else if (hashPath === '#/login') {
         switchView('login');
     } else if (projectMatch) {
         const projectId = safeParseInt(projectMatch[1]);
+
+        // Apply filters if present
+        applyFiltersFromParams(params);
 
         if (documentMatch) {
             const documentId = safeParseInt(documentMatch[1]);
@@ -900,6 +995,12 @@ function switchView(viewName) {
     if (targetView) {
         targetView.classList.add('view--active');
         currentView = viewName;
+    }
+
+    // Show demo button only on login view
+    const demoBtn = document.getElementById('demo-btn');
+    if (demoBtn) {
+        demoBtn.style.display = (viewName === 'login') ? '' : 'none';
     }
 
     // Update URL hash
@@ -957,7 +1058,7 @@ function renderProjects() {
                         <div class="card__meta-left">
                             <dd>SIA Phase: ${escapeHtml(project.phase)}</dd>
                             <dd>${escapeHtml(formatDateDisplay(project.createdDate))}</dd>
-                            <dd>${projectDocuments.length} Dokumente</dd>
+                            <dd>${projectDocuments.length} Grundrisse</dd>
                         </div>
                         <div class="card__meta-right">
                             <span class="card__percentage card__percentage--${scoreClass}">${averageScore}%</span>
@@ -976,6 +1077,326 @@ function renderProjects() {
                 openProjectDetail(projectId);
             }
         });
+    });
+}
+
+// === PROJECT MAP ===
+let projectMap = null;
+
+function initProjectMap() {
+    const container = document.getElementById('project-map');
+    if (!container || projectMap) return;
+
+    projectMap = new maplibregl.Map({
+        container: 'project-map',
+        style: {
+            version: 8,
+            sources: {
+                'carto-light': {
+                    type: 'raster',
+                    tiles: [
+                        'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png',
+                        'https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png',
+                        'https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png'
+                    ],
+                    tileSize: 256,
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
+                }
+            },
+            layers: [{
+                id: 'carto-light-layer',
+                type: 'raster',
+                source: 'carto-light',
+                minzoom: 0,
+                maxzoom: 20
+            }]
+        },
+        center: [7.35, 46.85],
+        zoom: 8,
+        attributionControl: true
+    });
+
+    projectMap.addControl(new maplibregl.NavigationControl(), 'top-right');
+
+    // Add markers for each project
+    mockProjects.forEach(project => {
+        if (!project.coordinates || project.coordinates.length !== 2) return;
+
+        const [lng, lat] = project.coordinates;
+
+        const markerEl = document.createElement('div');
+        markerEl.className = 'project-map-marker';
+        markerEl.textContent = project.id;
+
+        const popup = new maplibregl.Popup({ offset: 20 })
+            .setHTML(
+                '<h4>' + escapeHtml(project.name) + '</h4>' +
+                '<p>SIA Phase: ' + escapeHtml(project.phase) + ' | Nr. ' + escapeHtml(project.number) + '</p>' +
+                '<a href="#" class="project-map-link" data-project-id="' + project.id + '">Projekt &ouml;ffnen &rarr;</a>'
+            );
+
+        new maplibregl.Marker({ element: markerEl })
+            .setLngLat([lng, lat])
+            .setPopup(popup)
+            .addTo(projectMap);
+    });
+
+    // Click delegation for popup links
+    container.addEventListener('click', (e) => {
+        const link = e.target.closest('.project-map-link');
+        if (link) {
+            e.preventDefault();
+            const projectId = parseInt(link.dataset.projectId, 10);
+            if (projectId > 0) openProjectDetail(projectId);
+        }
+    });
+
+    // Fit bounds to all markers
+    const bounds = new maplibregl.LngLatBounds();
+    let hasCoords = false;
+    mockProjects.forEach(project => {
+        if (project.coordinates && project.coordinates.length === 2) {
+            bounds.extend(project.coordinates);
+            hasCoords = true;
+        }
+    });
+    if (hasCoords) {
+        projectMap.fitBounds(bounds, { padding: 60, maxZoom: 12 });
+    }
+}
+
+function destroyProjectMap() {
+    if (projectMap) {
+        projectMap.remove();
+        projectMap = null;
+    }
+}
+
+// === PROJECT DASHBOARD ===
+
+function renderDashboard() {
+    // --- KPI Cards ---
+    const dwgDocs = mockDocuments.filter(d => d.name.endsWith('.dwg'));
+    const rooms = mockGeometry.filter(g => g.type === 'room');
+    const gfAreas = mockGeometry.filter(g => g.type === 'area' && g.aofunction === 'Geschossfläche');
+    const totalGF = gfAreas.reduce((sum, a) => sum + (a.area || 0), 0);
+    const avgQuality = mockProjects.length > 0
+        ? Math.round(mockProjects.reduce((s, p) => s + p.resultPercentage, 0) / mockProjects.length)
+        : 0;
+
+    const el = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
+    el('kpi-projects', mockProjects.length);
+    el('kpi-documents', dwgDocs.length);
+    el('kpi-rooms', rooms.length);
+    el('kpi-total-gf', totalGF.toLocaleString('de-CH', { maximumFractionDigits: 0 }));
+    el('kpi-quality', avgQuality + '%');
+
+    // --- Projektstatus bars ---
+    const statusCounts = { active: 0, completed: 0 };
+    mockProjects.forEach(p => { if (statusCounts[p.status] !== undefined) statusCounts[p.status]++; });
+    const total = mockProjects.length || 1;
+
+    const statusBarsEl = document.getElementById('dashboard-status-bars');
+    if (statusBarsEl) {
+        statusBarsEl.innerHTML =
+            '<div class="status-bar">' +
+                '<span class="status-bar__label">Aktiv</span>' +
+                '<div class="status-bar__track"><div class="status-bar__fill status-bar__fill--active" style="width:' + (statusCounts.active / total * 100) + '%"></div></div>' +
+                '<span class="status-bar__count">' + statusCounts.active + '</span>' +
+            '</div>' +
+            '<div class="status-bar">' +
+                '<span class="status-bar__label">Abgeschlossen</span>' +
+                '<div class="status-bar__track"><div class="status-bar__fill status-bar__fill--completed" style="width:' + (statusCounts.completed / total * 100) + '%"></div></div>' +
+                '<span class="status-bar__count">' + statusCounts.completed + '</span>' +
+            '</div>';
+    }
+
+    // --- Validation summary ---
+    const sevCounts = { error: 0, warning: 0, info: 0 };
+    mockCheckingResults.forEach(r => { if (sevCounts[r.severity] !== undefined) sevCounts[r.severity]++; });
+
+    const validationEl = document.getElementById('dashboard-validation');
+    if (validationEl) {
+        validationEl.innerHTML =
+            '<div class="validation-row">' +
+                '<span class="validation-row__dot validation-row__dot--error"></span>' +
+                '<span class="validation-row__label">Fehler</span>' +
+                '<span class="validation-row__count">' + sevCounts.error + '</span>' +
+            '</div>' +
+            '<div class="validation-row">' +
+                '<span class="validation-row__dot validation-row__dot--warning"></span>' +
+                '<span class="validation-row__label">Warnungen</span>' +
+                '<span class="validation-row__count">' + sevCounts.warning + '</span>' +
+            '</div>' +
+            '<div class="validation-row">' +
+                '<span class="validation-row__dot validation-row__dot--info"></span>' +
+                '<span class="validation-row__label">Hinweise</span>' +
+                '<span class="validation-row__count">' + sevCounts.info + '</span>' +
+            '</div>';
+    }
+
+    // --- Team summary ---
+    // Collect unique users across all projects with their highest role
+    const userRoleMap = {};
+    mockProjects.forEach(p => {
+        (p.users || []).forEach(u => {
+            const rolePriority = { 'Admin': 3, 'Editor': 2, 'Viewer': 1 };
+            if (!userRoleMap[u.userId] || rolePriority[u.role] > rolePriority[userRoleMap[u.userId]]) {
+                userRoleMap[u.userId] = u.role;
+            }
+        });
+    });
+
+    const teamEl = document.getElementById('dashboard-team');
+    if (teamEl) {
+        const teamHtml = Object.keys(userRoleMap).slice(0, 6).map(uid => {
+            const user = getUserById(parseInt(uid, 10));
+            if (!user) return '';
+            const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase();
+            const role = userRoleMap[uid];
+            return '<div class="team-row">' +
+                '<span class="team-row__avatar">' + escapeHtml(initials) + '</span>' +
+                '<span class="team-row__name">' + escapeHtml(user.name) + '</span>' +
+                '<span class="team-row__role">' + escapeHtml(role) + '</span>' +
+            '</div>';
+        }).join('');
+        teamEl.innerHTML = teamHtml;
+    }
+
+    // --- Project summary table ---
+    const tableBody = document.getElementById('dashboard-project-table');
+    if (tableBody) {
+        const rows = mockProjects.map(p => {
+            const pDocs = mockDocuments.filter(d => d.projectId === p.id && d.name.endsWith('.dwg'));
+            const pDocIds = mockDocuments.filter(d => d.projectId === p.id).map(d => d.id);
+            const pRooms = mockGeometry.filter(g => g.type === 'room' && pDocIds.includes(g.documentId));
+            const pGF = mockGeometry.filter(g => g.type === 'area' && g.aofunction === 'Geschossfläche' && pDocIds.includes(g.documentId));
+            const pGFTotal = pGF.reduce((s, a) => s + (a.area || 0), 0);
+            const pErrors = mockCheckingResults.filter(r => pDocIds.includes(r.documentId) && r.severity === 'error');
+            const scoreClass = p.resultPercentage >= 90 ? 'success' : p.resultPercentage >= 60 ? 'warning' : 'error';
+
+            return '<tr>' +
+                '<td>' + escapeHtml(p.name) + '</td>' +
+                '<td>' + escapeHtml(p.phase) + '</td>' +
+                '<td>' + pDocs.length + '</td>' +
+                '<td>' + pRooms.length + '</td>' +
+                '<td>' + pGFTotal.toLocaleString('de-CH', { maximumFractionDigits: 0 }) + '</td>' +
+                '<td>' + pErrors.length + '</td>' +
+                '<td><span class="quality-badge quality-badge--' + scoreClass + '">' + p.resultPercentage + '%</span></td>' +
+            '</tr>';
+        }).join('');
+        tableBody.innerHTML = rows;
+    }
+
+    // Initialize Lucide icons in dashboard
+    const dashboardEl = document.getElementById('project-dashboard');
+    if (dashboardEl) initLucideIcons(dashboardEl);
+}
+
+// === PROJECT FILTERS ===
+
+function initFilters() {
+    // Populate region dropdown from project names (extract city)
+    const regionSelect = document.getElementById('filter-region');
+    if (regionSelect) {
+        const regions = [...new Set(mockProjects.map(p => {
+            const parts = p.name.split(',');
+            return parts[0].trim();
+        }))].sort();
+        regions.forEach(region => {
+            const opt = document.createElement('option');
+            opt.value = region;
+            opt.textContent = region;
+            regionSelect.appendChild(opt);
+        });
+    }
+
+    // Wire up filter change handlers
+    ['filter-region', 'filter-status', 'filter-quality'].forEach(id => {
+        const sel = document.getElementById(id);
+        if (sel) sel.addEventListener('change', () => {
+            applyFilters();
+            updateFilterBadge();
+            updateUrlHash();
+        });
+    });
+
+    // Filter toggle button
+    const toggleBtn = document.getElementById('filter-toggle-btn');
+    const filterPanel = document.getElementById('filter-panel');
+    if (toggleBtn && filterPanel) {
+        toggleBtn.addEventListener('click', () => {
+            const isOpen = toggleBtn.getAttribute('aria-expanded') === 'true';
+            if (isOpen) {
+                toggleBtn.setAttribute('aria-expanded', 'false');
+                filterPanel.classList.remove('filter-panel--open');
+                // Wait for animation then hide
+                setTimeout(() => { filterPanel.hidden = true; }, 250);
+            } else {
+                filterPanel.hidden = false;
+                // Force reflow before adding class for animation
+                filterPanel.offsetHeight;
+                toggleBtn.setAttribute('aria-expanded', 'true');
+                filterPanel.classList.add('filter-panel--open');
+                initLucideIcons();
+            }
+        });
+    }
+
+    // Reset button
+    const resetBtn = document.getElementById('filter-reset-btn');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+            ['filter-region', 'filter-status', 'filter-quality'].forEach(id => {
+                const sel = document.getElementById(id);
+                if (sel) sel.value = '';
+            });
+            applyFilters();
+            updateFilterBadge();
+            updateUrlHash();
+        });
+    }
+}
+
+function updateFilterBadge() {
+    const badge = document.getElementById('filter-badge');
+    if (!badge) return;
+    let count = 0;
+    ['filter-region', 'filter-status', 'filter-quality'].forEach(id => {
+        const sel = document.getElementById(id);
+        if (sel && sel.value) count++;
+    });
+    if (count > 0) {
+        badge.textContent = count;
+        badge.style.display = '';
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
+function applyFilters() {
+    const region = (document.getElementById('filter-region') || {}).value || '';
+    const status = (document.getElementById('filter-status') || {}).value || '';
+    const quality = (document.getElementById('filter-quality') || {}).value || '';
+
+    const cards = document.querySelectorAll('#project-grid .card');
+    cards.forEach(card => {
+        const projectId = parseInt(card.dataset.projectId, 10);
+        const project = mockProjects.find(p => p.id === projectId);
+        if (!project) { card.style.display = ''; return; }
+
+        let visible = true;
+
+        if (region && !project.name.startsWith(region)) visible = false;
+        if (status && project.status !== status) visible = false;
+        if (quality) {
+            const pct = project.resultPercentage;
+            if (quality === 'high' && pct < 90) visible = false;
+            if (quality === 'medium' && (pct < 60 || pct >= 90)) visible = false;
+            if (quality === 'low' && pct >= 60) visible = false;
+        }
+
+        card.style.display = visible ? '' : 'none';
     });
 }
 
@@ -1023,12 +1444,12 @@ function openProjectDetail(projectId, skipHashUpdate = false) {
     const roomCount = mockGeometry.filter(g => g.type === 'room' && projectDocumentIds.includes(g.documentId)).length;
     document.getElementById('project-room-count').textContent = roomCount;
 
-    // Calculate total BGF (Brutto Geschossfläche) from geometry for this project
-    const totalBGF = mockGeometry
-        .filter(g => g.type === 'area' && g.aofunction === 'Brutto Geschossfläche' && projectDocumentIds.includes(g.documentId))
+    // Calculate total GF (Geschossfläche) from geometry for this project
+    const totalGF = mockGeometry
+        .filter(g => g.type === 'area' && g.aofunction === 'Geschossfläche' && projectDocumentIds.includes(g.documentId))
         .reduce((sum, g) => sum + g.area, 0);
-    const formattedBGF = totalBGF > 0 ? `${totalBGF.toLocaleString('de-CH')} m²` : '0 m²';
-    document.getElementById('project-gf').textContent = formattedBGF;
+    const formattedGF = totalGF > 0 ? `${totalGF.toLocaleString('de-CH')} m²` : '0 m²';
+    document.getElementById('project-gf').textContent = formattedGF;
 
     // Render documents, users, and rules
     renderDocuments();
@@ -1158,7 +1579,7 @@ function renderDocuments() {
             <tr data-document-id="${safeParseInt(doc.id)}">
                 <td class="table__checkbox-col">
                     <label class="checkbox">
-                        <input type="checkbox" class="document-checkbox" data-doc-id="${safeParseInt(doc.id)}" aria-label="Dokument ${escapeHtml(doc.name)} auswählen">
+                        <input type="checkbox" class="document-checkbox" data-doc-id="${safeParseInt(doc.id)}" aria-label="Grundriss ${escapeHtml(doc.name)} auswählen">
                         <span class="checkbox__mark"></span>
                     </label>
                 </td>
@@ -1247,7 +1668,7 @@ function setupDocumentActions() {
             e.preventDefault();
             const formData = new FormData(newDocForm);
             const name = formData.get('name');
-            showToast(`Dokument "${name}" erstellt`, 'success');
+            showToast(`Grundriss "${name}" erstellt`, 'success');
             closeModal('new-document-modal');
             newDocForm.reset();
         });
@@ -1259,7 +1680,7 @@ function setupDocumentActions() {
             if (selectedIds.length === 1) {
                 const doc = mockDocuments.find(d => d.id === selectedIds[0]);
                 if (doc) {
-                    showToast(`Dokument "${doc.name}" bearbeiten - Funktion kommt bald`, 'info');
+                    showToast(`Grundriss "${doc.name}" bearbeiten - Funktion kommt bald`, 'info');
                 }
             }
         });
@@ -1269,7 +1690,7 @@ function setupDocumentActions() {
         deleteBtn.addEventListener('click', () => {
             const count = DocumentSelection.getSelectedCount();
             if (count > 0) {
-                const confirmed = confirm(`Möchten Sie ${count} Dokument(e) wirklich löschen?`);
+                const confirmed = confirm(`Möchten Sie ${count} Grundriss(e) wirklich löschen?`);
                 if (confirmed) {
                     // Remove selected documents from mockDocuments
                     const selectedIds = Array.from(DocumentSelection.selectedIds);
@@ -1291,7 +1712,7 @@ function setupDocumentActions() {
 
                     // Re-render and show toast
                     renderDocuments();
-                    showToast(`${count} Dokument(e) gelöscht`, 'success');
+                    showToast(`${count} Grundriss(e) gelöscht`, 'success');
                 }
             }
         });
@@ -1553,12 +1974,12 @@ function openValidationView(documentId, skipHashUpdate = false) {
     // Room count
     document.getElementById('step1-room-count').textContent = docRooms.length;
 
-    // Calculate BGF (Geschossfläche) - sum of all BGF areas
-    const totalBGF = docAreas
-        .filter(a => a.aofunction === 'Brutto Geschossfläche')
+    // Calculate GF (Geschossfläche) - sum of all GF areas
+    const totalGF = docAreas
+        .filter(a => a.aofunction === 'Geschossfläche')
         .reduce((sum, a) => sum + a.area, 0);
-    document.getElementById('step1-gf').textContent = totalBGF > 0
-        ? `${totalBGF.toLocaleString('de-CH')} m²`
+    document.getElementById('step1-gf').textContent = totalGF > 0
+        ? `${totalGF.toLocaleString('de-CH')} m²`
         : '0 m²';
 
     // Calculate NGF (Nettogeschossfläche) - sum of all room areas as approximation
@@ -2022,8 +2443,8 @@ function setupTabs() {
     // Project detail tabs (documents, users, rules)
     setupTabGroup('data-tab', 'tab-', ['tab-documents', 'tab-users', 'tab-rules'], signal);
 
-    // Validation view tabs - Step 1 (overview, errors, rooms, areas, kennzahlen)
-    setupTabGroup('data-val-tab', 'val-tab-', ['val-tab-overview', 'val-tab-errors', 'val-tab-rooms', 'val-tab-areas', 'val-tab-kennzahlen'], signal);
+    // Validation view tabs - Step 1 (overview, errors, rooms, areas)
+    setupTabGroup('data-val-tab', 'val-tab-', ['val-tab-overview', 'val-tab-errors', 'val-tab-rooms', 'val-tab-areas'], signal);
 
     // Step 2 tabs (rooms, errors)
     setupTabGroup('data-step2-tab', 'step2-tab-', ['step2-tab-rooms', 'step2-tab-errors'], signal);
@@ -2083,12 +2504,29 @@ function setupEventListeners() {
         });
     }
 
-    // Demo button in header
+    // Demo button in header (visible only on login view)
     const demoBtn = document.getElementById('demo-btn');
     if (demoBtn) {
         demoBtn.addEventListener('click', () => {
             switchView('projects');
             renderProjects();
+        });
+    }
+
+    // User icon → navigate to login (simulate logout)
+    const userMenuBtn = document.getElementById('user-menu-btn');
+    if (userMenuBtn) {
+        userMenuBtn.addEventListener('click', () => {
+            switchView('login');
+        });
+    }
+
+    // Brand logo → navigate to login (simulate logout)
+    const brandLink = document.querySelector('.header__brand');
+    if (brandLink) {
+        brandLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchView('login');
         });
     }
 
@@ -2152,7 +2590,7 @@ function setupEventListeners() {
         });
     });
 
-    // View toggle with accessibility support
+    // View toggle with accessibility support (grid / list / map / dashboard)
     document.querySelectorAll('.view-toggle__btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.view-toggle__btn').forEach(b => {
@@ -2164,16 +2602,44 @@ function setupEventListeners() {
 
             const viewType = btn.dataset.view;
             const cardGrid = document.getElementById('project-grid');
+            const mapContainer = document.getElementById('project-map');
+            const dashboardContainer = document.getElementById('project-dashboard');
+            const searchWrapper = document.querySelector('.search');
 
-            if (cardGrid) {
-                if (viewType === 'list') {
-                    cardGrid.classList.add('card-grid--list');
-                    showToast('Listenansicht aktiviert', 'info');
-                } else {
-                    cardGrid.classList.remove('card-grid--list');
-                    showToast('Kachelansicht aktiviert', 'info');
-                }
+            // Hide all project-view containers
+            if (cardGrid) cardGrid.style.display = 'none';
+            if (mapContainer) mapContainer.style.display = 'none';
+            if (dashboardContainer) dashboardContainer.style.display = 'none';
+            if (cardGrid) cardGrid.classList.remove('card-grid--list');
+
+            switch (viewType) {
+                case 'grid':
+                    if (cardGrid) cardGrid.style.display = '';
+                    destroyProjectMap();
+                    break;
+                case 'list':
+                    if (cardGrid) {
+                        cardGrid.style.display = '';
+                        cardGrid.classList.add('card-grid--list');
+                    }
+                    destroyProjectMap();
+                    break;
+                case 'map':
+                    if (mapContainer) mapContainer.style.display = '';
+                    initProjectMap();
+                    if (projectMap) projectMap.resize();
+                    break;
+                case 'dashboard':
+                    if (dashboardContainer) {
+                        dashboardContainer.style.display = '';
+                        renderDashboard();
+                    }
+                    destroyProjectMap();
+                    break;
             }
+
+            // Update URL with current view type
+            updateUrlHash();
         });
     });
 
@@ -2376,6 +2842,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupModals();
     setupDocumentActions();
     setupUserActions();
+    initFilters();
 
     // Initialize Lucide icons (global initialization on page load)
     initLucideIcons();

@@ -147,6 +147,15 @@ var FloorPlanViewer = (function () {
     }
 
     function hitTestRoom(wx, wy) {
+        // In areas mode, test area polygons instead of rooms
+        if (mode === 'areas') {
+            for (let i = areas.length - 1; i >= 0; i--) {
+                const area = areas[i];
+                if (!area.vertices || area.vertices.length < 3) continue;
+                if (pointInPolygon(wx, wy, area.vertices)) return area;
+            }
+            return null;
+        }
         // Test in reverse order so topmost drawn room wins
         for (let i = rooms.length - 1; i >= 0; i--) {
             const room = rooms[i];
@@ -240,7 +249,7 @@ var FloorPlanViewer = (function () {
                     ctx.fillStyle = '#006699';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
-                    ctx.fillText(area.aoid || 'BGF', 0, 0);
+                    ctx.fillText(area.aoid || 'GF', 0, 0);
                     ctx.font = (afontSize * 0.7) + 'px system-ui, -apple-system, sans-serif';
                     ctx.fillStyle = '#555555';
                     ctx.fillText(area.area.toFixed(1) + ' m\u00B2', 0, afontSize * 1.1);
@@ -249,27 +258,29 @@ var FloorPlanViewer = (function () {
             }
         }
 
-        // Draw rooms
-        for (const room of rooms) {
-            if (!room.vertices || room.vertices.length < 3) continue;
-            const colors = getRoomColor(room);
+        // Draw rooms (skip in areas mode — only show GF polygons)
+        if (mode !== 'areas') {
+            for (const room of rooms) {
+                if (!room.vertices || room.vertices.length < 3) continue;
+                const colors = getRoomColor(room);
 
-            ctx.beginPath();
-            ctx.moveTo(room.vertices[0][0], room.vertices[0][1]);
-            for (let i = 1; i < room.vertices.length; i++) {
-                ctx.lineTo(room.vertices[i][0], room.vertices[i][1]);
+                ctx.beginPath();
+                ctx.moveTo(room.vertices[0][0], room.vertices[0][1]);
+                for (let i = 1; i < room.vertices.length; i++) {
+                    ctx.lineTo(room.vertices[i][0], room.vertices[i][1]);
+                }
+                ctx.closePath();
+
+                ctx.fillStyle = colors.fill;
+                ctx.fill();
+                ctx.strokeStyle = colors.stroke;
+                ctx.lineWidth = (room.id === selectedRoomId || room.id === hoveredRoomId) ?
+                    2.5 / cam.zoom : strokeWidth;
+                ctx.stroke();
+
+                // Draw AOID label inside room
+                drawRoomLabel(room);
             }
-            ctx.closePath();
-
-            ctx.fillStyle = colors.fill;
-            ctx.fill();
-            ctx.strokeStyle = colors.stroke;
-            ctx.lineWidth = (room.id === selectedRoomId || room.id === hoveredRoomId) ?
-                2.5 / cam.zoom : strokeWidth;
-            ctx.stroke();
-
-            // Draw AOID label inside room
-            drawRoomLabel(room);
         }
 
         ctx.restore();

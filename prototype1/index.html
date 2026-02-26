@@ -6,10 +6,11 @@
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self';
         script-src 'self' https://unpkg.com;
-        style-src 'self' 'unsafe-inline';
-        img-src 'self' data: https://images.unsplash.com;
+        style-src 'self' 'unsafe-inline' https://unpkg.com;
+        img-src 'self' data: https://images.unsplash.com https://*.basemaps.cartocdn.com;
         font-src 'self';
-        connect-src 'self';
+        connect-src 'self' https://*.basemaps.cartocdn.com https://basemaps.cartocdn.com;
+        worker-src blob:;
         frame-ancestors 'none';
         base-uri 'self';
         form-action 'self';
@@ -18,6 +19,8 @@
     <link rel="stylesheet" href="css/tokens.css">
     <link rel="stylesheet" href="css/styles.css">
     <script src="https://unpkg.com/lucide@0.562.0/dist/umd/lucide.min.js" integrity="sha384-FmRlymRnpgjuKyAnwH4DftRjl+RqHOlfcw9k4xcpPyovclg/2RZRrvw7qe1koVCP" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" crossorigin="anonymous">
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js" crossorigin="anonymous"></script>
 </head>
 <body>
     <!-- Skip to Main Content (Accessibility) -->
@@ -121,12 +124,23 @@
                         <input type="text" class="search__input" placeholder="Projektname, ID, Auftrag" id="project-search">
                     </div>
                     <div class="page-header__actions">
+                        <button class="filter-toggle" id="filter-toggle-btn" aria-expanded="false" aria-controls="filter-panel" aria-label="Filter ein-/ausblenden">
+                            <i data-lucide="filter" class="icon icon-md" aria-hidden="true"></i>
+                            <span class="filter-toggle__label">Filter</span>
+                            <span class="filter-toggle__badge" id="filter-badge" style="display: none;">0</span>
+                        </button>
                         <div class="view-toggle" role="group" aria-label="Ansicht wechseln">
                             <button class="view-toggle__btn view-toggle__btn--active" data-view="grid" aria-label="Kachelansicht" aria-pressed="true">
                                 <i data-lucide="grid-2x2" class="icon icon-md" aria-hidden="true"></i>
                             </button>
                             <button class="view-toggle__btn" data-view="list" aria-label="Listenansicht" aria-pressed="false">
                                 <i data-lucide="list" class="icon icon-md" aria-hidden="true"></i>
+                            </button>
+                            <button class="view-toggle__btn" data-view="map" aria-label="Kartenansicht" aria-pressed="false">
+                                <i data-lucide="map" class="icon icon-md" aria-hidden="true"></i>
+                            </button>
+                            <button class="view-toggle__btn" data-view="dashboard" aria-label="Dashboard" aria-pressed="false">
+                                <i data-lucide="bar-chart-3" class="icon icon-md" aria-hidden="true"></i>
                             </button>
                         </div>
                         <button class="btn btn--primary btn--sm" id="new-project-btn">
@@ -136,8 +150,114 @@
                     </div>
                 </div>
 
+                <!-- Collapsible Filter Panel -->
+                <div class="filter-panel" id="filter-panel" hidden>
+                    <div class="filter-panel__inner">
+                        <select class="filter-select" id="filter-region" aria-label="Region filtern">
+                            <option value="">Alle Regionen</option>
+                        </select>
+                        <select class="filter-select" id="filter-status" aria-label="Status filtern">
+                            <option value="">Alle Status</option>
+                            <option value="active">Aktiv</option>
+                            <option value="completed">Abgeschlossen</option>
+                        </select>
+                        <select class="filter-select" id="filter-quality" aria-label="Qualität filtern">
+                            <option value="">Alle Qualitäten</option>
+                            <option value="high">Hoch (&ge; 90%)</option>
+                            <option value="medium">Mittel (60–89%)</option>
+                            <option value="low">Tief (&lt; 60%)</option>
+                        </select>
+                        <button class="btn btn--secondary btn--sm filter-panel__reset" id="filter-reset-btn">
+                            <i data-lucide="x" class="icon icon-sm" aria-hidden="true"></i>
+                            Zurücksetzen
+                        </button>
+                    </div>
+                </div>
+
                 <div class="card-grid" id="project-grid">
                     <!-- Projects will be rendered here by JavaScript -->
+                </div>
+
+                <!-- Map View Container -->
+                <div id="project-map" class="project-map" role="application" aria-label="Projekt-Standorte auf der Karte" style="display: none;"></div>
+
+                <!-- Dashboard View Container -->
+                <div id="project-dashboard" class="project-dashboard" style="display: none;">
+
+                    <!-- KPI Metric Cards -->
+                    <div class="dashboard-kpis">
+                        <div class="kpi-card">
+                            <div class="kpi-card__icon"><i data-lucide="building-2" class="icon icon-lg" aria-hidden="true"></i></div>
+                            <div class="kpi-card__value" id="kpi-projects">0</div>
+                            <div class="kpi-card__label">Projekte</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-card__icon"><i data-lucide="file-text" class="icon icon-lg" aria-hidden="true"></i></div>
+                            <div class="kpi-card__value" id="kpi-documents">0</div>
+                            <div class="kpi-card__label">Grundrisse</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-card__icon"><i data-lucide="box" class="icon icon-lg" aria-hidden="true"></i></div>
+                            <div class="kpi-card__value" id="kpi-rooms">0</div>
+                            <div class="kpi-card__label">Räume</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-card__icon"><i data-lucide="ruler" class="icon icon-lg" aria-hidden="true"></i></div>
+                            <div class="kpi-card__value" id="kpi-total-gf">0</div>
+                            <div class="kpi-card__label">Total GF (m²)</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-card__icon"><i data-lucide="shield-check" class="icon icon-lg" aria-hidden="true"></i></div>
+                            <div class="kpi-card__value" id="kpi-quality">0%</div>
+                            <div class="kpi-card__label">Ø Qualität</div>
+                        </div>
+                    </div>
+
+                    <!-- Status + Validation Row -->
+                    <div class="dashboard-row">
+                        <div class="dashboard-panel">
+                            <h3 class="dashboard-panel__title">Projektstatus</h3>
+                            <div class="dashboard-status-bars" id="dashboard-status-bars">
+                                <!-- Rendered by JS -->
+                            </div>
+                        </div>
+                        <div class="dashboard-panel">
+                            <h3 class="dashboard-panel__title">Validierung</h3>
+                            <div class="dashboard-validation" id="dashboard-validation">
+                                <!-- Rendered by JS -->
+                            </div>
+                        </div>
+                        <div class="dashboard-panel">
+                            <h3 class="dashboard-panel__title">Team</h3>
+                            <div class="dashboard-team" id="dashboard-team">
+                                <!-- Rendered by JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project Summary Table -->
+                    <div class="dashboard-panel dashboard-panel--wide">
+                        <h3 class="dashboard-panel__title">Projektübersicht</h3>
+                        <div class="dashboard-table-wrapper">
+                            <table class="dashboard-table">
+                                <thead>
+                                    <tr>
+                                        <th>Projekt</th>
+                                        <th>Phase</th>
+                                        <th>Grundrisse</th>
+                                        <th>Räume</th>
+                                        <th>GF (m²)</th>
+                                        <th>Fehler</th>
+                                        <th>Qualität</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dashboard-project-table">
+                                    <!-- Rendered by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </section>
@@ -183,7 +303,7 @@
                         </div>
                         <div class="project-kpi">
                             <span class="project-kpi__value" id="project-document-count">7</span>
-                            <span class="project-kpi__label">Dokumente</span>
+                            <span class="project-kpi__label">Grundrisse</span>
                         </div>
                         <div class="project-kpi">
                             <span class="project-kpi__value" id="project-room-count">0</span>
@@ -199,7 +319,7 @@
                 <div class="tabs-card">
                     <div class="tabs tabs--with-actions">
                         <ul class="tabs__list">
-                            <li><a href="#" class="tabs__tab tabs__tab--active" data-tab="documents">Abgabe Dokumente (<span id="tab-documents-count">0</span>)</a></li>
+                            <li><a href="#" class="tabs__tab tabs__tab--active" data-tab="documents">Abgabe Grundrisse (<span id="tab-documents-count">0</span>)</a></li>
                             <li><a href="#" class="tabs__tab" data-tab="users">Benutzer (<span id="tab-users-count">0</span>)</a></li>
                             <li><a href="#" class="tabs__tab" data-tab="rules">Prüfregeln (<span id="tab-rules-count">0</span>)</a></li>
                         </ul>
@@ -214,7 +334,7 @@
                             </button>
                             <button class="btn btn--primary btn--sm" id="new-document-btn">
                                 <i data-lucide="plus" class="icon icon-sm" aria-hidden="true"></i>
-                                Neues Dokument
+                                Neuer Grundriss
                             </button>
                         </div>
                         <div class="tabs__actions" id="tabs-actions-users" style="display: none;">
@@ -241,7 +361,7 @@
                                 <tr>
                                     <th scope="col" class="table__checkbox-col">
                                         <label class="checkbox">
-                                            <input type="checkbox" id="select-all-documents" aria-label="Alle Dokumente auswählen">
+                                            <input type="checkbox" id="select-all-documents" aria-label="Alle Grundrisse auswählen">
                                             <span class="checkbox__mark"></span>
                                         </label>
                                     </th>
@@ -308,7 +428,7 @@
                         <span class="breadcrumb__separator">/</span>
                         <a href="#" class="breadcrumb__link" id="breadcrumb-val-project">Projekt</a>
                         <span class="breadcrumb__separator">/</span>
-                        <span class="breadcrumb__current" id="breadcrumb-val-document">Dokument</span>
+                        <span class="breadcrumb__current" id="breadcrumb-val-document">Grundriss</span>
                     </div>
                     <button class="btn btn--secondary btn--sm" id="back-to-project">
                         <i data-lucide="arrow-left" class="icon icon-sm"></i>
@@ -620,11 +740,10 @@
                     <div class="tabs-card">
                         <div class="tabs">
                             <ul class="tabs__list">
-                                <li><a href="#" class="tabs__tab tabs__tab--active" data-val-tab="overview">Übersicht</a></li>
+                                <li><a href="#" class="tabs__tab tabs__tab--active" data-val-tab="overview">Layers</a></li>
                                 <li><a href="#" class="tabs__tab" data-val-tab="errors">Fehlermeldungen (<span id="val-tab-errors-count">0</span>)</a></li>
                                 <li><a href="#" class="tabs__tab" data-val-tab="rooms">Räume (<span id="val-tab-rooms-count">0</span>)</a></li>
                                 <li><a href="#" class="tabs__tab" data-val-tab="areas">Flächen (<span id="val-tab-areas-count">0</span>)</a></li>
-                                <li><a href="#" class="tabs__tab" data-val-tab="kennzahlen">Kennzahlen</a></li>
                             </ul>
                         </div>
 
@@ -655,16 +774,9 @@
                                     </div>
                                 </div>
 
-                                <!-- Tab 4: Areas (BGF/EBF gross polygons) -->
+                                <!-- Tab 4: Areas (GF/EBF gross polygons) -->
                                 <div class="tab-pane" id="val-tab-areas">
                                     <div id="area-list" class="area-list">
-                                        <!-- Rendered by JS -->
-                                    </div>
-                                </div>
-
-                                <!-- Tab 5: Kennzahlen (SIA 416 breakdown) -->
-                                <div class="tab-pane" id="val-tab-kennzahlen">
-                                    <div id="kennzahlen-content" class="kennzahlen-content">
                                         <!-- Rendered by JS -->
                                     </div>
                                 </div>
@@ -805,16 +917,18 @@
 
     <footer class="footer">
         <div class="footer__content">
+            <span class="footer__version">v1.0.0</span>
             <div class="footer__links">
                 <a href="https://github.com/bbl-dres/plan-check" target="_blank" rel="noopener noreferrer" class="footer__link">Quellencode</a>
                 <span class="footer__separator">|</span>
-                <a href="https://www.admin.ch/gov/de/start/rechtliches.html" target="_blank" rel="noopener noreferrer" class="footer__link">Rechtliches</a>
+                <a href="#" class="footer__link" id="nav-api">API</a>
                 <span class="footer__separator">|</span>
-                <a href="https://www.bbl.admin.ch/de/downloads-bauten" class="footer__link" id="nav-standards" target="_blank" rel="noopener noreferrer">BBL CAD Standards</a>
+                <a href="https://www.bbl.admin.ch/de/downloads-bauten" class="footer__link" id="nav-standards" target="_blank" rel="noopener noreferrer">Downloads BBL Bauten</a>
                 <span class="footer__separator">|</span>
                 <a href="https://www.bbl.admin.ch/de/kontakt" class="footer__link" target="_blank" rel="noopener noreferrer">Kontakt</a>
+                <span class="footer__separator">|</span>
+                <a href="https://www.admin.ch/gov/de/start/rechtliches.html" target="_blank" rel="noopener noreferrer" class="footer__link">Rechtliches</a>
             </div>
-            <span class="footer__version">v1.0.0</span>
         </div>
     </footer>
 
@@ -927,20 +1041,20 @@
         <div class="modal__backdrop" data-modal-close></div>
         <div class="modal__content modal__content--sm">
             <div class="modal__header">
-                <h2 class="modal__title" id="new-document-modal-title">Neues Dokument</h2>
+                <h2 class="modal__title" id="new-document-modal-title">Neuer Grundriss</h2>
                 <button class="modal__close" data-modal-close aria-label="Schliessen">
                     <i data-lucide="x" class="icon icon-md" aria-hidden="true"></i>
                 </button>
             </div>
             <form class="modal__body" id="new-document-form">
                 <div class="form__field">
-                    <label for="document-name" class="form__label">Dokumentname</label>
+                    <label for="document-name" class="form__label">Grundrissname</label>
                     <input type="text" class="form__input" id="document-name" name="name" placeholder="z.B. EG_Grundriss.dwg" required>
                 </div>
             </form>
             <div class="modal__footer">
                 <button type="button" class="btn btn--secondary" data-modal-close>Abbrechen</button>
-                <button type="submit" class="btn btn--primary" form="new-document-form">Dokument erstellen</button>
+                <button type="submit" class="btn btn--primary" form="new-document-form">Grundriss erstellen</button>
             </div>
         </div>
     </div>

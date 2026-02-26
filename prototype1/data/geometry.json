@@ -451,9 +451,9 @@
     "id": 17,
     "documentId": 1,
     "type": "area",
-    "aoid": "BGF-EG-001",
+    "aoid": "GF-EG-001",
     "area": 450,
-    "aofunction": "Brutto Geschossfläche",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -517,11 +517,11 @@
         8.47
       ],
       [
-        6.0,
+        6,
         8.47
       ],
       [
-        6.0,
+        6,
         14.44
       ],
       [
@@ -541,7 +541,7 @@
     "status": "ok",
     "vertices": [
       [
-        6.0,
+        6,
         8.47
       ],
       [
@@ -553,7 +553,7 @@
         14.44
       ],
       [
-        6.0,
+        6,
         14.44
       ]
     ],
@@ -927,9 +927,9 @@
     "id": 34,
     "documentId": 2,
     "type": "area",
-    "aoid": "BGF-1OG-001",
+    "aoid": "GF-1OG-001",
     "area": 435,
-    "aofunction": "Brutto Geschossfläche",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -1222,11 +1222,11 @@
       ],
       [
         1.8,
-        6.0
+        6
       ],
       [
         0,
-        6.0
+        6
       ]
     ],
     "siaCategory": "NNF"
@@ -1250,11 +1250,11 @@
       ],
       [
         6.58,
-        6.0
+        6
       ],
       [
         1.8,
-        6.0
+        6
       ]
     ],
     "siaCategory": "HNF"
@@ -1278,11 +1278,11 @@
       ],
       [
         10.14,
-        6.0
+        6
       ],
       [
         6.58,
-        6.0
+        6
       ]
     ],
     "siaCategory": "HNF"
@@ -1306,11 +1306,11 @@
       ],
       [
         12.89,
-        6.0
+        6
       ],
       [
         10.14,
-        6.0
+        6
       ]
     ],
     "siaCategory": "HNF"
@@ -1334,11 +1334,11 @@
       ],
       [
         17.19,
-        6.0
+        6
       ],
       [
         12.89,
-        6.0
+        6
       ]
     ],
     "siaCategory": "HNF"
@@ -1362,11 +1362,11 @@
       ],
       [
         18.79,
-        6.0
+        6
       ],
       [
         17.19,
-        6.0
+        6
       ]
     ],
     "siaCategory": "NNF"
@@ -1390,11 +1390,11 @@
       ],
       [
         24.52,
-        6.0
+        6
       ],
       [
         18.79,
-        6.0
+        6
       ]
     ],
     "siaCategory": "HNF"
@@ -1403,9 +1403,9 @@
     "id": 51,
     "documentId": 3,
     "type": "area",
-    "aoid": "BGF-2OG-001",
+    "aoid": "GF-2OG-001",
     "area": 428,
-    "aofunction": "Brutto Geschossfläche",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -1851,9 +1851,9 @@
     "id": 67,
     "documentId": 4,
     "type": "area",
-    "aoid": "BGF-3OG-001",
+    "aoid": "GF-3OG-001",
     "area": 415,
-    "aofunction": "Brutto Geschossfläche",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -2103,9 +2103,9 @@
     "id": 76,
     "documentId": 5,
     "type": "area",
-    "aoid": "BGF-UG-001",
+    "aoid": "GF-UG-001",
     "area": 320,
-    "aofunction": "Brutto Geschossfläche",
+    "aofunction": "Geschossfläche",
     "status": "error",
     "vertices": [
       [
@@ -2299,9 +2299,9 @@
     "id": 83,
     "documentId": 6,
     "type": "area",
-    "aoid": "BGF-DG-001",
+    "aoid": "GF-DG-001",
     "area": 210,
-    "aofunction": "Brutto Geschossfläche",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -2523,9 +2523,9 @@
     "id": 91,
     "documentId": 8,
     "type": "area",
-    "aoid": "BGF-SS-001",
+    "aoid": "GF-SS-001",
     "area": 520,
-    "aofunction": "Brutto Geschossfläche",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -2915,9 +2915,9 @@
     "id": 105,
     "documentId": 9,
     "type": "area",
-    "aoid": "BGF-RC-001",
+    "aoid": "GF-RC-001",
     "area": 550,
-    "aofunction": "Brutto Geschossfläche",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -2981,11 +2981,11 @@
         8.94
       ],
       [
-        16.0,
+        16,
         8.94
       ],
       [
-        16.0,
+        16,
         15.37
       ],
       [
@@ -3005,7 +3005,7 @@
     "status": "ok",
     "vertices": [
       [
-        16.0,
+        16,
         8.94
       ],
       [
@@ -3017,7 +3017,7 @@
         15.37
       ],
       [
-        16.0,
+        16,
         15.37
       ]
     ],
@@ -3279,9 +3279,9 @@
     "id": 118,
     "documentId": 10,
     "type": "area",
-    "aoid": "BGF-1E-001",
+    "aoid": "GF-1E-001",
     "area": 540,
-    "aofunction": "Brutto Geschossfläche",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -3643,9 +3643,9 @@
     "id": 131,
     "documentId": 11,
     "type": "area",
-    "aoid": "BGF-2E-001",
+    "aoid": "GF-2E-001",
     "area": 540,
-    "aofunction": "Brutto Geschossfläche",
+    "aofunction": "Geschossfläche",
     "status": "warning",
     "vertices": [
       [
@@ -3961,11 +3961,11 @@
         0
       ],
       [
-        17.0,
+        17,
         0
       ],
       [
-        17.0,
+        17,
         6.36
       ],
       [
@@ -3985,7 +3985,7 @@
     "status": "ok",
     "vertices": [
       [
-        17.0,
+        17,
         0
       ],
       [
@@ -3997,7 +3997,7 @@
         6.36
       ],
       [
-        17.0,
+        17,
         6.36
       ]
     ],
@@ -4007,9 +4007,9 @@
     "id": 144,
     "documentId": 12,
     "type": "area",
-    "aoid": "BGF-3E-001",
+    "aoid": "GF-3E-001",
     "area": 535,
-    "aofunction": "Brutto Geschossfläche",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -4371,9 +4371,9 @@
     "id": 157,
     "documentId": 13,
     "type": "area",
-    "aoid": "BGF-4E-001",
+    "aoid": "GF-4E-001",
     "area": 530,
-    "aofunction": "Brutto Geschossfläche",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -4483,9 +4483,9 @@
     "id": 161,
     "documentId": 15,
     "type": "area",
-    "aoid": "BGF-T-001",
+    "aoid": "GF-T-001",
     "area": 120,
-    "aofunction": "Brutto Geschossfläche",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -4875,9 +4875,9 @@
     "id": 175,
     "documentId": 17,
     "type": "area",
-    "aoid": "BGF-EG-001",
+    "aoid": "GF-EG-001",
     "area": 380,
-    "aofunction": "Brutto Geschossfläche",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -5267,9 +5267,9 @@
     "id": 189,
     "documentId": 18,
     "type": "area",
-    "aoid": "BGF-1OG-001",
+    "aoid": "GF-1OG-001",
     "area": 375,
-    "aofunction": "Brutto Geschossfläche",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -5631,9 +5631,9 @@
     "id": 202,
     "documentId": 19,
     "type": "area",
-    "aoid": "BGF-2OG-001",
+    "aoid": "GF-2OG-001",
     "area": 370,
-    "aofunction": "Brutto Geschossfläche",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -5967,9 +5967,9 @@
     "id": 214,
     "documentId": 20,
     "type": "area",
-    "aoid": "BGF-3OG-001",
+    "aoid": "GF-3OG-001",
     "area": 365,
-    "aofunction": "Brutto Geschossfläche",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -6163,9 +6163,9 @@
     "id": 221,
     "documentId": 21,
     "type": "area",
-    "aoid": "BGF-UG-001",
+    "aoid": "GF-UG-001",
     "area": 280,
-    "aofunction": "Brutto Geschossfläche",
+    "aofunction": "Geschossfläche",
     "status": "warning",
     "vertices": [
       [
@@ -6201,11 +6201,11 @@
         6.5
       ],
       [
-        7.0,
+        7,
         6.5
       ],
       [
-        7.0,
+        7,
         10.5
       ],
       [
@@ -6225,7 +6225,7 @@
     "status": "ok",
     "vertices": [
       [
-        7.0,
+        7,
         6.5
       ],
       [
@@ -6237,7 +6237,7 @@
         10.5
       ],
       [
-        7.0,
+        7,
         10.5
       ]
     ],
@@ -6313,16 +6313,16 @@
         0
       ],
       [
-        3.0,
+        3,
         0
       ],
       [
-        3.0,
-        4.0
+        3,
+        4
       ],
       [
         0,
-        4.0
+        4
       ]
     ],
     "siaCategory": "NNF"
@@ -6337,7 +6337,7 @@
     "status": "ok",
     "vertices": [
       [
-        3.0,
+        3,
         0
       ],
       [
@@ -6346,11 +6346,11 @@
       ],
       [
         7.63,
-        4.0
+        4
       ],
       [
-        3.0,
-        4.0
+        3,
+        4
       ]
     ],
     "siaCategory": "HNF"
@@ -6374,11 +6374,11 @@
       ],
       [
         11.45,
-        4.0
+        4
       ],
       [
         7.63,
-        4.0
+        4
       ]
     ],
     "siaCategory": "NNF"
@@ -6387,9 +6387,9 @@
     "id": 229,
     "documentId": 24,
     "type": "area",
-    "aoid": "BGF-EG-001",
+    "aoid": "GF-EG-001",
     "area": 220,
-    "aofunction": "Brutto Geschossfläche",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -6583,9 +6583,9 @@
     "id": 236,
     "documentId": 25,
     "type": "area",
-    "aoid": "BGF-1OG-001",
+    "aoid": "GF-1OG-001",
     "area": 215,
-    "aofunction": "Brutto Geschossfläche",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -6779,9 +6779,9 @@
     "id": 243,
     "documentId": 26,
     "type": "area",
-    "aoid": "BGF-2OG-001",
+    "aoid": "GF-2OG-001",
     "area": 210,
-    "aofunction": "Brutto Geschossfläche",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -6891,9 +6891,9 @@
     "id": 247,
     "documentId": 27,
     "type": "area",
-    "aoid": "BGF-UG-001",
+    "aoid": "GF-UG-001",
     "area": 180,
-    "aofunction": "Brutto Geschossfläche",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -7143,9 +7143,9 @@
     "id": 256,
     "documentId": 29,
     "type": "area",
-    "aoid": "BGF-EG-001",
+    "aoid": "GF-EG-001",
     "area": 260,
-    "aofunction": "Brutto Geschossfläche",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -7395,9 +7395,9 @@
     "id": 265,
     "documentId": 30,
     "type": "area",
-    "aoid": "BGF-1OG-001",
+    "aoid": "GF-1OG-001",
     "area": 255,
-    "aofunction": "Brutto Geschossfläche",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -7535,9 +7535,9 @@
     "id": 270,
     "documentId": 31,
     "type": "area",
-    "aoid": "BGF-UG-001",
+    "aoid": "GF-UG-001",
     "area": 210,
-    "aofunction": "Brutto Geschossfläche",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -7555,6 +7555,538 @@
       [
         0,
         10.38
+      ]
+    ],
+    "siaCategory": null
+  },
+  {
+    "id": 271,
+    "documentId": 14,
+    "type": "room",
+    "aoid": "5E.01",
+    "area": 58,
+    "aofunction": "office",
+    "status": "ok",
+    "vertices": [
+      [
+        0,
+        8.9
+      ],
+      [
+        9.2,
+        8.9
+      ],
+      [
+        9.2,
+        15.1
+      ],
+      [
+        0,
+        15.1
+      ]
+    ],
+    "siaCategory": "HNF"
+  },
+  {
+    "id": 272,
+    "documentId": 14,
+    "type": "room",
+    "aoid": "5E.02",
+    "area": 55,
+    "aofunction": "office",
+    "status": "ok",
+    "vertices": [
+      [
+        9.5,
+        8.9
+      ],
+      [
+        18.4,
+        8.9
+      ],
+      [
+        18.4,
+        15.1
+      ],
+      [
+        9.5,
+        15.1
+      ]
+    ],
+    "siaCategory": "HNF"
+  },
+  {
+    "id": 273,
+    "documentId": 14,
+    "type": "room",
+    "aoid": "5E.03",
+    "area": 42,
+    "aofunction": "office",
+    "status": "ok",
+    "vertices": [
+      [
+        18.7,
+        8.9
+      ],
+      [
+        25.6,
+        8.9
+      ],
+      [
+        25.6,
+        15.1
+      ],
+      [
+        18.7,
+        15.1
+      ]
+    ],
+    "siaCategory": "HNF"
+  },
+  {
+    "id": 274,
+    "documentId": 14,
+    "type": "room",
+    "aoid": "5E.04",
+    "area": 38,
+    "aofunction": "meeting",
+    "status": "ok",
+    "vertices": [
+      [
+        25.9,
+        8.9
+      ],
+      [
+        32.1,
+        8.9
+      ],
+      [
+        32.1,
+        15.1
+      ],
+      [
+        25.9,
+        15.1
+      ]
+    ],
+    "siaCategory": "HNF"
+  },
+  {
+    "id": 275,
+    "documentId": 14,
+    "type": "room",
+    "aoid": "5E.05",
+    "area": 48,
+    "aofunction": "office",
+    "status": "warning",
+    "vertices": [
+      [
+        32.4,
+        8.9
+      ],
+      [
+        40,
+        8.9
+      ],
+      [
+        40,
+        15.1
+      ],
+      [
+        32.4,
+        15.1
+      ]
+    ],
+    "siaCategory": "HNF"
+  },
+  {
+    "id": 276,
+    "documentId": 14,
+    "type": "room",
+    "aoid": "5E.06",
+    "area": 65,
+    "aofunction": "office",
+    "status": "ok",
+    "vertices": [
+      [
+        0,
+        0
+      ],
+      [
+        10.8,
+        0
+      ],
+      [
+        10.8,
+        6
+      ],
+      [
+        0,
+        6
+      ]
+    ],
+    "siaCategory": "HNF"
+  },
+  {
+    "id": 277,
+    "documentId": 14,
+    "type": "room",
+    "aoid": "5E.07",
+    "area": 52,
+    "aofunction": "office",
+    "status": "ok",
+    "vertices": [
+      [
+        11.1,
+        0
+      ],
+      [
+        19.8,
+        0
+      ],
+      [
+        19.8,
+        6
+      ],
+      [
+        11.1,
+        6
+      ]
+    ],
+    "siaCategory": "HNF"
+  },
+  {
+    "id": 278,
+    "documentId": 14,
+    "type": "room",
+    "aoid": "5E.08",
+    "area": 28,
+    "aofunction": "storage",
+    "status": "ok",
+    "vertices": [
+      [
+        20.1,
+        0
+      ],
+      [
+        24.8,
+        0
+      ],
+      [
+        24.8,
+        6
+      ],
+      [
+        20.1,
+        6
+      ]
+    ],
+    "siaCategory": "NNF"
+  },
+  {
+    "id": 279,
+    "documentId": 14,
+    "type": "room",
+    "aoid": "5E.09",
+    "area": 18,
+    "aofunction": "wc",
+    "status": "ok",
+    "vertices": [
+      [
+        25.1,
+        0
+      ],
+      [
+        28.1,
+        0
+      ],
+      [
+        28.1,
+        6
+      ],
+      [
+        25.1,
+        6
+      ]
+    ],
+    "siaCategory": "NNF"
+  },
+  {
+    "id": 280,
+    "documentId": 14,
+    "type": "room",
+    "aoid": "5E.10",
+    "area": 32,
+    "aofunction": "corridor",
+    "status": "ok",
+    "vertices": [
+      [
+        0,
+        6.3
+      ],
+      [
+        40,
+        6.3
+      ],
+      [
+        40,
+        8.6
+      ],
+      [
+        0,
+        8.6
+      ]
+    ],
+    "siaCategory": "VF"
+  },
+  {
+    "id": 281,
+    "documentId": 14,
+    "type": "room",
+    "aoid": "5E.11",
+    "area": 45,
+    "aofunction": "office",
+    "status": "error",
+    "vertices": [
+      [
+        28.4,
+        0
+      ],
+      [
+        36,
+        0
+      ],
+      [
+        36,
+        6
+      ],
+      [
+        28.4,
+        6
+      ]
+    ],
+    "siaCategory": "HNF"
+  },
+  {
+    "id": 282,
+    "documentId": 14,
+    "type": "room",
+    "aoid": "5E.12",
+    "area": 24,
+    "aofunction": "tech",
+    "status": "ok",
+    "vertices": [
+      [
+        36.3,
+        0
+      ],
+      [
+        40,
+        0
+      ],
+      [
+        40,
+        6
+      ],
+      [
+        36.3,
+        6
+      ]
+    ],
+    "siaCategory": "FF"
+  },
+  {
+    "id": 283,
+    "documentId": 14,
+    "type": "area",
+    "aoid": "GF-5E-001",
+    "area": 525,
+    "aofunction": "Geschossfläche",
+    "status": "ok",
+    "vertices": [
+      [
+        0,
+        0
+      ],
+      [
+        40,
+        0
+      ],
+      [
+        40,
+        15.1
+      ],
+      [
+        0,
+        15.1
+      ]
+    ],
+    "siaCategory": null
+  },
+  {
+    "id": 284,
+    "documentId": 22,
+    "type": "room",
+    "aoid": "DG.01",
+    "area": 72,
+    "aofunction": "storage",
+    "status": "ok",
+    "vertices": [
+      [
+        0,
+        0
+      ],
+      [
+        12,
+        0
+      ],
+      [
+        12,
+        6
+      ],
+      [
+        0,
+        6
+      ]
+    ],
+    "siaCategory": "NNF"
+  },
+  {
+    "id": 285,
+    "documentId": 22,
+    "type": "room",
+    "aoid": "DG.02",
+    "area": 45,
+    "aofunction": "tech",
+    "status": "ok",
+    "vertices": [
+      [
+        12.3,
+        0
+      ],
+      [
+        19.8,
+        0
+      ],
+      [
+        19.8,
+        6
+      ],
+      [
+        12.3,
+        6
+      ]
+    ],
+    "siaCategory": "FF"
+  },
+  {
+    "id": 286,
+    "documentId": 22,
+    "type": "room",
+    "aoid": "DG.03",
+    "area": 38,
+    "aofunction": "storage",
+    "status": "warning",
+    "vertices": [
+      [
+        20.1,
+        0
+      ],
+      [
+        26.4,
+        0
+      ],
+      [
+        26.4,
+        6
+      ],
+      [
+        20.1,
+        6
+      ]
+    ],
+    "siaCategory": "NNF"
+  },
+  {
+    "id": 287,
+    "documentId": 22,
+    "type": "room",
+    "aoid": "DG.04",
+    "area": 22,
+    "aofunction": "corridor",
+    "status": "ok",
+    "vertices": [
+      [
+        0,
+        6.3
+      ],
+      [
+        26.4,
+        6.3
+      ],
+      [
+        26.4,
+        8.2
+      ],
+      [
+        0,
+        8.2
+      ]
+    ],
+    "siaCategory": "VF"
+  },
+  {
+    "id": 288,
+    "documentId": 22,
+    "type": "room",
+    "aoid": "DG.05",
+    "area": 15,
+    "aofunction": "tech",
+    "status": "ok",
+    "vertices": [
+      [
+        0,
+        8.5
+      ],
+      [
+        6,
+        8.5
+      ],
+      [
+        6,
+        11
+      ],
+      [
+        0,
+        11
+      ]
+    ],
+    "siaCategory": "FF"
+  },
+  {
+    "id": 289,
+    "documentId": 22,
+    "type": "area",
+    "aoid": "GF-DG-001",
+    "area": 240,
+    "aofunction": "Geschossfläche",
+    "status": "ok",
+    "vertices": [
+      [
+        -0.5,
+        -0.5
+      ],
+      [
+        26.9,
+        -0.5
+      ],
+      [
+        26.9,
+        11.5
+      ],
+      [
+        -0.5,
+        11.5
       ]
     ],
     "siaCategory": null

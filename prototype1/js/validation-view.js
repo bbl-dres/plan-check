@@ -115,8 +115,8 @@ var ValidationView = (function () {
         var ngf = docRooms.reduce(function (sum, r) { return sum + r.area; }, 0);
         if (ngfEl) ngfEl.textContent = ngf.toFixed(2) + ' m\u00B2';
 
-        // GF = BGF area from docAreas if available
-        var bgf = docAreas.find(function (a) { return a.aoid && a.aoid.indexOf('BGF') !== -1; });
+        // GF = Geschossfläche area from docAreas if available
+        var bgf = docAreas.find(function (a) { return a.aoid && a.aoid.indexOf('GF') !== -1; });
         if (gfEl) gfEl.textContent = (bgf ? bgf.area : 0) + ' m\u00B2';
 
         // Score based on room statuses
@@ -272,7 +272,7 @@ var ValidationView = (function () {
 
         var html = '';
 
-        // Show BGF/EBF area entries from docAreas
+        // Show GF/EBF area entries from docAreas
         if (docAreas.length === 0) {
             html = '<div class="area-list__empty">Keine Flächenpolygone vorhanden.</div>';
         } else {
@@ -319,7 +319,7 @@ var ValidationView = (function () {
             }
         }
         var ngf = totals.HNF + totals.NNF + totals.VF + totals.FF;
-        var bgfEntry = docAreas.find(function (a) { return a.aoid && a.aoid.indexOf('BGF') !== -1; });
+        var bgfEntry = docAreas.find(function (a) { return a.aoid && a.aoid.indexOf('GF') !== -1; });
         var gf = bgfEntry ? bgfEntry.area : ngf * 1.3;
         var kf = gf - ngf;
         var nf = totals.HNF + totals.NNF;
