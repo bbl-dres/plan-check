@@ -1,0 +1,308 @@
+// =============================================
+// Entry Point — File Handling & Event Wiring
+// =============================================
+
+import { state, dom, initDom, MAX_FILE_SIZE, BG_DARK, BG_LIGHT } from './state.js';
+import { log, showStatus, pointInPoly } from './utils.js';
+import { processDwgFile, prepareDrawingData, displayInfo, buildLayerInfo, displayEntities } from './dwg-processing.js';
+import { resizeCanvas, render, zoomExtents, screenToWorld, hitTest, showFeaturePopup, hideFeaturePopup, syncSideSelection } from './renderer.js';
+import { renderValidation, switchValidationTab } from './validation.js';
+import { downloadPdfReport, downloadExcelReport, downloadGeoJson, downloadBcf } from './export.js';
+
+// =============================================
+// Initialize DOM references
+// =============================================
+initDom();
+
+// =============================================
+// File Handling
+// =============================================
+dom.selectBtn.addEventListener('click', (e) => { e.stopPropagation(); dom.fileInput.click(); });
+dom.uploadZone.addEventListener('click', (e) => { if (e.target.closest('#load-demo')) return; dom.fileInput.click(); });
+dom.fileInput.addEventListener('change', (e) => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+
+// Demo file loader
+document.getElementById('load-demo').addEventListener('click', async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const DEMO_PATH = 'assets/Test files/2011-DM-0-A04-6A1.dwg';
+    try {
+        log('Demo-Datei wird geladen...');
+        showStatus('Demo-Datei wird geladen...');
+        const resp = await fetch(DEMO_PATH);
+        if (!resp.ok) throw new Error(`Demo-Datei nicht gefunden (${resp.status})`);
+        const blob = await resp.blob();
+        const file = new File([blob], '2011-DM-0-A04-6A1.dwg', { type: 'application/octet-stream' });
+        handleFile(file);
+    } catch (err) {
+        showStatus(err.message, 'error');
+        log(err.message, 'error');
+    }
+});
+
+dom.uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); dom.uploadZone.classList.add('dragover'); });
+dom.uploadZone.addEventListener('dragleave', () => dom.uploadZone.classList.remove('dragover'));
+dom.uploadZone.addEventListener('drop', (e) => {
+    e.preventDefault(); dom.uploadZone.classList.remove('dragover');
+    if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
+
+async function handleFile(file) {
+    const ext = file.name.toLowerCase().split('.').pop();
+    if (!['dwg', 'dxf'].includes(ext)) { showStatus('Nur .dwg / .dxf Dateien.', 'error'); return; }
+    if (file.size > MAX_FILE_SIZE) { showStatus('Datei zu gross (max. 50 MB).', 'error'); return; }
+
+    // Reset
+    dom.entitiesPanel.classList.remove('visible');
+    dom.infoPanel.classList.remove('visible');
+    dom.validationPanel.classList.remove('visible');
+    state.roomData = [];
+    state.areaData = [];
+    state.validationErrors = [];
+    state.validationMode = null;
+    state.selectedRoom = null;
+    state.hiddenRoomIds.clear();
+    state.hiddenAreaIds.clear();
+    state.hiddenErrorIds.clear();
+
+    try {
+        const { db, entities, layers, elapsed } = await processDwgFile(file);
+
+        // Store metadata for export
+        state.lastFile = { name: file.name, size: file.size };
+        state.lastDbInfo = { version: db.header?.version || '-', layerCount: layers.length, entityCount: entities.length };
+        state.lastElapsed = elapsed;
+        state.lastUploadTime = new Date();
+
+        displayInfo(file, db, entities, layers, elapsed);
+
+        showStatus('Zeichnung wird gerendert...');
+        state.drawingData = prepareDrawingData(entities, layers, db);
+
+        // Build layer info for Übersicht side panel
+        buildLayerInfo(entities, layers);
+
+        // Panel must be visible before measuring canvas dimensions
+        dom.validationPanel.classList.add('visible');
+        // Wait one frame for layout to complete
+        await new Promise(r => requestAnimationFrame(r));
+        resizeCanvas();
+        zoomExtents();
+
+        displayEntities(entities);
+
+        // Run validation (extract rooms, check rules, render tabs)
+        renderValidation();
+
+        showStatus(`${file.name} erfolgreich verarbeitet in ${elapsed}s`, 'success');
+    } catch (err) {
+        showStatus(err.message, 'error');
+        log(err.message, 'error');
+        console.error(err);
+    }
+}
+
+// =============================================
+// Pan & Zoom
+// =============================================
+dom.canvasWrap.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    hideFeaturePopup();
+    const rect = dom.canvasWrap.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+
+    const [wx, wy] = screenToWorld(mx, my);
+
+    const factor = e.deltaY > 0 ? 0.85 : 1.18;
+    state.cam.zoom *= factor;
+
+    // Keep mouse world position stable
+    state.cam.x = wx - (mx - rect.width / 2) / state.cam.zoom;
+    state.cam.y = wy + (my - rect.height / 2) / state.cam.zoom;
+
+    render();
+}, { passive: false });
+
+dom.canvasWrap.addEventListener('mousedown', (e) => {
+    state.isPanning = true;
+    state.panStart = { x: e.clientX, y: e.clientY, camX: state.cam.x, camY: state.cam.y };
+    hideFeaturePopup();
+});
+
+window.addEventListener('mousemove', (e) => {
+    if (state.isPanning) {
+        const dx = e.clientX - state.panStart.x;
+        const dy = e.clientY - state.panStart.y;
+        state.cam.x = state.panStart.camX - dx / state.cam.zoom;
+        state.cam.y = state.panStart.camY + dy / state.cam.zoom; // flipped Y
+        render();
+    }
+
+    // Coords display
+    if (state.drawingData) {
+        const rect = dom.canvasWrap.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+        if (mx >= 0 && my >= 0 && mx <= rect.width && my <= rect.height) {
+            const [wx, wy] = screenToWorld(mx, my);
+            dom.coordsDisplay.textContent = `X: ${wx.toFixed(2)}  Y: ${wy.toFixed(2)}  Zoom: ${(state.cam.zoom).toFixed(2)}x`;
+        }
+    }
+});
+
+window.addEventListener('mouseup', (e) => {
+    if (state.isPanning && state.panStart) {
+        const dx = e.clientX - state.panStart.x;
+        const dy = e.clientY - state.panStart.y;
+        const moved = Math.hypot(dx, dy);
+        // Treat as click if mouse barely moved (< 4px)
+        if (moved < 4 && state.drawingData) {
+            const rect = dom.canvasWrap.getBoundingClientRect();
+            const sx = e.clientX - rect.left;
+            const sy = e.clientY - rect.top;
+            if (sx >= 0 && sy >= 0 && sx <= rect.width && sy <= rect.height) {
+                const [wx, wy] = screenToWorld(sx, sy);
+                const tolerance = 8 / state.cam.zoom; // 8 screen pixels
+                const hit = hitTest(wx, wy, tolerance);
+                if (hit) {
+                    state.selectedItem = hit;
+                    showFeaturePopup(hit, sx, sy);
+                    syncSideSelection(hit.handle);
+                } else {
+                    state.selectedItem = null;
+                    state.selectedRoom = null;
+                    hideFeaturePopup();
+                    dom.vsideList.querySelectorAll('.vside-item').forEach(el => el.classList.remove('vside-item--selected'));
+                }
+
+                // In rooms/areas mode, if syncSideSelection didn't match a room
+                // (e.g. hitTest found a non-room entity), fall back to point-in-polygon
+                if ((state.validationMode === 'rooms' || state.validationMode === 'areas') && !state.selectedRoom) {
+                    const data = state.validationMode === 'rooms' ? state.roomData : state.areaData;
+                    const hiddenSet = state.validationMode === 'rooms' ? state.hiddenRoomIds : state.hiddenAreaIds;
+                    const room = data.find(r => !hiddenSet.has(r.id) && pointInPoly(wx, wy, r.vertices));
+                    if (room) {
+                        state.selectedRoom = room;
+                        dom.vsideList.querySelectorAll('.vside-item').forEach(el => el.classList.remove('vside-item--selected'));
+                        const match = dom.vsideList.querySelector(`[data-handle="${room.handle}"]`);
+                        if (match) {
+                            match.classList.add('vside-item--selected');
+                            match.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                        }
+                    }
+                }
+
+                render();
+            }
+        }
+    }
+    state.isPanning = false;
+});
+
+// =============================================
+// Buttons
+// =============================================
+document.getElementById('toggle-bg').addEventListener('click', () => {
+    state.bgColor = state.bgColor === BG_DARK ? BG_LIGHT : BG_DARK;
+    dom.canvasWrap.style.background = state.bgColor;
+    render();
+});
+document.getElementById('zoom-in').addEventListener('click', () => { state.cam.zoom *= 1.4; render(); });
+document.getElementById('zoom-out').addEventListener('click', () => { state.cam.zoom /= 1.4; render(); });
+document.getElementById('zoom-fit').addEventListener('click', zoomExtents);
+
+// Fullscreen toggle
+const fullscreenBtn = document.getElementById('fullscreen-btn');
+fullscreenBtn.addEventListener('click', () => {
+    if (!document.fullscreenElement) {
+        dom.validationPanel.requestFullscreen().catch(err => {
+            log(`Vollbild fehlgeschlagen: ${err.message}`, 'error');
+        });
+    } else {
+        document.exitFullscreen();
+    }
+});
+document.addEventListener('fullscreenchange', () => {
+    if (document.fullscreenElement) {
+        fullscreenBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>';
+        fullscreenBtn.title = 'Vollbild beenden';
+    } else {
+        fullscreenBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>';
+        fullscreenBtn.title = 'Vollbild';
+    }
+    // Re-measure and re-render after layout change
+    setTimeout(() => { resizeCanvas(); render(); }, 100);
+});
+
+// ── Kebab menu (options dropdown) ──
+// Language selector (placeholder)
+document.querySelectorAll('.lang-selector__item').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.lang-selector__item').forEach(b => b.classList.remove('lang-selector__item--active'));
+        btn.classList.add('lang-selector__item--active');
+        log(`Sprache: ${btn.dataset.lang.toUpperCase()} (noch nicht implementiert)`, 'warn');
+    });
+});
+
+const kebabBtn = document.getElementById('kebab-btn');
+const kebabDropdown = document.getElementById('kebab-dropdown');
+
+kebabBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    kebabDropdown.classList.toggle('visible');
+});
+
+// Close dropdown on outside click
+document.addEventListener('click', (e) => {
+    if (!kebabDropdown.contains(e.target) && e.target !== kebabBtn) {
+        kebabDropdown.classList.remove('visible');
+    }
+});
+
+// Filter toggle button
+const filterToggle = document.getElementById('filter-toggle');
+filterToggle.addEventListener('click', () => {
+    state.resultFilter = state.resultFilter === 'all' ? 'errors' : 'all';
+    filterToggle.classList.toggle('filter-toggle--active', state.resultFilter === 'errors');
+    filterToggle.innerHTML = state.resultFilter === 'errors'
+        ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg> Nur Fehler'
+        : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg> Nur Fehler';
+    if (state.validationMode) switchValidationTab(state.validationMode);
+});
+
+// Download actions
+kebabDropdown.querySelectorAll('[data-action]').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const action = btn.getAttribute('data-action');
+        kebabDropdown.classList.remove('visible');
+        switch (action) {
+            case 'download-pdf':
+                downloadPdfReport();
+                break;
+            case 'download-excel':
+                downloadExcelReport();
+                break;
+            case 'download-geojson':
+                downloadGeoJson();
+                break;
+            case 'download-bcf':
+                downloadBcf();
+                break;
+        }
+    });
+});
+
+// =============================================
+// Resize handler
+// =============================================
+window.addEventListener('resize', () => {
+    if (!state.drawingData) return;
+    resizeCanvas();
+    render();
+});
+
+// =============================================
+// Ready
+// =============================================
+log('DWG Viewer bereit (Canvas 2D). Bitte eine DWG-Datei hochladen.');

@@ -1,0 +1,197 @@
+/* ========================================
+   BBL Prüfplattform Flächenmanagement
+   Design Tokens
+   Swiss Federal Design System
+   ======================================== */
+
+:root {
+    /* Primary Colors (Official Swiss Federal CD) */
+    --color-venetian-red: #DC0018;
+    --color-red: #F7001D;
+    --color-cerulean: #006699;
+
+    /* Background Colors */
+    --color-solitude: #E7EDEF;
+    --color-clear-day: #F2F7F9;
+    --color-pattens-blue: #D8E8EF;
+    --color-malibu: #66AFE9;
+    --color-mocassin: #FFFAB2;
+
+    /* Grayscale */
+    --color-black: #000000;
+    --color-night-rider: #333333;
+    --color-coal: #454545;
+    --color-empress: #757575;
+    --color-silver: #CCCCCC;
+    --color-light-grey: #D5D5D5;
+    --color-gainsboro: #E5E5E5;
+    --color-smoke: #F5F5F5;
+    --color-white: #FFFFFF;
+
+    /* Simplified Variables */
+    --color-primary: var(--color-cerulean);
+    --color-primary-hover: #004D73;
+    --color-primary-light: var(--color-clear-day);
+    --color-swiss-red: var(--color-venetian-red);
+
+    --color-text-primary: var(--color-night-rider);
+    --color-text-secondary: var(--color-empress);
+    --color-text-muted: #767676;
+    --color-text-inverse: var(--color-white);
+
+    --color-bg-primary: var(--color-white);
+    --color-bg-secondary: var(--color-smoke);
+    --color-bg-page: var(--color-clear-day);
+
+    --color-border: var(--color-silver);
+    --color-border-light: var(--color-gainsboro);
+
+    --color-focus: var(--color-malibu);
+
+    /* Semantic Colors - Traffic Light Scheme for Checking Results */
+    --color-success: #2E7D32;
+    --color-success-light: #E8F5E9;
+    --color-success-border: #C8E6C9;
+
+    --color-warning: #F57C00;
+    --color-warning-light: #FFF3E0;
+    --color-warning-border: #FFE0B2;
+
+    --color-error: #C62828;
+    --color-error-light: #FFEBEE;
+    --color-error-border: #FFCDD2;
+
+    --color-info: #31708F;
+    --color-info-light: #D9EDF7;
+    --color-info-border: #BCE8F1;
+
+    /* Floor Plan Colors */
+    --color-room-fill: rgba(144, 238, 144, 0.5);
+    --color-room-stroke: #228B22;
+    --color-room-selected: rgba(0, 191, 255, 0.6);
+    --color-architecture: #333333;
+    --color-error-marker: var(--color-error);
+    --color-warning-marker: var(--color-warning);
+    --color-grid: #E0E0E0;
+
+    /* Component Semantic Aliases */
+    --color-surface: var(--color-white);
+    --color-surface-alt: var(--color-smoke);
+    --color-bg: var(--color-bg-page);
+    --color-text: var(--color-text-primary);
+    --color-zebra: #F4F6F9;
+
+    /* Typography */
+    --font-family-primary: 'Frutiger Neue LT W1G', 'Frutiger LT W01', 'Frutiger', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif;
+    --font-family-mono: 'SF Mono', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
+    --font-mono: var(--font-family-mono);
+
+    /* Font Size Scale (T-shirt sizing) */
+    --font-size-xs: 0.75rem;    /* 12px */
+    --font-size-sm: 0.875rem;   /* 14px */
+    --font-size-base: 1rem;     /* 16px */
+    --font-size-lg: 1.25rem;    /* 20px */
+    --font-size-xl: 1.5rem;     /* 24px */
+    --font-size-2xl: 2rem;      /* 32px */
+    --font-size-3xl: 2.5rem;    /* 40px */
+    --font-size-4xl: 3rem;      /* 48px */
+
+    /* Semantic Font Sizes (Component-specific) */
+    --font-size-caption: var(--font-size-xs);
+    --font-size-label: var(--font-size-sm);
+    --font-size-body: var(--font-size-base);
+    --font-size-body-large: var(--font-size-lg);
+    --font-size-button: var(--font-size-base);
+    --font-size-button-small: var(--font-size-sm);
+    --font-size-heading-4: var(--font-size-lg);
+    --font-size-heading-3: var(--font-size-xl);
+    --font-size-heading-2: var(--font-size-2xl);
+    --font-size-heading-1: var(--font-size-3xl);
+    --font-size-display: var(--font-size-4xl);
+
+    /* Font Weights */
+    --font-weight-light: 300;
+    --font-weight-regular: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+
+    /* Line Heights */
+    --line-height-tight: 1.25;
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.75;
+
+    /* Spacing Scale (8px base unit) */
+    --space-1: 0.25rem;   /* 4px */
+    --space-2: 0.5rem;    /* 8px */
+    --space-3: 0.75rem;   /* 12px */
+    --space-4: 1rem;      /* 16px */
+    --space-5: 1.5rem;    /* 24px */
+    --space-6: 2rem;      /* 32px */
+    --space-7: 2.5rem;    /* 40px */
+    --space-8: 3rem;      /* 48px */
+    --space-9: 3.5rem;    /* 56px */
+    --space-10: 4rem;     /* 64px */
+    --space-11: 5rem;     /* 80px */
+    --space-12: 6rem;     /* 96px */
+
+    /* Semantic Spacing */
+    --gap-xs: var(--space-1);
+    --gap-sm: var(--space-2);
+    --gap-md: var(--space-4);
+    --gap-lg: var(--space-6);
+    --gap-xl: var(--space-8);
+
+    --padding-xs: var(--space-1);
+    --padding-sm: var(--space-2);
+    --padding-md: var(--space-4);
+    --padding-lg: var(--space-6);
+    --padding-xl: var(--space-8);
+
+    /* Component-specific Spacing */
+    --button-padding-y-sm: 0.5rem;
+    --button-padding-x-sm: var(--space-4);
+    --button-padding-y: var(--space-2);
+    --button-padding-x: var(--space-4);
+    --button-padding-y-lg: var(--space-3);
+    --button-padding-x-lg: var(--space-4);
+
+    --input-padding-y: var(--space-2);
+    --input-padding-x: var(--space-3);
+
+    --card-padding: var(--space-4);
+    --card-padding-lg: var(--space-6);
+
+    --section-spacing: var(--space-6);
+    --section-spacing-lg: var(--space-8);
+
+    /* Animation */
+    --duration-fast: 0.1s;
+    --duration-normal: 0.15s;
+    --duration-slow: 0.3s;
+
+    /* Icons (Lucide) */
+    --icon-size-sm: 16px;
+    --icon-size-md: 20px;
+    --icon-size-lg: 24px;
+    --icon-size-xl: 32px;
+
+    /* Border Radius */
+    --radius-none: 0;
+    --radius-sm: 2px;
+    --radius-md: 4px;
+    --radius-lg: 8px;
+    --radius-full: 50%;
+    --radius: var(--radius-md);
+
+    /* Shadows */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.15);
+    --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.2);
+    --shadow: var(--shadow-sm);
+
+    /* Overlays */
+    --overlay-light: rgba(0, 0, 0, 0.5);
+    --overlay-dark: rgba(0, 0, 0, 0.6);
+}
