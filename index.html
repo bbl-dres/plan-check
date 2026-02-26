@@ -161,6 +161,47 @@
         .viewer__controls button:hover { background: var(--color-primary-light); color: var(--color-primary); border-color: var(--color-primary); }
         .viewer__controls button svg { width: 16px; height: 16px; }
         .viewer__controls .viewer__sep { width: 1px; height: 18px; background: var(--color-border); margin: 0 4px; }
+
+        /* Kebab menu dropdown */
+        .kebab-wrap { position: relative; }
+        .kebab-dropdown {
+            display: none; position: absolute; top: calc(100% + 6px); right: 0;
+            background: var(--color-surface); border: 1px solid var(--color-border);
+            border-radius: var(--radius); box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+            min-width: 180px; z-index: 200; overflow: hidden;
+        }
+        .kebab-dropdown.visible { display: block; }
+        .kebab-dropdown__section { padding: 6px 0; }
+        .kebab-dropdown__label {
+            padding: 4px 14px 6px; font-size: 10px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.4px; color: var(--color-text-muted);
+        }
+        .kebab-dropdown__item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 7px 14px; font-size: 13px; color: var(--color-text);
+            cursor: pointer; transition: background 0.1s; border: none;
+            background: none; width: 100%; text-align: left; font-family: inherit;
+            white-space: nowrap;
+        }
+        .kebab-dropdown__item:hover { background: var(--color-primary-light); }
+        .kebab-dropdown__item svg { width: 15px; height: 15px; color: var(--color-text-secondary); flex-shrink: 0; }
+
+        /* Filter toggle button */
+        .filter-toggle {
+            display: inline-flex; align-items: center; gap: 6px;
+            margin-left: auto; padding: 5px 12px; border-radius: var(--radius);
+            font-size: 12px; font-weight: 600; cursor: pointer;
+            border: 1px solid var(--color-border); background: var(--color-surface);
+            color: var(--color-text-secondary); transition: all 0.15s; white-space: nowrap;
+        }
+        .filter-toggle:hover { border-color: var(--color-primary); color: var(--color-primary); }
+        .filter-toggle--active {
+            background: var(--color-error); color: white;
+            border-color: var(--color-error);
+        }
+        .filter-toggle--active:hover { background: #b71c1c; border-color: #b71c1c; }
+        .filter-toggle svg { width: 14px; height: 14px; }
+
         .viewer__canvas-wrap {
             position: relative; width: 100%; height: 100%;
             overflow: hidden; background: #ffffff; cursor: grab;
@@ -281,7 +322,7 @@
 
         /* Validation Panel – Split View */
         .validation-tabs {
-            display: flex; gap: 0; padding: 0 16px;
+            display: flex; gap: 0; padding: 0 16px; align-items: center;
             border-bottom: 1px solid var(--color-border); background: var(--color-surface-alt);
             overflow-x: auto; flex-shrink: 0;
         }
@@ -466,6 +507,26 @@
                     <button id="zoom-fit" title="Zoom Extents"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
                     <span class="viewer__sep"></span>
                     <button id="fullscreen-btn" title="Vollbild"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg></button>
+                    <span class="viewer__sep"></span>
+                    <div class="kebab-wrap">
+                        <button id="kebab-btn" title="Optionen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
+                        <div class="kebab-dropdown" id="kebab-dropdown">
+                            <div class="kebab-dropdown__section">
+                                <button class="kebab-dropdown__item" data-action="download-pdf">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    PDF-Bericht
+                                </button>
+                                <button class="kebab-dropdown__item" data-action="download-excel">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    Excel-Bericht
+                                </button>
+                                <button class="kebab-dropdown__item" data-action="download-geojson">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    GeoJSON
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="validation-tabs">
@@ -474,6 +535,10 @@
                 <a href="#" class="validation-tabs__tab" data-vtab="rooms">Räume (<span id="vtab-room-count">0</span>)</a>
                 <a href="#" class="validation-tabs__tab" data-vtab="areas">Flächen (<span id="vtab-area-count">0</span>)</a>
                 <a href="#" class="validation-tabs__tab" data-vtab="kennzahlen">Kennzahlen</a>
+                <button class="filter-toggle" id="filter-toggle" title="Nur Fehler anzeigen">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                    Nur Fehler
+                </button>
             </div>
             <div class="validation-body">
                 <div class="validation-split" id="validation-split">
@@ -1729,7 +1794,7 @@
                         totalArea += Math.abs(computePolygonArea(path));
                     }
                     html += row('Vertices', totalVerts);
-                    if (totalArea > 0) html += row('Fläche', totalArea.toFixed(1) + ' m²');
+                    if (totalArea > 0) html += row('Fläche', fmtNum(totalArea, 1) + ' m²');
                     break;
                 }
             }
@@ -1888,6 +1953,65 @@
             // Re-measure and re-render after layout change
             setTimeout(() => { resizeCanvas(); render(); }, 100);
         });
+
+        // ── Kebab menu (options dropdown) ──
+        const kebabBtn = document.getElementById('kebab-btn');
+        const kebabDropdown = document.getElementById('kebab-dropdown');
+        let resultFilter = 'all'; // 'all' | 'errors'
+
+        kebabBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            kebabDropdown.classList.toggle('visible');
+        });
+
+        // Close dropdown on outside click
+        document.addEventListener('click', (e) => {
+            if (!kebabDropdown.contains(e.target) && e.target !== kebabBtn) {
+                kebabDropdown.classList.remove('visible');
+            }
+        });
+
+        // Filter toggle button
+        const filterToggle = document.getElementById('filter-toggle');
+        filterToggle.addEventListener('click', () => {
+            resultFilter = resultFilter === 'all' ? 'errors' : 'all';
+            filterToggle.classList.toggle('filter-toggle--active', resultFilter === 'errors');
+            filterToggle.innerHTML = resultFilter === 'errors'
+                ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg> Nur Fehler'
+                : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg> Nur Fehler';
+            if (validationMode) switchValidationTab(validationMode);
+        });
+
+        // Download actions (placeholders)
+        kebabDropdown.querySelectorAll('[data-action]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const action = btn.getAttribute('data-action');
+                kebabDropdown.classList.remove('visible');
+                switch (action) {
+                    case 'download-pdf':
+                        downloadPdfReport();
+                        break;
+                    case 'download-excel':
+                        downloadExcelReport();
+                        break;
+                    case 'download-geojson':
+                        downloadGeoJson();
+                        break;
+                }
+            });
+        });
+
+        function downloadPdfReport() {
+            log('PDF-Bericht Export (noch nicht implementiert)', 'warn');
+        }
+
+        function downloadExcelReport() {
+            log('Excel-Bericht Export (noch nicht implementiert)', 'warn');
+        }
+
+        function downloadGeoJson() {
+            log('GeoJSON Export (noch nicht implementiert)', 'warn');
+        }
 
         // Resize handler
         window.addEventListener('resize', () => {
@@ -2126,7 +2250,7 @@
             const scoreClass2 = score2 >= 90 ? 'success' : score2 >= 60 ? 'warning' : 'error';
             metricsGrid.innerHTML =
                 `<div class="info-grid__item"><div class="info-grid__label">Räume</div><div class="info-grid__value">${roomData.length}</div></div>` +
-                `<div class="info-grid__item"><div class="info-grid__label">NGF</div><div class="info-grid__value">${totalArea.toFixed(0)} m²</div></div>` +
+                `<div class="info-grid__item"><div class="info-grid__label">NGF</div><div class="info-grid__value">${fmtNum(totalArea)} m²</div></div>` +
                 `<div class="info-grid__item"><div class="info-grid__label">Fehler</div><div class="info-grid__value">${validationErrors.length}</div></div>` +
                 `<div class="info-grid__item"><div class="info-grid__label">Score</div><div class="info-grid__value" style="color: var(--color-${scoreClass2})">${score2}%</div></div>`;
             metricsPanel.classList.add('visible');
@@ -2413,10 +2537,19 @@
             }
 
             // Sort: errors first, then warnings, then ok
-            const sorted = roomData.slice().sort((a, b) => {
+            let sorted = roomData.slice().sort((a, b) => {
                 const order = { error: 0, warning: 1, ok: 2 };
                 return (order[a.status] || 2) - (order[b.status] || 2);
             });
+
+            // Apply result filter
+            if (resultFilter === 'errors') {
+                sorted = sorted.filter(r => r.status !== 'ok');
+                if (sorted.length === 0) {
+                    vsideList.innerHTML = '<div class="val-empty">Keine Fehler in Räumen.</div>';
+                    return;
+                }
+            }
 
             for (const room of sorted) {
                 const div = document.createElement('div');
@@ -2447,7 +2580,7 @@
 
                 const value = document.createElement('span');
                 value.className = 'vside-item__value';
-                value.textContent = room.area.toFixed(1) + ' m\u00B2';
+                value.textContent = fmtNum(room.area, 1) + ' m\u00B2';
 
                 div.appendChild(cb);
                 div.appendChild(status);
@@ -2512,7 +2645,7 @@
 
                 const value = document.createElement('span');
                 value.className = 'vside-item__value';
-                value.textContent = area.area.toFixed(1) + ' m\u00B2';
+                value.textContent = fmtNum(area.area, 1) + ' m\u00B2';
 
                 div.appendChild(cb);
                 div.appendChild(icon);
@@ -2558,11 +2691,11 @@
             const DASH = '\u2014';
             const fmtArea = (v) => {
                 if (v === null || v === undefined) return DASH;
-                return v >= 1000 ? Math.round(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "'") + ' m\u00B2' : v.toFixed(1) + ' m\u00B2';
+                return fmtNum(v, v >= 100 ? 0 : 1) + ' m\u00B2';
             };
             const fmtVol = (v) => {
                 if (v === null || v === undefined) return DASH;
-                return v >= 1000 ? Math.round(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "'") + ' m\u00B3' : v.toFixed(1) + ' m\u00B3';
+                return fmtNum(v, v >= 100 ? 0 : 1) + ' m\u00B3';
             };
             const pct = (v, total) => {
                 if (v === null || v === undefined || total === null || total === undefined || total <= 0) return DASH;
@@ -2673,7 +2806,7 @@
                     `stroke="${seg.color}" stroke-width="${sw}" ` +
                     `stroke-dasharray="${dash.toFixed(2)} ${gap.toFixed(2)}" ` +
                     `stroke-dashoffset="${(-offset + circumference * 0.25).toFixed(2)}">` +
-                    `<title>${seg.label}: ${seg.value.toFixed(1)} m\u00B2 (${(pctVal * 100).toFixed(1)}%)</title></circle>`;
+                    `<title>${seg.label}: ${fmtNum(seg.value, 1)} m\u00B2 (${(pctVal * 100).toFixed(1)}%)</title></circle>`;
                 offset += dash;
             }
             svg += '</svg>';
@@ -2832,7 +2965,7 @@
                         ctx.fillText(area.aoid, 0, 0);
                         ctx.font = `${fontSize * 0.7}px system-ui, sans-serif`;
                         ctx.fillStyle = '#555';
-                        ctx.fillText(area.area.toFixed(1) + ' m\u00B2', 0, fontSize * 1.1);
+                        ctx.fillText(fmtNum(area.area, 1) + ' m\u00B2', 0, fontSize * 1.1);
                         ctx.restore();
                     }
                 }
@@ -2882,19 +3015,15 @@
             // Sort largest rooms first — they get label priority
             visibleRooms.sort((a, b) => b.area - a.area);
 
+            // Fixed screen-space font size for all labels
+            const screenFontSize = 11;
+            const worldFontSize = screenFontSize / cam.zoom;
+
             for (const room of visibleRooms) {
-                // World-space font size: proportional to sqrt of room area, clamped
-                const roomSize = Math.sqrt(room.area);
-                const worldFontSize = Math.max(roomSize * 0.15, 0.4);
-                const screenFontSize = worldFontSize * cam.zoom;
-
-                // Skip if too small or too large on screen
-                if (screenFontSize < 8 || screenFontSize > 60) continue;
-
                 // Compute screen-space bounding box for collision
                 const [sx, sy] = worldToScreen(room.centroid.x, room.centroid.y);
-                const labelW = room.aoid.length * screenFontSize * 0.6 + 8;
-                const labelH = screenFontSize * 2.2;
+                const labelW = room.aoid.length * screenFontSize * 0.6 + 12;
+                const labelH = screenFontSize * 2.4;
                 const box = { x: sx - labelW / 2, y: sy - labelH / 2, w: labelW, h: labelH };
 
                 // Check overlap with already placed labels
@@ -2929,7 +3058,7 @@
                 // Area value
                 ctx.font = `${worldFontSize * 0.7}px system-ui, sans-serif`;
                 ctx.fillStyle = '#757575';
-                ctx.fillText(Math.round(room.area) + ' m\u00B2', 0, worldFontSize * 0.55);
+                ctx.fillText(fmtNum(room.area) + ' m\u00B2', 0, worldFontSize * 0.55);
 
                 ctx.restore();
             }
@@ -3031,6 +3160,14 @@
             const d = document.createElement('div');
             d.textContent = s;
             return d.innerHTML;
+        }
+
+        // Swiss number formatting: 1234.5 → "1'234.5", 1234 → "1'234"
+        function fmtNum(v, decimals = 0) {
+            const fixed = decimals > 0 ? v.toFixed(decimals) : Math.round(v).toString();
+            const [intPart, decPart] = fixed.split('.');
+            const formatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, "\u2019");
+            return decPart !== undefined ? formatted + '.' + decPart : formatted;
         }
 
         const ACI = {
