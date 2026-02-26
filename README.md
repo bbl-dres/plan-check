@@ -50,45 +50,16 @@ A prototype exploring solutions for validating DWG/DXF floor plan files against 
 
 ```
 plan-check/
-├── index.html                     # DWG Viewer prototype (LibreDWG WebAssembly)
-├── 2011-DM-0-A04-6A1.dwg          # Sample DWG floor plan file
-├── README.md
-├── LICENSE                        # MIT License
-├── assets/                        # Static images and logos
-│   ├── Preview1.jpg               # UI screenshots
-│   ├── Preview2.jpg
-│   ├── Preview3.jpg
-│   ├── logo.png                   # BBL Logo
-│   ├── ch.png                     # Swiss confederation symbol
-│   └── swiss-logo-flag.svg        # Swiss flag (vector)
-└── prototype/                     # Main application
-    ├── index.html                 # Main application (GitHub Pages deployment)
-    ├── test.html                  # Browser-based unit test runner
-    ├── css/
-    │   ├── styles.css             # Main stylesheet (~2100 lines, Swiss Federal Design System)
-    │   └── tokens.css             # CSS custom properties/design tokens (~200 lines)
-    ├── js/
-    │   ├── script.js              # Main application logic (~2400 lines)
-    │   └── script.test.js         # Unit tests (46 test cases)
-    ├── data/                      # Mock JSON data
-    │   ├── projects.json          # 5 sample building projects
-    │   ├── documents.json         # 32 DWG/DXF/XLSX file records
-    │   ├── geometry.json          # 50+ room polygons and area geometries
-    │   ├── rules.json             # 14 validation rule definitions
-    │   ├── results.json           # 50+ validation error/warning results
-    │   └── users.json             # 11 sample user accounts
-    ├── assets/                    # Application assets (logos, screenshots)
-    └── documentation/
-        ├── requirements.md        # Functional & non-functional requirements
-        ├── data-model.md          # Entity relationships & schema definitions
-        ├── styleguide.md          # Swiss Federal Design System guide
-        ├── typography-tokens.md   # CSS typography utilities
-        └── research/              # Architecture and hosting research
-            ├── plan_check_prototype.py   # Python backend prototype
-            ├── cloud-cad-api-comparison.md
-            ├── plan-check-architecture.md
-            ├── plan-check-hosting.md
-            └── wireframes/        # UI mockups (multiple versions)
+├── index.html              # DWG Viewer prototype (LibreDWG WebAssembly)
+├── assets/                 # Static images and logos
+└── prototype/              # Main application
+    ├── index.html          # Application entry point (GitHub Pages)
+    ├── test.html           # Browser-based unit test runner (46 tests)
+    ├── css/                # Stylesheets (Swiss Federal Design System)
+    ├── js/                 # Application logic (~2400 lines) and tests
+    ├── data/               # Mock JSON data (projects, documents, rules, users)
+    ├── assets/             # Application assets
+    └── documentation/      # Requirements, data model, styleguide, and research
 ```
 
 ## Technology Stack
