@@ -1,12 +1,12 @@
 # plan-check
 
-**BBL Prüfplattform Flächenmanagement** - A validation tool for floor plan drawings following Swiss Federal BBL CAD standards and SIA 416 area calculations.
+**BBL Prüfplattform Flächenmanagement** - A prototype for validating floor plan drawings against Swiss Federal BBL CAD standards and SIA 416 area calculations.
 
 ## Live Demo
 
 Visit the interactive prototype: **https://bbl-dres.github.io/plan-check/**
 
-> The demo is a static HTML/CSS/JavaScript prototype showcasing the user interface and workflow. Upload, check, and ensure data quality for DWG/DXF floor plans.
+> Static HTML/CSS/JavaScript prototype showcasing the user interface and workflow. All data is mock — no backend processing.
 
 <p align="center">
   <img src="assets/Preview1.jpg" width="45%" style="vertical-align: top;"/>
@@ -22,85 +22,89 @@ A prototype exploring solutions for validating DWG/DXF floor plan files against 
 - External planners/architects submitting floor plans
 - Project managers reviewing submissions
 
-**Current Status:** Frontend prototype (production-ready), backend planned
+**Current Status:** Frontend prototype with mock data; backend not yet integrated
 
 ## Features
 
-### Frontend Prototype (Live Demo)
+### Frontend Prototype
 - **Swiss Federal Design System** - Official colors, typography, and layouts
-- **Project Dashboard** - Grid/list view with searchable project cards
+- **Project Dashboard** - Grid/list view with searchable project cards and donut charts
 - **Document Management** - Upload and track DWG/DXF/XLSX files with size validation
 - **4-Step Validation Workflow** - Upload DWG → Upload Room List → Review Results → Submit
-- **Interactive Floor Plan Viewer** - Visual error markers on plans (Speckle integration)
-- **SIA 416 Area Calculations** - Complete area breakdowns (GF, NGF, HNF, NNF, VF, FF)
-- **Validation Results** - Detailed error/warning list with severity levels
+- **Floor Plan Viewer** - Speckle integration for plan visualization with error markers
+- **SIA 416 Area Calculations** - Area breakdowns (GF, NGF, HNF, NNF, VF, FF)
+- **Validation Results** - Error/warning list with severity levels (14 rules defined)
 - **User Management** - Role-based access (Admin, Editor, Viewer)
 - **Accessibility** - WCAG 2.1 AA compliant with keyboard navigation
+- **Security** - XSS prevention, filename sanitization, Content Security Policy headers
 
-### Security Features
-- HTML escaping (XSS prevention)
-- Filename sanitization (path traversal prevention)
-- Content Security Policy headers
-- File size validation on uploads
-- Input validation and sanitization
+### DWG Viewer (Root)
+- Standalone LibreDWG WebAssembly viewer prototype
+- Drag-and-drop DWG file upload with progress tracking
 
-### Planned Backend Features
-- DWG/DXF file processing (Speckle or LibreDWG)
-- 25+ validation rules from BBL CAD-Richtlinie
-- Excel room list cross-validation
-- Real-time validation progress
-- PDF report generation
-- Swiss eIAM authentication
+### Backend Prototype (Research)
+- Python reference implementation (783 lines) in `prototype/documentation/research/`
+- LibreDWG integration, validation rules, Excel parsing with openpyxl, geometry validation with Shapely
 
 ## Repository Structure
 
 ```
 plan-check/
-├── index.html                 # Main application (GitHub Pages deployment)
-├── test.html                  # Browser-based unit test runner
-├── README.md                  # Project documentation
-├── LICENSE                    # MIT License
-├── assets/                    # Static images and logos
-│   ├── Preview1.jpg           # UI screenshots
+├── index.html                     # DWG Viewer prototype (LibreDWG WebAssembly)
+├── 2011-DM-0-A04-6A1.dwg          # Sample DWG floor plan file
+├── README.md
+├── LICENSE                        # MIT License
+├── assets/                        # Static images and logos
+│   ├── Preview1.jpg               # UI screenshots
 │   ├── Preview2.jpg
 │   ├── Preview3.jpg
-│   ├── logo.png               # BBL Logo
-│   └── swiss-logo-flag.svg    # Swiss confederation symbol
-├── css/                       # Stylesheets
-│   ├── styles.css             # Main stylesheet (Swiss Federal Design System)
-│   └── tokens.css             # CSS custom properties/design tokens
-├── js/                        # JavaScript source code
-│   ├── script.js              # Main application logic (~2200 lines)
-│   └── script.test.js         # Unit tests (75+ test cases)
-├── data/                      # Mock JSON data
-│   ├── projects.json          # 5 sample building projects
-│   ├── documents.json         # DWG/DXF/XLSX file metadata
-│   ├── geometry.json          # Room polygons and area geometries
-│   ├── rules.json             # 14 validation rule definitions
-│   ├── results.json           # Validation error results
-│   └── users.json             # 11 sample user accounts
-└── documentation/             # Comprehensive documentation
-    ├── requirements.md        # Functional & non-functional requirements
-    ├── data-model.md          # Entity relationships & schema definitions
-    ├── styleguide.md          # Swiss Federal Design System guide
-    ├── typography-tokens.md   # CSS typography utilities
-    └── research/              # Architecture and hosting research
+│   ├── logo.png                   # BBL Logo
+│   ├── ch.png                     # Swiss confederation symbol
+│   └── swiss-logo-flag.svg        # Swiss flag (vector)
+└── prototype/                     # Main application
+    ├── index.html                 # Main application (GitHub Pages deployment)
+    ├── test.html                  # Browser-based unit test runner
+    ├── css/
+    │   ├── styles.css             # Main stylesheet (~2100 lines, Swiss Federal Design System)
+    │   └── tokens.css             # CSS custom properties/design tokens (~200 lines)
+    ├── js/
+    │   ├── script.js              # Main application logic (~2400 lines)
+    │   └── script.test.js         # Unit tests (46 test cases)
+    ├── data/                      # Mock JSON data
+    │   ├── projects.json          # 5 sample building projects
+    │   ├── documents.json         # 32 DWG/DXF/XLSX file records
+    │   ├── geometry.json          # 50+ room polygons and area geometries
+    │   ├── rules.json             # 14 validation rule definitions
+    │   ├── results.json           # 50+ validation error/warning results
+    │   └── users.json             # 11 sample user accounts
+    ├── assets/                    # Application assets (logos, screenshots)
+    └── documentation/
+        ├── requirements.md        # Functional & non-functional requirements
+        ├── data-model.md          # Entity relationships & schema definitions
+        ├── styleguide.md          # Swiss Federal Design System guide
+        ├── typography-tokens.md   # CSS typography utilities
+        └── research/              # Architecture and hosting research
+            ├── plan_check_prototype.py   # Python backend prototype
+            ├── cloud-cad-api-comparison.md
+            ├── plan-check-architecture.md
+            ├── plan-check-hosting.md
+            └── wireframes/        # UI mockups (multiple versions)
 ```
 
 ## Technology Stack
 
-### Frontend (Current - Production Ready)
+### Frontend
 | Technology | Purpose |
 |------------|---------|
 | HTML5 | Semantic markup |
 | CSS3 | Custom properties, Grid, Flexbox |
 | Vanilla JavaScript | No build tools required |
-| Lucide Icons | MIT-licensed icon library (CDN) |
+| Lucide Icons v0.562.0 | Icon library (CDN) |
 
 ### CSS Architecture
 - **Design System:** Swiss Federal Corporate Design
 - **Methodology:** BEM naming convention
-- **Tokens:** 30+ color variables, 8 font sizes, 8 spacing units
+- **Tokens:** 50+ CSS custom properties (colors, typography, spacing)
 - **Grid:** 12-column responsive system
 - **Breakpoints:** Mobile (576px), Tablet (768px), Desktop (992px), Large (1200px)
 
@@ -109,7 +113,7 @@ plan-check/
 |------------|---------|
 | Python 3.12+ | Runtime |
 | FastAPI | Web framework |
-| Speckle / LibreDWG | DWG processing |
+| LibreDWG | DWG processing |
 | ezdxf | DXF fallback |
 | Shapely | Geometry operations |
 | openpyxl | Excel parsing |
@@ -119,31 +123,25 @@ plan-check/
 ## Getting Started
 
 ### View the Demo
-Simply visit: **[https://davras5.github.io/plan-check/](https://davras5.github.io/plan-check/)**
+Visit: **[https://bbl-dres.github.io/plan-check/](https://bbl-dres.github.io/plan-check/)**
 
 ### Run Locally
 ```bash
 # Clone the repository
-git clone https://github.com/davras5/plan-check.git
+git clone https://github.com/bbl-dres/plan-check.git
 cd plan-check
 
-# Option 1: Open directly in browser
-open index.html
-
-# Option 2: Use a local server (recommended)
+# Start a local server (recommended)
 python -m http.server 8000
-# Visit http://localhost:8000
+# Visit http://localhost:8000/prototype/
 ```
 
 ### Run Tests
 ```bash
-# Open test runner in browser
-open test.html
-
-# Or navigate to http://localhost:8000/test.html
+# Navigate to http://localhost:8000/prototype/test.html
 ```
 
-The test suite includes 75+ test cases covering:
+The test suite includes 46 test cases covering:
 - Security utilities (XSS prevention, path traversal)
 - Parsing utilities (safe integer parsing)
 - UI utilities (status icons, file size formatting)
@@ -154,18 +152,18 @@ The test suite includes 75+ test cases covering:
 
 ## Configuration
 
-Key configuration options in `js/script.js`:
+Key configuration options in `prototype/js/script.js`:
 
 ```javascript
 const CONFIG = {
-    TOAST_DURATION_MS: 3000,           // Toast notification timing
-    STEP_COUNT: 4,                      // Validation workflow steps
-    MAX_IMAGE_SIZE: 10 * 1024 * 1024,  // 10 MB for project images
-    MAX_DWG_SIZE: 50 * 1024 * 1024,    // 50 MB for DWG files
-    MAX_EXCEL_SIZE: 10 * 1024 * 1024,  // 10 MB for Excel files
-    SCORE_SUCCESS_THRESHOLD: 90,        // Green status threshold
-    SCORE_WARNING_THRESHOLD: 60,        // Yellow status threshold
-    SEARCH_DEBOUNCE_MS: 300,           // Search input debounce
+    TOAST_DURATION_MS: 3000,
+    STEP_COUNT: 4,
+    MAX_IMAGE_SIZE: 10 * 1024 * 1024,  // 10 MB
+    MAX_DWG_SIZE: 50 * 1024 * 1024,    // 50 MB
+    MAX_EXCEL_SIZE: 10 * 1024 * 1024,  // 10 MB
+    SCORE_SUCCESS_THRESHOLD: 90,
+    SCORE_WARNING_THRESHOLD: 60,
+    SEARCH_DEBOUNCE_MS: 300,
 };
 ```
 
@@ -182,7 +180,7 @@ The prototype follows the **Swiss Federal Corporate Design** guidelines:
 | Grid | 12-column responsive layout |
 | Accessibility | WCAG 2.1 AA compliant |
 
-See [documentation/styleguide.md](documentation/styleguide.md) for complete design specifications.
+See [prototype/documentation/styleguide.md](prototype/documentation/styleguide.md) for complete design specifications.
 
 ## Data Model
 
@@ -199,17 +197,17 @@ User → Project → Document → Geometry (Rooms/Areas)
 | Project | Building projects with SIA phase (31-53) |
 | Document | DWG/DXF/XLSX files with validation scores |
 | Geometry | Room polygons and area calculations |
-| RuleSet | Validation rules by category |
+| RuleSet | 14 validation rules across 5 categories (Layer, Geometry, Entity, Text, AOID) |
 | Result | Error/warning messages with locations |
 | User | Accounts with roles (Admin/Editor/Viewer) |
 
-See [documentation/data-model.md](documentation/data-model.md) for complete schema definitions.
+See [prototype/documentation/data-model.md](prototype/documentation/data-model.md) for complete schema definitions.
 
 ## Demo Workflow
 
 1. **Login** - Enter credentials (demo mode, any input works)
-2. **Project Dashboard** - Browse projects with completion percentages and search
-3. **Project Detail** - View documents, users, and validation rules
+2. **Project Dashboard** - Browse projects with completion percentages and search (Ctrl+K)
+3. **Project Detail** - View documents, users, and validation rules in tabbed layout
 4. **Validation Workflow** - Step through the 4-stage process:
    - **Step 1:** Upload DWG file, view extracted rooms
    - **Step 2:** Upload Excel room list, compare with DWG
@@ -221,39 +219,18 @@ See [documentation/data-model.md](documentation/data-model.md) for complete sche
 
 | Document | Description |
 |----------|-------------|
-| [requirements.md](documentation/requirements.md) | Functional requirements (FR-1 to FR-10) |
-| [styleguide.md](documentation/styleguide.md) | Swiss Federal Design System guide |
-| [data-model.md](documentation/data-model.md) | Database schema and entity definitions |
-| [typography-tokens.md](documentation/typography-tokens.md) | Typography CSS utilities |
-
-## Roadmap
-
-### Phase 1: Backend MVP
-- [ ] Set up FastAPI backend
-- [ ] Implement DWG file upload and storage
-- [ ] Build validation engine (5 core rules)
-- [ ] Create REST API endpoints
-- [ ] Connect frontend to backend
-
-### Phase 2: Full Validation
-- [ ] Implement all 25+ validation rules
-- [ ] Excel room list cross-validation
-- [ ] AOID format and uniqueness checks
-- [ ] Room extraction and area calculations
-- [ ] PDF report generation
-
-### Phase 3: Production Ready
-- [ ] Swiss eIAM authentication
-- [ ] Multi-language support (DE, FR, IT)
-- [ ] Performance optimization
-- [ ] Security hardening
-- [ ] Deployment to Swiss federal infrastructure
+| [requirements.md](prototype/documentation/requirements.md) | Functional requirements (FR-1 to FR-10) |
+| [styleguide.md](prototype/documentation/styleguide.md) | Swiss Federal Design System guide |
+| [data-model.md](prototype/documentation/data-model.md) | Database schema and entity definitions |
+| [typography-tokens.md](prototype/documentation/typography-tokens.md) | Typography CSS utilities |
+| [plan-check-architecture.md](prototype/documentation/research/plan-check-architecture.md) | System architecture design |
+| [plan-check-hosting.md](prototype/documentation/research/plan-check-hosting.md) | Hosting recommendations |
+| [cloud-cad-api-comparison.md](prototype/documentation/research/cloud-cad-api-comparison.md) | Cloud CAD API analysis |
 
 ## References
 
 - [Swiss Federal Design System](https://github.com/swiss/designsystem)
 - [SIA 416 - Areas and Volumes of Buildings](https://www.sia.ch/de/dienstleistungen/sia-norm/sia-416/)
-- [DIN 277 - Floor Areas and Volumes](https://www.din.de/)
 - [WCAG 2.1 Accessibility Guidelines](https://www.w3.org/TR/WCAG21/)
 - [Lucide Icons](https://lucide.dev/)
 
@@ -266,4 +243,4 @@ MIT License - See [LICENSE](LICENSE) for details.
 **Built with:** HTML5, CSS3, Vanilla JavaScript
 **Design System:** Swiss Federal Corporate Design
 **Icons:** Lucide Icons (MIT)
-**Last Updated:** January 2026
+**Last Updated:** February 2026
