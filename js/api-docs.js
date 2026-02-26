@@ -193,7 +193,6 @@ export async function initApiDocs() {
     }
 
     // Render
-    let navHtml = '';
     let contentHtml = '';
 
     // Header section
@@ -212,11 +211,9 @@ export async function initApiDocs() {
         <p>Alle Anfragen erfordern einen API-Schlüssel im Header <code>X-API-Key</code>. Schlüssel können über das BBL-Portal beantragt werden.</p>
         <pre class="api-docs__example">curl -H "X-API-Key: YOUR_API_KEY" ${spec.servers?.[0]?.url || ''}/health</pre>
     </div>`;
-    navHtml += `<a href="#auth" class="api-docs__nav-item">Authentifizierung</a>`;
 
     for (const [tagName, group] of Object.entries(tagGroups)) {
         const tagId = tagName.toLowerCase().replace(/[^a-z0-9]/g, '-');
-        navHtml += `<a href="#tag-${tagId}" class="api-docs__nav-item">${tagName}</a>`;
 
         contentHtml += `<div class="api-docs__group" id="tag-${tagId}">
             <h2 class="api-docs__group-title">${tagName}</h2>
@@ -225,11 +222,7 @@ export async function initApiDocs() {
         </div>`;
     }
 
-    container.innerHTML = `
-        <div class="api-docs__layout">
-            <nav class="api-docs__nav">${navHtml}</nav>
-            <main class="api-docs__main">${contentHtml}</main>
-        </div>`;
+    container.innerHTML = `<div class="api-docs__main">${contentHtml}</div>`;
 
     // Collapse/expand handlers
     container.querySelectorAll('.api-docs__endpoint-header').forEach(header => {
@@ -244,12 +237,4 @@ export async function initApiDocs() {
         });
     });
 
-    // Smooth scroll for nav
-    container.querySelectorAll('.api-docs__nav-item').forEach(link => {
-        link.addEventListener('click', e => {
-            e.preventDefault();
-            const target = document.querySelector(link.getAttribute('href'));
-            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        });
-    });
 }
