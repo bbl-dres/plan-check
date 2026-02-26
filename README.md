@@ -1,4 +1,4 @@
-# Prüfplattform Flächenmanagement
+# Plan Checker / Prüfplattform Flächenmanagement
 
 [![GitHub Pages](https://img.shields.io/badge/demo-live-brightgreen?logo=github)](https://bbl-dres.github.io/plan-check/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
