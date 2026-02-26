@@ -596,7 +596,7 @@
                     </div>
                 </div>
 
-                <!-- STEP 1 CONTENT: Floor plan viewer with tabs -->
+                <!-- STEP 1 CONTENT: Validation results with Canvas viewer -->
                 <div id="step-1-content" class="step__detail-content" style="display: none;">
                     <div class="metrics">
                         <div class="metric-card">
@@ -620,74 +620,80 @@
                     <div class="tabs-card">
                         <div class="tabs">
                             <ul class="tabs__list">
-                                <li><a href="#" class="tabs__tab tabs__tab--active" data-val-tab="rooms">Räume (<span id="val-tab-rooms-count">0</span>)</a></li>
-                                <li><a href="#" class="tabs__tab" data-val-tab="areas">Flächen (<span id="val-tab-areas-count">0</span>)</a></li>
+                                <li><a href="#" class="tabs__tab tabs__tab--active" data-val-tab="overview">Übersicht</a></li>
                                 <li><a href="#" class="tabs__tab" data-val-tab="errors">Fehlermeldungen (<span id="val-tab-errors-count">0</span>)</a></li>
+                                <li><a href="#" class="tabs__tab" data-val-tab="rooms">Räume (<span id="val-tab-rooms-count">0</span>)</a></li>
+                                <li><a href="#" class="tabs__tab" data-val-tab="areas">Flächen (<span id="val-tab-areas-count">0</span>)</a></li>
+                                <li><a href="#" class="tabs__tab" data-val-tab="kennzahlen">Kennzahlen</a></li>
                             </ul>
                         </div>
 
-                        <div class="split-view">
-                            <div class="split-view__left">
-                                <!-- Rooms Tab -->
-                                <div class="tab-pane tab-pane--active" id="val-tab-rooms">
-                                    <div class="table-wrapper">
-                                        <table class="table table--compact">
-                                            <thead>
-                                                <tr>
-                                                    <th scope="col">AOID</th>
-                                                    <th scope="col" class="text-right">AREA</th>
-                                                    <th scope="col">AOFUNCTION</th>
-                                                    <th scope="col" class="text-center">ERROR</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="room-table-body">
-                                                <!-- Rooms rendered by JS -->
-                                            </tbody>
-                                        </table>
+                        <div class="split-view split-view--viewer">
+                            <!-- LEFT: Panel (changes per tab) -->
+                            <div class="split-view__left" id="validation-panel">
+                                <!-- Tab 1: Overview -->
+                                <div class="tab-pane tab-pane--active" id="val-tab-overview">
+                                    <div class="validation-panel__section">
+                                        <h4 class="validation-panel__title">
+                                            <i data-lucide="layers" class="icon icon-sm"></i>
+                                            Layer
+                                        </h4>
+                                        <div id="layer-list" class="layer-list">
+                                            <!-- Rendered by JS -->
+                                        </div>
                                     </div>
                                 </div>
 
-                                <!-- Areas Tab -->
+                                <!-- Tab 2: Rooms -->
+                                <div class="tab-pane" id="val-tab-rooms">
+                                    <div class="validation-panel__search-wrapper">
+                                        <i data-lucide="search" class="icon icon-sm validation-panel__search-icon"></i>
+                                        <input type="text" class="validation-panel__search" id="room-search" placeholder="Raum suchen...">
+                                    </div>
+                                    <div id="room-list" class="room-list">
+                                        <!-- Rendered by JS -->
+                                    </div>
+                                </div>
+
+                                <!-- Tab 4: Areas (BGF/EBF gross polygons) -->
                                 <div class="tab-pane" id="val-tab-areas">
-                                    <div class="table-wrapper">
-                                        <table class="table table--compact">
-                                            <thead>
-                                                <tr>
-                                                    <th scope="col">AOID</th>
-                                                    <th scope="col" class="text-right">AREA</th>
-                                                    <th scope="col">AOFUNCTION</th>
-                                                    <th scope="col" class="text-center">ERROR</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="area-polygons-table-body">
-                                                <!-- Area polygons rendered by JS -->
-                                            </tbody>
-                                        </table>
+                                    <div id="area-list" class="area-list">
+                                        <!-- Rendered by JS -->
                                     </div>
                                 </div>
 
-                                <!-- Errors Tab -->
+                                <!-- Tab 5: Kennzahlen (SIA 416 breakdown) -->
+                                <div class="tab-pane" id="val-tab-kennzahlen">
+                                    <div id="kennzahlen-content" class="kennzahlen-content">
+                                        <!-- Rendered by JS -->
+                                    </div>
+                                </div>
+
+                                <!-- Tab 2: Errors -->
                                 <div class="tab-pane" id="val-tab-errors">
-                                    <div class="error-list" id="error-list">
-                                        <!-- Errors rendered by JS -->
+                                    <div id="error-groups" class="error-groups">
+                                        <!-- Rendered by JS -->
                                     </div>
                                 </div>
                             </div>
 
+                            <!-- RIGHT: Canvas Viewer (persistent across tabs) -->
                             <div class="split-view__right">
-                                <div class="floorplan floorplan--speckle">
-                                    <!-- Speckle viewer URL configured via JavaScript for security -->
-                                    <iframe
-                                        id="speckle-viewer"
-                                        class="speckle-viewer__iframe"
-                                        src=""
-                                        title="Speckle 3D Floor Plan Viewer"
-                                        allow="fullscreen">
-                                    </iframe>
-                                    <div class="speckle-viewer__loading" id="speckle-loading">
-                                        <div class="speckle-viewer__spinner"></div>
-                                        <span>Lade 3D-Grundriss...</span>
+                                <div class="canvas-viewer" id="validation-canvas-wrap">
+                                    <canvas id="validation-canvas"></canvas>
+                                    <div class="canvas-viewer__controls">
+                                        <button class="canvas-viewer__btn" id="viewer-zoom-in" title="Vergrössern">
+                                            <i data-lucide="zoom-in" class="icon icon-sm"></i>
+                                        </button>
+                                        <button class="canvas-viewer__btn" id="viewer-zoom-out" title="Verkleinern">
+                                            <i data-lucide="zoom-out" class="icon icon-sm"></i>
+                                        </button>
+                                        <button class="canvas-viewer__btn" id="viewer-zoom-fit" title="Alles anzeigen">
+                                            <i data-lucide="maximize-2" class="icon icon-sm"></i>
+                                        </button>
                                     </div>
+                                    <div class="canvas-viewer__coords" id="viewer-coords"></div>
+                                    <div class="canvas-viewer__popup" id="room-popup"></div>
                                 </div>
                             </div>
                         </div>
@@ -939,6 +945,8 @@
         </div>
     </div>
 
+    <script src="js/viewer.js"></script>
     <script src="js/script.js"></script>
+    <script src="js/validation-view.js"></script>
 </body>
 </html>

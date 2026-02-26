@@ -11,14 +11,18 @@
             --color-primary-light: #e8f2fa;
             --color-bg: #f2f4f7;
             --color-surface: #ffffff;
+            --color-surface-alt: #f6f8fa;
+            --color-zebra: #f4f6f9;
             --color-text: #1a1a1a;
             --color-text-secondary: #5f6b7a;
+            --color-text-muted: #8b95a3;
             --color-border: #dfe3e8;
             --color-success: #1a7f37;
             --color-error: #cf222e;
             --color-warning: #bf8700;
             --radius: 6px;
             --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.06);
+            --font-mono: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -28,35 +32,54 @@
             background: var(--color-bg);
             color: var(--color-text);
             min-height: 100vh;
+            display: flex; flex-direction: column;
         }
 
         .header {
             background: var(--color-surface);
-            border-bottom: 2px solid var(--color-primary);
-            padding: 14px 24px;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+            border-bottom: 1px solid var(--color-border);
         }
-
-        .header h1 { font-size: 17px; font-weight: 700; letter-spacing: -0.2px; }
-        .header__links { margin-left: auto; display: flex; gap: 16px; font-size: 12px; }
-        .header__links a { color: var(--color-text-secondary); text-decoration: none; transition: color 0.15s; }
-        .header__links a:hover { color: var(--color-primary); }
-
-        .header .badge {
-            background: var(--color-primary-light);
-            color: var(--color-primary);
-            padding: 3px 10px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 0.2px;
+        .header__content {
+            display: flex; align-items: center;
+            max-width: 1400px; margin: 0 auto;
+            padding: 16px 24px; gap: 20px;
         }
+        .header__brand {
+            display: flex; align-items: flex-start; gap: 0;
+            text-decoration: none;
+        }
+        .header__flag { flex-shrink: 0; height: 33px; width: 30px; display: block; margin-right: 10px; }
+        .header__name { height: 50px; width: auto; display: block; }
+        .header__sep {
+            width: 1px; height: 50px; background: #999; margin: 0 18px; flex-shrink: 0;
+        }
+        .header__titles { display: flex; flex-direction: column; gap: 2px; padding-top: 2px; }
+        .header__org { font-size: 15px; font-weight: 700; color: var(--color-text); line-height: 1.3; }
+        .header__app { font-size: 13px; font-weight: 400; color: var(--color-text-secondary); line-height: 1.3; }
+        .header__nav { display: flex; align-items: center; gap: 16px; margin-left: auto; }
+        .header__nav-link { font-size: 13px; color: var(--color-text-secondary); text-decoration: none; white-space: nowrap; transition: color 0.15s; }
+        .header__nav-link:hover { color: var(--color-primary); }
+
+        /* Footer */
+        .footer {
+            background: var(--color-surface-alt); margin-top: auto;
+            border-top: 1px solid var(--color-border);
+        }
+        .footer__content {
+            max-width: 1400px; margin: 0 auto;
+            padding: 6px 24px;
+            display: flex; justify-content: space-between; align-items: center;
+            color: var(--color-text-secondary); font-size: 11px;
+        }
+        .footer__links { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .footer__link { color: var(--color-text-secondary); text-decoration: none; transition: color 0.15s; }
+        .footer__link:hover { color: var(--color-primary); }
+        .footer__sep { color: var(--color-border); }
+        .footer__version { color: var(--color-text-muted); }
 
         .container {
-            max-width: 1200px;
+            width: 100%;
+            max-width: 1400px;
             margin: 24px auto;
             padding: 0 24px;
         }
@@ -80,7 +103,8 @@
         .upload-zone svg { width: 44px; height: 44px; color: var(--color-text-secondary); margin-bottom: 12px; opacity: 0.6; }
         .upload-zone:hover svg { color: var(--color-primary); opacity: 1; }
         .upload-zone p { color: var(--color-text-secondary); margin-bottom: 16px; font-size: 15px; }
-        .upload-zone .hint { font-size: 12px; color: #999; }
+        .upload-zone .hint { font-size: 12px; color: var(--color-text-muted); margin-bottom: 0; }
+
 
         .btn {
             display: inline-flex; align-items: center; gap: 8px;
@@ -110,18 +134,18 @@
         .panel { display: none; margin-top: 16px; background: var(--color-surface); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; border: 1px solid var(--color-border); }
         .panel.visible { display: block; }
         .panel__header {
-            padding: 10px 16px; background: #f6f8fa; border-bottom: 1px solid var(--color-border);
-            font-weight: 600; font-size: 13px; display: flex; justify-content: space-between; align-items: center;
-            color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.3px;
+            padding: 12px 16px; background: var(--color-surface-alt); border-bottom: 1px solid var(--color-border);
+            font-weight: 600; font-size: 11px; display: flex; justify-content: space-between; align-items: center;
+            color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.5px;
         }
 
         .info-grid {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 1px; background: var(--color-border);
         }
-        .info-grid__item { background: var(--color-surface); padding: 14px 16px; }
-        .info-grid__label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--color-text-secondary); margin-bottom: 6px; font-weight: 500; }
-        .info-grid__value { font-size: 15px; font-weight: 700; color: var(--color-text); }
+        .info-grid__item { background: var(--color-surface); padding: 16px 18px; }
+        .info-grid__label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--color-text-muted); margin-bottom: 6px; font-weight: 500; }
+        .info-grid__value { font-size: 16px; font-weight: 700; color: var(--color-text); font-variant-numeric: tabular-nums; }
 
         /* Canvas Viewer */
         .viewer__controls {
@@ -137,15 +161,16 @@
         .viewer__controls button svg { width: 16px; height: 16px; }
         .viewer__controls .viewer__sep { width: 1px; height: 18px; background: var(--color-border); margin: 0 4px; }
         .viewer__canvas-wrap {
-            position: relative; width: 100%; height: 600px;
-            overflow: hidden; background: #1a1a2e; cursor: grab;
+            position: relative; width: 100%; height: 100%;
+            overflow: hidden; background: #ffffff; cursor: grab;
         }
         .viewer__canvas-wrap:active { cursor: grabbing; }
         .viewer__canvas-wrap canvas { position: absolute; left: 0; top: 0; }
         .viewer__coords {
             position: absolute; bottom: 8px; left: 12px;
-            color: rgba(255,255,255,0.4); font-size: 11px; font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+            color: var(--color-text-muted); font-size: 11px; font-family: var(--font-mono);
             pointer-events: none; letter-spacing: 0.3px;
+            background: rgba(255,255,255,0.7); padding: 2px 6px; border-radius: 3px;
         }
 
         /* Feature Popup */
@@ -173,14 +198,14 @@
         .feature-popup__badge {
             display: inline-block; background: var(--color-primary); color: white;
             padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 600;
-            font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace; letter-spacing: 0.3px;
+            font-family: var(--font-mono); letter-spacing: 0.3px;
         }
         .feature-popup__row {
             display: flex; justify-content: space-between; gap: 12px;
             padding: 3px 0;
         }
         .feature-popup__label { color: var(--color-text-secondary); white-space: nowrap; font-size: 11px; }
-        .feature-popup__value { font-weight: 600; text-align: right; font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace; font-size: 11px; word-break: break-all; }
+        .feature-popup__value { font-weight: 600; text-align: right; font-family: var(--font-mono); font-size: 11px; word-break: break-all; }
         .feature-popup__color-swatch {
             display: inline-block; width: 12px; height: 12px; border-radius: 2px;
             border: 1px solid rgba(0,0,0,0.15); vertical-align: middle;
@@ -188,84 +213,233 @@
 
         /* Layers */
         .layers-toolbar {
-            display: flex; gap: 10px; padding: 8px 16px; align-items: center;
-            border-bottom: 1px solid var(--color-border); background: #f6f8fa;
+            display: flex; gap: 10px; padding: 10px 16px; align-items: center;
+            border-bottom: 1px solid var(--color-border); background: var(--color-surface-alt);
         }
         .layers-toolbar .layer-toggle { flex-shrink: 0; }
         .layers-search {
-            flex: 1; padding: 6px 10px; border: 1px solid var(--color-border); border-radius: var(--radius);
-            font-size: 12px; outline: none; min-width: 0; background: var(--color-surface);
+            flex: 1; padding: 7px 10px; border: 1px solid var(--color-border); border-radius: var(--radius);
+            font-size: 13px; outline: none; min-width: 0; background: var(--color-surface);
             transition: border-color 0.15s, box-shadow 0.15s;
         }
         .layers-search:focus { border-color: var(--color-primary); box-shadow: 0 0 0 2px rgba(0,114,177,0.12); }
         .layers-list { max-height: 300px; overflow-y: auto; }
         .layer-item {
             display: flex; align-items: center; gap: 10px;
-            padding: 7px 16px; font-size: 13px;
+            padding: 8px 16px; font-size: 13px;
             cursor: pointer; user-select: none; transition: opacity 0.15s, background 0.1s;
         }
-        .layer-item:nth-child(even) { background: #fafbfc; }
+        .layer-item:nth-child(even) { background: var(--color-zebra); }
         .layer-item:hover { background: var(--color-primary-light); }
         .layer-item.hidden { opacity: 0.3; }
         .layer-toggle {
             width: 15px; height: 15px; flex-shrink: 0; cursor: pointer; accent-color: var(--color-primary);
         }
         .layer-color { width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(0,0,0,0.08); flex-shrink: 0; }
-        .layer-name { flex: 1; font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace; font-size: 12px; }
-        .layer-entities { color: var(--color-text-secondary); font-size: 11px; font-variant-numeric: tabular-nums; }
+        .layer-name { flex: 1; font-size: 13px; }
+        .layer-entities { color: var(--color-text-muted); font-size: 12px; font-variant-numeric: tabular-nums; font-family: var(--font-mono); }
 
         /* Entities Table */
         .entities-table { width: 100%; border-collapse: collapse; font-size: 13px; }
         .entities-table th {
-            text-align: left; padding: 8px 16px; background: #f6f8fa;
+            text-align: left; padding: 10px 16px; background: var(--color-surface-alt);
             border-bottom: 1px solid var(--color-border); font-weight: 600;
-            font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--color-text-secondary);
+            font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--color-text-secondary);
         }
-        .entities-table td { padding: 8px 16px; }
-        .entities-table tr:nth-child(even) td { background: #fafbfc; }
+        .entities-table td { padding: 10px 16px; }
+        .entities-table tr:nth-child(even) td { background: var(--color-zebra); }
         .entities-table tr:hover td { background: var(--color-primary-light); }
         .entity-type-badge {
             display: inline-block; padding: 2px 8px; border-radius: 3px;
-            font-size: 11px; font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+            font-size: 11px; font-family: var(--font-mono);
             background: var(--color-primary-light); color: var(--color-primary); font-weight: 600;
         }
 
-        /* Console */
-        .console-panel { margin-top: 16px; background: #161b22; border-radius: var(--radius); overflow: hidden; border: 1px solid #30363d; }
-        .console-panel__header {
-            padding: 8px 16px; background: #1c2129; color: #636e7b; font-size: 11px;
-            font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
-            text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #30363d;
+        /* Console (uses .panel base, always visible) */
+        #console-panel { display: block; }
+        .console-body {
+            padding: 14px 16px; max-height: 200px; overflow-y: auto;
+            font-family: var(--font-mono); font-size: 12px; line-height: 1.8; color: var(--color-text);
         }
-        .console-panel__body {
-            padding: 12px 16px; max-height: 200px; overflow-y: auto;
-            font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace; font-size: 12px; line-height: 1.7; color: #c9d1d9;
-        }
-        .log-info { color: #79c0ff; }
-        .log-success { color: #56d364; }
-        .log-error { color: #f85149; }
-        .log-warn { color: #e3b341; }
+        .log-info { color: var(--color-primary); }
+        .log-success { color: var(--color-success); }
+        .log-error { color: var(--color-error); }
+        .log-warn { color: var(--color-warning); }
 
         /* Fullscreen */
-        #viewer-panel:fullscreen {
+        #validation-panel:fullscreen {
             display: flex; flex-direction: column;
             background: var(--color-surface); margin: 0; border-radius: 0;
         }
-        #viewer-panel:fullscreen .viewer__canvas-wrap {
+        #validation-panel:fullscreen .validation-body { flex: 1; display: flex; flex-direction: column; }
+        #validation-panel:fullscreen .validation-split { flex: 1; height: auto; }
+        #validation-panel:fullscreen .viewer__canvas-wrap {
             flex: 1; height: auto;
+        }
+
+        /* Validation Panel – Split View */
+        .validation-tabs {
+            display: flex; gap: 0; padding: 0 16px;
+            border-bottom: 1px solid var(--color-border); background: var(--color-surface-alt);
+            overflow-x: auto; flex-shrink: 0;
+        }
+        .validation-tabs__tab {
+            padding: 11px 18px; font-size: 13px; font-weight: 600;
+            color: var(--color-text-secondary); text-decoration: none;
+            border-bottom: 2px solid transparent; white-space: nowrap;
+            transition: color 0.15s, border-color 0.15s;
+        }
+        .validation-tabs__tab:hover { color: var(--color-text); }
+        .validation-tabs__tab--active {
+            color: var(--color-primary); border-bottom-color: var(--color-primary);
+        }
+
+        .validation-body { position: relative; }
+
+        /* Split layout: side panel (35%) + viewer (65%) */
+        .validation-split {
+            display: flex; height: 800px;
+        }
+        .validation-side {
+            width: 35%; min-width: 280px; max-width: 420px;
+            border-right: 1px solid var(--color-border);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .validation-side__toolbar {
+            display: flex; gap: 10px; padding: 10px 16px; align-items: center;
+            border-bottom: 1px solid var(--color-border); background: var(--color-surface-alt); flex-shrink: 0;
+        }
+        .validation-side__toolbar .layer-toggle { flex-shrink: 0; }
+        .validation-side__toolbar .layers-search { flex: 1; min-width: 0; }
+        .validation-side__list { flex: 1; overflow-y: auto; }
+        .validation-side__summary {
+            border-top: 1px solid var(--color-border);
+            padding: 14px 16px; background: var(--color-surface-alt); flex-shrink: 0;
+        }
+        .validation-side__summary:empty { display: none; }
+        .validation-viewer { flex: 1; min-width: 0; position: relative; overflow: hidden; }
+
+        /* Dashboard (Kennzahlen) – full width, no viewer */
+        .validation-dashboard {
+            display: none; max-height: 800px; overflow-y: auto;
+        }
+        .kz-subtabs {
+            display: flex; gap: 0; border-bottom: 1px solid var(--color-border);
+            padding: 0 24px; background: var(--color-surface-alt);
+        }
+        .kz-subtab {
+            padding: 10px 16px; font-size: 13px; font-weight: 600;
+            color: var(--color-text-secondary); text-decoration: none;
+            border-bottom: 2px solid transparent; margin-bottom: -1px;
+            cursor: pointer; transition: color 0.15s, border-color 0.15s;
+        }
+        .kz-subtab:hover { color: var(--color-text); }
+        .kz-subtab--active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
+        .kz-dashboard-content { padding: 24px; }
+        .kz-viewer-content { display: none; height: 700px; }
+
+        /* Side panel list items – consistent across all tabs */
+        .vside-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 9px 16px; font-size: 13px;
+            cursor: pointer; user-select: none; transition: background 0.1s;
+        }
+        .vside-item:nth-child(even) { background: var(--color-zebra); }
+        .vside-item:hover { background: var(--color-primary-light); }
+        .vside-item.hidden { opacity: 0.35; }
+        .vside-item--selected { background: var(--color-primary-light) !important; }
+        .vside-item--error .vside-item__status { color: var(--color-error); }
+        .vside-item--warning .vside-item__status { color: var(--color-warning); }
+        .vside-item__toggle {
+            width: 15px; height: 15px; flex-shrink: 0;
+            cursor: pointer; accent-color: var(--color-primary);
+        }
+        .vside-item__icon {
+            width: 14px; height: 14px; border-radius: 3px;
+            border: 1px solid rgba(0,0,0,0.08); flex-shrink: 0;
+        }
+        .vside-item__name {
+            flex: 1; font-size: 13px;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .vside-item__value {
+            color: var(--color-text-muted); font-size: 12px; font-family: var(--font-mono);
+            font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right;
+        }
+        .vside-item__status {
+            font-size: 11px; font-weight: 600; width: 18px; text-align: center; flex-shrink: 0;
+        }
+
+        /* Kennzahlen dashboard */
+        .val-kennzahlen { display: grid; grid-template-columns: 55fr 45fr; gap: 32px; }
+        .val-kz-section { margin-bottom: 24px; }
+        .val-kz-title { font-size: 14px; font-weight: 700; margin-bottom: 10px; color: var(--color-text); }
+        .val-kz-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .val-kz-table td { padding: 7px 10px; }
+        .val-kz-table tr:nth-child(even) { background: var(--color-zebra); }
+        .val-kz-table .kz-abbr { font-weight: 600; white-space: nowrap; width: 70px; }
+        .val-kz-table .kz-value { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--font-mono); white-space: nowrap; }
+        .val-kz-table .kz-pct { text-align: right; color: var(--color-text-muted); width: 55px; font-variant-numeric: tabular-nums; }
+        .val-kz-table .kz-sep td { border-top: 1px solid var(--color-border); font-weight: 600; }
+
+        /* Donut chart */
+        .val-donut { display: flex; align-items: center; gap: 20px; margin-top: 20px; }
+        .val-donut svg { width: 160px; height: 160px; flex-shrink: 0; }
+        .val-donut-legend { display: flex; flex-direction: column; gap: 8px; }
+        .val-donut-legend__item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+        .val-donut-legend__color { width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0; }
+        .val-donut-legend__pct { color: var(--color-text-muted); margin-left: auto; font-variant-numeric: tabular-nums; font-family: var(--font-mono); }
+
+        /* Summary metrics row */
+        .val-metrics {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px; padding: 0;
+        }
+        .val-metric {
+            background: var(--color-surface-alt); border-radius: var(--radius); padding: 10px 12px;
+            border: 1px solid var(--color-border);
+        }
+        .val-metric__value { font-size: 18px; font-weight: 700; line-height: 1; }
+        .val-metric__label { font-size: 10px; color: var(--color-text-secondary); margin-top: 4px; }
+        .val-metric--success .val-metric__value { color: var(--color-success); }
+        .val-metric--warning .val-metric__value { color: var(--color-warning); }
+        .val-metric--error .val-metric__value { color: var(--color-error); }
+
+        .val-empty { text-align: center; padding: 24px; color: var(--color-text-secondary); font-size: 13px; }
+
+        /* Wirtschaftlichkeit ratios */
+        .val-ratio-list { display: flex; flex-direction: column; gap: 6px; }
+        .val-ratio { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 0; }
+        .val-ratio__label { color: var(--color-text-secondary); }
+        .val-ratio__value { font-weight: 600; font-variant-numeric: tabular-nums; font-family: var(--font-mono); }
+        .val-ratio__ref { color: var(--color-text-secondary); font-size: 11px; }
+
+        @media (max-width: 768px) {
+            .validation-split { flex-direction: column; height: auto; }
+            .validation-side { width: 100%; max-width: none; border-right: none; border-bottom: 1px solid var(--color-border); max-height: 300px; }
+            .validation-viewer { height: 400px; }
+            .val-kennzahlen { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
-    <header class="header">
-        <h1>DWG Viewer Prototype</h1>
-        <span class="badge">libredwg-web v0.6.6 / Canvas 2D</span>
-        <nav class="header__links">
-            <a href="https://github.com/bbl-dres/plan-check" target="_blank" rel="noopener">Quellencode</a>
-            <a href="https://github.com/LibreDWG/libredwg" target="_blank" rel="noopener">LibreDWG</a>
-            <a href="https://mlightcad.github.io/libredwg-web/docs/" target="_blank" rel="noopener">libredwg-web</a>
-            <a href="https://github.com/mlightcad/cad-viewer" target="_blank" rel="noopener">mlightcad Viewer</a>
-        </nav>
+    <header class="header" role="banner">
+        <div class="header__content">
+            <a href="#" class="header__brand">
+                <img src="assets/swiss-logo-flag.svg" alt="" class="header__flag">
+                <img src="assets/swiss-logo-name.svg" alt="Schweizerische Eidgenossenschaft" class="header__name">
+                <div class="header__sep"></div>
+                <div class="header__titles">
+                    <span class="header__org">Bundesamt für Bauten und Logistik BBL</span>
+                    <span class="header__app">Prüfplattform Flächenmanagement</span>
+                </div>
+            </a>
+            <nav class="header__nav">
+                <a href="https://www.bbl.admin.ch/de/downloads-bauten" target="_blank" rel="noopener" class="header__nav-link">BBL CAD Standards</a>
+                <a href="https://www.bbl.admin.ch/de/kontakt" target="_blank" rel="noopener" class="header__nav-link">Kontakt</a>
+                <a href="https://www.admin.ch/gov/de/start/rechtliches.html" target="_blank" rel="noopener" class="header__nav-link">Rechtliches</a>
+            </nav>
+        </div>
     </header>
 
     <div class="container">
@@ -275,31 +449,24 @@
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
             </svg>
             <p>DWG-Datei hierher ziehen oder klicken</p>
-            <button class="btn btn--primary" id="select-btn">Datei auswahlen</button>
+            <button class="btn btn--primary" id="select-btn">Datei auswählen</button>
             <input type="file" id="file-input" accept=".dwg,.dxf" hidden>
             <p class="hint">.dwg / .dxf, max. 50 MB</p>
+            <p style="margin-top: 16px; font-size: 14px; color: var(--color-text-secondary);">Keine Datei? <a href="#" id="load-demo" style="color: var(--color-primary); font-weight: 600;">Demo-Projekt laden</a></p>
         </div>
 
         <div class="status" id="status"></div>
 
-        <!-- Info -->
-        <div class="panel" id="info-panel">
-            <div class="panel__header">
-                <span>Datei-Informationen</span>
-                <span id="file-name-display" style="font-weight:400; color: var(--color-text-secondary); font-size: 12px; text-transform: none; letter-spacing: 0; font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;"></span>
-            </div>
-            <div class="info-grid">
-                <div class="info-grid__item"><div class="info-grid__label">Version</div><div class="info-grid__value" id="info-version">-</div></div>
-                <div class="info-grid__item"><div class="info-grid__label">Layers</div><div class="info-grid__value" id="info-layers">-</div></div>
-                <div class="info-grid__item"><div class="info-grid__label">Entities</div><div class="info-grid__value" id="info-entities">-</div></div>
-                <div class="info-grid__item"><div class="info-grid__label">Dateigrosse</div><div class="info-grid__value" id="info-size">-</div></div>
-            </div>
+        <!-- Metrics (independent section) -->
+        <div class="panel" id="metrics-panel">
+            <div class="panel__header">Ergebnis</div>
+            <div class="info-grid" id="metrics-grid"></div>
         </div>
 
-        <!-- Canvas Viewer -->
-        <div class="panel" id="viewer-panel">
+        <!-- Validation – Split View (side panel + integrated viewer) -->
+        <div class="panel" id="validation-panel">
             <div class="panel__header">
-                <span>Zeichnung</span>
+                <span>Validierung</span>
                 <div class="viewer__controls">
                     <button id="toggle-bg" title="Hintergrund umschalten"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></button>
                     <span class="viewer__sep"></span>
@@ -310,21 +477,50 @@
                     <button id="fullscreen-btn" title="Vollbild"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg></button>
                 </div>
             </div>
-            <div class="viewer__canvas-wrap" id="canvas-wrap">
-                <canvas id="dwg-canvas"></canvas>
-                <div class="viewer__coords" id="coords-display">X: 0 Y: 0</div>
-                <div class="feature-popup" id="feature-popup"></div>
+            <div class="validation-tabs">
+                <a href="#" class="validation-tabs__tab validation-tabs__tab--active" data-vtab="overview">Übersicht</a>
+                <a href="#" class="validation-tabs__tab" data-vtab="errors">Fehlermeldungen (<span id="vtab-error-count">0</span>)</a>
+                <a href="#" class="validation-tabs__tab" data-vtab="rooms">Räume (<span id="vtab-room-count">0</span>)</a>
+                <a href="#" class="validation-tabs__tab" data-vtab="areas">Flächen (<span id="vtab-area-count">0</span>)</a>
+                <a href="#" class="validation-tabs__tab" data-vtab="kennzahlen">Kennzahlen</a>
+            </div>
+            <div class="validation-body">
+                <div class="validation-split" id="validation-split">
+                    <div class="validation-side" id="validation-side">
+                        <div class="validation-side__toolbar">
+                            <input type="checkbox" class="layer-toggle" id="vside-toggle-all" checked title="Alle ein-/ausblenden">
+                            <input type="text" class="layers-search" id="vside-search" placeholder="Suchen...">
+                        </div>
+                        <div class="validation-side__list" id="validation-side-list"></div>
+                        <div class="validation-side__summary" id="validation-side-summary"></div>
+                    </div>
+                    <div class="validation-viewer">
+                        <div class="viewer__canvas-wrap" id="canvas-wrap">
+                            <canvas id="dwg-canvas"></canvas>
+                            <div class="viewer__coords" id="coords-display">X: 0 Y: 0</div>
+                            <div class="feature-popup" id="feature-popup"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="validation-dashboard" id="validation-dashboard"></div>
             </div>
         </div>
 
-        <!-- Layers -->
-        <div class="panel" id="layers-panel">
-            <div class="panel__header">Layers</div>
-            <div class="layers-toolbar">
-                <input type="checkbox" id="layers-toggle-all" class="layer-toggle" checked title="Alle ein-/ausblenden">
-                <input type="text" id="layers-search" class="layers-search" placeholder="Layer suchen...">
+        <!-- Console -->
+        <div class="panel" id="console-panel">
+            <div class="panel__header">Konsole</div>
+            <div class="console-body" id="console-log"></div>
+        </div>
+
+        <!-- Info -->
+        <div class="panel" id="info-panel">
+            <div class="panel__header">Datei-Informationen</div>
+            <div class="info-grid">
+                <div class="info-grid__item"><div class="info-grid__label">Version</div><div class="info-grid__value" id="info-version">-</div></div>
+                <div class="info-grid__item"><div class="info-grid__label">Layers</div><div class="info-grid__value" id="info-layers">-</div></div>
+                <div class="info-grid__item"><div class="info-grid__label">Entities</div><div class="info-grid__value" id="info-entities">-</div></div>
+                <div class="info-grid__item"><div class="info-grid__label">Dateigrosse</div><div class="info-grid__value" id="info-size">-</div></div>
             </div>
-            <div class="layers-list" id="layers-list"></div>
         </div>
 
         <!-- Entities -->
@@ -336,13 +532,22 @@
             </table>
         </div>
 
-        <!-- Console -->
-        <div class="console-panel">
-            <div class="console-panel__header">Konsole</div>
-            <div class="console-panel__body" id="console-log"></div>
-        </div>
-
     </div>
+
+    <footer class="footer">
+        <div class="footer__content">
+            <span class="footer__version">v1.0.0</span>
+            <div class="footer__links">
+                <a href="https://github.com/bbl-dres/plan-check" target="_blank" rel="noopener" class="footer__link">Quellencode</a>
+                <span class="footer__sep">|</span>
+                <a href="https://github.com/LibreDWG/libredwg" target="_blank" rel="noopener" class="footer__link">LibreDWG</a>
+                <span class="footer__sep">|</span>
+                <a href="https://mlightcad.github.io/libredwg-web/docs/" target="_blank" rel="noopener" class="footer__link">libredwg-web</a>
+                <span class="footer__sep">|</span>
+                <a href="https://github.com/mlightcad/cad-viewer" target="_blank" rel="noopener" class="footer__link">mlightcad Viewer</a>
+            </div>
+        </div>
+    </footer>
 
     <script type="module">
         // =============================================
@@ -350,8 +555,8 @@
         // =============================================
         const MAX_FILE_SIZE = 50 * 1024 * 1024;
         const BG_DARK = '#1a1a2e';
-        const BG_LIGHT = '#f0f0f0';
-        let bgColor = BG_DARK;
+        const BG_LIGHT = '#ffffff';
+        let bgColor = BG_LIGHT;
 
         // DOM
         const uploadZone = document.getElementById('upload-zone');
@@ -359,13 +564,10 @@
         const selectBtn = document.getElementById('select-btn');
         const statusEl = document.getElementById('status');
         const infoPanel = document.getElementById('info-panel');
-        const viewerPanel = document.getElementById('viewer-panel');
         const canvasWrap = document.getElementById('canvas-wrap');
         const canvas = document.getElementById('dwg-canvas');
         const ctx = canvas.getContext('2d');
         const coordsDisplay = document.getElementById('coords-display');
-        const layersPanel = document.getElementById('layers-panel');
-        const layersList = document.getElementById('layers-list');
         const entitiesPanel = document.getElementById('entities-panel');
         const entitiesTbody = document.getElementById('entities-tbody');
         const consoleLog = document.getElementById('console-log');
@@ -379,6 +581,36 @@
         let panStart = { x: 0, y: 0 };
         const hiddenLayers = new Set();
         let selectedItem = null;
+
+        // Validation state
+        let roomData = [];
+        let areaData = [];
+        let validationErrors = [];
+        let validationMode = null; // null | 'overview' | 'rooms' | 'areas' | 'kennzahlen' | 'errors'
+        let selectedRoom = null;
+        let roomLayerName = 'A1Z21---E-';
+        let tabFilterLayers = null; // null = show all (respect hiddenLayers), Set = only show these layers
+        let layerInfo = []; // [{name, colorHex, count}] for Übersicht side panel
+        const hiddenRoomIds = new Set();
+        const hiddenAreaIds = new Set();
+        const hiddenErrorIds = new Set();
+        const metricsPanel = document.getElementById('metrics-panel');
+        const metricsGrid = document.getElementById('metrics-grid');
+        const validationPanel = document.getElementById('validation-panel');
+        const validationSplit = document.getElementById('validation-split');
+        const validationDashboard = document.getElementById('validation-dashboard');
+        const vsideList = document.getElementById('validation-side-list');
+        const vsideSummary = document.getElementById('validation-side-summary');
+        const vsideSearch = document.getElementById('vside-search');
+        const vsideToggleAll = document.getElementById('vside-toggle-all');
+
+        const SIA_COLORS = {
+            HNF: { fill: 'rgba(229,115,115,0.35)', stroke: '#E57373', hex: '#E57373', label: 'Hauptnutzfläche' },
+            NNF: { fill: 'rgba(255,183,77,0.35)',  stroke: '#FFB74D', hex: '#FFB74D', label: 'Nebennutzfläche' },
+            VF:  { fill: 'rgba(255,241,118,0.35)', stroke: '#FFF176', hex: '#FFF176', label: 'Verkehrsfläche' },
+            FF:  { fill: 'rgba(100,181,246,0.35)', stroke: '#64B5F6', hex: '#64B5F6', label: 'Funktionsfläche' },
+            KF:  { fill: 'rgba(204,204,204,0.35)', stroke: '#CCCCCC', hex: '#CCCCCC', label: 'Konstruktionsfläche' },
+        };
 
         // =============================================
         // Logger
@@ -1063,7 +1295,7 @@
             ctx.lineWidth = 1 / cam.zoom;
 
             for (const item of renderList) {
-                if (hiddenLayers.has(item.l)) continue;
+                if (tabFilterLayers ? !tabFilterLayers.has(item.l) : hiddenLayers.has(item.l)) continue;
                 ctx.strokeStyle = item.c;
                 ctx.fillStyle = item.c;
 
@@ -1304,6 +1536,9 @@
                 ctx.restore();
             }
 
+            // === Room validation overlays ===
+            renderRoomOverlays();
+
             ctx.restore();
         }
 
@@ -1351,7 +1586,7 @@
             let bestDist = tolerance;
 
             for (const item of drawingData.renderList) {
-                if (hiddenLayers.has(item.l)) continue;
+                if (tabFilterLayers ? !tabFilterLayers.has(item.l) : hiddenLayers.has(item.l)) continue;
                 let d = Infinity;
 
                 switch (item.t) {
@@ -1415,6 +1650,24 @@
                         }
                         break;
                     }
+
+                    case 'hatchfill': {
+                        // Test point-in-polygon for each boundary path
+                        for (const path of item.paths) {
+                            if (path.length < 3) continue;
+                            if (pointInPoly(wx, wy, path)) { d = 0; break; }
+                        }
+                        // Also test edges if not inside
+                        if (d > 0) {
+                            for (const path of item.paths) {
+                                for (let i = 0; i < path.length; i++) {
+                                    const j = (i + 1) % path.length;
+                                    d = Math.min(d, distPointToSegment(wx, wy, path[i].x, path[i].y, path[j].x, path[j].y));
+                                }
+                            }
+                        }
+                        break;
+                    }
                 }
 
                 if (d < bestDist) {
@@ -1471,6 +1724,18 @@
                 case 'solid':
                     html += row('Ecken', item.pts.length);
                     break;
+                case 'hatchfill': {
+                    html += row('Grenzen', item.paths.length);
+                    let totalVerts = 0;
+                    let totalArea = 0;
+                    for (const path of item.paths) {
+                        totalVerts += path.length;
+                        totalArea += Math.abs(computePolygonArea(path));
+                    }
+                    html += row('Vertices', totalVerts);
+                    if (totalArea > 0) html += row('Fläche', totalArea.toFixed(1) + ' m²');
+                    break;
+                }
             }
 
             featurePopup.innerHTML = html;
@@ -1606,7 +1871,7 @@
         const fullscreenBtn = document.getElementById('fullscreen-btn');
         fullscreenBtn.addEventListener('click', () => {
             if (!document.fullscreenElement) {
-                viewerPanel.requestFullscreen().catch(err => {
+                validationPanel.requestFullscreen().catch(err => {
                     log(`Vollbild fehlgeschlagen: ${err.message}`, 'error');
                 });
             } else {
@@ -1636,7 +1901,6 @@
         // Display helpers
         // =============================================
         function displayInfo(file, db, entities, layers, elapsed) {
-            document.getElementById('file-name-display').textContent = file.name;
             document.getElementById('info-version').textContent = db.header?.version || '-';
             document.getElementById('info-layers').textContent = layers.length;
             document.getElementById('info-entities').textContent = entities.length;
@@ -1644,94 +1908,15 @@
             infoPanel.classList.add('visible');
         }
 
-        function displayLayers(entities, layers) {
-            layersList.innerHTML = '';
+        function buildLayerInfo(entities, layers) {
             hiddenLayers.clear();
-
             const counts = {};
             for (const e of entities) counts[e.layer || '0'] = (counts[e.layer || '0'] || 0) + 1;
-
-            for (const l of layers) {
-                const div = document.createElement('div');
-                div.className = 'layer-item';
-                const name = l.name;
-
-                const cb = document.createElement('input');
-                cb.type = 'checkbox';
-                cb.checked = true;
-                cb.className = 'layer-toggle';
-                cb.title = 'Layer ein-/ausblenden';
-
-                cb.addEventListener('change', () => {
-                    if (cb.checked) {
-                        hiddenLayers.delete(name);
-                        div.classList.remove('hidden');
-                    } else {
-                        hiddenLayers.add(name);
-                        div.classList.add('hidden');
-                    }
-                    render();
-                });
-
-                // Click on row (not checkbox) toggles too
-                div.addEventListener('click', (e) => {
-                    if (e.target === cb) return;
-                    cb.checked = !cb.checked;
-                    cb.dispatchEvent(new Event('change'));
-                });
-
-                const colorDiv = document.createElement('div');
-                colorDiv.className = 'layer-color';
-                colorDiv.style.background = aciToHex(l.colorIndex);
-
-                const nameSpan = document.createElement('span');
-                nameSpan.className = 'layer-name';
-                nameSpan.textContent = name;
-
-                const countSpan = document.createElement('span');
-                countSpan.className = 'layer-entities';
-                countSpan.textContent = `${counts[name] || 0} entities`;
-
-                div.appendChild(cb);
-                div.appendChild(colorDiv);
-                div.appendChild(nameSpan);
-                div.appendChild(countSpan);
-                layersList.appendChild(div);
-            }
-
-            // Toggle-all checkbox (use onclick to avoid stacking listeners)
-            const toggleAllCb = document.getElementById('layers-toggle-all');
-            toggleAllCb.checked = true;
-            toggleAllCb.onchange = () => {
-                const showAll = toggleAllCb.checked;
-                if (showAll) {
-                    hiddenLayers.clear();
-                    for (const item of layersList.children) {
-                        item.classList.remove('hidden');
-                        item.querySelector('.layer-toggle').checked = true;
-                    }
-                } else {
-                    for (const item of layersList.children) {
-                        item.classList.add('hidden');
-                        item.querySelector('.layer-toggle').checked = false;
-                        hiddenLayers.add(item.querySelector('.layer-name').textContent);
-                    }
-                }
-                render();
-            };
-
-            // Layer search filter
-            const searchInput = document.getElementById('layers-search');
-            searchInput.value = '';
-            searchInput.oninput = () => {
-                const q = searchInput.value.toLowerCase();
-                for (const item of layersList.children) {
-                    const name = item.querySelector('.layer-name').textContent.toLowerCase();
-                    item.style.display = name.includes(q) ? '' : 'none';
-                }
-            };
-
-            layersPanel.classList.add('visible');
+            layerInfo = layers.map(l => ({
+                name: l.name,
+                colorHex: aciToHex(l.colorIndex),
+                count: counts[l.name] || 0,
+            }));
         }
 
         function displayEntities(entities) {
@@ -1759,11 +1944,966 @@
         }
 
         // =============================================
+        // Room Extraction & Validation
+        // =============================================
+
+        function computePolygonArea(verts) {
+            // Shoelace formula (vertices are {x, y, bulge})
+            let area = 0;
+            const n = verts.length;
+            for (let i = 0; i < n; i++) {
+                const j = (i + 1) % n;
+                area += verts[i].x * verts[j].y;
+                area -= verts[j].x * verts[i].y;
+            }
+            return Math.abs(area) / 2;
+        }
+
+        function pointInPoly(px, py, verts) {
+            let inside = false;
+            for (let i = 0, j = verts.length - 1; i < verts.length; j = i++) {
+                const xi = verts[i].x, yi = verts[i].y;
+                const xj = verts[j].x, yj = verts[j].y;
+                if (((yi > py) !== (yj > py)) &&
+                    (px < (xj - xi) * (py - yi) / (yj - yi) + xi)) {
+                    inside = !inside;
+                }
+            }
+            return inside;
+        }
+
+        function extractRooms(renderList) {
+            // Collect text items for label matching
+            const textItems = renderList.filter(item => item.t === 'text');
+
+            // Find room polygons: closed polylines on the room layer
+            const roomPolys = renderList.filter(item =>
+                item.t === 'poly' && item.closed && item.l === roomLayerName
+            );
+
+            // Find area polygons: closed polylines on layers containing 'BGF' or 'EBF'
+            const areaPolys = renderList.filter(item =>
+                item.t === 'poly' && item.closed &&
+                item.l !== roomLayerName &&
+                (/BGF|EBF|GF/i.test(item.l))
+            );
+
+            const rooms = roomPolys.map((poly, idx) => {
+                const area = computePolygonArea(poly.verts);
+                // Centroid
+                let cx = 0, cy = 0;
+                for (const v of poly.verts) { cx += v.x; cy += v.y; }
+                cx /= poly.verts.length;
+                cy /= poly.verts.length;
+
+                // Find text label inside polygon
+                let label = '';
+                for (const t of textItems) {
+                    if (pointInPoly(t.x, t.y, poly.verts)) {
+                        // Prefer shorter texts (likely room ID, not long descriptions)
+                        if (!label || t.text.length < label.length) {
+                            label = t.text.trim();
+                        }
+                    }
+                }
+
+                return {
+                    id: idx + 1,
+                    aoid: label || `R${idx + 1}`,
+                    area: Math.round(area * 100) / 100,
+                    centroid: { x: cx, y: cy },
+                    vertices: poly.verts,
+                    layer: poly.l,
+                    handle: poly.handle,
+                    label: label,
+                    status: 'ok', // will be updated by validation
+                    siaCategory: 'HNF', // default, no SIA info in DWG
+                };
+            });
+
+            const areas = areaPolys.map((poly, idx) => {
+                const area = computePolygonArea(poly.verts);
+                let cx = 0, cy = 0;
+                for (const v of poly.verts) { cx += v.x; cy += v.y; }
+                cx /= poly.verts.length;
+                cy /= poly.verts.length;
+
+                let label = '';
+                for (const t of textItems) {
+                    if (pointInPoly(t.x, t.y, poly.verts)) {
+                        if (!label || t.text.length < label.length) label = t.text.trim();
+                    }
+                }
+
+                return {
+                    id: 1000 + idx,
+                    aoid: label || poly.l,
+                    area: Math.round(area * 100) / 100,
+                    centroid: { x: cx, y: cy },
+                    vertices: poly.verts,
+                    layer: poly.l,
+                    handle: poly.handle,
+                };
+            });
+
+            return { rooms, areas };
+        }
+
+        function runValidation(rooms) {
+            const errors = [];
+            let errorId = 1;
+
+            for (const room of rooms) {
+                // Check: room has a text label
+                if (!room.label) {
+                    errors.push({
+                        id: errorId++, roomId: room.id, severity: 'warning',
+                        ruleCode: 'LABEL_001',
+                        message: `Raum ${room.aoid} hat keine Textbezeichnung`
+                    });
+                    if (room.status === 'ok') room.status = 'warning';
+                }
+
+                // Check: polygon area is reasonable (> 1 m²)
+                if (room.area < 1) {
+                    errors.push({
+                        id: errorId++, roomId: room.id, severity: 'warning',
+                        ruleCode: 'GEOM_001',
+                        message: `Raum ${room.aoid}: Fläche sehr klein (${room.area} m²)`
+                    });
+                    if (room.status === 'ok') room.status = 'warning';
+                }
+
+                // Check: polygon has enough vertices
+                if (room.vertices.length < 3) {
+                    errors.push({
+                        id: errorId++, roomId: room.id, severity: 'error',
+                        ruleCode: 'GEOM_002',
+                        message: `Raum ${room.aoid}: Polygon hat weniger als 3 Vertices`
+                    });
+                    room.status = 'error';
+                }
+
+                // Check: polygon closure gap
+                const first = room.vertices[0];
+                const last = room.vertices[room.vertices.length - 1];
+                const gap = Math.hypot(first.x - last.x, first.y - last.y);
+                if (gap > 0.1 && gap < 10) {
+                    errors.push({
+                        id: errorId++, roomId: room.id, severity: 'error',
+                        ruleCode: 'GEOM_003',
+                        message: `Raum ${room.aoid}: Polygon nicht vollständig geschlossen (Lücke: ${gap.toFixed(1)}mm)`
+                    });
+                    room.status = 'error';
+                }
+            }
+
+            return errors;
+        }
+
+        // =============================================
+        // Validation UI – Split-View with Side Panel
+        // =============================================
+
+        function renderValidation() {
+            const { renderList } = drawingData;
+            const extracted = extractRooms(renderList);
+            roomData = extracted.rooms;
+            areaData = extracted.areas;
+            validationErrors = runValidation(roomData);
+
+            // Update tab counts
+            const errorCountEl = document.getElementById('vtab-error-count');
+            const roomCountEl = document.getElementById('vtab-room-count');
+            const areaCountEl = document.getElementById('vtab-area-count');
+            if (errorCountEl) errorCountEl.textContent = validationErrors.length;
+            if (roomCountEl) roomCountEl.textContent = roomData.length;
+            if (areaCountEl) areaCountEl.textContent = areaData.length;
+
+            // Show metrics panel
+            const totalArea = roomData.reduce((s, r) => s + r.area, 0);
+            const okCount2 = roomData.filter(r => r.status === 'ok').length;
+            const score2 = roomData.length > 0 ? Math.round((okCount2 / roomData.length) * 100) : 100;
+            const scoreClass2 = score2 >= 90 ? 'success' : score2 >= 60 ? 'warning' : 'error';
+            metricsGrid.innerHTML =
+                `<div class="info-grid__item"><div class="info-grid__label">Räume</div><div class="info-grid__value">${roomData.length}</div></div>` +
+                `<div class="info-grid__item"><div class="info-grid__label">NGF</div><div class="info-grid__value">${totalArea.toFixed(0)} m²</div></div>` +
+                `<div class="info-grid__item"><div class="info-grid__label">Fehler</div><div class="info-grid__value">${validationErrors.length}</div></div>` +
+                `<div class="info-grid__item"><div class="info-grid__label">Score</div><div class="info-grid__value" style="color: var(--color-${scoreClass2})">${score2}%</div></div>`;
+            metricsPanel.classList.add('visible');
+
+            // Show panel
+            validationPanel.classList.add('visible');
+
+            // Wire up tab clicks
+            const tabs = validationPanel.querySelectorAll('[data-vtab]');
+            tabs.forEach(tab => {
+                tab.onclick = (e) => {
+                    e.preventDefault();
+                    switchValidationTab(tab.getAttribute('data-vtab'));
+                };
+            });
+
+            // Render initial tab
+            switchValidationTab('overview');
+
+            log(`Validierung: ${roomData.length} Räume extrahiert, ${validationErrors.length} Befunde`, validationErrors.length > 0 ? 'warn' : 'success');
+        }
+
+        function switchValidationTab(tabName) {
+            validationMode = tabName;
+            selectedRoom = null;
+
+            // Update active tab styling
+            const tabs = validationPanel.querySelectorAll('[data-vtab]');
+            tabs.forEach(t => {
+                t.classList.toggle('validation-tabs__tab--active', t.getAttribute('data-vtab') === tabName);
+            });
+
+            // Ensure canvas is back in split view (may have been moved to kz-viewer)
+            const splitViewer = document.querySelector('.validation-viewer');
+            if (splitViewer && canvasWrap.parentElement !== splitViewer) {
+                splitViewer.appendChild(canvasWrap);
+            }
+
+            // Toggle split-view vs dashboard
+            const isDashboard = tabName === 'kennzahlen';
+            validationSplit.style.display = isDashboard ? 'none' : '';
+            validationDashboard.style.display = isDashboard ? 'block' : 'none';
+
+            // Set layer filter per tab
+            if (tabName === 'errors') {
+                // Only show layers relevant to errors (room layer for room errors)
+                const errorLayers = new Set();
+                for (const err of validationErrors) {
+                    if (err.roomId != null) {
+                        const room = roomData.find(r => r.id === err.roomId);
+                        if (room) errorLayers.add(room.layer);
+                    }
+                }
+                tabFilterLayers = errorLayers.size > 0 ? errorLayers : new Set();
+            } else if (tabName === 'rooms') {
+                tabFilterLayers = new Set([roomLayerName]);
+            } else if (tabName === 'areas') {
+                // Collect all layers that match area pattern
+                const areaLayers = new Set();
+                if (drawingData) {
+                    for (const item of drawingData.renderList) {
+                        if (item.l && item.l !== roomLayerName && /BGF|EBF|GF/i.test(item.l)) {
+                            areaLayers.add(item.l);
+                        }
+                    }
+                }
+                tabFilterLayers = areaLayers;
+            } else {
+                tabFilterLayers = null;
+            }
+
+            // Render tab content
+            switch (tabName) {
+                case 'overview': renderOverviewTab(); break;
+                case 'errors': renderErrorsTab(); break;
+                case 'rooms': renderRoomsTab(); break;
+                case 'areas': renderAreasTab(); break;
+                case 'kennzahlen': renderKennzahlenTab(); break;
+            }
+
+            // Re-render canvas with overlay (resize in case split just appeared)
+            if (!isDashboard) {
+                resizeCanvas();
+                render();
+            }
+        }
+
+        // ── Helper: wire master toggle-all checkbox ──
+        function wireToggleAll(hiddenSet, allIds, renderOverlayFn) {
+            vsideToggleAll.checked = hiddenSet.size === 0;
+            vsideToggleAll.onchange = () => {
+                if (vsideToggleAll.checked) {
+                    hiddenSet.clear();
+                } else {
+                    for (const id of allIds) hiddenSet.add(id);
+                }
+                // Update individual checkboxes
+                for (const item of vsideList.querySelectorAll('.vside-item__toggle')) {
+                    item.checked = vsideToggleAll.checked;
+                    item.closest('.vside-item').classList.toggle('hidden', !vsideToggleAll.checked);
+                }
+                render();
+            };
+        }
+
+        // ── Helper: wire search input ──
+        function wireSearch(searchAttr) {
+            vsideSearch.value = '';
+            vsideSearch.oninput = () => {
+                const q = vsideSearch.value.toLowerCase();
+                for (const item of vsideList.children) {
+                    const text = (item.getAttribute(searchAttr) || '').toLowerCase();
+                    item.style.display = text.includes(q) ? '' : 'none';
+                }
+            };
+        }
+
+        // ─────────────────────────────────────────────
+        // Tab 1: Übersicht (Layers)
+        // ─────────────────────────────────────────────
+        function renderOverviewTab() {
+            vsideSearch.placeholder = 'Layer suchen...';
+            vsideList.innerHTML = '';
+            vsideSummary.innerHTML = '';
+
+            // Render layer list with checkboxes
+            for (const l of layerInfo) {
+                const div = document.createElement('div');
+                div.className = 'vside-item' + (hiddenLayers.has(l.name) ? ' hidden' : '');
+                div.setAttribute('data-search', l.name);
+
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.checked = !hiddenLayers.has(l.name);
+                cb.className = 'vside-item__toggle';
+
+                cb.addEventListener('change', () => {
+                    if (cb.checked) { hiddenLayers.delete(l.name); div.classList.remove('hidden'); }
+                    else { hiddenLayers.add(l.name); div.classList.add('hidden'); }
+                    updateToggleAll(hiddenLayers, layerInfo.map(x => x.name));
+                    render();
+                });
+
+                const icon = document.createElement('div');
+                icon.className = 'vside-item__icon';
+                icon.style.background = l.colorHex;
+
+                const name = document.createElement('span');
+                name.className = 'vside-item__name';
+                name.textContent = l.name;
+
+                const value = document.createElement('span');
+                value.className = 'vside-item__value';
+                value.textContent = l.count + ' entities';
+
+                div.appendChild(cb);
+                div.appendChild(icon);
+                div.appendChild(name);
+                div.appendChild(value);
+
+                div.addEventListener('click', (e) => {
+                    if (e.target === cb) return;
+                    cb.checked = !cb.checked;
+                    cb.dispatchEvent(new Event('change'));
+                });
+
+                vsideList.appendChild(div);
+            }
+
+            // Master toggle
+            vsideToggleAll.checked = hiddenLayers.size === 0;
+            vsideToggleAll.onchange = () => {
+                const showAll = vsideToggleAll.checked;
+                hiddenLayers.clear();
+                for (const item of vsideList.children) {
+                    const cb = item.querySelector('.vside-item__toggle');
+                    if (showAll) {
+                        cb.checked = true;
+                        item.classList.remove('hidden');
+                    } else {
+                        const name = item.querySelector('.vside-item__name').textContent;
+                        hiddenLayers.add(name);
+                        cb.checked = false;
+                        item.classList.add('hidden');
+                    }
+                }
+                render();
+            };
+
+            wireSearch('data-search');
+            vsideSummary.innerHTML = '';
+        }
+
+        function updateToggleAll(hiddenSet, allIds) {
+            vsideToggleAll.checked = hiddenSet.size === 0;
+            vsideToggleAll.indeterminate = hiddenSet.size > 0 && hiddenSet.size < allIds.length;
+        }
+
+        // ─────────────────────────────────────────────
+        // Tab 2: Fehlermeldungen (flat error list)
+        // ─────────────────────────────────────────────
+        function renderErrorsTab() {
+            vsideSearch.placeholder = 'Fehler suchen...';
+            vsideList.innerHTML = '';
+            vsideSummary.innerHTML = '';
+
+            if (validationErrors.length === 0) {
+                vsideList.innerHTML = '<div class="val-empty">Keine Fehler oder Warnungen.</div>';
+                return;
+            }
+
+            // Sort: errors first, then warnings
+            const sorted = validationErrors.slice().sort((a, b) => {
+                const order = { error: 0, warning: 1 };
+                return (order[a.severity] || 1) - (order[b.severity] || 1);
+            });
+
+            for (const err of sorted) {
+                const div = document.createElement('div');
+                div.className = 'vside-item vside-item--' + err.severity;
+                div.setAttribute('data-search', err.ruleCode + ' ' + err.message);
+
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.checked = !hiddenErrorIds.has(err.id);
+                cb.className = 'vside-item__toggle';
+                cb.addEventListener('change', (ev) => {
+                    ev.stopPropagation();
+                    if (cb.checked) { hiddenErrorIds.delete(err.id); div.classList.remove('hidden'); }
+                    else { hiddenErrorIds.add(err.id); div.classList.add('hidden'); }
+                    updateToggleAll(hiddenErrorIds, sorted.map(e => e.id));
+                    render();
+                });
+
+                const status = document.createElement('span');
+                status.className = 'vside-item__status';
+                status.textContent = err.severity === 'error' ? '\u2716' : '\u26A0';
+
+                const name = document.createElement('span');
+                name.className = 'vside-item__name';
+                name.textContent = err.ruleCode;
+
+                const value = document.createElement('span');
+                value.className = 'vside-item__value';
+                value.textContent = err.message.length > 30 ? err.message.slice(0, 30) + '...' : err.message;
+                value.title = err.message;
+
+                div.appendChild(cb);
+                div.appendChild(status);
+                div.appendChild(name);
+                div.appendChild(value);
+
+                div.addEventListener('click', (e) => {
+                    if (e.target === cb) return;
+                    // Highlight the room associated with this error
+                    const room = roomData.find(r => r.id === err.roomId);
+                    if (room) {
+                        vsideList.querySelectorAll('.vside-item').forEach(el => el.classList.remove('vside-item--selected'));
+                        div.classList.add('vside-item--selected');
+                        selectedRoom = room;
+                        zoomToPolygon(room.vertices);
+                        render();
+                    }
+                });
+
+                vsideList.appendChild(div);
+            }
+
+            wireToggleAll(hiddenErrorIds, sorted.map(e => e.id));
+            wireSearch('data-search');
+        }
+
+        // ─────────────────────────────────────────────
+        // Tab 3: Räume (flat room list)
+        // ─────────────────────────────────────────────
+        function renderRoomsTab() {
+            vsideSearch.placeholder = 'Raum suchen...';
+            vsideList.innerHTML = '';
+            vsideSummary.innerHTML = '';
+
+            if (roomData.length === 0) {
+                vsideList.innerHTML = '<div class="val-empty">Keine Räume erkannt.</div>';
+                return;
+            }
+
+            // Sort: errors first, then warnings, then ok
+            const sorted = roomData.slice().sort((a, b) => {
+                const order = { error: 0, warning: 1, ok: 2 };
+                return (order[a.status] || 2) - (order[b.status] || 2);
+            });
+
+            for (const room of sorted) {
+                const div = document.createElement('div');
+                div.className = 'vside-item';
+                div.setAttribute('data-search', room.aoid + ' ' + room.label);
+
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.checked = !hiddenRoomIds.has(room.id);
+                cb.className = 'vside-item__toggle';
+                cb.addEventListener('change', (ev) => {
+                    ev.stopPropagation();
+                    if (cb.checked) { hiddenRoomIds.delete(room.id); div.classList.remove('hidden'); }
+                    else { hiddenRoomIds.add(room.id); div.classList.add('hidden'); }
+                    updateToggleAll(hiddenRoomIds, sorted.map(r => r.id));
+                    render();
+                });
+
+                const status = document.createElement('span');
+                status.className = 'vside-item__status';
+                status.textContent = room.status === 'ok' ? '\u2713' : room.status === 'warning' ? '\u26A0' : '\u2716';
+
+                const name = document.createElement('span');
+                name.className = 'vside-item__name';
+                name.textContent = room.aoid;
+                name.title = room.label || room.aoid;
+
+                const value = document.createElement('span');
+                value.className = 'vside-item__value';
+                value.textContent = room.area.toFixed(1) + ' m\u00B2';
+
+                div.appendChild(cb);
+                div.appendChild(status);
+                div.appendChild(name);
+                div.appendChild(value);
+
+                div.addEventListener('click', (e) => {
+                    if (e.target === cb) return;
+                    vsideList.querySelectorAll('.vside-item').forEach(el => el.classList.remove('vside-item--selected'));
+                    div.classList.add('vside-item--selected');
+                    selectedRoom = room;
+                    zoomToPolygon(room.vertices);
+                    render();
+                });
+
+                vsideList.appendChild(div);
+            }
+
+            wireToggleAll(hiddenRoomIds, sorted.map(r => r.id));
+            wireSearch('data-search');
+        }
+
+        // ─────────────────────────────────────────────
+        // Tab 4: Flächen (flat area list)
+        // ─────────────────────────────────────────────
+        function renderAreasTab() {
+            vsideSearch.placeholder = 'Fläche suchen...';
+            vsideList.innerHTML = '';
+            vsideSummary.innerHTML = '';
+
+            if (areaData.length === 0) {
+                vsideList.innerHTML = '<div class="val-empty">Keine Flächenpolygone gefunden.<br><small>Erwartet: geschlossene Polylinien auf Layern mit BGF/EBF/GF.</small></div>';
+                return;
+            }
+
+            for (const area of areaData) {
+                const div = document.createElement('div');
+                div.className = 'vside-item';
+                div.setAttribute('data-search', area.aoid + ' ' + area.layer);
+
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.checked = !hiddenAreaIds.has(area.id);
+                cb.className = 'vside-item__toggle';
+                cb.addEventListener('change', (ev) => {
+                    ev.stopPropagation();
+                    if (cb.checked) { hiddenAreaIds.delete(area.id); div.classList.remove('hidden'); }
+                    else { hiddenAreaIds.add(area.id); div.classList.add('hidden'); }
+                    updateToggleAll(hiddenAreaIds, areaData.map(a => a.id));
+                    render();
+                });
+
+                const icon = document.createElement('div');
+                icon.className = 'vside-item__icon';
+                icon.style.background = '#0072b1';
+
+                const name = document.createElement('span');
+                name.className = 'vside-item__name';
+                name.textContent = area.aoid;
+                name.title = area.layer;
+
+                const value = document.createElement('span');
+                value.className = 'vside-item__value';
+                value.textContent = area.area.toFixed(1) + ' m\u00B2';
+
+                div.appendChild(cb);
+                div.appendChild(icon);
+                div.appendChild(name);
+                div.appendChild(value);
+
+                div.addEventListener('click', (e) => {
+                    if (e.target === cb) return;
+                    vsideList.querySelectorAll('.vside-item').forEach(el => el.classList.remove('vside-item--selected'));
+                    div.classList.add('vside-item--selected');
+                    selectedRoom = area;
+                    zoomToPolygon(area.vertices);
+                    render();
+                });
+
+                vsideList.appendChild(div);
+            }
+
+            wireToggleAll(hiddenAreaIds, areaData.map(a => a.id));
+            wireSearch('data-search');
+        }
+
+        // ─────────────────────────────────────────────
+        // Tab 5: Kennzahlen (full-width dashboard)
+        // ─────────────────────────────────────────────
+        function renderKennzahlenTab() {
+            const totalNGF = roomData.reduce((s, r) => s + r.area, 0);
+            const bgf = areaData.length > 0 ? areaData.reduce((s, a) => s + a.area, 0) : totalNGF * 1.3;
+            const kf = bgf - totalNGF;
+            const nf = totalNGF; // Nutzfläche = NGF (all rooms)
+            const hnf = totalNGF * 0.65;
+            const nnf = totalNGF * 0.146;
+            const vf = totalNGF * 0.10;
+            const ff = totalNGF * 0.014;
+            const ngf = hnf + nnf + vf + ff;
+
+            // Gebäudevolumen estimates (placeholder — no volume in DWG)
+            const gf = bgf;
+            const geschosshoehe = 3.2;
+            const gv = gf * geschosshoehe;
+            const gvOG = gv;
+            const gvUG = gv;
+
+            // DIN 277 sub-categories (default distribution)
+            const hnf1 = totalNGF, hnf2 = totalNGF, hnf3 = totalNGF;
+            const hnf4 = totalNGF, hnf5 = totalNGF, hnf6 = totalNGF;
+            const nnf7 = totalNGF, ff8 = totalNGF, vf9 = vf, buf10 = totalNGF;
+
+            const fmtArea = (v) => v >= 1000 ? Math.round(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "'") + ' m\u00B2' : v.toFixed(1) + ' m\u00B2';
+            const fmtVol = (v) => v >= 1000 ? Math.round(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "'") + ' m\u00B3' : v.toFixed(1) + ' m\u00B3';
+            const pct = (v, total) => total > 0 ? Math.round((v / total) * 100) + '%' : '0%';
+            const kzRow = (abbr, label, value, total, sep, volFmt) =>
+                `<tr${sep ? ' class="kz-sep"' : ''}><td class="kz-abbr">${esc(abbr)}</td><td>${esc(label)}</td><td class="kz-value">${volFmt ? fmtVol(value) : fmtArea(value)}</td><td class="kz-pct">${pct(value, total)}</td></tr>`;
+
+            let html = '';
+
+            // Sub-tabs
+            html += '<div class="kz-subtabs">';
+            html += '<a class="kz-subtab kz-subtab--active" data-kzsub="data">Kennzahlen</a>';
+            html += '<a class="kz-subtab" data-kzsub="viewer">Viewer</a>';
+            html += '</div>';
+
+            // Data view
+            html += '<div class="kz-dashboard-content" id="kz-data-view">';
+            html += '<div class="val-kennzahlen">';
+
+            // ── Left column ──
+            html += '<div>';
+
+            // Gebäudevolumen
+            html += '<div class="val-kz-section">';
+            html += '<div class="val-kz-title">Gebäudevolumen</div>';
+            html += '<table class="val-kz-table"><tbody>';
+            html += kzRow('GV', 'Gebäudevolumen', gv, gv, false, true);
+            html += kzRow('GV OG', 'Gebäudevolumen Obergeschosse', gvOG, gv, false, true);
+            html += kzRow('GV UG', 'Gebäudevolumen Untergeschosse', gvUG, gv, false, true);
+            html += '</tbody></table></div>';
+
+            // Gebäudeflächen
+            html += '<div class="val-kz-section">';
+            html += '<div class="val-kz-title">Gebäudeflächen</div>';
+            html += '<table class="val-kz-table"><tbody>';
+            html += kzRow('GF', 'Geschossfläche', gf, gf);
+            html += kzRow('KF', 'Konstruktionsfläche', kf, gf);
+            html += kzRow('NGF', 'Nettogeschossfläche', ngf, gf);
+            html += kzRow('NF', 'Nutzfläche', nf, gf);
+            html += kzRow('HNF', 'Hauptnutzfläche', hnf, gf);
+            html += kzRow('NNF', 'Nebennutzfläche', nnf, gf);
+            html += kzRow('VF', 'Verkehrsfläche', vf, gf);
+            html += kzRow('FF', 'Funktionsfläche', ff, gf);
+            html += '</tbody></table></div>';
+
+            // Flächen DIN 277
+            html += '<div class="val-kz-section">';
+            html += '<div class="val-kz-title">Flächen DIN 277</div>';
+            html += '<table class="val-kz-table"><tbody>';
+            html += kzRow('HNF 1', 'Wohnen und Aufenthalt', hnf1, gf);
+            html += kzRow('HNF 2', 'Büroarbeit', hnf2, gf);
+            html += kzRow('HNF 3', 'Produktion', hnf3, gf);
+            html += kzRow('HNF 4', 'Lagern, Verteilen, Verkaufen', hnf4, gf);
+            html += kzRow('HNF 5', 'Bildung, Unterricht, Kultur', hnf5, gf);
+            html += kzRow('HNF 6', 'Heilen, Pflegen', hnf6, gf);
+            html += kzRow('NNF 7', 'Nebennutzfläche', nnf7, gf);
+            html += kzRow('FF 8', 'Betriebstechnische Anlagen', ff8, gf);
+            html += kzRow('VF 9', 'Verkehrserschliessung und -sicherung', vf9, gf);
+            html += kzRow('BUF 10', 'Verschiedene Nutzungen', buf10, gf);
+            html += '</tbody></table></div>';
+
+            html += '</div>';
+
+            // ── Right column ──
+            html += '<div>';
+
+            // Kennzahlen Wirtschaftlichkeit
+            html += '<div class="val-kz-section">';
+            html += '<div class="val-kz-title">Kennzahlen Wirtschaftlichkeit von Grundriss</div>';
+            html += '<table class="val-kz-table"><tbody>';
+            html += `<tr><td class="kz-abbr">HNF SIA 416 / GF</td><td>Hauptnutzfläche / Geschossfläche</td><td class="kz-value">${gf > 0 ? (hnf / gf).toFixed(2) : '\u2014'}</td></tr>`;
+            html += `<tr><td class="kz-abbr">VMF SIA 165 / GF</td><td>Vermietbare Fläche / Geschossfläche</td><td class="kz-value">${gf > 0 ? (nf * 0.75 / gf).toFixed(2) : '\u2014'}</td></tr>`;
+            html += '</tbody></table></div>';
+
+            // Donut chart
+            html += buildValidationDonut({ HNF: hnf, NNF: nnf, VF: vf, FF: ff }, kf, gf);
+
+            html += '</div>';
+
+            html += '</div>'; // val-kennzahlen
+            html += '</div>'; // kz-dashboard-content
+
+            // Viewer sub-tab (reuses main canvas via moving it)
+            html += '<div class="kz-viewer-content" id="kz-viewer-view"></div>';
+
+            validationDashboard.innerHTML = html;
+
+            // Wire sub-tab clicks
+            const subTabs = validationDashboard.querySelectorAll('[data-kzsub]');
+            subTabs.forEach(st => {
+                st.onclick = (e) => {
+                    e.preventDefault();
+                    subTabs.forEach(s => s.classList.remove('kz-subtab--active'));
+                    st.classList.add('kz-subtab--active');
+                    const mode = st.getAttribute('data-kzsub');
+                    document.getElementById('kz-data-view').style.display = mode === 'data' ? '' : 'none';
+                    const viewerEl = document.getElementById('kz-viewer-view');
+                    if (mode === 'viewer') {
+                        viewerEl.style.display = 'block';
+                        viewerEl.appendChild(canvasWrap);
+                        tabFilterLayers = null;
+                        resizeCanvas();
+                        render();
+                    } else {
+                        viewerEl.style.display = 'none';
+                        // Move canvas back to split view
+                        document.querySelector('.validation-viewer').appendChild(canvasWrap);
+                    }
+                };
+            });
+        }
+
+        function buildValidationDonut(totals, kf, gf) {
+            const segments = [
+                { label: 'HNF', value: totals.HNF, color: '#E57373' },
+                { label: 'NNF', value: totals.NNF, color: '#FFB74D' },
+                { label: 'VF',  value: totals.VF,  color: '#FFF176' },
+                { label: 'FF',  value: totals.FF,  color: '#64B5F6' },
+                { label: 'KF',  value: kf,         color: '#CCCCCC' },
+            ].filter(s => s.value > 0);
+
+            const total = gf || 1;
+            const r = 60, sw = 24;
+            const circumference = 2 * Math.PI * r;
+            let offset = 0;
+
+            let svg = '<div class="val-donut">';
+            svg += `<svg viewBox="0 0 160 160">`;
+            svg += `<circle cx="80" cy="80" r="${r}" fill="none" stroke="#E5E5E5" stroke-width="${sw}"/>`;
+
+            for (const seg of segments) {
+                const pctVal = seg.value / total;
+                const dash = pctVal * circumference;
+                const gap = circumference - dash;
+                svg += `<circle cx="80" cy="80" r="${r}" fill="none" ` +
+                    `stroke="${seg.color}" stroke-width="${sw}" ` +
+                    `stroke-dasharray="${dash.toFixed(2)} ${gap.toFixed(2)}" ` +
+                    `stroke-dashoffset="${(-offset + circumference * 0.25).toFixed(2)}">` +
+                    `<title>${seg.label}: ${seg.value.toFixed(1)} m\u00B2 (${(pctVal * 100).toFixed(1)}%)</title></circle>`;
+                offset += dash;
+            }
+            svg += '</svg>';
+
+            svg += '<div class="val-donut-legend">';
+            for (const seg of segments) {
+                svg += `<div class="val-donut-legend__item">`;
+                svg += `<span class="val-donut-legend__color" style="background:${seg.color}"></span>`;
+                svg += `<span>${seg.label}</span>`;
+                svg += `<span class="val-donut-legend__pct">${(seg.value / total * 100).toFixed(1)}%</span>`;
+                svg += '</div>';
+            }
+            svg += '</div></div>';
+
+            return svg;
+        }
+
+        function zoomToPolygon(verts) {
+            if (!verts || verts.length < 2) return;
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+            for (const v of verts) {
+                if (v.x < minX) minX = v.x;
+                if (v.y < minY) minY = v.y;
+                if (v.x > maxX) maxX = v.x;
+                if (v.y > maxY) maxY = v.y;
+            }
+            const rect = canvasWrap.getBoundingClientRect();
+            cam.x = (minX + maxX) / 2;
+            cam.y = (minY + maxY) / 2;
+            const w = maxX - minX || 1;
+            const h = maxY - minY || 1;
+            cam.zoom = Math.min(rect.width / w, rect.height / h) * 0.5;
+            render();
+        }
+
+        // =============================================
+        // Room Overlay Rendering
+        // =============================================
+
+        function getRoomOverlayColor(room) {
+            if (selectedRoom && selectedRoom.id === room.id) {
+                return { fill: 'rgba(0,102,153,0.35)', stroke: '#006699' };
+            }
+
+            switch (validationMode) {
+                case 'overview':
+                    return { fill: 'rgba(180,180,180,0.15)', stroke: 'rgba(150,150,150,0.5)' };
+                case 'rooms':
+                    if (room.status === 'error') return { fill: 'rgba(198,40,40,0.25)', stroke: '#C62828' };
+                    if (room.status === 'warning') return { fill: 'rgba(245,124,0,0.25)', stroke: '#F57C00' };
+                    return { fill: 'rgba(46,125,50,0.20)', stroke: '#2E7D32' };
+                case 'errors': {
+                    const hasError = validationErrors.some(e => e.roomId === room.id);
+                    if (hasError) {
+                        const sev = validationErrors.find(e => e.roomId === room.id).severity;
+                        return sev === 'error'
+                            ? { fill: 'rgba(198,40,40,0.30)', stroke: '#C62828' }
+                            : { fill: 'rgba(245,124,0,0.30)', stroke: '#F57C00' };
+                    }
+                    return { fill: 'rgba(200,200,200,0.08)', stroke: 'rgba(180,180,180,0.3)' };
+                }
+                case 'kennzahlen':
+                    return SIA_COLORS[room.siaCategory] || { fill: 'rgba(180,180,180,0.20)', stroke: '#999' };
+                case 'areas':
+                    return { fill: 'rgba(200,200,200,0.08)', stroke: 'rgba(180,180,180,0.3)' };
+                default:
+                    return null;
+            }
+        }
+
+        function drawPolyPath(verts) {
+            ctx.moveTo(verts[0].x, verts[0].y);
+            for (let i = 1; i < verts.length; i++) {
+                const prev = verts[i - 1];
+                const v = verts[i];
+                if (prev.bulge && prev.bulge !== 0) {
+                    drawBulgeArc(ctx, prev.x, prev.y, v.x, v.y, prev.bulge);
+                } else {
+                    ctx.lineTo(v.x, v.y);
+                }
+            }
+            // Close
+            const last = verts[verts.length - 1];
+            const first = verts[0];
+            if (last.bulge && last.bulge !== 0) {
+                drawBulgeArc(ctx, last.x, last.y, first.x, first.y, last.bulge);
+            } else {
+                ctx.lineTo(first.x, first.y);
+            }
+        }
+
+        function renderRoomOverlays() {
+            if (!validationMode || validationMode === 'kennzahlen') return;
+
+            // Draw area polygons in areas mode
+            if (validationMode === 'areas') {
+                for (const area of areaData) {
+                    if (hiddenAreaIds.has(area.id)) continue;
+                    const colors = (selectedRoom && selectedRoom.id === area.id)
+                        ? { fill: 'rgba(0,102,153,0.35)', stroke: '#006699' }
+                        : { fill: 'rgba(0,102,153,0.12)', stroke: '#006699' };
+
+                    ctx.beginPath();
+                    drawPolyPath(area.vertices);
+                    ctx.closePath();
+                    ctx.fillStyle = colors.fill;
+                    ctx.fill();
+                    ctx.strokeStyle = colors.stroke;
+                    ctx.lineWidth = 2.5 / cam.zoom;
+                    ctx.setLineDash([6 / cam.zoom, 4 / cam.zoom]);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+
+                    // Area label
+                    const fontSize = 14 / cam.zoom;
+                    if (fontSize * cam.zoom >= 6 && fontSize * cam.zoom <= 30) {
+                        ctx.save();
+                        ctx.translate(area.centroid.x, area.centroid.y);
+                        ctx.scale(1, -1);
+                        ctx.font = `bold ${fontSize}px system-ui, sans-serif`;
+                        ctx.fillStyle = '#006699';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(area.aoid, 0, 0);
+                        ctx.font = `${fontSize * 0.7}px system-ui, sans-serif`;
+                        ctx.fillStyle = '#555';
+                        ctx.fillText(area.area.toFixed(1) + ' m\u00B2', 0, fontSize * 1.1);
+                        ctx.restore();
+                    }
+                }
+            }
+
+            // Draw room overlays (skip in areas mode or if no rooms)
+            if (validationMode === 'areas') return;
+            if (roomData.length === 0) return;
+
+            for (const room of roomData) {
+                // Respect layer filter (e.g. all layers hidden in overview)
+                if (tabFilterLayers && !tabFilterLayers.has(room.layer)) continue;
+                if (!tabFilterLayers && hiddenLayers.has(room.layer)) continue;
+                // Respect visibility toggle per mode
+                if (validationMode === 'rooms' && hiddenRoomIds.has(room.id)) continue;
+                if (validationMode === 'errors') {
+                    // In errors mode, only show rooms that have visible (non-hidden) errors
+                    const roomErrors = validationErrors.filter(e => e.roomId === room.id);
+                    const allHidden = roomErrors.length > 0 && roomErrors.every(e => hiddenErrorIds.has(e.id));
+                    if (allHidden && roomErrors.length > 0) continue;
+                }
+
+                const colors = getRoomOverlayColor(room);
+                if (!colors) continue;
+
+                ctx.beginPath();
+                drawPolyPath(room.vertices);
+                ctx.closePath();
+
+                ctx.fillStyle = colors.fill;
+                ctx.fill();
+                ctx.strokeStyle = colors.stroke;
+                ctx.lineWidth = (selectedRoom && selectedRoom.id === room.id ? 2.5 : 1.5) / cam.zoom;
+                ctx.stroke();
+
+                // Room label at centroid
+                const fontSize = 11 / cam.zoom;
+                if (fontSize * cam.zoom >= 6 && fontSize * cam.zoom <= 30) {
+                    ctx.save();
+                    ctx.translate(room.centroid.x, room.centroid.y);
+                    ctx.scale(1, -1);
+                    ctx.font = `${fontSize * 0.85}px system-ui, sans-serif`;
+                    ctx.fillStyle = bgColor === BG_DARK ? '#FFFFFF' : '#333333';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(room.aoid, 0, 0);
+                    ctx.font = `${fontSize * 0.65}px system-ui, sans-serif`;
+                    ctx.fillStyle = bgColor === BG_DARK ? 'rgba(255,255,255,0.6)' : '#757575';
+                    ctx.fillText(Math.round(room.area) + ' m\u00B2', 0, fontSize * 0.9);
+                    ctx.restore();
+                }
+            }
+        }
+
+        // =============================================
         // File Handling
         // =============================================
         selectBtn.addEventListener('click', (e) => { e.stopPropagation(); fileInput.click(); });
-        uploadZone.addEventListener('click', () => fileInput.click());
+        uploadZone.addEventListener('click', (e) => { if (e.target.closest('#load-demo')) return; fileInput.click(); });
         fileInput.addEventListener('change', (e) => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+
+        // Demo file loader
+        document.getElementById('load-demo').addEventListener('click', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const DEMO_PATH = 'assets/Test files/2011-DM-0-A04-6A1.dwg';
+            try {
+                log('Demo-Datei wird geladen...');
+                showStatus('Demo-Datei wird geladen...');
+                const resp = await fetch(DEMO_PATH);
+                if (!resp.ok) throw new Error(`Demo-Datei nicht gefunden (${resp.status})`);
+                const blob = await resp.blob();
+                const file = new File([blob], '2011-DM-0-A04-6A1.dwg', { type: 'application/octet-stream' });
+                handleFile(file);
+            } catch (err) {
+                showStatus(err.message, 'error');
+                log(err.message, 'error');
+            }
+        });
 
         uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('dragover'); });
         uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
@@ -1778,10 +2918,17 @@
             if (file.size > MAX_FILE_SIZE) { showStatus('Datei zu gross (max. 50 MB).', 'error'); return; }
 
             // Reset
-            viewerPanel.classList.remove('visible');
-            layersPanel.classList.remove('visible');
             entitiesPanel.classList.remove('visible');
             infoPanel.classList.remove('visible');
+            validationPanel.classList.remove('visible');
+            roomData = [];
+            areaData = [];
+            validationErrors = [];
+            validationMode = null;
+            selectedRoom = null;
+            hiddenRoomIds.clear();
+            hiddenAreaIds.clear();
+            hiddenErrorIds.clear();
 
             try {
                 const { db, entities, layers, elapsed } = await processDwgFile(file);
@@ -1791,17 +2938,22 @@
                 showStatus('Zeichnung wird gerendert...');
                 drawingData = prepareDrawingData(entities, layers, db);
 
+                // Build layer info for Übersicht side panel
+                buildLayerInfo(entities, layers);
+
                 // Panel must be visible before measuring canvas dimensions
-                viewerPanel.classList.add('visible');
+                validationPanel.classList.add('visible');
                 // Wait one frame for layout to complete
                 await new Promise(r => requestAnimationFrame(r));
                 resizeCanvas();
                 zoomExtents();
 
-                displayLayers(entities, layers);
                 displayEntities(entities);
 
-                showStatus(`Erfolgreich verarbeitet in ${elapsed}s`, 'success');
+                // Run validation (extract rooms, check rules, render tabs)
+                renderValidation();
+
+                showStatus(`${file.name} erfolgreich verarbeitet in ${elapsed}s`, 'success');
             } catch (err) {
                 showStatus(err.message, 'error');
                 log(err.message, 'error');

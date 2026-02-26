@@ -1605,7 +1605,13 @@ function openValidationView(documentId, skipHashUpdate = false) {
     renderAreaPolygons();
     renderErrors();
     updateValidationTabCounts();
-    renderFloorPlan();
+
+    // Initialize the new validation view with Canvas viewer
+    if (typeof ValidationView !== 'undefined') {
+        ValidationView.init(documentId);
+    } else {
+        renderFloorPlan();
+    }
 }
 
 // === STEPPER NAVIGATION ===
@@ -2016,8 +2022,8 @@ function setupTabs() {
     // Project detail tabs (documents, users, rules)
     setupTabGroup('data-tab', 'tab-', ['tab-documents', 'tab-users', 'tab-rules'], signal);
 
-    // Validation view tabs - Step 1 (rooms, areas, errors)
-    setupTabGroup('data-val-tab', 'val-tab-', ['val-tab-rooms', 'val-tab-areas', 'val-tab-errors'], signal);
+    // Validation view tabs - Step 1 (overview, errors, rooms, areas, kennzahlen)
+    setupTabGroup('data-val-tab', 'val-tab-', ['val-tab-overview', 'val-tab-errors', 'val-tab-rooms', 'val-tab-areas', 'val-tab-kennzahlen'], signal);
 
     // Step 2 tabs (rooms, errors)
     setupTabGroup('data-step2-tab', 'step2-tab-', ['step2-tab-rooms', 'step2-tab-errors'], signal);

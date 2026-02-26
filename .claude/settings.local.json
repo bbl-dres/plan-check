@@ -21,7 +21,21 @@
       "WebFetch(domain:mlightcad.github.io)",
       "Bash(gh api repos/mlightcad/libredwg-web/contents/src/database/entities)",
       "Bash(python3 -c \"import sys,json; [print\\(x[''name'']\\) for x in json.loads\\(sys.stdin.read\\(\\)\\)]\")",
-      "Bash(python -c \" import sys, json data = json.load\\(sys.stdin\\) for item in data: print\\(item[''path''], item[''type'']\\) \")"
+      "Bash(python -c \" import sys, json data = json.load\\(sys.stdin\\) for item in data: print\\(item[''path''], item[''type'']\\) \")",
+      "Bash(node -c js/viewer.js)",
+      "Bash(node -c js/validation-view.js)",
+      "Bash(node -c js/script.js)",
+      "Bash(while read id)",
+      "Bash(do)",
+      "Bash(if grep -q \"id=\"\"$id\"\"\" index.html)",
+      "Bash(then)",
+      "Bash(echo \"OK: $id\")",
+      "Bash(else)",
+      "Bash(echo \"MISSING: $id\")",
+      "Bash(fi)",
+      "Bash(python -m http.server 8000)",
+      "Bash(python -c \"import os; print\\(os.path.exists\\(''c:/Users/DavidRasner/Documents/GitHub/plan-check/mockup-projects/index.html''\\)\\)\")",
+      "Bash(python -m http.server 8081)"
     ]
   }
 }
