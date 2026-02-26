@@ -471,7 +471,6 @@
             <nav class="header__nav">
                 <a href="https://www.bbl.admin.ch/de/downloads-bauten" target="_blank" rel="noopener" class="header__nav-link">BBL CAD Standards</a>
                 <a href="https://www.bbl.admin.ch/de/kontakt" target="_blank" rel="noopener" class="header__nav-link">Kontakt</a>
-                <a href="https://www.admin.ch/gov/de/start/rechtliches.html" target="_blank" rel="noopener" class="header__nav-link">Rechtliches</a>
             </nav>
         </div>
     </header>
@@ -525,6 +524,10 @@
                                 <button class="kebab-dropdown__item" data-action="download-geojson">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                                     GeoJSON
+                                </button>
+                                <button class="kebab-dropdown__item" data-action="download-bcf">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    BCF
                                 </button>
                             </div>
                         </div>
@@ -596,13 +599,13 @@
         <div class="footer__content">
             <span class="footer__version">v1.0.0</span>
             <div class="footer__links">
-                <a href="https://github.com/bbl-dres/plan-check" target="_blank" rel="noopener" class="footer__link">Quellencode</a>
+                <a href="#" class="footer__link">API</a>
                 <span class="footer__sep">|</span>
-                <a href="https://github.com/LibreDWG/libredwg" target="_blank" rel="noopener" class="footer__link">LibreDWG</a>
+                <a href="https://github.com/bbl-dres/plan-check" target="_blank" rel="noopener" class="footer__link">Quellencode</a>
                 <span class="footer__sep">|</span>
                 <a href="https://mlightcad.github.io/libredwg-web/docs/" target="_blank" rel="noopener" class="footer__link">libredwg-web</a>
                 <span class="footer__sep">|</span>
-                <a href="https://github.com/mlightcad/cad-viewer" target="_blank" rel="noopener" class="footer__link">mlightcad Viewer</a>
+                <a href="https://www.admin.ch/gov/de/start/rechtliches.html" target="_blank" rel="noopener" class="footer__link">Rechtliches</a>
             </div>
         </div>
     </footer>
@@ -649,6 +652,12 @@
         let roomLayerName = 'A1Z21---E-';
         let tabFilterLayers = null; // null = show all (respect hiddenLayers), Set = only show these layers
         let layerInfo = []; // [{name, colorHex, count}] for Übersicht side panel
+
+        // File metadata (stored for export)
+        let lastFile = null;        // { name, size }
+        let lastDbInfo = null;      // { version, layerCount, entityCount }
+        let lastElapsed = null;     // processing time string e.g. "1.23"
+        let lastUploadTime = null;  // Date object
         const hiddenRoomIds = new Set();
         const hiddenAreaIds = new Set();
         const hiddenErrorIds = new Set();
@@ -1999,6 +2008,9 @@
                     case 'download-geojson':
                         downloadGeoJson();
                         break;
+                    case 'download-bcf':
+                        downloadBcf();
+                        break;
                 }
             });
         });
@@ -2007,12 +2019,128 @@
             log('PDF-Bericht Export (noch nicht implementiert)', 'warn');
         }
 
-        function downloadExcelReport() {
-            log('Excel-Bericht Export (noch nicht implementiert)', 'warn');
+        async function downloadExcelReport() {
+            if (!lastFile) { log('Keine Datei geladen.', 'warn'); return; }
+            log('Excel-Bericht wird erstellt...');
+            try {
+                const XLSX = await import('https://cdn.sheetjs.com/xlsx-0.20.3/package/xlsx.mjs');
+                const wb = XLSX.utils.book_new();
+                const DASH = '\u2014';
+                const fmtA = (v) => (v === null || v === undefined) ? DASH : +v.toFixed(2);
+
+                // ── Sheet 1: Info ──
+                const infoRows = [
+                    ['Dateiname', lastFile.name],
+                    ['Dateigrösse', fmtSize(lastFile.size)],
+                    ['DWG-Version', lastDbInfo?.version || '-'],
+                    ['Layers', lastDbInfo?.layerCount ?? '-'],
+                    ['Entities', lastDbInfo?.entityCount ?? '-'],
+                    ['Hochgeladen', lastUploadTime ? lastUploadTime.toLocaleString('de-CH') : '-'],
+                    ['Verarbeitungszeit', lastElapsed ? lastElapsed + ' s' : '-'],
+                    ['Raum-Layer', roomLayerName],
+                    ['Räume erkannt', roomData.length],
+                    ['Flächen erkannt', areaData.length],
+                    ['Fehlermeldungen', validationErrors.length],
+                ];
+                const wsInfo = XLSX.utils.aoa_to_sheet([['Eigenschaft', 'Wert'], ...infoRows]);
+                wsInfo['!cols'] = [{ wch: 22 }, { wch: 40 }];
+                XLSX.utils.book_append_sheet(wb, wsInfo, 'Info');
+
+                // ── Sheet 2: Übersicht (layers) ──
+                const layerRows = layerInfo.map(l => [l.name, l.count, l.colorHex]);
+                const wsLayers = XLSX.utils.aoa_to_sheet([
+                    ['Layer', 'Anzahl Entities', 'Farbe'],
+                    ...layerRows
+                ]);
+                wsLayers['!cols'] = [{ wch: 30 }, { wch: 18 }, { wch: 10 }];
+                XLSX.utils.book_append_sheet(wb, wsLayers, 'Übersicht');
+
+                // ── Sheet 3: Fehlermeldungen ──
+                const errorRows = validationErrors.map(e => {
+                    const room = roomData.find(r => r.id === e.roomId);
+                    return [e.id, e.severity, e.ruleCode, e.message, room ? room.aoid : '-'];
+                });
+                const wsErrors = XLSX.utils.aoa_to_sheet([
+                    ['#', 'Schweregrad', 'Regel', 'Meldung', 'Raum'],
+                    ...errorRows
+                ]);
+                wsErrors['!cols'] = [{ wch: 5 }, { wch: 12 }, { wch: 12 }, { wch: 50 }, { wch: 18 }];
+                XLSX.utils.book_append_sheet(wb, wsErrors, 'Fehlermeldungen');
+
+                // ── Sheet 4: Räume ──
+                const roomRows = roomData.map(r => [
+                    r.id, r.aoid, r.area, r.layer, r.status,
+                    r.vertices.length, r.handle || '-'
+                ]);
+                const wsRooms = XLSX.utils.aoa_to_sheet([
+                    ['#', 'Bezeichnung', 'Fläche (m²)', 'Layer', 'Status', 'Vertices', 'Handle'],
+                    ...roomRows
+                ]);
+                wsRooms['!cols'] = [{ wch: 5 }, { wch: 20 }, { wch: 14 }, { wch: 22 }, { wch: 10 }, { wch: 10 }, { wch: 10 }];
+                XLSX.utils.book_append_sheet(wb, wsRooms, 'Räume');
+
+                // ── Sheet 5: Flächen ──
+                const areaRows = areaData.map(a => [
+                    a.id, a.aoid, a.area, a.layer, a.handle || '-'
+                ]);
+                const wsAreas = XLSX.utils.aoa_to_sheet([
+                    ['#', 'Bezeichnung', 'Fläche (m²)', 'Layer', 'Handle'],
+                    ...areaRows
+                ]);
+                wsAreas['!cols'] = [{ wch: 5 }, { wch: 20 }, { wch: 14 }, { wch: 22 }, { wch: 10 }];
+                XLSX.utils.book_append_sheet(wb, wsAreas, 'Flächen');
+
+                // ── Sheet 6: Kennzahlen ──
+                const ngf = roomData.reduce((s, r) => s + r.area, 0);
+                const hasRooms = roomData.length > 0;
+                const hasAreaPolys = areaData.length > 0;
+                const gf = hasAreaPolys ? areaData.reduce((s, a) => s + a.area, 0) : null;
+                const kf = (gf !== null && hasRooms) ? gf - ngf : null;
+
+                const kzRows = [
+                    ['', '', '', ''],
+                    ['Gebäudeflächen', '', 'Fläche (m²)', 'Anteil'],
+                    ['GF', 'Geschossfläche', fmtA(gf), gf ? '100%' : DASH],
+                    ['KF', 'Konstruktionsfläche', fmtA(kf), (gf && kf !== null) ? Math.round((kf / gf) * 100) + '%' : DASH],
+                    ['NGF', 'Nettogeschossfläche', hasRooms ? fmtA(ngf) : DASH, (gf && hasRooms) ? Math.round((ngf / gf) * 100) + '%' : DASH],
+                    ['NF', 'Nutzfläche', hasRooms ? fmtA(ngf) : DASH, (gf && hasRooms) ? Math.round((ngf / gf) * 100) + '%' : DASH],
+                    ['HNF', 'Hauptnutzfläche', DASH, DASH],
+                    ['NNF', 'Nebennutzfläche', DASH, DASH],
+                    ['VF', 'Verkehrsfläche', DASH, DASH],
+                    ['FF', 'Funktionsfläche', DASH, DASH],
+                    ['', '', '', ''],
+                    ['Gebäudevolumen', '', 'Volumen (m³)', 'Anteil'],
+                    ['GV', 'Gebäudevolumen', DASH, DASH],
+                    ['GV OG', 'Gebäudevolumen Obergeschosse', DASH, DASH],
+                    ['GV UG', 'Gebäudevolumen Untergeschosse', DASH, DASH],
+                    ['', '', '', ''],
+                    ['Wirtschaftlichkeit', '', 'Wert', ''],
+                    ['NGF / GF', 'Nettogeschossfläche / Geschossfläche', (gf && hasRooms) ? (ngf / gf).toFixed(2) : DASH, ''],
+                    ['KF / GF', 'Konstruktionsfläche / Geschossfläche', (gf && kf !== null) ? (kf / gf).toFixed(2) : DASH, ''],
+                ];
+                const wsKz = XLSX.utils.aoa_to_sheet([
+                    ['Kürzel', 'Bezeichnung', 'Wert', 'Anteil'],
+                    ...kzRows
+                ]);
+                wsKz['!cols'] = [{ wch: 18 }, { wch: 40 }, { wch: 16 }, { wch: 10 }];
+                XLSX.utils.book_append_sheet(wb, wsKz, 'Kennzahlen');
+
+                // ── Download ──
+                const baseName = lastFile.name.replace(/\.[^.]+$/, '');
+                XLSX.writeFile(wb, `${baseName}_Bericht.xlsx`);
+                log('Excel-Bericht exportiert.', 'success');
+            } catch (err) {
+                log('Excel-Export fehlgeschlagen: ' + err.message, 'error');
+                console.error(err);
+            }
         }
 
         function downloadGeoJson() {
             log('GeoJSON Export (noch nicht implementiert)', 'warn');
+        }
+
+        function downloadBcf() {
+            log('BCF Export (noch nicht implementiert)', 'warn');
         }
 
         // Resize handler
@@ -3119,6 +3247,12 @@
 
             try {
                 const { db, entities, layers, elapsed } = await processDwgFile(file);
+
+                // Store metadata for export
+                lastFile = { name: file.name, size: file.size };
+                lastDbInfo = { version: db.header?.version || '-', layerCount: layers.length, entityCount: entities.length };
+                lastElapsed = elapsed;
+                lastUploadTime = new Date();
 
                 displayInfo(file, db, entities, layers, elapsed);
 

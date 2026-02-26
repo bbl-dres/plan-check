@@ -35,7 +35,8 @@
       "Bash(fi)",
       "Bash(python -m http.server 8000)",
       "Bash(python -c \"import os; print\\(os.path.exists\\(''c:/Users/DavidRasner/Documents/GitHub/plan-check/mockup-projects/index.html''\\)\\)\")",
-      "Bash(python -m http.server 8081)"
+      "Bash(python -m http.server 8081)",
+      "WebFetch(domain:cdnjs.com)"
     ]
   }
 }
