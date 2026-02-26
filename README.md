@@ -9,8 +9,8 @@
 All processing runs locally in the browser via LibreDWG WebAssembly — no files are uploaded to a server.
 
 <p align="center">
-  <img src="assets/Preview1.jpg" width="45%" style="vertical-align: top;"/>
-  <img src="assets/Preview3.jpg" width="45%" style="vertical-align: top;"/>
+  <img src="assets/Preview4.jpg" width="45%" style="vertical-align: top;"/>
+  <img src="assets/Preview5.jpg" width="45%" style="vertical-align: top;"/>
 </p>
 
 ## Features
