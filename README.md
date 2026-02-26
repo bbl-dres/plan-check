@@ -121,7 +121,3 @@ plan-check/
 ## License
 
 MIT License — See [LICENSE](LICENSE) for details.
-
----
-
-**Bundesamt für Bauten und Logistik BBL** · Direktion Ressourcen
