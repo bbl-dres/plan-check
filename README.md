@@ -51,7 +51,7 @@ A prototype exploring solutions for validating DWG/DXF floor plan files against 
 ```
 plan-check/
 ├── index.html              # DWG Viewer prototype (LibreDWG WebAssembly)
-├── assets/                 # Static images and logos
+├── assets/                 # Static images, logos and test files
 └── prototype/              # Main application
     ├── index.html          # Application entry point (GitHub Pages)
     ├── test.html           # Browser-based unit test runner (46 tests)
