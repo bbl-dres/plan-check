@@ -77,24 +77,10 @@ plan-check/
 | Component | Technology |
 |-----------|-----------|
 | DWG Parsing | [libredwg-web](https://mlightcad.github.io/libredwg-web/docs/) (WebAssembly) |
-| Rendering | Canvas 2D API |
-| PDF Export | [jsPDF](https://github.com/parallax/jsPDF) + jspdf-autotable |
+| Rendering | [Canvas 2D API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API) |
+| PDF Export | [jsPDF](https://github.com/parallax/jsPDF) + [jspdf-autotable](https://github.com/simonbengtsson/jsPDF-AutoTable) |
 | Excel Export | [SheetJS](https://sheetjs.com/) |
-| Design System | Swiss Federal Corporate Design |
 | Build Tools | None — vanilla HTML/CSS/JS |
-
-## Validation Rules
-
-| Code | Severity | Description |
-|------|----------|-------------|
-| `LABEL_001` | Warning | Room has no text label (TEXT/MTEXT) |
-| `GEOM_001` | Warning | Room area is very small (< 1 m²) |
-| `GEOM_002` | Error | Polygon has fewer than 3 vertices |
-| `GEOM_003` | Error | Polygon not fully closed (gap > 0.1 mm) |
-
-## CAD Requirements
-
-Room polygons must be **closed LWPOLYLINE** entities on the layer **`A1Z21---E-`**. Area polygons are detected on layers matching `BGF`, `EBF`, or `GF`. See the [user guide](docs/anleitung-de.md) for details.
 
 ## API (Planned)
 
