@@ -1275,7 +1275,7 @@ function renderDashboard() {
             const pErrors = mockCheckingResults.filter(r => pDocIds.includes(r.documentId) && r.severity === 'error');
             const scoreClass = p.resultPercentage >= 90 ? 'success' : p.resultPercentage >= 60 ? 'warning' : 'error';
 
-            return '<tr>' +
+            return '<tr data-project-id="' + p.id + '" style="cursor:pointer">' +
                 '<td>' + escapeHtml(p.name) + '</td>' +
                 '<td>' + escapeHtml(p.phase) + '</td>' +
                 '<td>' + pDocs.length + '</td>' +
@@ -1286,6 +1286,13 @@ function renderDashboard() {
             '</tr>';
         }).join('');
         tableBody.innerHTML = rows;
+
+        // Click row to navigate to project detail
+        tableBody.querySelectorAll('tr[data-project-id]').forEach(row => {
+            row.addEventListener('click', () => {
+                openProjectDetail(row.dataset.projectId);
+            });
+        });
     }
 
     // Initialize Lucide icons in dashboard
