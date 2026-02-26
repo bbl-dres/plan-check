@@ -59,6 +59,14 @@
         .header__nav { display: flex; align-items: center; gap: 16px; margin-left: auto; }
         .header__nav-link { font-size: 13px; color: var(--color-text-secondary); text-decoration: none; white-space: nowrap; transition: color 0.15s; }
         .header__nav-link:hover { color: var(--color-primary); }
+        .lang-selector { display: flex; align-items: center; gap: 0; margin-left: 8px; border-left: 1px solid var(--color-border); padding-left: 16px; }
+        .lang-selector__item {
+            font-size: 12px; font-weight: 600; color: var(--color-text-muted); text-decoration: none;
+            padding: 3px 7px; border-radius: 3px; transition: all 0.15s; cursor: pointer;
+            border: none; background: none; font-family: inherit;
+        }
+        .lang-selector__item:hover { color: var(--color-primary); background: var(--color-primary-light); }
+        .lang-selector__item--active { color: var(--color-primary); background: var(--color-primary-light); }
 
         /* Footer */
         .footer {
@@ -469,8 +477,15 @@
                 </div>
             </a>
             <nav class="header__nav">
-                <a href="https://www.bbl.admin.ch/de/downloads-bauten" target="_blank" rel="noopener" class="header__nav-link">BBL CAD Standards</a>
+                <a href="https://www.bbl.admin.ch/de/downloads-bauten" target="_blank" rel="noopener" class="header__nav-link">Downloads BBL Bauten</a>
+                <a href="#" class="header__nav-link">Anleitung und FAQ</a>
                 <a href="https://www.bbl.admin.ch/de/kontakt" target="_blank" rel="noopener" class="header__nav-link">Kontakt</a>
+                <div class="lang-selector">
+                    <button class="lang-selector__item lang-selector__item--active" data-lang="de">DE</button>
+                    <button class="lang-selector__item" data-lang="fr">FR</button>
+                    <button class="lang-selector__item" data-lang="it">IT</button>
+                    <button class="lang-selector__item" data-lang="en">EN</button>
+                </div>
             </nav>
         </div>
     </header>
@@ -1966,6 +1981,15 @@
         });
 
         // ── Kebab menu (options dropdown) ──
+        // Language selector (placeholder)
+        document.querySelectorAll('.lang-selector__item').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.lang-selector__item').forEach(b => b.classList.remove('lang-selector__item--active'));
+                btn.classList.add('lang-selector__item--active');
+                log(`Sprache: ${btn.dataset.lang.toUpperCase()} (noch nicht implementiert)`, 'warn');
+            });
+        });
+
         const kebabBtn = document.getElementById('kebab-btn');
         const kebabDropdown = document.getElementById('kebab-dropdown');
         let resultFilter = 'all'; // 'all' | 'errors'
@@ -2015,8 +2039,387 @@
             });
         });
 
-        function downloadPdfReport() {
-            log('PDF-Bericht Export (noch nicht implementiert)', 'warn');
+        // ── PDF helpers ──
+        function loadScript(src) {
+            return new Promise((resolve, reject) => {
+                if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
+                const s = document.createElement('script');
+                s.src = src;
+                s.onload = resolve;
+                s.onerror = () => reject(new Error('Script load failed: ' + src));
+                document.head.appendChild(s);
+            });
+        }
+        async function loadJsPDF() {
+            await loadScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js');
+            await loadScript('https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js');
+            return window.jspdf.jsPDF;
+        }
+
+        function captureCanvasForMode(mode) {
+            const prevMode = validationMode;
+            const prevSelected = selectedRoom;
+            validationMode = mode;
+            selectedRoom = null;
+            render();
+            const imgData = canvas.toDataURL('image/png');
+            validationMode = prevMode;
+            selectedRoom = prevSelected;
+            render();
+            return imgData;
+        }
+
+        async function downloadPdfReport() {
+            if (!lastFile) { log('Keine Datei geladen.', 'warn'); return; }
+            log('PDF-Bericht wird erstellt...');
+            try {
+                const jsPDF = await loadJsPDF();
+                const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+                const pw = 210, ph = 297, mx = 14, mxr = 196; // page width, height, margins
+                const DASH = '\u2014';
+                const fmtA = (v) => (v === null || v === undefined) ? DASH : fmtNum(v, v >= 100 ? 0 : 1) + ' m\u00B2';
+                const blue = [0, 114, 177];   // --color-primary
+                const dark = [26, 26, 26];     // --color-text
+                const muted = [95, 107, 122];  // --color-text-secondary
+                const red = [207, 34, 46];     // --color-error
+                const orange = [191, 135, 0];  // --color-warning
+                const green = [26, 127, 55];   // --color-success
+
+                // Derived data (same as Kennzahlen tab)
+                const ngf = roomData.reduce((s, r) => s + r.area, 0);
+                const hasRooms = roomData.length > 0;
+                const hasAreaPolys = areaData.length > 0;
+                const gf = hasAreaPolys ? areaData.reduce((s, a) => s + a.area, 0) : null;
+                const kf = (gf !== null && hasRooms) ? gf - ngf : null;
+
+                function addPageHeader(doc, title) {
+                    doc.setFontSize(8);
+                    doc.setTextColor(...muted);
+                    doc.text('Plan-Check Bericht', mx, 8);
+                    doc.text(lastFile.name, mxr, 8, { align: 'right' });
+                    doc.setDrawColor(223, 227, 232);
+                    doc.line(mx, 10, mxr, 10);
+                    if (title) {
+                        doc.setFontSize(14);
+                        doc.setTextColor(...dark);
+                        doc.setFont(undefined, 'bold');
+                        doc.text(title, mx, 20);
+                        doc.setFont(undefined, 'normal');
+                    }
+                }
+
+                function addPageFooter(doc) {
+                    const n = doc.internal.getNumberOfPages();
+                    for (let i = 1; i <= n; i++) {
+                        doc.setPage(i);
+                        doc.setFontSize(8);
+                        doc.setTextColor(...muted);
+                        doc.text(`Seite ${i} / ${n}`, mxr, ph - 8, { align: 'right' });
+                        doc.text(new Date().toLocaleString('de-CH'), mx, ph - 8);
+                    }
+                }
+
+                // ════════════════════════════════════════════
+                // Page 1: Title + Info + Summary
+                // ════════════════════════════════════════════
+                doc.setFontSize(20);
+                doc.setTextColor(...dark);
+                doc.setFont(undefined, 'bold');
+                doc.text('Plan-Check Bericht', mx, 24);
+                doc.setFont(undefined, 'normal');
+                doc.setFontSize(10);
+                doc.setTextColor(...muted);
+                doc.text(lastFile.name, mx, 32);
+                doc.text(new Date().toLocaleString('de-CH'), mx, 38);
+
+                // Info table
+                doc.autoTable({
+                    startY: 46,
+                    head: [['Eigenschaft', 'Wert']],
+                    body: [
+                        ['Dateiname', lastFile.name],
+                        ['Dateigrösse', fmtSize(lastFile.size)],
+                        ['DWG-Version', lastDbInfo?.version || '-'],
+                        ['Layers', String(lastDbInfo?.layerCount ?? '-')],
+                        ['Entities', String(lastDbInfo?.entityCount ?? '-')],
+                        ['Hochgeladen', lastUploadTime ? lastUploadTime.toLocaleString('de-CH') : '-'],
+                        ['Verarbeitungszeit', lastElapsed ? lastElapsed + ' s' : '-'],
+                        ['Raum-Layer', roomLayerName],
+                    ],
+                    theme: 'grid',
+                    styles: { fontSize: 9, cellPadding: 3 },
+                    headStyles: { fillColor: blue, textColor: 255, fontStyle: 'bold' },
+                    columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } },
+                    margin: { left: mx, right: mx },
+                });
+
+                // Summary metrics
+                let y = doc.lastAutoTable.finalY + 10;
+                doc.setFontSize(12);
+                doc.setTextColor(...dark);
+                doc.setFont(undefined, 'bold');
+                doc.text('Zusammenfassung', mx, y);
+                doc.setFont(undefined, 'normal');
+                y += 4;
+                doc.autoTable({
+                    startY: y,
+                    body: [
+                        ['Räume', String(roomData.length)],
+                        ['Flächen', String(areaData.length)],
+                        ['Fehlermeldungen', String(validationErrors.length)],
+                        ['NGF (Nettogeschossfläche)', hasRooms ? fmtA(ngf) : DASH],
+                        ['GF (Geschossfläche)', fmtA(gf)],
+                        ['KF (Konstruktionsfläche)', fmtA(kf)],
+                    ],
+                    theme: 'plain',
+                    styles: { fontSize: 9, cellPadding: 2 },
+                    columnStyles: { 0: { fontStyle: 'bold', cellWidth: 60 } },
+                    margin: { left: mx, right: mx },
+                });
+
+                // ════════════════════════════════════════════
+                // Page 2: Übersicht (Layers)
+                // ════════════════════════════════════════════
+                doc.addPage();
+                addPageHeader(doc, '\u00dcbersicht');
+
+                doc.autoTable({
+                    startY: 26,
+                    head: [['Layer', 'Anzahl Entities', 'Farbe']],
+                    body: layerInfo.map(l => [l.name, String(l.count), l.colorHex]),
+                    theme: 'striped',
+                    styles: { fontSize: 8, cellPadding: 2.5 },
+                    headStyles: { fillColor: blue, textColor: 255, fontStyle: 'bold' },
+                    margin: { left: mx, right: mx },
+                });
+
+                // ════════════════════════════════════════════
+                // Page 3: Fehlermeldungen
+                // ════════════════════════════════════════════
+                doc.addPage();
+                addPageHeader(doc, 'Fehlermeldungen');
+
+                if (validationErrors.length === 0) {
+                    doc.setFontSize(10);
+                    doc.setTextColor(...green);
+                    doc.text('Keine Fehlermeldungen.', mx, 30);
+                } else {
+                    doc.autoTable({
+                        startY: 26,
+                        head: [['#', 'Schweregrad', 'Regel', 'Meldung', 'Raum']],
+                        body: validationErrors.map(e => {
+                            const room = roomData.find(r => r.id === e.roomId);
+                            return [String(e.id), e.severity, e.ruleCode, e.message, room ? room.aoid : '-'];
+                        }),
+                        theme: 'striped',
+                        styles: { fontSize: 8, cellPadding: 2.5 },
+                        headStyles: { fillColor: red, textColor: 255, fontStyle: 'bold' },
+                        columnStyles: { 0: { cellWidth: 8 }, 1: { cellWidth: 22 }, 2: { cellWidth: 20 } },
+                        margin: { left: mx, right: mx },
+                        didParseCell: (data) => {
+                            if (data.section === 'body' && data.column.index === 1) {
+                                const sev = data.cell.raw;
+                                if (sev === 'error') data.cell.styles.textColor = red;
+                                else if (sev === 'warning') data.cell.styles.textColor = orange;
+                            }
+                        },
+                    });
+                }
+
+                // ════════════════════════════════════════════
+                // Page 4: Räume + floor plan image
+                // ════════════════════════════════════════════
+                doc.addPage();
+                addPageHeader(doc, 'R\u00e4ume');
+
+                // Canvas screenshot in rooms mode
+                const roomsImg = captureCanvasForMode('rooms');
+                const cw = canvas.width, ch = canvas.height;
+                const imgW = mxr - mx;
+                const imgH = Math.min(imgW * (ch / cw), 100);
+                doc.addImage(roomsImg, 'PNG', mx, 26, imgW, imgH);
+
+                const roomTableY = 26 + imgH + 6;
+                if (roomData.length === 0) {
+                    doc.setFontSize(10);
+                    doc.setTextColor(...muted);
+                    doc.text('Keine R\u00e4ume erkannt.', mx, roomTableY + 4);
+                } else {
+                    doc.autoTable({
+                        startY: roomTableY,
+                        head: [['#', 'Bezeichnung', 'Fl\u00e4che (m\u00B2)', 'Layer', 'Status']],
+                        body: roomData.map(r => [
+                            String(r.id), r.aoid, fmtNum(r.area, 2), r.layer, r.status
+                        ]),
+                        theme: 'striped',
+                        styles: { fontSize: 8, cellPadding: 2.5 },
+                        headStyles: { fillColor: blue, textColor: 255, fontStyle: 'bold' },
+                        columnStyles: { 0: { cellWidth: 8 }, 2: { cellWidth: 24, halign: 'right' } },
+                        margin: { left: mx, right: mx },
+                        didParseCell: (data) => {
+                            if (data.section === 'body' && data.column.index === 4) {
+                                const st = data.cell.raw;
+                                if (st === 'error') data.cell.styles.textColor = red;
+                                else if (st === 'warning') data.cell.styles.textColor = orange;
+                                else if (st === 'ok') data.cell.styles.textColor = green;
+                            }
+                        },
+                    });
+                }
+
+                // ════════════════════════════════════════════
+                // Page 5: Flächen + floor plan image
+                // ════════════════════════════════════════════
+                doc.addPage();
+                addPageHeader(doc, 'Fl\u00e4chen');
+
+                const areasImg = captureCanvasForMode('areas');
+                doc.addImage(areasImg, 'PNG', mx, 26, imgW, imgH);
+
+                const areaTableY = 26 + imgH + 6;
+                if (areaData.length === 0) {
+                    doc.setFontSize(10);
+                    doc.setTextColor(...muted);
+                    doc.text('Keine Fl\u00e4chenpolygone erkannt.', mx, areaTableY + 4);
+                } else {
+                    doc.autoTable({
+                        startY: areaTableY,
+                        head: [['#', 'Bezeichnung', 'Fl\u00e4che (m\u00B2)', 'Layer']],
+                        body: areaData.map(a => [
+                            String(a.id), a.aoid, fmtNum(a.area, 2), a.layer
+                        ]),
+                        theme: 'striped',
+                        styles: { fontSize: 8, cellPadding: 2.5 },
+                        headStyles: { fillColor: blue, textColor: 255, fontStyle: 'bold' },
+                        columnStyles: { 0: { cellWidth: 8 }, 2: { cellWidth: 24, halign: 'right' } },
+                        margin: { left: mx, right: mx },
+                    });
+                }
+
+                // ════════════════════════════════════════════
+                // Page 6: Kennzahlen
+                // ════════════════════════════════════════════
+                doc.addPage();
+                addPageHeader(doc, 'Kennzahlen');
+
+                const pct = (v, total) => {
+                    if (v === null || v === undefined || total === null || total === undefined || total <= 0) return DASH;
+                    return Math.round((v / total) * 100) + '%';
+                };
+
+                // Gebäudeflächen
+                doc.setFontSize(10);
+                doc.setTextColor(...dark);
+                doc.setFont(undefined, 'bold');
+                doc.text('Geb\u00e4udefl\u00e4chen', mx, 28);
+                doc.setFont(undefined, 'normal');
+
+                doc.autoTable({
+                    startY: 31,
+                    head: [['K\u00fcrzel', 'Bezeichnung', 'Fl\u00e4che', 'Anteil']],
+                    body: [
+                        ['GF', 'Geschossfl\u00e4che', fmtA(gf), pct(gf, gf)],
+                        ['KF', 'Konstruktionsfl\u00e4che', fmtA(kf), pct(kf, gf)],
+                        ['NGF', 'Nettogeschossfl\u00e4che', hasRooms ? fmtA(ngf) : DASH, pct(hasRooms ? ngf : null, gf)],
+                        ['NF', 'Nutzfl\u00e4che', hasRooms ? fmtA(ngf) : DASH, pct(hasRooms ? ngf : null, gf)],
+                        ['HNF', 'Hauptnutzfl\u00e4che', DASH, DASH],
+                        ['NNF', 'Nebennutzfl\u00e4che', DASH, DASH],
+                        ['VF', 'Verkehrsfl\u00e4che', DASH, DASH],
+                        ['FF', 'Funktionsfl\u00e4che', DASH, DASH],
+                    ],
+                    theme: 'grid',
+                    styles: { fontSize: 8, cellPadding: 2.5 },
+                    headStyles: { fillColor: blue, textColor: 255, fontStyle: 'bold' },
+                    columnStyles: { 0: { fontStyle: 'bold', cellWidth: 16 }, 2: { halign: 'right', cellWidth: 32 }, 3: { halign: 'right', cellWidth: 18 } },
+                    margin: { left: mx, right: mx },
+                });
+
+                // Gebäudevolumen
+                let kzY = doc.lastAutoTable.finalY + 8;
+                doc.setFontSize(10);
+                doc.setTextColor(...dark);
+                doc.setFont(undefined, 'bold');
+                doc.text('Geb\u00e4udevolumen', mx, kzY);
+                doc.setFont(undefined, 'normal');
+
+                doc.autoTable({
+                    startY: kzY + 3,
+                    head: [['K\u00fcrzel', 'Bezeichnung', 'Volumen', 'Anteil']],
+                    body: [
+                        ['GV', 'Geb\u00e4udevolumen', DASH, DASH],
+                        ['GV OG', 'Geb\u00e4udevolumen Obergeschosse', DASH, DASH],
+                        ['GV UG', 'Geb\u00e4udevolumen Untergeschosse', DASH, DASH],
+                    ],
+                    theme: 'grid',
+                    styles: { fontSize: 8, cellPadding: 2.5 },
+                    headStyles: { fillColor: blue, textColor: 255, fontStyle: 'bold' },
+                    columnStyles: { 0: { fontStyle: 'bold', cellWidth: 16 }, 2: { halign: 'right', cellWidth: 32 }, 3: { halign: 'right', cellWidth: 18 } },
+                    margin: { left: mx, right: mx },
+                });
+
+                // Flächen DIN 277
+                kzY = doc.lastAutoTable.finalY + 8;
+                doc.setFontSize(10);
+                doc.setTextColor(...dark);
+                doc.setFont(undefined, 'bold');
+                doc.text('Fl\u00e4chen DIN 277', mx, kzY);
+                doc.setFont(undefined, 'normal');
+
+                doc.autoTable({
+                    startY: kzY + 3,
+                    head: [['K\u00fcrzel', 'Bezeichnung', 'Fl\u00e4che', 'Anteil']],
+                    body: [
+                        ['HNF 1', 'Wohnen und Aufenthalt', DASH, DASH],
+                        ['HNF 2', 'B\u00fcroarbeit', DASH, DASH],
+                        ['HNF 3', 'Produktion', DASH, DASH],
+                        ['HNF 4', 'Lagern, Verteilen, Verkaufen', DASH, DASH],
+                        ['HNF 5', 'Bildung, Unterricht, Kultur', DASH, DASH],
+                        ['HNF 6', 'Heilen, Pflegen', DASH, DASH],
+                        ['NNF 7', 'Nebennutzfl\u00e4che', DASH, DASH],
+                        ['FF 8', 'Betriebstechnische Anlagen', DASH, DASH],
+                        ['VF 9', 'Verkehrserschliessung und -sicherung', DASH, DASH],
+                        ['BUF 10', 'Verschiedene Nutzungen', DASH, DASH],
+                    ],
+                    theme: 'grid',
+                    styles: { fontSize: 8, cellPadding: 2.5 },
+                    headStyles: { fillColor: blue, textColor: 255, fontStyle: 'bold' },
+                    columnStyles: { 0: { fontStyle: 'bold', cellWidth: 16 }, 2: { halign: 'right', cellWidth: 32 }, 3: { halign: 'right', cellWidth: 18 } },
+                    margin: { left: mx, right: mx },
+                });
+
+                // Wirtschaftlichkeit
+                kzY = doc.lastAutoTable.finalY + 8;
+                doc.setFontSize(10);
+                doc.setTextColor(...dark);
+                doc.setFont(undefined, 'bold');
+                doc.text('Kennzahlen Wirtschaftlichkeit', mx, kzY);
+                doc.setFont(undefined, 'normal');
+
+                doc.autoTable({
+                    startY: kzY + 3,
+                    head: [['Kennzahl', 'Bezeichnung', 'Wert']],
+                    body: [
+                        ['NGF / GF', 'Nettogeschossfl\u00e4che / Geschossfl\u00e4che', (gf && hasRooms) ? (ngf / gf).toFixed(2) : DASH],
+                        ['KF / GF', 'Konstruktionsfl\u00e4che / Geschossfl\u00e4che', (gf && kf !== null) ? (kf / gf).toFixed(2) : DASH],
+                    ],
+                    theme: 'grid',
+                    styles: { fontSize: 8, cellPadding: 2.5 },
+                    headStyles: { fillColor: blue, textColor: 255, fontStyle: 'bold' },
+                    columnStyles: { 0: { fontStyle: 'bold', cellWidth: 20 }, 2: { halign: 'right', cellWidth: 24 } },
+                    margin: { left: mx, right: mx },
+                });
+
+                // ── Add page footers ──
+                addPageFooter(doc);
+
+                // ── Download ──
+                const baseName = lastFile.name.replace(/\.[^.]+$/, '');
+                doc.save(`${baseName}_Bericht.pdf`);
+                log('PDF-Bericht exportiert.', 'success');
+            } catch (err) {
+                log('PDF-Export fehlgeschlagen: ' + err.message, 'error');
+                console.error(err);
+            }
         }
 
         async function downloadExcelReport() {
