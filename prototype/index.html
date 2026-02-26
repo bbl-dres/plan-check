@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' https://unpkg.com;
+        style-src 'self' 'unsafe-inline';
+        img-src 'self' data: https://images.unsplash.com;
+        font-src 'self';
+        connect-src 'self';
+        frame-ancestors 'none';
+        base-uri 'self';
+        form-action 'self';
+    ">
+    <title>BBL Prüfplattform Flächenmanagement</title>
+    <link rel="stylesheet" href="css/tokens.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://unpkg.com/lucide@0.562.0/dist/umd/lucide.min.js" integrity="sha384-FmRlymRnpgjuKyAnwH4DftRjl+RqHOlfcw9k4xcpPyovclg/2RZRrvw7qe1koVCP" crossorigin="anonymous"></script>
+</head>
+<body>
+    <!-- Skip to Main Content (Accessibility) -->
+    <a href="#main-content" class="skip-to-content">Skip to main content</a>
+
+    <!-- Swiss Federal Header -->
+    <header class="header" role="banner">
+        <div class="header__bar"></div>
+        <div class="header__content">
+            <a href="#" class="header__brand" id="header-brand-link">
+                <img src="assets/swiss-logo-flag.svg" alt="Swiss Confederation" class="header__logo" width="40" height="44">
+                <div class="header__titles">
+                    <span class="header__org">Bundesamt für Bauten und Logistik BBL</span>
+                    <span class="header__app">Prüfplattform Flächenmanagement</span>
+                </div>
+            </a>
+            <nav class="header__nav">
+                <button class="btn btn--primary btn--sm" id="demo-btn">Demo starten</button>
+                <button class="header__user" aria-label="User menu" id="user-menu-btn">
+                    <i data-lucide="user" class="icon icon-md"></i>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-content" id="main-content" role="main">
+
+        <!-- LOGIN VIEW -->
+        <section id="view-login" class="view view--active">
+            <div class="login">
+                <div class="login__form-wrapper">
+                    <div class="login__icon">
+                        <img src="assets/logo.png" alt="BBL CAD Prüfplattform Logo" class="login__logo">
+                    </div>
+
+                    <h2 class="text-h2 text-center">Anmelden</h2>
+
+                    <form class="login__form">
+                        <div class="form__field">
+                            <label for="username" class="sr-only">Benutzername oder E-Mail</label>
+                            <div class="form__input-group">
+                                <i data-lucide="user" class="form__input-icon icon icon-sm"></i>
+                                <input type="text" class="form__input" placeholder="Benutzername oder E-Mail" id="username" autocomplete="username" aria-label="Benutzername oder E-Mail">
+                            </div>
+                        </div>
+
+                        <div class="form__field">
+                            <label for="password" class="sr-only">Passwort</label>
+                            <div class="form__input-group">
+                                <i data-lucide="lock" class="form__input-icon icon icon-sm"></i>
+                                <input type="password" class="form__input" placeholder="Passwort" id="password" autocomplete="current-password" aria-label="Passwort">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn--primary" id="login-btn">Anmelden / Demo</button>
+
+                        <div class="login__links">
+                            <a href="#" class="login__link">Zugang anfordern</a>
+                            <a href="#" class="login__link">Passwort vergessen?</a>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="login__video">
+                    <h2 class="text-h3">Erklärvideo</h2>
+                    <div class="video-player">
+                        <div class="video-player__placeholder">
+                            <svg width="80" height="80" viewBox="0 0 80 80">
+                                <circle cx="40" cy="40" r="35" fill="none" stroke="white" stroke-width="3"/>
+                                <path d="M32 25 L32 55 L55 40 Z" fill="white"/>
+                            </svg>
+                        </div>
+                        <div class="video-player__controls">
+                            <button class="video-player__play-btn">▶</button>
+                            <div class="video-player__progress"></div>
+                            <span class="video-player__time">00:00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="login__downloads">
+                    <h2 class="text-h3">Downloads</h2>
+                    <ul class="download-list">
+                        <li><a href="#" class="download-list__link">BBL CAD Weisung.pdf</a></li>
+                        <li><a href="#" class="download-list__link">BBL CAD Prüfungskatalog.pdf</a></li>
+                        <li><a href="#" class="download-list__link">BBL CAD BPMN Prozess.pdf</a></li>
+                        <li><a href="#" class="download-list__link">BBL CAD Vorlage Raumliste.xlsx</a></li>
+                        <li><a href="#" class="download-list__link">BBL CAD Beispiel Dateien.zip</a></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- PROJECT OVERVIEW -->
+        <section id="view-projects" class="view">
+            <div class="container">
+                <div class="page-header">
+                    <div class="search">
+                        <i data-lucide="search" class="search__icon icon icon-md"></i>
+                        <input type="text" class="search__input" placeholder="Projektname, ID, Auftrag" id="project-search">
+                    </div>
+                    <div class="page-header__actions">
+                        <div class="view-toggle" role="group" aria-label="Ansicht wechseln">
+                            <button class="view-toggle__btn view-toggle__btn--active" data-view="grid" aria-label="Kachelansicht" aria-pressed="true">
+                                <i data-lucide="grid-2x2" class="icon icon-md" aria-hidden="true"></i>
+                            </button>
+                            <button class="view-toggle__btn" data-view="list" aria-label="Listenansicht" aria-pressed="false">
+                                <i data-lucide="list" class="icon icon-md" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <button class="btn btn--primary btn--sm" id="new-project-btn">
+                            <i data-lucide="plus" class="icon icon-sm"></i>
+                            Neues Projekt
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card-grid" id="project-grid">
+                    <!-- Projects will be rendered here by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- PROJECT DETAIL (Document List) -->
+        <section id="view-project-detail" class="view">
+            <div class="container">
+                <nav class="breadcrumb">
+                    <div class="breadcrumb__nav">
+                        <a href="#" class="breadcrumb__link" id="breadcrumb-projects">Projekte</a>
+                        <span class="breadcrumb__separator">/</span>
+                        <span class="breadcrumb__current" id="breadcrumb-project-name">Projekt Name</span>
+                    </div>
+                    <button class="btn btn--secondary btn--sm" id="back-to-overview">
+                        <i data-lucide="arrow-left" class="icon icon-sm"></i>
+                        Zurück Übersicht
+                    </button>
+                </nav>
+
+                <div class="project-header">
+                    <div class="project-header__image" id="project-detail-image">
+                        <!-- Background image set via JS -->
+                    </div>
+                    <div class="project-header__info">
+                        <div class="project-kpi project-kpi--progress">
+                            <div class="donut-chart-wrapper">
+                                <svg class="donut-chart" width="100" height="100" viewBox="0 0 100 100">
+                                    <circle class="donut-chart__background" cx="50" cy="50" r="40" stroke-width="8"/>
+                                    <circle class="donut-chart__progress donut-chart__progress--success"
+                                        cx="50" cy="50" r="40" stroke-width="8"
+                                        id="project-donut-progress"
+                                        stroke-dasharray="251" stroke-dashoffset="50"/>
+                                </svg>
+                                <div class="donut-chart__value">
+                                    <span class="donut-chart__percentage" id="project-completion">95%</span>
+                                </div>
+                            </div>
+                            <span class="project-kpi__label">Ø Score</span>
+                        </div>
+                        <div class="project-kpi">
+                            <span class="project-kpi__value" id="project-sia-phase">53</span>
+                            <span class="project-kpi__label">SIA Phase</span>
+                        </div>
+                        <div class="project-kpi">
+                            <span class="project-kpi__value" id="project-document-count">7</span>
+                            <span class="project-kpi__label">Dokumente</span>
+                        </div>
+                        <div class="project-kpi">
+                            <span class="project-kpi__value" id="project-room-count">0</span>
+                            <span class="project-kpi__label">Räume</span>
+                        </div>
+                        <div class="project-kpi">
+                            <span class="project-kpi__value" id="project-gf">0 m²</span>
+                            <span class="project-kpi__label">GF</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tabs-card">
+                    <div class="tabs tabs--with-actions">
+                        <ul class="tabs__list">
+                            <li><a href="#" class="tabs__tab tabs__tab--active" data-tab="documents">Abgabe Dokumente (<span id="tab-documents-count">0</span>)</a></li>
+                            <li><a href="#" class="tabs__tab" data-tab="users">Benutzer (<span id="tab-users-count">0</span>)</a></li>
+                            <li><a href="#" class="tabs__tab" data-tab="rules">Prüfregeln (<span id="tab-rules-count">0</span>)</a></li>
+                        </ul>
+                        <div class="tabs__actions" id="tabs-actions-documents">
+                            <button class="btn btn--secondary btn--sm" id="edit-document-btn" disabled>
+                                <i data-lucide="pencil" class="icon icon-sm" aria-hidden="true"></i>
+                                Bearbeiten
+                            </button>
+                            <button class="btn btn--secondary btn--sm" id="delete-documents-btn" disabled>
+                                <i data-lucide="trash-2" class="icon icon-sm" aria-hidden="true"></i>
+                                Löschen
+                            </button>
+                            <button class="btn btn--primary btn--sm" id="new-document-btn">
+                                <i data-lucide="plus" class="icon icon-sm" aria-hidden="true"></i>
+                                Neues Dokument
+                            </button>
+                        </div>
+                        <div class="tabs__actions" id="tabs-actions-users" style="display: none;">
+                            <button class="btn btn--secondary btn--sm" id="edit-user-btn" disabled>
+                                <i data-lucide="pencil" class="icon icon-sm" aria-hidden="true"></i>
+                                Bearbeiten
+                            </button>
+                            <button class="btn btn--secondary btn--sm" id="delete-users-btn" disabled>
+                                <i data-lucide="trash-2" class="icon icon-sm" aria-hidden="true"></i>
+                                Löschen
+                            </button>
+                            <button class="btn btn--primary btn--sm" id="invite-user-btn">
+                                <i data-lucide="user-plus" class="icon icon-sm" aria-hidden="true"></i>
+                                Benutzer einladen
+                            </button>
+                        </div>
+                        <div class="tabs__actions" id="tabs-actions-rules" style="display: none;"></div>
+                    </div>
+
+                    <div class="tab-content">
+                    <div class="tab-pane tab-pane--active" id="tab-documents">
+                        <table class="table table--compact table--selectable">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="table__checkbox-col">
+                                        <label class="checkbox">
+                                            <input type="checkbox" id="select-all-documents" aria-label="Alle Dokumente auswählen">
+                                            <span class="checkbox__mark"></span>
+                                        </label>
+                                    </th>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Ersteller</th>
+                                    <th scope="col">Letzte Änderung</th>
+                                    <th scope="col" class="text-right">Score</th>
+                                    <th scope="col" class="table__status-col"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="document-table-body">
+                                <!-- Documents rendered by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="tab-pane" id="tab-users">
+                        <table class="table table--compact table--selectable">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="table__checkbox-col">
+                                        <label class="checkbox">
+                                            <input type="checkbox" id="select-all-users" aria-label="Alle Benutzer auswählen">
+                                            <span class="checkbox__mark"></span>
+                                        </label>
+                                    </th>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Email</th>
+                                    <th scope="col">Last Activity</th>
+                                </tr>
+                            </thead>
+                            <tbody id="user-table-body">
+                                <!-- Users rendered by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="tab-pane" id="tab-rules">
+                        <table class="table table--compact">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Code</th>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Kategorie</th>
+                                    <th scope="col">Beschreibung</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rules-table-body">
+                                <!-- Rules rendered by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VALIDATION WORKFLOW -->
+        <section id="view-validation" class="view">
+            <div class="container">
+                <nav class="breadcrumb">
+                    <div class="breadcrumb__nav">
+                        <a href="#" class="breadcrumb__link" id="breadcrumb-val-projects">Projekte</a>
+                        <span class="breadcrumb__separator">/</span>
+                        <a href="#" class="breadcrumb__link" id="breadcrumb-val-project">Projekt</a>
+                        <span class="breadcrumb__separator">/</span>
+                        <span class="breadcrumb__current" id="breadcrumb-val-document">Dokument</span>
+                    </div>
+                    <button class="btn btn--secondary btn--sm" id="back-to-project">
+                        <i data-lucide="arrow-left" class="icon icon-sm"></i>
+                        Zurück Übersicht
+                    </button>
+                </nav>
+
+                <nav class="stepper" aria-label="Validierungs-Workflow">
+                    <ol class="stepper__list">
+                        <li class="stepper__item stepper__item--complete" data-step="1">
+                            <span class="stepper__indicator">
+                                <i data-lucide="upload" class="icon icon-sm"></i>
+                            </span>
+                            <span class="stepper__label">1. DWG hochladen</span>
+                        </li>
+                        <li class="stepper__item stepper__item--current" data-step="2">
+                            <span class="stepper__indicator">
+                                <i data-lucide="upload" class="icon icon-sm"></i>
+                            </span>
+                            <span class="stepper__label">2. Raumliste hochladen</span>
+                        </li>
+                        <li class="stepper__item" data-step="3">
+                            <span class="stepper__indicator">
+                                <i data-lucide="eye" class="icon icon-sm"></i>
+                            </span>
+                            <span class="stepper__label">3. Ergebnisse bestätigen</span>
+                        </li>
+                        <li class="stepper__item" data-step="4">
+                            <span class="stepper__indicator">
+                                <i data-lucide="check-circle" class="icon icon-sm"></i>
+                            </span>
+                            <span class="stepper__label">4. Auftrag abschliessen</span>
+                        </li>
+                    </ol>
+                </nav>
+
+                <!-- STEP 1: DWG Hochladen -->
+                <div id="step-content-1" class="step__content" style="display: none;">
+                    <div class="upload">
+                        <h2 class="text-h2">DWG-Datei hochladen</h2>
+                        <div class="upload__zone" id="dwg-upload-zone">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                            <p>Dateien hier ablegen oder klicken zum Auswählen</p>
+                            <p class="text-muted">Unterstützte Formate: DWG, DXF (max. 50 MB)</p>
+                            <input type="file" id="dwg-file-input" accept=".dwg,.dxf" hidden>
+                            <button class="btn btn--primary" id="dwg-select-btn">Datei auswählen</button>
+                        </div>
+                        <div class="upload__file" id="dwg-uploaded-file" style="display: none;">
+                            <p><strong>Hochgeladen:</strong> <span id="dwg-file-name"></span> (<span id="dwg-file-size"></span>)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 2: Raumliste Hochladen -->
+                <div id="step-content-2" class="step__content" style="display: none;">
+                    <div class="upload">
+                        <h2 class="text-h2">Excel-Raumliste hochladen</h2>
+                        <div class="upload__zone" id="excel-upload-zone">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                            <p>Excel-Datei hier ablegen oder klicken zum Auswählen</p>
+                            <p class="text-muted">Unterstützte Formate: XLSX, XLS (max. 10 MB)</p>
+                            <input type="file" id="excel-file-input" accept=".xlsx,.xls" hidden>
+                            <button class="btn btn--primary" id="excel-select-btn">Datei auswählen</button>
+                        </div>
+                        <div class="upload__file" id="excel-uploaded-file" style="display: none;">
+                            <p><strong>Hochgeladen:</strong> <span id="excel-file-name"></span> (<span id="excel-file-size"></span>)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 2 CONTENT: Room matching validation with tabs -->
+                <div id="step-2-content" class="step__detail-content" style="display: none;">
+                    <div class="metrics">
+                        <div class="metric-card">
+                            <span class="metric-card__value" id="step2-dwg-rooms">0</span>
+                            <span class="metric-card__label">Räume aus DWG</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-card__value" id="step2-excel-rooms">0</span>
+                            <span class="metric-card__label">Räume aus Excel</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-card__value" id="step2-ngf">0 m²</span>
+                            <span class="metric-card__label">SIA 416 Nettogeschossfläche NGF</span>
+                        </div>
+                        <div class="metric-card metric-card--error" id="step2-error-card">
+                            <span class="metric-card__value" id="step2-error-count">0</span>
+                            <span class="metric-card__label">Fehler</span>
+                        </div>
+                    </div>
+
+                    <div class="tabs-card">
+                        <div class="tabs">
+                            <ul class="tabs__list">
+                                <li><a href="#" class="tabs__tab tabs__tab--active" data-step2-tab="rooms">Räume (<span id="step2-tab-rooms-count">0</span>)</a></li>
+                                <li><a href="#" class="tabs__tab" data-step2-tab="errors">Fehlermeldungen (<span id="step2-tab-errors-count">0</span>)</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- Rooms Tab -->
+                        <div class="tab-pane tab-pane--active" id="step2-tab-rooms">
+                            <div class="table-wrapper">
+                                <table class="table table--compact">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">AOID</th>
+                                            <th scope="col">NAME</th>
+                                            <th scope="col" class="text-right">AREA</th>
+                                            <th scope="col">AOFUNCTION</th>
+                                            <th scope="col" class="text-center">ERROR</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="step2-room-table-body">
+                                        <!-- Rooms rendered by JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Errors Tab -->
+                        <div class="tab-pane" id="step2-tab-errors">
+                            <div class="error-list" id="step2-error-list">
+                                <!-- Errors rendered by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 3: Ergebnisse Bestätigen -->
+                <div id="step-content-3" class="step__content" style="display: none;">
+                    <h2 class="text-h2">Zusammenfassung Ergebnisse</h2>
+
+                    <div class="tabs-card">
+                        <div class="tabs">
+                            <ul class="tabs__list">
+                                <li><a href="#" class="tabs__tab tabs__tab--active" data-step3-tab="kennzahlen">Kennzahlen</a></li>
+                                <li><a href="#" class="tabs__tab" data-step3-tab="viewer">Viewer</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- Kennzahlen Tab -->
+                        <div class="tab-pane tab-pane--active" id="step3-tab-kennzahlen">
+                            <div class="results__layout">
+                                <!-- Left Column: Tables -->
+                                <div class="results__tables">
+                                    <!-- Gebäudevolumen -->
+                                    <div class="results__section">
+                                        <h3 class="results__section-title">Gebäudevolumen</h3>
+                                        <table class="table table--compact table--no-borders">
+                                            <tbody>
+                                                <tr><td class="table__abbr">GV</td><td>Gebäudevolumen</td><td class="text-right table__value">74'786 m³</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">GV OG</td><td>Gebäudevolumen Obergeschosse</td><td class="text-right table__value">74'786 m³</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">GV UG</td><td>Gebäudevolumen Untergeschosse</td><td class="text-right table__value">74'786 m³</td><td class="text-right table__percent">100%</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <!-- Gebäudeflächen -->
+                                    <div class="results__section">
+                                        <h3 class="results__section-title">Gebäudeflächen</h3>
+                                        <table class="table table--compact table--no-borders">
+                                            <tbody>
+                                                <tr><td class="table__abbr">GF</td><td>Geschossfläche</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">KF</td><td>Konstruktionsfläche</td><td class="text-right table__value">2'895 m²</td><td class="text-right table__percent">16%</td></tr>
+                                                <tr><td class="table__abbr">NGF</td><td>Nettogeschossfläche</td><td class="text-right table__value">15'637 m²</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">NF</td><td>Nutzfläche</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">HNF</td><td>Hauptnutzfläche</td><td class="text-right table__value">10'198 m²</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">NNF</td><td>Nebennutzfläche</td><td class="text-right table__value">3'524 m²</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">VF</td><td>Verkehrsfläche</td><td class="text-right table__value">1'566 m²</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">FF</td><td>Funktionsfläche</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <!-- Flächen DIN 277 -->
+                                    <div class="results__section">
+                                        <h3 class="results__section-title">Flächen DIN 277</h3>
+                                        <table class="table table--compact table--no-borders">
+                                            <tbody>
+                                                <tr><td class="table__abbr">HNF 1</td><td>Wohnen und Aufenthalt</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">HNF 2</td><td>Büroarbeit</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">HNF 3</td><td>Produktion</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">HNF 4</td><td>Lagern, Verteilen, Verkaufen</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">HNF 5</td><td>Bildung, Unterricht, Kultur</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">HNF 6</td><td>Heilen, Pflegen</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">NNF 7</td><td>Nebennutzfläche</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">FF 8</td><td>Betriebstechnische Anlagen</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">VF 9</td><td>Verkehrserschliessung und -sicherung</td><td class="text-right table__value">1'566 m²</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">BUF 10</td><td>Verschiedene Nutzungen</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- Right Column: Kennzahlen + Donut Chart -->
+                                <div class="results__sidebar">
+                                    <div class="results__section">
+                                        <h3 class="results__section-title">Kennzahlen Wirtschaftlichkeit von Grundris</h3>
+                                        <table class="table table--compact table--no-borders">
+                                            <tbody>
+                                                <tr><td class="table__abbr">HNF SIA 416 / GF</td><td>Hauptnutzfläche / Geschossfläche</td><td class="text-right">0.40</td></tr>
+                                                <tr><td class="table__abbr">VMF SIA 165 / GF</td><td>Vermietbare Fläche / Geschossfläche</td><td class="text-right">0.75</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <!-- Multi-segment Donut Chart -->
+                                    <div class="results__donut">
+                                        <svg viewBox="0 0 200 200" class="donut-multi">
+                                            <!-- Background circle -->
+                                            <circle cx="100" cy="100" r="70" fill="none" stroke="#E5E5E5" stroke-width="30"/>
+                                            <!-- HNF segment (74%) - red (SIA standard) -->
+                                            <circle cx="100" cy="100" r="70" fill="none" stroke="#E57373" stroke-width="30"
+                                                    stroke-dasharray="327.6 112.4" stroke-dashoffset="110" class="donut-segment"/>
+                                            <!-- NNF segment (14.6%) - orange (SIA standard) -->
+                                            <circle cx="100" cy="100" r="70" fill="none" stroke="#FFB74D" stroke-width="30"
+                                                    stroke-dasharray="64.2 375.8" stroke-dashoffset="-217.6" class="donut-segment"/>
+                                            <!-- VF segment (10%) - yellow (SIA standard) -->
+                                            <circle cx="100" cy="100" r="70" fill="none" stroke="#FFF176" stroke-width="30"
+                                                    stroke-dasharray="44 396" stroke-dashoffset="-281.8" class="donut-segment"/>
+                                            <!-- FF segment (1.4%) - blue (SIA standard) -->
+                                            <circle cx="100" cy="100" r="70" fill="none" stroke="#64B5F6" stroke-width="30"
+                                                    stroke-dasharray="6.2 433.8" stroke-dashoffset="-325.8" class="donut-segment"/>
+                                        </svg>
+                                        <!-- Legend -->
+                                        <div class="donut-legend">
+                                            <div class="donut-legend__item">
+                                                <span class="donut-legend__color" style="background: #FFF176;"></span>
+                                                <span class="donut-legend__label">VF</span>
+                                                <span class="donut-legend__value">10%</span>
+                                            </div>
+                                            <div class="donut-legend__item">
+                                                <span class="donut-legend__color" style="background: #64B5F6;"></span>
+                                                <span class="donut-legend__label">FF</span>
+                                                <span class="donut-legend__value">1.4%</span>
+                                            </div>
+                                            <div class="donut-legend__item">
+                                                <span class="donut-legend__color" style="background: #FFB74D;"></span>
+                                                <span class="donut-legend__label">NNF</span>
+                                                <span class="donut-legend__value">14.6%</span>
+                                            </div>
+                                            <div class="donut-legend__item">
+                                                <span class="donut-legend__color" style="background: #E57373;"></span>
+                                                <span class="donut-legend__label">HNF</span>
+                                                <span class="donut-legend__value">74%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Viewer Tab -->
+                        <div class="tab-pane" id="step3-tab-viewer">
+                            <div class="empty-state">
+                                <i data-lucide="construction" class="empty-state__icon"></i>
+                                <h3 class="empty-state__title">Zukünftige Entwicklung</h3>
+                                <p class="empty-state__message">Der 3D-Viewer wird in einer zukünftigen Version implementiert.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 4: Auftrag Abschliessen -->
+                <div id="step-content-4" class="step__content" style="display: none;">
+                    <div class="empty-state">
+                        <div class="firework">
+                            <div class="firework__spark"></div>
+                            <div class="firework__spark firework__spark--delay-1"></div>
+                            <div class="firework__spark firework__spark--delay-2"></div>
+                        </div>
+                        <h2 class="text-h1">Auftrag Abschluss</h2>
+                        <p class="empty-state__message">
+                            Die Validierung wurde erfolgreich abgeschlossen.<br>
+                            Klicken Sie auf "Auftrag abschliessen", um die Ergebnisse zu speichern.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- STEP 1 CONTENT: Floor plan viewer with tabs -->
+                <div id="step-1-content" class="step__detail-content" style="display: none;">
+                    <div class="metrics">
+                        <div class="metric-card">
+                            <span class="metric-card__value" id="step1-room-count">0</span>
+                            <span class="metric-card__label">Räume</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-card__value" id="step1-ngf">0 m²</span>
+                            <span class="metric-card__label">SIA 416 Nettogeschossfläche NGF</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-card__value" id="step1-gf">0 m²</span>
+                            <span class="metric-card__label">SIA 416 Geschossfläche GF</span>
+                        </div>
+                        <div class="metric-card" id="step1-score-card">
+                            <span class="metric-card__value" id="step1-score-value">0%</span>
+                            <span class="metric-card__label">Score</span>
+                        </div>
+                    </div>
+
+                    <div class="tabs-card">
+                        <div class="tabs">
+                            <ul class="tabs__list">
+                                <li><a href="#" class="tabs__tab tabs__tab--active" data-val-tab="rooms">Räume (<span id="val-tab-rooms-count">0</span>)</a></li>
+                                <li><a href="#" class="tabs__tab" data-val-tab="areas">Flächen (<span id="val-tab-areas-count">0</span>)</a></li>
+                                <li><a href="#" class="tabs__tab" data-val-tab="errors">Fehlermeldungen (<span id="val-tab-errors-count">0</span>)</a></li>
+                            </ul>
+                        </div>
+
+                        <div class="split-view">
+                            <div class="split-view__left">
+                                <!-- Rooms Tab -->
+                                <div class="tab-pane tab-pane--active" id="val-tab-rooms">
+                                    <div class="table-wrapper">
+                                        <table class="table table--compact">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">AOID</th>
+                                                    <th scope="col" class="text-right">AREA</th>
+                                                    <th scope="col">AOFUNCTION</th>
+                                                    <th scope="col" class="text-center">ERROR</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="room-table-body">
+                                                <!-- Rooms rendered by JS -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- Areas Tab -->
+                                <div class="tab-pane" id="val-tab-areas">
+                                    <div class="table-wrapper">
+                                        <table class="table table--compact">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">AOID</th>
+                                                    <th scope="col" class="text-right">AREA</th>
+                                                    <th scope="col">AOFUNCTION</th>
+                                                    <th scope="col" class="text-center">ERROR</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="area-polygons-table-body">
+                                                <!-- Area polygons rendered by JS -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- Errors Tab -->
+                                <div class="tab-pane" id="val-tab-errors">
+                                    <div class="error-list" id="error-list">
+                                        <!-- Errors rendered by JS -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="split-view__right">
+                                <div class="floorplan floorplan--speckle">
+                                    <!-- Speckle viewer URL configured via JavaScript for security -->
+                                    <iframe
+                                        id="speckle-viewer"
+                                        class="speckle-viewer__iframe"
+                                        src=""
+                                        title="Speckle 3D Floor Plan Viewer"
+                                        allow="fullscreen">
+                                    </iframe>
+                                    <div class="speckle-viewer__loading" id="speckle-loading">
+                                        <div class="speckle-viewer__spinner"></div>
+                                        <span>Lade 3D-Grundriss...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- END STEP 1 CONTENT -->
+
+                <div class="workflow-actions">
+                    <button class="btn btn--secondary" id="prev-step-btn">Vorheriger Schritt</button>
+                    <button class="btn btn--primary" id="next-step-btn">Nächster Schritt</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- RESULTS SUMMARY -->
+        <section id="view-results" class="view">
+            <div class="container">
+                <nav class="breadcrumb">
+                    <div class="breadcrumb__nav">
+                        <a href="#" class="breadcrumb__link" id="breadcrumb-results-projects">Projekte</a>
+                        <span class="breadcrumb__separator">/</span>
+                        <a href="#" class="breadcrumb__link" id="breadcrumb-results-project">Projekt</a>
+                        <span class="breadcrumb__separator">/</span>
+                        <span class="breadcrumb__current">Zusammenfassung Ergebnis</span>
+                    </div>
+                    <button class="btn btn--secondary btn--sm" id="back-to-project-results">
+                        <i data-lucide="arrow-left" class="icon icon-sm"></i>
+                        Zurück Übersicht
+                    </button>
+                </nav>
+
+                <h1 class="text-h1">Zusammenfassung Ergebnis</h1>
+
+                <div class="results__grid">
+                    <div class="results__section">
+                        <h2 class="text-h3">Gebäudevolumen</h2>
+                        <table class="table table--compact table--no-borders">
+                            <tbody>
+                                <tr><td>GV (Gebäudevolumen)</td><td class="text-right">16'848 m³</td><td class="text-right">100%</td></tr>
+                                <tr><td>GV OG (oberirdisch)</td><td class="text-right">14'500 m³</td><td class="text-right">86%</td></tr>
+                                <tr><td>GV UG (unterirdisch)</td><td class="text-right">2'348 m³</td><td class="text-right">14%</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="results__section">
+                        <h2 class="text-h3">Gebäudeflächen SIA 416</h2>
+                        <table class="table table--compact table--no-borders">
+                            <tbody>
+                                <tr><td>GF (Geschossfläche)</td><td class="text-right">4'500 m²</td><td class="text-right">100%</td></tr>
+                                <tr><td>KF (Konstruktionsfläche)</td><td class="text-right">500 m²</td><td class="text-right">11%</td></tr>
+                                <tr><td>NGF (Nettogeschossfläche)</td><td class="text-right">4'000 m²</td><td class="text-right">89%</td></tr>
+                                <tr><td>NF (Nutzfläche)</td><td class="text-right">3'900 m²</td><td class="text-right">87%</td></tr>
+                                <tr><td>HNF (Hauptnutzfläche)</td><td class="text-right">3'200 m²</td><td class="text-right">71%</td></tr>
+                                <tr><td>NNF (Nebennutzfläche)</td><td class="text-right">400 m²</td><td class="text-right">9%</td></tr>
+                                <tr><td>VF (Verkehrsfläche)</td><td class="text-right">300 m²</td><td class="text-right">7%</td></tr>
+                                <tr><td>FF (Funktionsfläche)</td><td class="text-right">100 m²</td><td class="text-right">2%</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="results__section">
+                        <h2 class="text-h3">Flächen DIN 277</h2>
+                        <table class="table table--compact table--no-borders">
+                            <tbody>
+                                <tr><td>HNF 1 - Wohnen und Aufenthalt</td><td class="text-right">850 m²</td><td class="text-right">27%</td></tr>
+                                <tr><td>HNF 2 - Büroarbeit</td><td class="text-right">1'200 m²</td><td class="text-right">38%</td></tr>
+                                <tr><td>HNF 3 - Produktion</td><td class="text-right">0 m²</td><td class="text-right">0%</td></tr>
+                                <tr><td>HNF 4 - Lagern</td><td class="text-right">150 m²</td><td class="text-right">5%</td></tr>
+                                <tr><td>HNF 5 - Verteilen</td><td class="text-right">500 m²</td><td class="text-right">16%</td></tr>
+                                <tr><td>HNF 6 - Unterricht</td><td class="text-right">300 m²</td><td class="text-right">9%</td></tr>
+                                <tr><td>HNF 7 - Heilen/Pflegen</td><td class="text-right">200 m²</td><td class="text-right">6%</td></tr>
+                                <tr><td>FF 8 - Technik</td><td class="text-right">100 m²</td><td class="text-right">3%</td></tr>
+                                <tr><td>VF 9 - Verkehr</td><td class="text-right">300 m²</td><td class="text-right">9%</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="results__section">
+                        <h2 class="text-h3">Kennzahlen Wirtschaftlichkeit</h2>
+                        <div class="pie-chart">
+                            <svg class="pie-chart__svg" width="300" height="300" viewBox="0 0 300 300">
+                                <!-- Pie chart rendered by JS -->
+                                <g id="pie-chart-slices"></g>
+                            </svg>
+                            <div class="pie-chart__legend" id="pie-legend">
+                                <!-- Legend rendered by JS -->
+                            </div>
+                        </div>
+                        <table class="table table--compact table--no-borders">
+                            <tbody>
+                                <tr><td>HNF/GF</td><td class="text-right">71%</td></tr>
+                                <tr><td>NNF/GF</td><td class="text-right">9%</td></tr>
+                                <tr><td>VF/GF</td><td class="text-right">7%</td></tr>
+                                <tr><td>VMF/GF (VF+NNF)</td><td class="text-right">16%</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="workflow-actions">
+                    <button class="btn btn--secondary">Vorheriger Schritt</button>
+                    <button class="btn btn--primary">Auftrag abschliessen</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="footer">
+        <div class="footer__content">
+            <div class="footer__links">
+                <a href="https://github.com/davras5/plan-check" target="_blank" rel="noopener noreferrer" class="footer__link">Quellencode</a>
+                <span class="footer__separator">|</span>
+                <a href="https://www.admin.ch/gov/de/start/rechtliches.html" target="_blank" rel="noopener noreferrer" class="footer__link">Rechtliches</a>
+                <span class="footer__separator">|</span>
+                <a href="https://www.bbl.admin.ch/de/downloads-bauten" class="footer__link" id="nav-standards" target="_blank" rel="noopener noreferrer">BBL CAD Standards</a>
+                <span class="footer__separator">|</span>
+                <a href="https://www.bbl.admin.ch/de/kontakt" class="footer__link" target="_blank" rel="noopener noreferrer">Kontakt</a>
+            </div>
+            <span class="footer__version">v1.0.0</span>
+        </div>
+    </footer>
+
+    <!-- New Project Modal -->
+    <div class="modal" id="new-project-modal" role="dialog" aria-labelledby="modal-title" aria-modal="true" hidden>
+        <div class="modal__backdrop" data-modal-close></div>
+        <div class="modal__content">
+            <div class="modal__header">
+                <h2 class="modal__title" id="modal-title">Neues Projekt erstellen</h2>
+                <button class="modal__close" data-modal-close aria-label="Schliessen">
+                    <i data-lucide="x" class="icon icon-md" aria-hidden="true"></i>
+                </button>
+            </div>
+            <form class="modal__body" id="new-project-form">
+                <div class="form__field">
+                    <label for="project-number" class="form__label">Projektnummer</label>
+                    <input type="text" class="form__input" id="project-number" name="projectNumber" placeholder="z.B. 2024-001" required>
+                </div>
+                <div class="form__field">
+                    <label for="project-name" class="form__label">Projektname</label>
+                    <input type="text" class="form__input" id="project-name" name="name" placeholder="z.B. Bundeshaus Renovation" required>
+                </div>
+                <div class="form__field">
+                    <label for="project-phase" class="form__label">SIA Phase</label>
+                    <select class="form__input form__select" id="project-phase" name="phase" required>
+                        <option value="">Bitte wählen...</option>
+                        <option value="31">31 - Vorprojekt</option>
+                        <option value="32">32 - Bauprojekt</option>
+                        <option value="33">33 - Bewilligungsverfahren</option>
+                        <option value="41">41 - Ausschreibung</option>
+                        <option value="51">51 - Ausführungsprojekt</option>
+                        <option value="52">52 - Ausführung</option>
+                        <option value="53">53 - Inbetriebnahme</option>
+                    </select>
+                </div>
+                <div class="form__field">
+                    <label for="project-language" class="form__label">Sprache</label>
+                    <select class="form__input form__select" id="project-language" name="language" required>
+                        <option value="">Bitte wählen...</option>
+                        <option value="de">Deutsch</option>
+                        <option value="fr">Français</option>
+                        <option value="it">Italiano</option>
+                    </select>
+                </div>
+                <div class="form__field">
+                    <label for="project-ruleset" class="form__label">Regelsatz</label>
+                    <select class="form__input form__select" id="project-ruleset" name="ruleSetId" required>
+                        <option value="">Bitte wählen...</option>
+                        <!-- Options populated dynamically from rules.json -->
+                    </select>
+                </div>
+                <div class="form__field">
+                    <label for="project-image" class="form__label">Projektbild</label>
+                    <div class="form__file-upload" id="project-image-upload">
+                        <input type="file" class="form__file-input" id="project-image" name="image" accept="image/*">
+                        <div class="form__file-placeholder">
+                            <i data-lucide="image" class="icon icon-md" aria-hidden="true"></i>
+                            <span>Bild auswählen oder hierher ziehen</span>
+                        </div>
+                        <div class="form__file-preview" id="project-image-preview" hidden>
+                            <img src="" alt="Projektbild Vorschau" id="project-image-preview-img">
+                            <button type="button" class="form__file-remove" id="project-image-remove" aria-label="Bild entfernen">
+                                <i data-lucide="x" class="icon icon-sm" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <div class="modal__footer">
+                <button type="button" class="btn btn--secondary" data-modal-close>Abbrechen</button>
+                <button type="submit" class="btn btn--primary" form="new-project-form">Projekt erstellen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invite User Modal -->
+    <div class="modal" id="invite-user-modal" role="dialog" aria-labelledby="invite-user-modal-title" aria-modal="true" hidden>
+        <div class="modal__backdrop" data-modal-close></div>
+        <div class="modal__content modal__content--sm">
+            <div class="modal__header">
+                <h2 class="modal__title" id="invite-user-modal-title">Benutzer einladen</h2>
+                <button class="modal__close" data-modal-close aria-label="Schliessen">
+                    <i data-lucide="x" class="icon icon-md" aria-hidden="true"></i>
+                </button>
+            </div>
+            <form class="modal__body" id="invite-user-form">
+                <div class="form__field">
+                    <label for="invite-email" class="form__label">E-Mail-Adresse</label>
+                    <input type="email" class="form__input" id="invite-email" name="email" placeholder="beispiel@domain.ch" required>
+                </div>
+                <div class="form__field">
+                    <label for="invite-role" class="form__label">Rolle</label>
+                    <select class="form__input form__select" id="invite-role" name="role" required>
+                        <option value="">Bitte wählen...</option>
+                        <option value="viewer">Betrachter</option>
+                        <option value="editor">Bearbeiter</option>
+                        <option value="admin">Administrator</option>
+                    </select>
+                </div>
+            </form>
+            <div class="modal__footer">
+                <button type="button" class="btn btn--secondary" data-modal-close>Abbrechen</button>
+                <button type="submit" class="btn btn--primary" form="invite-user-form">Einladung senden</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Document Modal -->
+    <div class="modal" id="new-document-modal" role="dialog" aria-labelledby="new-document-modal-title" aria-modal="true" hidden>
+        <div class="modal__backdrop" data-modal-close></div>
+        <div class="modal__content modal__content--sm">
+            <div class="modal__header">
+                <h2 class="modal__title" id="new-document-modal-title">Neues Dokument</h2>
+                <button class="modal__close" data-modal-close aria-label="Schliessen">
+                    <i data-lucide="x" class="icon icon-md" aria-hidden="true"></i>
+                </button>
+            </div>
+            <form class="modal__body" id="new-document-form">
+                <div class="form__field">
+                    <label for="document-name" class="form__label">Dokumentname</label>
+                    <input type="text" class="form__input" id="document-name" name="name" placeholder="z.B. EG_Grundriss.dwg" required>
+                </div>
+            </form>
+            <div class="modal__footer">
+                <button type="button" class="btn btn--secondary" data-modal-close>Abbrechen</button>
+                <button type="submit" class="btn btn--primary" form="new-document-form">Dokument erstellen</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+</html>

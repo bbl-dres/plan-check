@@ -3,942 +3,1844 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="
-        default-src 'self';
-        script-src 'self' https://unpkg.com;
-        style-src 'self' 'unsafe-inline';
-        img-src 'self' data: https://images.unsplash.com;
-        font-src 'self';
-        connect-src 'self';
-        frame-ancestors 'none';
-        base-uri 'self';
-        form-action 'self';
-    ">
-    <title>BBL Prüfplattform Flächenmanagement</title>
-    <link rel="stylesheet" href="css/tokens.css">
-    <link rel="stylesheet" href="css/styles.css">
-    <script src="https://unpkg.com/lucide@0.562.0/dist/umd/lucide.min.js" integrity="sha384-FmRlymRnpgjuKyAnwH4DftRjl+RqHOlfcw9k4xcpPyovclg/2RZRrvw7qe1koVCP" crossorigin="anonymous"></script>
+    <title>DWG Viewer Prototype - LibreDWG WebAssembly</title>
+    <style>
+        :root {
+            --color-primary: #0072b1;
+            --color-primary-dark: #005a8c;
+            --color-primary-light: #e8f2fa;
+            --color-bg: #f2f4f7;
+            --color-surface: #ffffff;
+            --color-text: #1a1a1a;
+            --color-text-secondary: #5f6b7a;
+            --color-border: #dfe3e8;
+            --color-success: #1a7f37;
+            --color-error: #cf222e;
+            --color-warning: #bf8700;
+            --radius: 6px;
+            --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--color-bg);
+            color: var(--color-text);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: var(--color-surface);
+            border-bottom: 2px solid var(--color-primary);
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+        }
+
+        .header h1 { font-size: 17px; font-weight: 700; letter-spacing: -0.2px; }
+        .header__links { margin-left: auto; display: flex; gap: 16px; font-size: 12px; }
+        .header__links a { color: var(--color-text-secondary); text-decoration: none; transition: color 0.15s; }
+        .header__links a:hover { color: var(--color-primary); }
+
+        .header .badge {
+            background: var(--color-primary-light);
+            color: var(--color-primary);
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 24px auto;
+            padding: 0 24px;
+        }
+
+        /* Upload Zone */
+        .upload-zone {
+            background: var(--color-surface);
+            border: 2px dashed var(--color-border);
+            border-radius: var(--radius);
+            padding: 48px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+            box-shadow: var(--shadow);
+        }
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: var(--color-primary);
+            background: var(--color-primary-light);
+            box-shadow: 0 0 0 4px rgba(0,114,177,0.08);
+        }
+        .upload-zone svg { width: 44px; height: 44px; color: var(--color-text-secondary); margin-bottom: 12px; opacity: 0.6; }
+        .upload-zone:hover svg { color: var(--color-primary); opacity: 1; }
+        .upload-zone p { color: var(--color-text-secondary); margin-bottom: 16px; font-size: 15px; }
+        .upload-zone .hint { font-size: 12px; color: #999; }
+
+        .btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 10px 22px; border: none; border-radius: var(--radius);
+            font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s;
+        }
+        .btn--primary { background: var(--color-primary); color: white; }
+        .btn--primary:hover { background: var(--color-primary-dark); box-shadow: 0 2px 8px rgba(0,114,177,0.25); }
+
+        /* Status */
+        .status {
+            margin-top: 16px; padding: 12px 16px;
+            border-radius: var(--radius); font-size: 13px; display: none; font-weight: 500;
+        }
+        .status--loading { background: var(--color-primary-light); color: var(--color-primary); display: flex; align-items: center; gap: 12px; }
+        .status--success { background: #dafbe1; color: var(--color-success); }
+        .status--error { background: #ffebe9; color: var(--color-error); }
+
+        .spinner {
+            width: 20px; height: 20px;
+            border: 2px solid var(--color-border); border-top-color: var(--color-primary);
+            border-radius: 50%; animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Info Panel */
+        .panel { display: none; margin-top: 16px; background: var(--color-surface); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; border: 1px solid var(--color-border); }
+        .panel.visible { display: block; }
+        .panel__header {
+            padding: 10px 16px; background: #f6f8fa; border-bottom: 1px solid var(--color-border);
+            font-weight: 600; font-size: 13px; display: flex; justify-content: space-between; align-items: center;
+            color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.3px;
+        }
+
+        .info-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1px; background: var(--color-border);
+        }
+        .info-grid__item { background: var(--color-surface); padding: 14px 16px; }
+        .info-grid__label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--color-text-secondary); margin-bottom: 6px; font-weight: 500; }
+        .info-grid__value { font-size: 15px; font-weight: 700; color: var(--color-text); }
+
+        /* Canvas Viewer */
+        .viewer__controls {
+            display: flex; gap: 4px; align-items: center;
+        }
+        .viewer__controls button {
+            width: 30px; height: 30px; border: 1px solid var(--color-border);
+            border-radius: var(--radius); background: var(--color-surface); cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--color-text-secondary); transition: all 0.15s;
+        }
+        .viewer__controls button:hover { background: var(--color-primary-light); color: var(--color-primary); border-color: var(--color-primary); }
+        .viewer__controls button svg { width: 16px; height: 16px; }
+        .viewer__controls .viewer__sep { width: 1px; height: 18px; background: var(--color-border); margin: 0 4px; }
+        .viewer__canvas-wrap {
+            position: relative; width: 100%; height: 600px;
+            overflow: hidden; background: #1a1a2e; cursor: grab;
+        }
+        .viewer__canvas-wrap:active { cursor: grabbing; }
+        .viewer__canvas-wrap canvas { position: absolute; left: 0; top: 0; }
+        .viewer__coords {
+            position: absolute; bottom: 8px; left: 12px;
+            color: rgba(255,255,255,0.4); font-size: 11px; font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+            pointer-events: none; letter-spacing: 0.3px;
+        }
+
+        /* Feature Popup */
+        .feature-popup {
+            display: none;
+            position: absolute;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-top: 3px solid var(--color-primary);
+            border-radius: 2px 2px 6px 6px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            padding: 10px 14px;
+            font-size: 12px;
+            min-width: 190px;
+            max-width: 280px;
+            z-index: 100;
+            pointer-events: none;
+        }
+        .feature-popup.visible { display: block; }
+        .feature-popup__title {
+            font-weight: 700; font-size: 12px;
+            margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+            padding-bottom: 6px; border-bottom: 1px solid var(--color-border);
+        }
+        .feature-popup__badge {
+            display: inline-block; background: var(--color-primary); color: white;
+            padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 600;
+            font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace; letter-spacing: 0.3px;
+        }
+        .feature-popup__row {
+            display: flex; justify-content: space-between; gap: 12px;
+            padding: 3px 0;
+        }
+        .feature-popup__label { color: var(--color-text-secondary); white-space: nowrap; font-size: 11px; }
+        .feature-popup__value { font-weight: 600; text-align: right; font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace; font-size: 11px; word-break: break-all; }
+        .feature-popup__color-swatch {
+            display: inline-block; width: 12px; height: 12px; border-radius: 2px;
+            border: 1px solid rgba(0,0,0,0.15); vertical-align: middle;
+        }
+
+        /* Layers */
+        .layers-toolbar {
+            display: flex; gap: 10px; padding: 8px 16px; align-items: center;
+            border-bottom: 1px solid var(--color-border); background: #f6f8fa;
+        }
+        .layers-toolbar .layer-toggle { flex-shrink: 0; }
+        .layers-search {
+            flex: 1; padding: 6px 10px; border: 1px solid var(--color-border); border-radius: var(--radius);
+            font-size: 12px; outline: none; min-width: 0; background: var(--color-surface);
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .layers-search:focus { border-color: var(--color-primary); box-shadow: 0 0 0 2px rgba(0,114,177,0.12); }
+        .layers-list { max-height: 300px; overflow-y: auto; }
+        .layer-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 7px 16px; font-size: 13px;
+            cursor: pointer; user-select: none; transition: opacity 0.15s, background 0.1s;
+        }
+        .layer-item:nth-child(even) { background: #fafbfc; }
+        .layer-item:hover { background: var(--color-primary-light); }
+        .layer-item.hidden { opacity: 0.3; }
+        .layer-toggle {
+            width: 15px; height: 15px; flex-shrink: 0; cursor: pointer; accent-color: var(--color-primary);
+        }
+        .layer-color { width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(0,0,0,0.08); flex-shrink: 0; }
+        .layer-name { flex: 1; font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace; font-size: 12px; }
+        .layer-entities { color: var(--color-text-secondary); font-size: 11px; font-variant-numeric: tabular-nums; }
+
+        /* Entities Table */
+        .entities-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .entities-table th {
+            text-align: left; padding: 8px 16px; background: #f6f8fa;
+            border-bottom: 1px solid var(--color-border); font-weight: 600;
+            font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--color-text-secondary);
+        }
+        .entities-table td { padding: 8px 16px; }
+        .entities-table tr:nth-child(even) td { background: #fafbfc; }
+        .entities-table tr:hover td { background: var(--color-primary-light); }
+        .entity-type-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 3px;
+            font-size: 11px; font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+            background: var(--color-primary-light); color: var(--color-primary); font-weight: 600;
+        }
+
+        /* Console */
+        .console-panel { margin-top: 16px; background: #161b22; border-radius: var(--radius); overflow: hidden; border: 1px solid #30363d; }
+        .console-panel__header {
+            padding: 8px 16px; background: #1c2129; color: #636e7b; font-size: 11px;
+            font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+            text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #30363d;
+        }
+        .console-panel__body {
+            padding: 12px 16px; max-height: 200px; overflow-y: auto;
+            font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace; font-size: 12px; line-height: 1.7; color: #c9d1d9;
+        }
+        .log-info { color: #79c0ff; }
+        .log-success { color: #56d364; }
+        .log-error { color: #f85149; }
+        .log-warn { color: #e3b341; }
+
+        /* Fullscreen */
+        #viewer-panel:fullscreen {
+            display: flex; flex-direction: column;
+            background: var(--color-surface); margin: 0; border-radius: 0;
+        }
+        #viewer-panel:fullscreen .viewer__canvas-wrap {
+            flex: 1; height: auto;
+        }
+    </style>
 </head>
 <body>
-    <!-- Skip to Main Content (Accessibility) -->
-    <a href="#main-content" class="skip-to-content">Skip to main content</a>
-
-    <!-- Swiss Federal Header -->
-    <header class="header" role="banner">
-        <div class="header__bar"></div>
-        <div class="header__content">
-            <a href="#" class="header__brand" id="header-brand-link">
-                <img src="assets/swiss-logo-flag.svg" alt="Swiss Confederation" class="header__logo" width="40" height="44">
-                <div class="header__titles">
-                    <span class="header__org">Bundesamt für Bauten und Logistik BBL</span>
-                    <span class="header__app">Prüfplattform Flächenmanagement</span>
-                </div>
-            </a>
-            <nav class="header__nav">
-                <button class="btn btn--primary btn--sm" id="demo-btn">Demo starten</button>
-                <button class="header__user" aria-label="User menu" id="user-menu-btn">
-                    <i data-lucide="user" class="icon icon-md"></i>
-                </button>
-            </nav>
-        </div>
+    <header class="header">
+        <h1>DWG Viewer Prototype</h1>
+        <span class="badge">libredwg-web v0.6.6 / Canvas 2D</span>
+        <nav class="header__links">
+            <a href="https://github.com/davras5/plan-check" target="_blank" rel="noopener">Quellencode</a>
+            <a href="https://github.com/LibreDWG/libredwg" target="_blank" rel="noopener">LibreDWG</a>
+            <a href="https://mlightcad.github.io/libredwg-web/docs/" target="_blank" rel="noopener">libredwg-web</a>
+            <a href="https://github.com/mlightcad/cad-viewer" target="_blank" rel="noopener">mlightcad Viewer</a>
+        </nav>
     </header>
 
-    <!-- Main Content Area -->
-    <main class="main-content" id="main-content" role="main">
-
-        <!-- LOGIN VIEW -->
-        <section id="view-login" class="view view--active">
-            <div class="login">
-                <div class="login__form-wrapper">
-                    <div class="login__icon">
-                        <img src="assets/logo.png" alt="BBL CAD Prüfplattform Logo" class="login__logo">
-                    </div>
-
-                    <h2 class="text-h2 text-center">Anmelden</h2>
-
-                    <form class="login__form">
-                        <div class="form__field">
-                            <label for="username" class="sr-only">Benutzername oder E-Mail</label>
-                            <div class="form__input-group">
-                                <i data-lucide="user" class="form__input-icon icon icon-sm"></i>
-                                <input type="text" class="form__input" placeholder="Benutzername oder E-Mail" id="username" autocomplete="username" aria-label="Benutzername oder E-Mail">
-                            </div>
-                        </div>
-
-                        <div class="form__field">
-                            <label for="password" class="sr-only">Passwort</label>
-                            <div class="form__input-group">
-                                <i data-lucide="lock" class="form__input-icon icon icon-sm"></i>
-                                <input type="password" class="form__input" placeholder="Passwort" id="password" autocomplete="current-password" aria-label="Passwort">
-                            </div>
-                        </div>
-
-                        <button type="submit" class="btn btn--primary" id="login-btn">Anmelden / Demo</button>
-
-                        <div class="login__links">
-                            <a href="#" class="login__link">Zugang anfordern</a>
-                            <a href="#" class="login__link">Passwort vergessen?</a>
-                        </div>
-                    </form>
-                </div>
-
-                <div class="login__video">
-                    <h2 class="text-h3">Erklärvideo</h2>
-                    <div class="video-player">
-                        <div class="video-player__placeholder">
-                            <svg width="80" height="80" viewBox="0 0 80 80">
-                                <circle cx="40" cy="40" r="35" fill="none" stroke="white" stroke-width="3"/>
-                                <path d="M32 25 L32 55 L55 40 Z" fill="white"/>
-                            </svg>
-                        </div>
-                        <div class="video-player__controls">
-                            <button class="video-player__play-btn">▶</button>
-                            <div class="video-player__progress"></div>
-                            <span class="video-player__time">00:00</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="login__downloads">
-                    <h2 class="text-h3">Downloads</h2>
-                    <ul class="download-list">
-                        <li><a href="#" class="download-list__link">BBL CAD Weisung.pdf</a></li>
-                        <li><a href="#" class="download-list__link">BBL CAD Prüfungskatalog.pdf</a></li>
-                        <li><a href="#" class="download-list__link">BBL CAD BPMN Prozess.pdf</a></li>
-                        <li><a href="#" class="download-list__link">BBL CAD Vorlage Raumliste.xlsx</a></li>
-                        <li><a href="#" class="download-list__link">BBL CAD Beispiel Dateien.zip</a></li>
-                    </ul>
-                </div>
-            </div>
-        </section>
-
-        <!-- PROJECT OVERVIEW -->
-        <section id="view-projects" class="view">
-            <div class="container">
-                <div class="page-header">
-                    <div class="search">
-                        <i data-lucide="search" class="search__icon icon icon-md"></i>
-                        <input type="text" class="search__input" placeholder="Projektname, ID, Auftrag" id="project-search">
-                    </div>
-                    <div class="page-header__actions">
-                        <div class="view-toggle" role="group" aria-label="Ansicht wechseln">
-                            <button class="view-toggle__btn view-toggle__btn--active" data-view="grid" aria-label="Kachelansicht" aria-pressed="true">
-                                <i data-lucide="grid-2x2" class="icon icon-md" aria-hidden="true"></i>
-                            </button>
-                            <button class="view-toggle__btn" data-view="list" aria-label="Listenansicht" aria-pressed="false">
-                                <i data-lucide="list" class="icon icon-md" aria-hidden="true"></i>
-                            </button>
-                        </div>
-                        <button class="btn btn--primary btn--sm" id="new-project-btn">
-                            <i data-lucide="plus" class="icon icon-sm"></i>
-                            Neues Projekt
-                        </button>
-                    </div>
-                </div>
-
-                <div class="card-grid" id="project-grid">
-                    <!-- Projects will be rendered here by JavaScript -->
-                </div>
-            </div>
-        </section>
-
-        <!-- PROJECT DETAIL (Document List) -->
-        <section id="view-project-detail" class="view">
-            <div class="container">
-                <nav class="breadcrumb">
-                    <div class="breadcrumb__nav">
-                        <a href="#" class="breadcrumb__link" id="breadcrumb-projects">Projekte</a>
-                        <span class="breadcrumb__separator">/</span>
-                        <span class="breadcrumb__current" id="breadcrumb-project-name">Projekt Name</span>
-                    </div>
-                    <button class="btn btn--secondary btn--sm" id="back-to-overview">
-                        <i data-lucide="arrow-left" class="icon icon-sm"></i>
-                        Zurück Übersicht
-                    </button>
-                </nav>
-
-                <div class="project-header">
-                    <div class="project-header__image" id="project-detail-image">
-                        <!-- Background image set via JS -->
-                    </div>
-                    <div class="project-header__info">
-                        <div class="project-kpi project-kpi--progress">
-                            <div class="donut-chart-wrapper">
-                                <svg class="donut-chart" width="100" height="100" viewBox="0 0 100 100">
-                                    <circle class="donut-chart__background" cx="50" cy="50" r="40" stroke-width="8"/>
-                                    <circle class="donut-chart__progress donut-chart__progress--success"
-                                        cx="50" cy="50" r="40" stroke-width="8"
-                                        id="project-donut-progress"
-                                        stroke-dasharray="251" stroke-dashoffset="50"/>
-                                </svg>
-                                <div class="donut-chart__value">
-                                    <span class="donut-chart__percentage" id="project-completion">95%</span>
-                                </div>
-                            </div>
-                            <span class="project-kpi__label">Ø Score</span>
-                        </div>
-                        <div class="project-kpi">
-                            <span class="project-kpi__value" id="project-sia-phase">53</span>
-                            <span class="project-kpi__label">SIA Phase</span>
-                        </div>
-                        <div class="project-kpi">
-                            <span class="project-kpi__value" id="project-document-count">7</span>
-                            <span class="project-kpi__label">Dokumente</span>
-                        </div>
-                        <div class="project-kpi">
-                            <span class="project-kpi__value" id="project-room-count">0</span>
-                            <span class="project-kpi__label">Räume</span>
-                        </div>
-                        <div class="project-kpi">
-                            <span class="project-kpi__value" id="project-gf">0 m²</span>
-                            <span class="project-kpi__label">GF</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="tabs-card">
-                    <div class="tabs tabs--with-actions">
-                        <ul class="tabs__list">
-                            <li><a href="#" class="tabs__tab tabs__tab--active" data-tab="documents">Abgabe Dokumente (<span id="tab-documents-count">0</span>)</a></li>
-                            <li><a href="#" class="tabs__tab" data-tab="users">Benutzer (<span id="tab-users-count">0</span>)</a></li>
-                            <li><a href="#" class="tabs__tab" data-tab="rules">Prüfregeln (<span id="tab-rules-count">0</span>)</a></li>
-                        </ul>
-                        <div class="tabs__actions" id="tabs-actions-documents">
-                            <button class="btn btn--secondary btn--sm" id="edit-document-btn" disabled>
-                                <i data-lucide="pencil" class="icon icon-sm" aria-hidden="true"></i>
-                                Bearbeiten
-                            </button>
-                            <button class="btn btn--secondary btn--sm" id="delete-documents-btn" disabled>
-                                <i data-lucide="trash-2" class="icon icon-sm" aria-hidden="true"></i>
-                                Löschen
-                            </button>
-                            <button class="btn btn--primary btn--sm" id="new-document-btn">
-                                <i data-lucide="plus" class="icon icon-sm" aria-hidden="true"></i>
-                                Neues Dokument
-                            </button>
-                        </div>
-                        <div class="tabs__actions" id="tabs-actions-users" style="display: none;">
-                            <button class="btn btn--secondary btn--sm" id="edit-user-btn" disabled>
-                                <i data-lucide="pencil" class="icon icon-sm" aria-hidden="true"></i>
-                                Bearbeiten
-                            </button>
-                            <button class="btn btn--secondary btn--sm" id="delete-users-btn" disabled>
-                                <i data-lucide="trash-2" class="icon icon-sm" aria-hidden="true"></i>
-                                Löschen
-                            </button>
-                            <button class="btn btn--primary btn--sm" id="invite-user-btn">
-                                <i data-lucide="user-plus" class="icon icon-sm" aria-hidden="true"></i>
-                                Benutzer einladen
-                            </button>
-                        </div>
-                        <div class="tabs__actions" id="tabs-actions-rules" style="display: none;"></div>
-                    </div>
-
-                    <div class="tab-content">
-                    <div class="tab-pane tab-pane--active" id="tab-documents">
-                        <table class="table table--compact table--selectable">
-                            <thead>
-                                <tr>
-                                    <th scope="col" class="table__checkbox-col">
-                                        <label class="checkbox">
-                                            <input type="checkbox" id="select-all-documents" aria-label="Alle Dokumente auswählen">
-                                            <span class="checkbox__mark"></span>
-                                        </label>
-                                    </th>
-                                    <th scope="col">Name</th>
-                                    <th scope="col">Ersteller</th>
-                                    <th scope="col">Letzte Änderung</th>
-                                    <th scope="col" class="text-right">Score</th>
-                                    <th scope="col" class="table__status-col"></th>
-                                </tr>
-                            </thead>
-                            <tbody id="document-table-body">
-                                <!-- Documents rendered by JS -->
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="tab-pane" id="tab-users">
-                        <table class="table table--compact table--selectable">
-                            <thead>
-                                <tr>
-                                    <th scope="col" class="table__checkbox-col">
-                                        <label class="checkbox">
-                                            <input type="checkbox" id="select-all-users" aria-label="Alle Benutzer auswählen">
-                                            <span class="checkbox__mark"></span>
-                                        </label>
-                                    </th>
-                                    <th scope="col">Name</th>
-                                    <th scope="col">Email</th>
-                                    <th scope="col">Last Activity</th>
-                                </tr>
-                            </thead>
-                            <tbody id="user-table-body">
-                                <!-- Users rendered by JS -->
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="tab-pane" id="tab-rules">
-                        <table class="table table--compact">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Code</th>
-                                    <th scope="col">Name</th>
-                                    <th scope="col">Kategorie</th>
-                                    <th scope="col">Beschreibung</th>
-                                </tr>
-                            </thead>
-                            <tbody id="rules-table-body">
-                                <!-- Rules rendered by JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- VALIDATION WORKFLOW -->
-        <section id="view-validation" class="view">
-            <div class="container">
-                <nav class="breadcrumb">
-                    <div class="breadcrumb__nav">
-                        <a href="#" class="breadcrumb__link" id="breadcrumb-val-projects">Projekte</a>
-                        <span class="breadcrumb__separator">/</span>
-                        <a href="#" class="breadcrumb__link" id="breadcrumb-val-project">Projekt</a>
-                        <span class="breadcrumb__separator">/</span>
-                        <span class="breadcrumb__current" id="breadcrumb-val-document">Dokument</span>
-                    </div>
-                    <button class="btn btn--secondary btn--sm" id="back-to-project">
-                        <i data-lucide="arrow-left" class="icon icon-sm"></i>
-                        Zurück Übersicht
-                    </button>
-                </nav>
-
-                <nav class="stepper" aria-label="Validierungs-Workflow">
-                    <ol class="stepper__list">
-                        <li class="stepper__item stepper__item--complete" data-step="1">
-                            <span class="stepper__indicator">
-                                <i data-lucide="upload" class="icon icon-sm"></i>
-                            </span>
-                            <span class="stepper__label">1. DWG hochladen</span>
-                        </li>
-                        <li class="stepper__item stepper__item--current" data-step="2">
-                            <span class="stepper__indicator">
-                                <i data-lucide="upload" class="icon icon-sm"></i>
-                            </span>
-                            <span class="stepper__label">2. Raumliste hochladen</span>
-                        </li>
-                        <li class="stepper__item" data-step="3">
-                            <span class="stepper__indicator">
-                                <i data-lucide="eye" class="icon icon-sm"></i>
-                            </span>
-                            <span class="stepper__label">3. Ergebnisse bestätigen</span>
-                        </li>
-                        <li class="stepper__item" data-step="4">
-                            <span class="stepper__indicator">
-                                <i data-lucide="check-circle" class="icon icon-sm"></i>
-                            </span>
-                            <span class="stepper__label">4. Auftrag abschliessen</span>
-                        </li>
-                    </ol>
-                </nav>
-
-                <!-- STEP 1: DWG Hochladen -->
-                <div id="step-content-1" class="step__content" style="display: none;">
-                    <div class="upload">
-                        <h2 class="text-h2">DWG-Datei hochladen</h2>
-                        <div class="upload__zone" id="dwg-upload-zone">
-                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                <polyline points="17 8 12 3 7 8"/>
-                                <line x1="12" y1="3" x2="12" y2="15"/>
-                            </svg>
-                            <p>Dateien hier ablegen oder klicken zum Auswählen</p>
-                            <p class="text-muted">Unterstützte Formate: DWG, DXF (max. 50 MB)</p>
-                            <input type="file" id="dwg-file-input" accept=".dwg,.dxf" hidden>
-                            <button class="btn btn--primary" id="dwg-select-btn">Datei auswählen</button>
-                        </div>
-                        <div class="upload__file" id="dwg-uploaded-file" style="display: none;">
-                            <p><strong>Hochgeladen:</strong> <span id="dwg-file-name"></span> (<span id="dwg-file-size"></span>)</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- STEP 2: Raumliste Hochladen -->
-                <div id="step-content-2" class="step__content" style="display: none;">
-                    <div class="upload">
-                        <h2 class="text-h2">Excel-Raumliste hochladen</h2>
-                        <div class="upload__zone" id="excel-upload-zone">
-                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                <polyline points="17 8 12 3 7 8"/>
-                                <line x1="12" y1="3" x2="12" y2="15"/>
-                            </svg>
-                            <p>Excel-Datei hier ablegen oder klicken zum Auswählen</p>
-                            <p class="text-muted">Unterstützte Formate: XLSX, XLS (max. 10 MB)</p>
-                            <input type="file" id="excel-file-input" accept=".xlsx,.xls" hidden>
-                            <button class="btn btn--primary" id="excel-select-btn">Datei auswählen</button>
-                        </div>
-                        <div class="upload__file" id="excel-uploaded-file" style="display: none;">
-                            <p><strong>Hochgeladen:</strong> <span id="excel-file-name"></span> (<span id="excel-file-size"></span>)</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- STEP 2 CONTENT: Room matching validation with tabs -->
-                <div id="step-2-content" class="step__detail-content" style="display: none;">
-                    <div class="metrics">
-                        <div class="metric-card">
-                            <span class="metric-card__value" id="step2-dwg-rooms">0</span>
-                            <span class="metric-card__label">Räume aus DWG</span>
-                        </div>
-                        <div class="metric-card">
-                            <span class="metric-card__value" id="step2-excel-rooms">0</span>
-                            <span class="metric-card__label">Räume aus Excel</span>
-                        </div>
-                        <div class="metric-card">
-                            <span class="metric-card__value" id="step2-ngf">0 m²</span>
-                            <span class="metric-card__label">SIA 416 Nettogeschossfläche NGF</span>
-                        </div>
-                        <div class="metric-card metric-card--error" id="step2-error-card">
-                            <span class="metric-card__value" id="step2-error-count">0</span>
-                            <span class="metric-card__label">Fehler</span>
-                        </div>
-                    </div>
-
-                    <div class="tabs-card">
-                        <div class="tabs">
-                            <ul class="tabs__list">
-                                <li><a href="#" class="tabs__tab tabs__tab--active" data-step2-tab="rooms">Räume (<span id="step2-tab-rooms-count">0</span>)</a></li>
-                                <li><a href="#" class="tabs__tab" data-step2-tab="errors">Fehlermeldungen (<span id="step2-tab-errors-count">0</span>)</a></li>
-                            </ul>
-                        </div>
-
-                        <!-- Rooms Tab -->
-                        <div class="tab-pane tab-pane--active" id="step2-tab-rooms">
-                            <div class="table-wrapper">
-                                <table class="table table--compact">
-                                    <thead>
-                                        <tr>
-                                            <th scope="col">AOID</th>
-                                            <th scope="col">NAME</th>
-                                            <th scope="col" class="text-right">AREA</th>
-                                            <th scope="col">AOFUNCTION</th>
-                                            <th scope="col" class="text-center">ERROR</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="step2-room-table-body">
-                                        <!-- Rooms rendered by JS -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!-- Errors Tab -->
-                        <div class="tab-pane" id="step2-tab-errors">
-                            <div class="error-list" id="step2-error-list">
-                                <!-- Errors rendered by JS -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- STEP 3: Ergebnisse Bestätigen -->
-                <div id="step-content-3" class="step__content" style="display: none;">
-                    <h2 class="text-h2">Zusammenfassung Ergebnisse</h2>
-
-                    <div class="tabs-card">
-                        <div class="tabs">
-                            <ul class="tabs__list">
-                                <li><a href="#" class="tabs__tab tabs__tab--active" data-step3-tab="kennzahlen">Kennzahlen</a></li>
-                                <li><a href="#" class="tabs__tab" data-step3-tab="viewer">Viewer</a></li>
-                            </ul>
-                        </div>
-
-                        <!-- Kennzahlen Tab -->
-                        <div class="tab-pane tab-pane--active" id="step3-tab-kennzahlen">
-                            <div class="results__layout">
-                                <!-- Left Column: Tables -->
-                                <div class="results__tables">
-                                    <!-- Gebäudevolumen -->
-                                    <div class="results__section">
-                                        <h3 class="results__section-title">Gebäudevolumen</h3>
-                                        <table class="table table--compact table--no-borders">
-                                            <tbody>
-                                                <tr><td class="table__abbr">GV</td><td>Gebäudevolumen</td><td class="text-right table__value">74'786 m³</td><td class="text-right table__percent">100%</td></tr>
-                                                <tr><td class="table__abbr">GV OG</td><td>Gebäudevolumen Obergeschosse</td><td class="text-right table__value">74'786 m³</td><td class="text-right table__percent">100%</td></tr>
-                                                <tr><td class="table__abbr">GV UG</td><td>Gebäudevolumen Untergeschosse</td><td class="text-right table__value">74'786 m³</td><td class="text-right table__percent">100%</td></tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-
-                                    <!-- Gebäudeflächen -->
-                                    <div class="results__section">
-                                        <h3 class="results__section-title">Gebäudeflächen</h3>
-                                        <table class="table table--compact table--no-borders">
-                                            <tbody>
-                                                <tr><td class="table__abbr">GF</td><td>Geschossfläche</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
-                                                <tr><td class="table__abbr">KF</td><td>Konstruktionsfläche</td><td class="text-right table__value">2'895 m²</td><td class="text-right table__percent">16%</td></tr>
-                                                <tr><td class="table__abbr">NGF</td><td>Nettogeschossfläche</td><td class="text-right table__value">15'637 m²</td><td class="text-right table__percent">100%</td></tr>
-                                                <tr><td class="table__abbr">NF</td><td>Nutzfläche</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
-                                                <tr><td class="table__abbr">HNF</td><td>Hauptnutzfläche</td><td class="text-right table__value">10'198 m²</td><td class="text-right table__percent">100%</td></tr>
-                                                <tr><td class="table__abbr">NNF</td><td>Nebennutzfläche</td><td class="text-right table__value">3'524 m²</td><td class="text-right table__percent">100%</td></tr>
-                                                <tr><td class="table__abbr">VF</td><td>Verkehrsfläche</td><td class="text-right table__value">1'566 m²</td><td class="text-right table__percent">100%</td></tr>
-                                                <tr><td class="table__abbr">FF</td><td>Funktionsfläche</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-
-                                    <!-- Flächen DIN 277 -->
-                                    <div class="results__section">
-                                        <h3 class="results__section-title">Flächen DIN 277</h3>
-                                        <table class="table table--compact table--no-borders">
-                                            <tbody>
-                                                <tr><td class="table__abbr">HNF 1</td><td>Wohnen und Aufenthalt</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
-                                                <tr><td class="table__abbr">HNF 2</td><td>Büroarbeit</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
-                                                <tr><td class="table__abbr">HNF 3</td><td>Produktion</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
-                                                <tr><td class="table__abbr">HNF 4</td><td>Lagern, Verteilen, Verkaufen</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
-                                                <tr><td class="table__abbr">HNF 5</td><td>Bildung, Unterricht, Kultur</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
-                                                <tr><td class="table__abbr">HNF 6</td><td>Heilen, Pflegen</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
-                                                <tr><td class="table__abbr">NNF 7</td><td>Nebennutzfläche</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
-                                                <tr><td class="table__abbr">FF 8</td><td>Betriebstechnische Anlagen</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
-                                                <tr><td class="table__abbr">VF 9</td><td>Verkehrserschliessung und -sicherung</td><td class="text-right table__value">1'566 m²</td><td class="text-right table__percent">100%</td></tr>
-                                                <tr><td class="table__abbr">BUF 10</td><td>Verschiedene Nutzungen</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-
-                                <!-- Right Column: Kennzahlen + Donut Chart -->
-                                <div class="results__sidebar">
-                                    <div class="results__section">
-                                        <h3 class="results__section-title">Kennzahlen Wirtschaftlichkeit von Grundris</h3>
-                                        <table class="table table--compact table--no-borders">
-                                            <tbody>
-                                                <tr><td class="table__abbr">HNF SIA 416 / GF</td><td>Hauptnutzfläche / Geschossfläche</td><td class="text-right">0.40</td></tr>
-                                                <tr><td class="table__abbr">VMF SIA 165 / GF</td><td>Vermietbare Fläche / Geschossfläche</td><td class="text-right">0.75</td></tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-
-                                    <!-- Multi-segment Donut Chart -->
-                                    <div class="results__donut">
-                                        <svg viewBox="0 0 200 200" class="donut-multi">
-                                            <!-- Background circle -->
-                                            <circle cx="100" cy="100" r="70" fill="none" stroke="#E5E5E5" stroke-width="30"/>
-                                            <!-- HNF segment (74%) - red (SIA standard) -->
-                                            <circle cx="100" cy="100" r="70" fill="none" stroke="#E57373" stroke-width="30"
-                                                    stroke-dasharray="327.6 112.4" stroke-dashoffset="110" class="donut-segment"/>
-                                            <!-- NNF segment (14.6%) - orange (SIA standard) -->
-                                            <circle cx="100" cy="100" r="70" fill="none" stroke="#FFB74D" stroke-width="30"
-                                                    stroke-dasharray="64.2 375.8" stroke-dashoffset="-217.6" class="donut-segment"/>
-                                            <!-- VF segment (10%) - yellow (SIA standard) -->
-                                            <circle cx="100" cy="100" r="70" fill="none" stroke="#FFF176" stroke-width="30"
-                                                    stroke-dasharray="44 396" stroke-dashoffset="-281.8" class="donut-segment"/>
-                                            <!-- FF segment (1.4%) - blue (SIA standard) -->
-                                            <circle cx="100" cy="100" r="70" fill="none" stroke="#64B5F6" stroke-width="30"
-                                                    stroke-dasharray="6.2 433.8" stroke-dashoffset="-325.8" class="donut-segment"/>
-                                        </svg>
-                                        <!-- Legend -->
-                                        <div class="donut-legend">
-                                            <div class="donut-legend__item">
-                                                <span class="donut-legend__color" style="background: #FFF176;"></span>
-                                                <span class="donut-legend__label">VF</span>
-                                                <span class="donut-legend__value">10%</span>
-                                            </div>
-                                            <div class="donut-legend__item">
-                                                <span class="donut-legend__color" style="background: #64B5F6;"></span>
-                                                <span class="donut-legend__label">FF</span>
-                                                <span class="donut-legend__value">1.4%</span>
-                                            </div>
-                                            <div class="donut-legend__item">
-                                                <span class="donut-legend__color" style="background: #FFB74D;"></span>
-                                                <span class="donut-legend__label">NNF</span>
-                                                <span class="donut-legend__value">14.6%</span>
-                                            </div>
-                                            <div class="donut-legend__item">
-                                                <span class="donut-legend__color" style="background: #E57373;"></span>
-                                                <span class="donut-legend__label">HNF</span>
-                                                <span class="donut-legend__value">74%</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Viewer Tab -->
-                        <div class="tab-pane" id="step3-tab-viewer">
-                            <div class="empty-state">
-                                <i data-lucide="construction" class="empty-state__icon"></i>
-                                <h3 class="empty-state__title">Zukünftige Entwicklung</h3>
-                                <p class="empty-state__message">Der 3D-Viewer wird in einer zukünftigen Version implementiert.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- STEP 4: Auftrag Abschliessen -->
-                <div id="step-content-4" class="step__content" style="display: none;">
-                    <div class="empty-state">
-                        <div class="firework">
-                            <div class="firework__spark"></div>
-                            <div class="firework__spark firework__spark--delay-1"></div>
-                            <div class="firework__spark firework__spark--delay-2"></div>
-                        </div>
-                        <h2 class="text-h1">Auftrag Abschluss</h2>
-                        <p class="empty-state__message">
-                            Die Validierung wurde erfolgreich abgeschlossen.<br>
-                            Klicken Sie auf "Auftrag abschliessen", um die Ergebnisse zu speichern.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- STEP 1 CONTENT: Floor plan viewer with tabs -->
-                <div id="step-1-content" class="step__detail-content" style="display: none;">
-                    <div class="metrics">
-                        <div class="metric-card">
-                            <span class="metric-card__value" id="step1-room-count">0</span>
-                            <span class="metric-card__label">Räume</span>
-                        </div>
-                        <div class="metric-card">
-                            <span class="metric-card__value" id="step1-ngf">0 m²</span>
-                            <span class="metric-card__label">SIA 416 Nettogeschossfläche NGF</span>
-                        </div>
-                        <div class="metric-card">
-                            <span class="metric-card__value" id="step1-gf">0 m²</span>
-                            <span class="metric-card__label">SIA 416 Geschossfläche GF</span>
-                        </div>
-                        <div class="metric-card" id="step1-score-card">
-                            <span class="metric-card__value" id="step1-score-value">0%</span>
-                            <span class="metric-card__label">Score</span>
-                        </div>
-                    </div>
-
-                    <div class="tabs-card">
-                        <div class="tabs">
-                            <ul class="tabs__list">
-                                <li><a href="#" class="tabs__tab tabs__tab--active" data-val-tab="rooms">Räume (<span id="val-tab-rooms-count">0</span>)</a></li>
-                                <li><a href="#" class="tabs__tab" data-val-tab="areas">Flächen (<span id="val-tab-areas-count">0</span>)</a></li>
-                                <li><a href="#" class="tabs__tab" data-val-tab="errors">Fehlermeldungen (<span id="val-tab-errors-count">0</span>)</a></li>
-                            </ul>
-                        </div>
-
-                        <div class="split-view">
-                            <div class="split-view__left">
-                                <!-- Rooms Tab -->
-                                <div class="tab-pane tab-pane--active" id="val-tab-rooms">
-                                    <div class="table-wrapper">
-                                        <table class="table table--compact">
-                                            <thead>
-                                                <tr>
-                                                    <th scope="col">AOID</th>
-                                                    <th scope="col" class="text-right">AREA</th>
-                                                    <th scope="col">AOFUNCTION</th>
-                                                    <th scope="col" class="text-center">ERROR</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="room-table-body">
-                                                <!-- Rooms rendered by JS -->
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-
-                                <!-- Areas Tab -->
-                                <div class="tab-pane" id="val-tab-areas">
-                                    <div class="table-wrapper">
-                                        <table class="table table--compact">
-                                            <thead>
-                                                <tr>
-                                                    <th scope="col">AOID</th>
-                                                    <th scope="col" class="text-right">AREA</th>
-                                                    <th scope="col">AOFUNCTION</th>
-                                                    <th scope="col" class="text-center">ERROR</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="area-polygons-table-body">
-                                                <!-- Area polygons rendered by JS -->
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-
-                                <!-- Errors Tab -->
-                                <div class="tab-pane" id="val-tab-errors">
-                                    <div class="error-list" id="error-list">
-                                        <!-- Errors rendered by JS -->
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="split-view__right">
-                                <div class="floorplan floorplan--speckle">
-                                    <!-- Speckle viewer URL configured via JavaScript for security -->
-                                    <iframe
-                                        id="speckle-viewer"
-                                        class="speckle-viewer__iframe"
-                                        src=""
-                                        title="Speckle 3D Floor Plan Viewer"
-                                        allow="fullscreen">
-                                    </iframe>
-                                    <div class="speckle-viewer__loading" id="speckle-loading">
-                                        <div class="speckle-viewer__spinner"></div>
-                                        <span>Lade 3D-Grundriss...</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- END STEP 1 CONTENT -->
-
-                <div class="workflow-actions">
-                    <button class="btn btn--secondary" id="prev-step-btn">Vorheriger Schritt</button>
-                    <button class="btn btn--primary" id="next-step-btn">Nächster Schritt</button>
-                </div>
-            </div>
-        </section>
-
-        <!-- RESULTS SUMMARY -->
-        <section id="view-results" class="view">
-            <div class="container">
-                <nav class="breadcrumb">
-                    <div class="breadcrumb__nav">
-                        <a href="#" class="breadcrumb__link" id="breadcrumb-results-projects">Projekte</a>
-                        <span class="breadcrumb__separator">/</span>
-                        <a href="#" class="breadcrumb__link" id="breadcrumb-results-project">Projekt</a>
-                        <span class="breadcrumb__separator">/</span>
-                        <span class="breadcrumb__current">Zusammenfassung Ergebnis</span>
-                    </div>
-                    <button class="btn btn--secondary btn--sm" id="back-to-project-results">
-                        <i data-lucide="arrow-left" class="icon icon-sm"></i>
-                        Zurück Übersicht
-                    </button>
-                </nav>
-
-                <h1 class="text-h1">Zusammenfassung Ergebnis</h1>
-
-                <div class="results__grid">
-                    <div class="results__section">
-                        <h2 class="text-h3">Gebäudevolumen</h2>
-                        <table class="table table--compact table--no-borders">
-                            <tbody>
-                                <tr><td>GV (Gebäudevolumen)</td><td class="text-right">16'848 m³</td><td class="text-right">100%</td></tr>
-                                <tr><td>GV OG (oberirdisch)</td><td class="text-right">14'500 m³</td><td class="text-right">86%</td></tr>
-                                <tr><td>GV UG (unterirdisch)</td><td class="text-right">2'348 m³</td><td class="text-right">14%</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="results__section">
-                        <h2 class="text-h3">Gebäudeflächen SIA 416</h2>
-                        <table class="table table--compact table--no-borders">
-                            <tbody>
-                                <tr><td>GF (Geschossfläche)</td><td class="text-right">4'500 m²</td><td class="text-right">100%</td></tr>
-                                <tr><td>KF (Konstruktionsfläche)</td><td class="text-right">500 m²</td><td class="text-right">11%</td></tr>
-                                <tr><td>NGF (Nettogeschossfläche)</td><td class="text-right">4'000 m²</td><td class="text-right">89%</td></tr>
-                                <tr><td>NF (Nutzfläche)</td><td class="text-right">3'900 m²</td><td class="text-right">87%</td></tr>
-                                <tr><td>HNF (Hauptnutzfläche)</td><td class="text-right">3'200 m²</td><td class="text-right">71%</td></tr>
-                                <tr><td>NNF (Nebennutzfläche)</td><td class="text-right">400 m²</td><td class="text-right">9%</td></tr>
-                                <tr><td>VF (Verkehrsfläche)</td><td class="text-right">300 m²</td><td class="text-right">7%</td></tr>
-                                <tr><td>FF (Funktionsfläche)</td><td class="text-right">100 m²</td><td class="text-right">2%</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="results__section">
-                        <h2 class="text-h3">Flächen DIN 277</h2>
-                        <table class="table table--compact table--no-borders">
-                            <tbody>
-                                <tr><td>HNF 1 - Wohnen und Aufenthalt</td><td class="text-right">850 m²</td><td class="text-right">27%</td></tr>
-                                <tr><td>HNF 2 - Büroarbeit</td><td class="text-right">1'200 m²</td><td class="text-right">38%</td></tr>
-                                <tr><td>HNF 3 - Produktion</td><td class="text-right">0 m²</td><td class="text-right">0%</td></tr>
-                                <tr><td>HNF 4 - Lagern</td><td class="text-right">150 m²</td><td class="text-right">5%</td></tr>
-                                <tr><td>HNF 5 - Verteilen</td><td class="text-right">500 m²</td><td class="text-right">16%</td></tr>
-                                <tr><td>HNF 6 - Unterricht</td><td class="text-right">300 m²</td><td class="text-right">9%</td></tr>
-                                <tr><td>HNF 7 - Heilen/Pflegen</td><td class="text-right">200 m²</td><td class="text-right">6%</td></tr>
-                                <tr><td>FF 8 - Technik</td><td class="text-right">100 m²</td><td class="text-right">3%</td></tr>
-                                <tr><td>VF 9 - Verkehr</td><td class="text-right">300 m²</td><td class="text-right">9%</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="results__section">
-                        <h2 class="text-h3">Kennzahlen Wirtschaftlichkeit</h2>
-                        <div class="pie-chart">
-                            <svg class="pie-chart__svg" width="300" height="300" viewBox="0 0 300 300">
-                                <!-- Pie chart rendered by JS -->
-                                <g id="pie-chart-slices"></g>
-                            </svg>
-                            <div class="pie-chart__legend" id="pie-legend">
-                                <!-- Legend rendered by JS -->
-                            </div>
-                        </div>
-                        <table class="table table--compact table--no-borders">
-                            <tbody>
-                                <tr><td>HNF/GF</td><td class="text-right">71%</td></tr>
-                                <tr><td>NNF/GF</td><td class="text-right">9%</td></tr>
-                                <tr><td>VF/GF</td><td class="text-right">7%</td></tr>
-                                <tr><td>VMF/GF (VF+NNF)</td><td class="text-right">16%</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="workflow-actions">
-                    <button class="btn btn--secondary">Vorheriger Schritt</button>
-                    <button class="btn btn--primary">Auftrag abschliessen</button>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <footer class="footer">
-        <div class="footer__content">
-            <div class="footer__links">
-                <a href="https://github.com/davras5/plan-check" target="_blank" rel="noopener noreferrer" class="footer__link">Quellencode</a>
-                <span class="footer__separator">|</span>
-                <a href="https://www.admin.ch/gov/de/start/rechtliches.html" target="_blank" rel="noopener noreferrer" class="footer__link">Rechtliches</a>
-                <span class="footer__separator">|</span>
-                <a href="https://www.bbl.admin.ch/de/downloads-bauten" class="footer__link" id="nav-standards" target="_blank" rel="noopener noreferrer">BBL CAD Standards</a>
-                <span class="footer__separator">|</span>
-                <a href="https://www.bbl.admin.ch/de/kontakt" class="footer__link" target="_blank" rel="noopener noreferrer">Kontakt</a>
-            </div>
-            <span class="footer__version">v1.0.0</span>
+    <div class="container">
+        <!-- Upload -->
+        <div class="upload-zone" id="upload-zone">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <p>DWG-Datei hierher ziehen oder klicken</p>
+            <button class="btn btn--primary" id="select-btn">Datei auswahlen</button>
+            <input type="file" id="file-input" accept=".dwg,.dxf" hidden>
+            <p class="hint">.dwg / .dxf, max. 50 MB</p>
         </div>
-    </footer>
 
-    <!-- New Project Modal -->
-    <div class="modal" id="new-project-modal" role="dialog" aria-labelledby="modal-title" aria-modal="true" hidden>
-        <div class="modal__backdrop" data-modal-close></div>
-        <div class="modal__content">
-            <div class="modal__header">
-                <h2 class="modal__title" id="modal-title">Neues Projekt erstellen</h2>
-                <button class="modal__close" data-modal-close aria-label="Schliessen">
-                    <i data-lucide="x" class="icon icon-md" aria-hidden="true"></i>
-                </button>
+        <div class="status" id="status"></div>
+
+        <!-- Info -->
+        <div class="panel" id="info-panel">
+            <div class="panel__header">
+                <span>Datei-Informationen</span>
+                <span id="file-name-display" style="font-weight:400; color: var(--color-text-secondary); font-size: 12px; text-transform: none; letter-spacing: 0; font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;"></span>
             </div>
-            <form class="modal__body" id="new-project-form">
-                <div class="form__field">
-                    <label for="project-number" class="form__label">Projektnummer</label>
-                    <input type="text" class="form__input" id="project-number" name="projectNumber" placeholder="z.B. 2024-001" required>
-                </div>
-                <div class="form__field">
-                    <label for="project-name" class="form__label">Projektname</label>
-                    <input type="text" class="form__input" id="project-name" name="name" placeholder="z.B. Bundeshaus Renovation" required>
-                </div>
-                <div class="form__field">
-                    <label for="project-phase" class="form__label">SIA Phase</label>
-                    <select class="form__input form__select" id="project-phase" name="phase" required>
-                        <option value="">Bitte wählen...</option>
-                        <option value="31">31 - Vorprojekt</option>
-                        <option value="32">32 - Bauprojekt</option>
-                        <option value="33">33 - Bewilligungsverfahren</option>
-                        <option value="41">41 - Ausschreibung</option>
-                        <option value="51">51 - Ausführungsprojekt</option>
-                        <option value="52">52 - Ausführung</option>
-                        <option value="53">53 - Inbetriebnahme</option>
-                    </select>
-                </div>
-                <div class="form__field">
-                    <label for="project-language" class="form__label">Sprache</label>
-                    <select class="form__input form__select" id="project-language" name="language" required>
-                        <option value="">Bitte wählen...</option>
-                        <option value="de">Deutsch</option>
-                        <option value="fr">Français</option>
-                        <option value="it">Italiano</option>
-                    </select>
-                </div>
-                <div class="form__field">
-                    <label for="project-ruleset" class="form__label">Regelsatz</label>
-                    <select class="form__input form__select" id="project-ruleset" name="ruleSetId" required>
-                        <option value="">Bitte wählen...</option>
-                        <!-- Options populated dynamically from rules.json -->
-                    </select>
-                </div>
-                <div class="form__field">
-                    <label for="project-image" class="form__label">Projektbild</label>
-                    <div class="form__file-upload" id="project-image-upload">
-                        <input type="file" class="form__file-input" id="project-image" name="image" accept="image/*">
-                        <div class="form__file-placeholder">
-                            <i data-lucide="image" class="icon icon-md" aria-hidden="true"></i>
-                            <span>Bild auswählen oder hierher ziehen</span>
-                        </div>
-                        <div class="form__file-preview" id="project-image-preview" hidden>
-                            <img src="" alt="Projektbild Vorschau" id="project-image-preview-img">
-                            <button type="button" class="form__file-remove" id="project-image-remove" aria-label="Bild entfernen">
-                                <i data-lucide="x" class="icon icon-sm" aria-hidden="true"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </form>
-            <div class="modal__footer">
-                <button type="button" class="btn btn--secondary" data-modal-close>Abbrechen</button>
-                <button type="submit" class="btn btn--primary" form="new-project-form">Projekt erstellen</button>
+            <div class="info-grid">
+                <div class="info-grid__item"><div class="info-grid__label">Version</div><div class="info-grid__value" id="info-version">-</div></div>
+                <div class="info-grid__item"><div class="info-grid__label">Layers</div><div class="info-grid__value" id="info-layers">-</div></div>
+                <div class="info-grid__item"><div class="info-grid__label">Entities</div><div class="info-grid__value" id="info-entities">-</div></div>
+                <div class="info-grid__item"><div class="info-grid__label">Dateigrosse</div><div class="info-grid__value" id="info-size">-</div></div>
             </div>
         </div>
+
+        <!-- Canvas Viewer -->
+        <div class="panel" id="viewer-panel">
+            <div class="panel__header">
+                <span>Zeichnung</span>
+                <div class="viewer__controls">
+                    <button id="toggle-bg" title="Hintergrund umschalten"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></button>
+                    <span class="viewer__sep"></span>
+                    <button id="zoom-in" title="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35M11 8v6m-3-3h6"/></svg></button>
+                    <button id="zoom-out" title="Zoom out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35M8 11h6"/></svg></button>
+                    <button id="zoom-fit" title="Zoom Extents"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
+                    <span class="viewer__sep"></span>
+                    <button id="fullscreen-btn" title="Vollbild"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg></button>
+                </div>
+            </div>
+            <div class="viewer__canvas-wrap" id="canvas-wrap">
+                <canvas id="dwg-canvas"></canvas>
+                <div class="viewer__coords" id="coords-display">X: 0 Y: 0</div>
+                <div class="feature-popup" id="feature-popup"></div>
+            </div>
+        </div>
+
+        <!-- Layers -->
+        <div class="panel" id="layers-panel">
+            <div class="panel__header">Layers</div>
+            <div class="layers-toolbar">
+                <input type="checkbox" id="layers-toggle-all" class="layer-toggle" checked title="Alle ein-/ausblenden">
+                <input type="text" id="layers-search" class="layers-search" placeholder="Layer suchen...">
+            </div>
+            <div class="layers-list" id="layers-list"></div>
+        </div>
+
+        <!-- Entities -->
+        <div class="panel" id="entities-panel">
+            <div class="panel__header">Entity-Zusammenfassung</div>
+            <table class="entities-table">
+                <thead><tr><th>Typ</th><th>Anzahl</th><th>Layer</th></tr></thead>
+                <tbody id="entities-tbody"></tbody>
+            </table>
+        </div>
+
+        <!-- Console -->
+        <div class="console-panel">
+            <div class="console-panel__header">Konsole</div>
+            <div class="console-panel__body" id="console-log"></div>
+        </div>
+
     </div>
 
-    <!-- Invite User Modal -->
-    <div class="modal" id="invite-user-modal" role="dialog" aria-labelledby="invite-user-modal-title" aria-modal="true" hidden>
-        <div class="modal__backdrop" data-modal-close></div>
-        <div class="modal__content modal__content--sm">
-            <div class="modal__header">
-                <h2 class="modal__title" id="invite-user-modal-title">Benutzer einladen</h2>
-                <button class="modal__close" data-modal-close aria-label="Schliessen">
-                    <i data-lucide="x" class="icon icon-md" aria-hidden="true"></i>
-                </button>
-            </div>
-            <form class="modal__body" id="invite-user-form">
-                <div class="form__field">
-                    <label for="invite-email" class="form__label">E-Mail-Adresse</label>
-                    <input type="email" class="form__input" id="invite-email" name="email" placeholder="beispiel@domain.ch" required>
-                </div>
-                <div class="form__field">
-                    <label for="invite-role" class="form__label">Rolle</label>
-                    <select class="form__input form__select" id="invite-role" name="role" required>
-                        <option value="">Bitte wählen...</option>
-                        <option value="viewer">Betrachter</option>
-                        <option value="editor">Bearbeiter</option>
-                        <option value="admin">Administrator</option>
-                    </select>
-                </div>
-            </form>
-            <div class="modal__footer">
-                <button type="button" class="btn btn--secondary" data-modal-close>Abbrechen</button>
-                <button type="submit" class="btn btn--primary" form="invite-user-form">Einladung senden</button>
-            </div>
-        </div>
-    </div>
+    <script type="module">
+        // =============================================
+        // Configuration
+        // =============================================
+        const MAX_FILE_SIZE = 50 * 1024 * 1024;
+        const BG_DARK = '#1a1a2e';
+        const BG_LIGHT = '#f0f0f0';
+        let bgColor = BG_DARK;
 
-    <!-- New Document Modal -->
-    <div class="modal" id="new-document-modal" role="dialog" aria-labelledby="new-document-modal-title" aria-modal="true" hidden>
-        <div class="modal__backdrop" data-modal-close></div>
-        <div class="modal__content modal__content--sm">
-            <div class="modal__header">
-                <h2 class="modal__title" id="new-document-modal-title">Neues Dokument</h2>
-                <button class="modal__close" data-modal-close aria-label="Schliessen">
-                    <i data-lucide="x" class="icon icon-md" aria-hidden="true"></i>
-                </button>
-            </div>
-            <form class="modal__body" id="new-document-form">
-                <div class="form__field">
-                    <label for="document-name" class="form__label">Dokumentname</label>
-                    <input type="text" class="form__input" id="document-name" name="name" placeholder="z.B. EG_Grundriss.dwg" required>
-                </div>
-            </form>
-            <div class="modal__footer">
-                <button type="button" class="btn btn--secondary" data-modal-close>Abbrechen</button>
-                <button type="submit" class="btn btn--primary" form="new-document-form">Dokument erstellen</button>
-            </div>
-        </div>
-    </div>
+        // DOM
+        const uploadZone = document.getElementById('upload-zone');
+        const fileInput = document.getElementById('file-input');
+        const selectBtn = document.getElementById('select-btn');
+        const statusEl = document.getElementById('status');
+        const infoPanel = document.getElementById('info-panel');
+        const viewerPanel = document.getElementById('viewer-panel');
+        const canvasWrap = document.getElementById('canvas-wrap');
+        const canvas = document.getElementById('dwg-canvas');
+        const ctx = canvas.getContext('2d');
+        const coordsDisplay = document.getElementById('coords-display');
+        const layersPanel = document.getElementById('layers-panel');
+        const layersList = document.getElementById('layers-list');
+        const entitiesPanel = document.getElementById('entities-panel');
+        const entitiesTbody = document.getElementById('entities-tbody');
+        const consoleLog = document.getElementById('console-log');
+        const featurePopup = document.getElementById('feature-popup');
 
-    <script src="js/script.js"></script>
+        // State
+        let libredwg = null;
+        let drawingData = null; // { renderList, bounds }
+        let cam = { x: 0, y: 0, zoom: 1 };
+        let isPanning = false;
+        let panStart = { x: 0, y: 0 };
+        const hiddenLayers = new Set();
+        let selectedItem = null;
+
+        // =============================================
+        // Logger
+        // =============================================
+        function log(msg, type = 'info') {
+            const ts = new Date().toLocaleTimeString('de-CH');
+            const line = document.createElement('div');
+            line.className = `log-${type}`;
+            line.textContent = `[${ts}] ${msg}`;
+            consoleLog.appendChild(line);
+            consoleLog.scrollTop = consoleLog.scrollHeight;
+        }
+
+        function showStatus(msg, type = 'loading') {
+            statusEl.className = `status status--${type}`;
+            statusEl.style.display = 'flex';
+            statusEl.innerHTML = type === 'loading'
+                ? `<div class="spinner"></div><span>${msg}</span>`
+                : msg;
+        }
+
+        // =============================================
+        // LibreDWG Init
+        // =============================================
+        async function initLibreDwg() {
+            if (libredwg) return libredwg;
+            log('LibreDWG WebAssembly wird geladen (~15 MB)...');
+            showStatus('LibreDWG WebAssembly wird geladen...');
+            try {
+                const mod = await import('https://cdn.jsdelivr.net/npm/@mlightcad/libredwg-web@0.6.6/dist/libredwg-web.js');
+                libredwg = await mod.LibreDwg.create();
+                log('LibreDWG WebAssembly geladen', 'success');
+                return libredwg;
+            } catch (err) {
+                log(`LibreDWG laden fehlgeschlagen: ${err.message}`, 'error');
+                throw err;
+            }
+        }
+
+        // =============================================
+        // DWG Processing
+        // =============================================
+        async function processDwgFile(file) {
+            const t0 = performance.now();
+            log(`Datei: ${file.name} (${fmtSize(file.size)})`);
+
+            showStatus('Datei wird gelesen...');
+            const buffer = await file.arrayBuffer();
+
+            const dwgLib = await initLibreDwg();
+            const fileType = file.name.toLowerCase().endsWith('.dxf') ? 1 : 0;
+
+            showStatus('DWG wird geparst...');
+            log('DWG wird geparst...');
+            const dwgPtr = dwgLib.dwg_read_data(buffer, fileType);
+            if (dwgPtr == null) throw new Error('DWG konnte nicht gelesen werden');
+            log('DWG geparst', 'success');
+
+            showStatus('Daten werden konvertiert...');
+            const { database: db, stats } = dwgLib.convertEx(dwgPtr);
+            if (stats.unknownEntityCount > 0) log(`${stats.unknownEntityCount} unbekannte Entity-Typen`, 'warn');
+
+            const entities = db.entities || [];
+            const layers = db.tables?.LAYER?.entries || [];
+            log(`${entities.length} Entities, ${layers.length} Layers`, 'success');
+
+            // Free WASM memory
+            try { dwgLib.dwg_free(dwgPtr); } catch (e) { /* ok */ }
+
+            const elapsed = ((performance.now() - t0) / 1000).toFixed(2);
+            log(`Verarbeitung: ${elapsed}s`, 'success');
+
+            return { db, entities, layers, elapsed };
+        }
+
+        // =============================================
+        // Prepare drawing data for Canvas rendering
+        // =============================================
+        function prepareDrawingData(entities, layers, db) {
+            // Layer color map
+            const layerColorMap = {};
+            for (const l of layers) {
+                layerColorMap[l.name] = aciToHex(l.colorIndex);
+            }
+
+            function getColor(e) {
+                if (e.colorIndex && e.colorIndex !== 256 && e.colorIndex !== 0) return aciToHex(e.colorIndex);
+                return layerColorMap[e.layer] || '#CCCCCC';
+            }
+
+            // Build block definition map from BLOCK_RECORD table
+            const blockMap = {};
+            let blockCount = 0;
+            const blockRecords = db.tables?.BLOCK_RECORD?.entries || [];
+            for (const br of blockRecords) {
+                if (br.name && br.entities && br.entities.length > 0) {
+                    blockMap[br.name] = br;
+                    blockCount++;
+                }
+            }
+            if (blockCount > 0) log(`${blockCount} Block-Definitionen geladen`);
+
+            // Compute bounds
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+            function expand(x, y) {
+                if (x < minX) minX = x; if (x > maxX) maxX = x;
+                if (y < minY) minY = y; if (y > maxY) maxY = y;
+            }
+
+            // Build render list & compute bounds in one pass
+            const renderList = [];
+            let insertCount = 0;
+
+            // Helper: transform a point from block-local to world coords
+            // Matches reference: T(insertion) * R(rotation) * S(scale) * T(-basePoint)
+            function transformPoint(px, py, ins) {
+                const sx = (ins.xScale || 1);
+                const sy = (ins.yScale || 1);
+                const rot = (ins.rotation || 0) * Math.PI / 180;
+                const cos = Math.cos(rot);
+                const sin = Math.sin(rot);
+                // Subtract block base point, then scale, then rotate, then translate
+                const bx = ins.baseX || 0;
+                const by = ins.baseY || 0;
+                const rx = (px - bx) * sx;
+                const ry = (py - by) * sy;
+                return {
+                    x: rx * cos - ry * sin + ins.insertionPoint.x,
+                    y: rx * sin + ry * cos + ins.insertionPoint.y
+                };
+            }
+
+            // Helper: add a primitive entity to render list, applying optional transform
+            function addEntity(e, tf, parentLayer) {
+                // Skip invisible entities
+                // API: isVisible is 0 (visible) or 1 (invisible)
+                if (e.isVisible === 1) return;
+
+                const color = getColor(e);
+                const l = e.layer || parentLayer || '0';
+                const et = e.type || 'UNKNOWN';
+                const handle = e.handle || '';
+
+                // Helper: apply transform to a point if present
+                function tp(px, py) {
+                    if (!tf) return { x: px, y: py };
+                    return transformPoint(px, py, tf);
+                }
+
+                switch (e.type) {
+                    case 'LINE':
+                        if (e.startPoint && e.endPoint) {
+                            const p1 = tp(e.startPoint.x, e.startPoint.y);
+                            const p2 = tp(e.endPoint.x, e.endPoint.y);
+                            expand(p1.x, p1.y); expand(p2.x, p2.y);
+                            renderList.push({ t: 'line', l, et, handle, x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, c: color });
+                        }
+                        break;
+
+                    case 'LWPOLYLINE':
+                        if (e.vertices && e.vertices.length > 1) {
+                            const verts = tf
+                                ? e.vertices.map(v => { const p = tp(v.x, v.y); return { x: p.x, y: p.y, bulge: v.bulge }; })
+                                : e.vertices;
+                            for (const v of verts) expand(v.x, v.y);
+                            // Check closed flag: DWG binary uses bit 512 for LWPOLYLINE, DXF uses bit 1
+                            let closed = !!(e.flag & 512) || !!(e.flag & 1);
+                            if (!closed && verts.length > 2) {
+                                const f = verts[0], la = verts[verts.length - 1];
+                                if (Math.abs(f.x - la.x) < 1e-6 && Math.abs(f.y - la.y) < 1e-6) closed = true;
+                            }
+                            renderList.push({ t: 'poly', l, et, handle, verts, closed, c: color });
+                        }
+                        break;
+
+                    case 'POLYLINE2D': {
+                        if (e.vertices && e.vertices.length > 1) {
+                            const verts = e.vertices.map(v => {
+                                const p = tp(v.x, v.y);
+                                return { x: p.x, y: p.y, bulge: v.bulge || 0 };
+                            });
+                            for (const v of verts) expand(v.x, v.y);
+                            const closed = !!(e.flag & 512) || !!(e.flag & 1);
+                            renderList.push({ t: 'poly', l, et, handle, verts, closed, c: color });
+                        }
+                        break;
+                    }
+
+                    case 'POLYLINE3D': {
+                        if (e.vertices && e.vertices.length > 1) {
+                            const verts = e.vertices.map(v => {
+                                const p = tp(v.x, v.y);
+                                return { x: p.x, y: p.y, bulge: 0 };
+                            });
+                            for (const v of verts) expand(v.x, v.y);
+                            const closed = !!(e.flag & 512) || !!(e.flag & 1);
+                            renderList.push({ t: 'poly', l, et, handle, verts, closed, c: color });
+                        }
+                        break;
+                    }
+
+                    case 'CIRCLE':
+                        if (e.center && e.radius) {
+                            const c = tp(e.center.x, e.center.y);
+                            const r = e.radius * Math.abs(tf ? (tf.xScale || 1) : 1);
+                            expand(c.x - r, c.y - r); expand(c.x + r, c.y + r);
+                            renderList.push({ t: 'circle', l, et, handle, cx: c.x, cy: c.y, r, c: color });
+                        }
+                        break;
+
+                    case 'ARC':
+                        if (e.center && e.radius != null && e.startAngle != null && e.endAngle != null) {
+                            const c = tp(e.center.x, e.center.y);
+                            const r = e.radius * Math.abs(tf ? (tf.xScale || 1) : 1);
+                            const rotOff = tf ? (tf.rotation || 0) * Math.PI / 180 : 0;
+                            expand(c.x - r, c.y - r); expand(c.x + r, c.y + r);
+                            renderList.push({ t: 'arc', l, et, handle, cx: c.x, cy: c.y, r, sa: e.startAngle + rotOff, ea: e.endAngle + rotOff, c: color });
+                        }
+                        break;
+
+                    case 'ELLIPSE':
+                        if (e.center && e.majorAxisEndPoint) {
+                            const c = tp(e.center.x, e.center.y);
+                            const rx = Math.hypot(e.majorAxisEndPoint.x, e.majorAxisEndPoint.y) * Math.abs(tf ? (tf.xScale || 1) : 1);
+                            const ry = rx * (e.axisRatio || e.minorToMajorRatio || 0.5);
+                            const rot = Math.atan2(e.majorAxisEndPoint.y, e.majorAxisEndPoint.x) + (tf ? (tf.rotation || 0) * Math.PI / 180 : 0);
+                            expand(c.x - rx, c.y - rx); expand(c.x + rx, c.y + rx);
+                            renderList.push({ t: 'ellipse', l, et, handle, cx: c.x, cy: c.y, rx, ry, rot, c: color });
+                        }
+                        break;
+
+                    case 'SPLINE': {
+                        // Approximate spline as polyline through fit points or control points
+                        let pts = null;
+                        if (e.fitPoints && e.fitPoints.length > 1) {
+                            pts = e.fitPoints;
+                        } else if (e.controlPoints && e.controlPoints.length > 1) {
+                            pts = e.controlPoints;
+                        }
+                        if (pts) {
+                            const verts = pts.map(p => {
+                                const tp2 = tp(p.x, p.y);
+                                return { x: tp2.x, y: tp2.y, bulge: 0 };
+                            });
+                            for (const v of verts) expand(v.x, v.y);
+                            const closed = !!(e.flag & 512) || !!(e.flag & 1);
+                            renderList.push({ t: 'poly', l, et, handle, verts, closed, c: color });
+                        }
+                        break;
+                    }
+
+                    case 'TEXT': {
+                        // TEXT entities from convertEx have DwgTextBase spread flat:
+                        // e.text = string, e.startPoint, e.endPoint, e.halign, e.valign, etc.
+                        if (!e.text) break;
+                        // For non-left/non-baseline alignment, endPoint is the actual position
+                        const useEnd = ((e.halign || 0) > 0 || (e.valign || 0) > 0);
+                        const pt = useEnd ? (e.endPoint || e.startPoint) : (e.startPoint || e.insertionPoint);
+                        if (!pt) break;
+                        const p = tp(pt.x, pt.y);
+                        const scale = Math.abs(tf ? (tf.xScale || 1) : 1);
+                        const rotRad = ((e.rotation || 0) + (tf ? (tf.rotation || 0) : 0)) * Math.PI / 180;
+                        expand(p.x, p.y);
+                        renderList.push({ t: 'text', l, et, handle, x: p.x, y: p.y, text: e.text, h: (e.textHeight || 2.5) * scale, rot: rotRad, c: color });
+                        break;
+                    }
+
+                    case 'MTEXT': {
+                        const pt = e.insertionPoint;
+                        if (pt && e.text) {
+                            const p = tp(pt.x, pt.y);
+                            const scale = Math.abs(tf ? (tf.xScale || 1) : 1);
+                            const rotRad = ((e.rotation || 0) + (tf ? (tf.rotation || 0) : 0)) * Math.PI / 180;
+                            expand(p.x, p.y);
+                            // Clean MTEXT formatting codes
+                            const clean = e.text
+                                .replace(/\\P/g, '\n')
+                                .replace(/\\~/g, ' ')
+                                .replace(/\\[fFHWACcTQpq][^;]*;/g, '')
+                                .replace(/\\S([^^;]*)\^([^;]*);/g, '$1/$2')
+                                .replace(/\\[LlOoKk]/g, '')
+                                .replace(/[{}]/g, '')
+                                .replace(/\\\\/g, '\\');
+                            renderList.push({ t: 'text', l, et: 'MTEXT', handle, x: p.x, y: p.y, text: clean, h: (e.textHeight || 2.5) * scale, rot: rotRad, c: color });
+                        }
+                        break;
+                    }
+
+                    case 'ATTRIB': {
+                        // Skip invisible attributes (flags bit 0 = invisible)
+                        if (e.flags && (e.flags & 1)) break;
+
+                        // ATTRIB entities from convertEx have text as DwgTextBase object:
+                        // e.text = { text, startPoint, endPoint, textHeight, rotation, halign, valign, ... }
+                        const textObj = e.text;
+                        const txt = typeof textObj === 'string' ? textObj
+                            : (textObj?.text || e.tag || null);
+                        if (!txt) break;
+
+                        // For non-left/non-baseline alignment, endPoint is the actual position;
+                        // startPoint may be at (0,0) for centered/right-aligned text
+                        const halign = textObj?.halign || 0;
+                        const valign = textObj?.valign || 0;
+                        const useEnd = (halign > 0 || valign > 0);
+                        const pt = useEnd
+                            ? (textObj?.endPoint || e.alignmentPoint || textObj?.startPoint)
+                            : (textObj?.startPoint || e.insertionPoint);
+                        if (!pt) break;
+
+                        const p = tp(pt.x ?? 0, pt.y ?? 0);
+                        const h = textObj?.textHeight || e.textHeight || 2.5;
+                        const rotRad = ((textObj?.rotation || 0) + (tf ? (tf.rotation || 0) : 0)) * Math.PI / 180;
+
+                        expand(p.x, p.y);
+                        renderList.push({ t: 'text', l, et: e.type, handle, x: p.x, y: p.y, text: txt, h, rot: rotRad, c: color });
+                        break;
+                    }
+
+                    case 'ATTDEF': {
+                        // ATTDEFs are template definitions inside blocks — never rendered directly.
+                        // ATTRIBs on the INSERT replace them with actual values.
+                        break;
+                    }
+
+                    case 'POINT': {
+                        const pt = e.position || e.startPoint;
+                        if (pt) {
+                            const p = tp(pt.x, pt.y);
+                            expand(p.x, p.y);
+                            renderList.push({ t: 'point', l, et, handle, x: p.x, y: p.y, c: color });
+                        }
+                        break;
+                    }
+
+                    case 'SOLID': {
+                        const pts = [e.firstCorner, e.secondCorner, e.thirdCorner, e.fourthCorner].filter(Boolean);
+                        if (pts.length >= 3) {
+                            const tpts = pts.map(p => tp(p.x, p.y));
+                            for (const p of tpts) expand(p.x, p.y);
+                            renderList.push({ t: 'solid', l, et, handle, pts: tpts, c: color });
+                        }
+                        break;
+                    }
+
+                    case 'HATCH': {
+                        // libredwg-web API types (from @mlightcad/libredwg-web hatch.d.ts):
+                        //   e.solidFill: DwgHatchSolidFill enum (0=PatternFill, 1=SolidFill)
+                        //   e.boundaryPaths: DwgBoundaryPath[] — union of:
+                        //     DwgPolylineBoundaryPath { boundaryPathTypeFlag, vertices[], isClosed, hasBulge }
+                        //     DwgEdgeBoundaryPath     { boundaryPathTypeFlag, edges[] }
+                        //   Edge type enum (DwgBoundaryPathEdgeType): Line=1, Circular=2, Elliptic=3, Spline=4
+                        const isSolidFill = e.solidFill === 1
+                            || (e.patternName && e.patternName.toUpperCase() === 'SOLID');
+                        const paths = []; // collect boundary polygons for fill
+
+                        if (e.boundaryPaths) {
+                            for (const bp of e.boundaryPaths) {
+                                // --- Edge-based boundary path (DwgEdgeBoundaryPath) ---
+                                if (bp.edges && bp.edges.length > 0) {
+                                    // Assemble all edges into a single connected polygon
+                                    const verts = [];
+                                    for (const edge of bp.edges) {
+                                        const etype = edge.type; // numeric enum: 1,2,3,4
+
+                                        // Line edge (DwgBoundaryPathEdgeType.Line = 1)
+                                        if (etype === 1 && edge.start && edge.end) {
+                                            const p1 = tp(edge.start.x, edge.start.y);
+                                            if (verts.length === 0) verts.push(p1);
+                                            const p2 = tp(edge.end.x, edge.end.y);
+                                            verts.push(p2);
+                                        }
+                                        // Arc edge (DwgBoundaryPathEdgeType.Circular = 2)
+                                        else if (etype === 2 && edge.center && edge.radius != null) {
+                                            const cx = edge.center.x, cy = edge.center.y;
+                                            const r = edge.radius;
+                                            const sa = edge.startAngle || 0;
+                                            const ea = edge.endAngle || Math.PI * 2;
+                                            const ccw = edge.isCCW !== false; // default CCW
+                                            // Tessellate arc into line segments
+                                            let sweep = ccw ? (ea - sa) : (sa - ea);
+                                            if (sweep <= 0) sweep += Math.PI * 2;
+                                            const steps = Math.max(8, Math.ceil(Math.abs(sweep) / (Math.PI / 16)));
+                                            for (let si = 0; si <= steps; si++) {
+                                                const frac = si / steps;
+                                                const angle = ccw ? (sa + sweep * frac) : (sa - sweep * frac);
+                                                const px = cx + r * Math.cos(angle);
+                                                const py = cy + r * Math.sin(angle);
+                                                const pt = tp(px, py);
+                                                if (si === 0 && verts.length > 0) {
+                                                    const last = verts[verts.length - 1];
+                                                    if (Math.abs(last.x - pt.x) < 1e-4 && Math.abs(last.y - pt.y) < 1e-4) continue;
+                                                }
+                                                verts.push(pt);
+                                            }
+                                        }
+                                        // Ellipse edge (DwgBoundaryPathEdgeType.Elliptic = 3)
+                                        // API: { center, end (major axis endpoint), lengthOfMinorAxis, startAngle, endAngle, isCCW }
+                                        else if (etype === 3 && edge.center) {
+                                            const cx = edge.center.x, cy = edge.center.y;
+                                            const majorEnd = edge.end || { x: 1, y: 0 };
+                                            const majorLen = Math.hypot(majorEnd.x, majorEnd.y);
+                                            const minorLen = (edge.lengthOfMinorAxis || 0.5) * (majorLen || 1);
+                                            const rot = Math.atan2(majorEnd.y, majorEnd.x);
+                                            const sa = edge.startAngle || 0;
+                                            const ea = edge.endAngle || Math.PI * 2;
+                                            const ccw = edge.isCCW !== false;
+                                            let sweep = ccw ? (ea - sa) : (sa - ea);
+                                            if (sweep <= 0) sweep += Math.PI * 2;
+                                            const steps = Math.max(12, Math.ceil(Math.abs(sweep) / (Math.PI / 16)));
+                                            for (let si = 0; si <= steps; si++) {
+                                                const frac = si / steps;
+                                                const angle = ccw ? (sa + sweep * frac) : (sa - sweep * frac);
+                                                const lx = majorLen * Math.cos(angle);
+                                                const ly = minorLen * Math.sin(angle);
+                                                const px = cx + lx * Math.cos(rot) - ly * Math.sin(rot);
+                                                const py = cy + lx * Math.sin(rot) + ly * Math.cos(rot);
+                                                const pt = tp(px, py);
+                                                if (si === 0 && verts.length > 0) {
+                                                    const last = verts[verts.length - 1];
+                                                    if (Math.abs(last.x - pt.x) < 1e-4 && Math.abs(last.y - pt.y) < 1e-4) continue;
+                                                }
+                                                verts.push(pt);
+                                            }
+                                        }
+                                        // Spline edge (DwgBoundaryPathEdgeType.Spline = 4)
+                                        // API: { fitDatum[], controlPoints[], degree, knots[], ... }
+                                        else if (etype === 4) {
+                                            const pts = edge.fitDatum || edge.controlPoints || [];
+                                            for (let si = 0; si < pts.length; si++) {
+                                                const sp = pts[si];
+                                                const pt = tp(sp.x, sp.y);
+                                                if (si === 0 && verts.length > 0) {
+                                                    const last = verts[verts.length - 1];
+                                                    if (Math.abs(last.x - pt.x) < 1e-4 && Math.abs(last.y - pt.y) < 1e-4) continue;
+                                                }
+                                                verts.push(pt);
+                                            }
+                                        }
+                                    }
+                                    if (verts.length > 1) {
+                                        for (const v of verts) expand(v.x, v.y);
+                                        const polyVerts = verts.map(v => ({ x: v.x, y: v.y, bulge: 0 }));
+                                        renderList.push({ t: 'poly', l, et, handle, verts: polyVerts, closed: true, c: color });
+                                        if (isSolidFill) paths.push(polyVerts);
+                                    }
+                                }
+
+                                // --- Polyline boundary path (DwgPolylineBoundaryPath) ---
+                                // API: bp.vertices[] = { x, y, bulge }[],  bp.isClosed: boolean
+                                // Detect via boundaryPathTypeFlag bit 2, or presence of bp.vertices
+                                if (bp.vertices && bp.vertices.length > 1) {
+                                    const verts = tf
+                                        ? bp.vertices.map(v => { const p = tp(v.x, v.y); return { x: p.x, y: p.y, bulge: v.bulge || 0 }; })
+                                        : bp.vertices.map(v => ({ x: v.x, y: v.y, bulge: v.bulge || 0 }));
+                                    for (const v of verts) expand(v.x, v.y);
+                                    const closed = bp.isClosed !== false; // default closed for hatch boundaries
+                                    renderList.push({ t: 'poly', l, et, handle, verts, closed, c: color });
+                                    if (isSolidFill) paths.push(verts);
+                                }
+                            }
+                        }
+                        // Push a fill primitive for solid-fill hatches
+                        if (isSolidFill && paths.length > 0) {
+                            renderList.push({ t: 'hatchfill', l, et, handle, paths, c: color });
+                        }
+                        break;
+                    }
+
+                    case 'DIMENSION': {
+                        // Dimensions have an associated anonymous block (e.name like "*D123")
+                        // Render via block reference if available
+                        if (e.name && blockMap[e.name]) {
+                            const block = blockMap[e.name];
+                            const ins = {
+                                insertionPoint: tf ? transformPoint(0, 0, tf) : { x: 0, y: 0 },
+                                xScale: tf ? (tf.xScale || 1) : 1,
+                                yScale: tf ? (tf.yScale || 1) : 1,
+                                rotation: tf ? (tf.rotation || 0) : 0
+                            };
+                            for (const be of block.entities) {
+                                addEntity(be, ins, l);
+                            }
+                        } else {
+                            // Fallback: render definition points as lines
+                            const pts = [];
+                            if (e.definitionPoint) pts.push(e.definitionPoint);
+                            if (e.subDefinitionPoint1) pts.push(e.subDefinitionPoint1);
+                            if (e.subDefinitionPoint2) pts.push(e.subDefinitionPoint2);
+                            for (let i = 0; i + 1 < pts.length; i++) {
+                                const p1 = tp(pts[i].x, pts[i].y);
+                                const p2 = tp(pts[i + 1].x, pts[i + 1].y);
+                                expand(p1.x, p1.y); expand(p2.x, p2.y);
+                                renderList.push({ t: 'line', l, et, handle, x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, c: color });
+                            }
+                            // Render dimension text if present
+                            if (e.textPoint && e.measurement != null) {
+                                const p = tp(e.textPoint.x, e.textPoint.y);
+                                expand(p.x, p.y);
+                                const txt = e.text || e.measurement.toFixed(0);
+                                renderList.push({ t: 'text', l, et, handle, x: p.x, y: p.y, text: txt, h: 2.5, rot: 0, c: color });
+                            }
+                        }
+                        break;
+                    }
+
+                    case 'LEADER': {
+                        if (e.vertices && e.vertices.length > 1) {
+                            const verts = e.vertices.map(v => {
+                                const p = tp(v.x, v.y);
+                                return { x: p.x, y: p.y, bulge: 0 };
+                            });
+                            for (const v of verts) expand(v.x, v.y);
+                            renderList.push({ t: 'poly', l, et, handle, verts, closed: false, c: color });
+                        }
+                        break;
+                    }
+
+                    case 'MLINE': {
+                        // MLine has vertices along its path - render the centerline at minimum
+                        if (e.vertices && e.vertices.length > 1) {
+                            const verts = e.vertices.map(v => {
+                                const pt = v.point || v;
+                                const p = tp(pt.x, pt.y);
+                                return { x: p.x, y: p.y, bulge: 0 };
+                            });
+                            for (const v of verts) expand(v.x, v.y);
+                            renderList.push({ t: 'poly', l, et, handle, verts, closed: false, c: color });
+                        }
+                        break;
+                    }
+
+                    case '3DFACE': {
+                        const pts = [e.firstCorner, e.secondCorner, e.thirdCorner, e.fourthCorner].filter(Boolean);
+                        if (pts.length >= 3) {
+                            const tpts = pts.map(p => tp(p.x, p.y));
+                            for (const p of tpts) expand(p.x, p.y);
+                            // Render as wireframe outline
+                            const verts = tpts.map(p => ({ x: p.x, y: p.y, bulge: 0 }));
+                            renderList.push({ t: 'poly', l, et, handle, verts, closed: true, c: color });
+                        }
+                        break;
+                    }
+
+                    case 'RAY': {
+                        // Ray: starts at basePoint, extends in direction. Draw a long segment.
+                        if (e.basePoint && e.direction) {
+                            const p1 = tp(e.basePoint.x, e.basePoint.y);
+                            const len = 1e6;
+                            const p2 = tp(e.basePoint.x + e.direction.x * len, e.basePoint.y + e.direction.y * len);
+                            expand(p1.x, p1.y);
+                            renderList.push({ t: 'line', l, et, handle, x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, c: color });
+                        }
+                        break;
+                    }
+
+                    case 'XLINE': {
+                        // Construction line: extends infinitely in both directions
+                        if (e.basePoint && e.direction) {
+                            const len = 1e6;
+                            const p1 = tp(e.basePoint.x - e.direction.x * len, e.basePoint.y - e.direction.y * len);
+                            const p2 = tp(e.basePoint.x + e.direction.x * len, e.basePoint.y + e.direction.y * len);
+                            renderList.push({ t: 'line', l, et, handle, x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, c: color });
+                        }
+                        break;
+                    }
+
+                    case 'INSERT': {
+                        if (!e.insertionPoint || !e.name) break;
+                        const block = blockMap[e.name];
+                        insertCount++;
+                        if (!block || !block.entities) break;
+
+                        // Compose transforms if nested
+                        // Reference: T(insertion) * R(rotation) * S(scale) * T(-basePoint)
+                        const origin = block.origin || block.basePoint;
+                        const ins = {
+                            insertionPoint: tf ? transformPoint(e.insertionPoint.x, e.insertionPoint.y, tf) : e.insertionPoint,
+                            xScale: (e.xScale || 1) * (tf ? (tf.xScale || 1) : 1),
+                            yScale: (e.yScale || 1) * (tf ? (tf.yScale || 1) : 1),
+                            rotation: (e.rotation || 0) + (tf ? (tf.rotation || 0) : 0),
+                            baseX: origin?.x || 0,
+                            baseY: origin?.y || 0
+                        };
+
+                        const hasAttribs = e.attribs && e.attribs.length > 0;
+
+                        // Render block sub-entities; always skip ATTDEFs (they are templates,
+                        // never rendered — ATTRIBs on the INSERT replace them)
+                        for (const be of block.entities) {
+                            if (be.type === 'ATTDEF' || be.type === 'ATTRIB') continue;
+                            addEntity(be, ins, l);
+                        }
+
+                        // Render INSERT's own ATTRIBs (actual attribute values for room tags etc.)
+                        // ATTRIB positions are already in WCS (pre-computed by CAD software),
+                        // so do NOT apply the INSERT transform — only pass through the parent
+                        // transform (tf) for any outer nesting.
+                        if (hasAttribs) {
+                            // Debug: log first INSERT with attribs to help diagnose positioning
+                            if (insertCount <= 3) {
+                                console.log(`INSERT "${e.name}" attribs:`, e.attribs.map(a => ({
+                                    type: a.type, tag: a.tag, flags: a.flags,
+                                    text: a.text,
+                                    insertionPoint: a.insertionPoint,
+                                    alignmentPoint: a.alignmentPoint
+                                })));
+                            }
+                            for (const attr of e.attribs) {
+                                addEntity(attr, tf, l);
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+
+            // Process all top-level entities
+            // Skip standalone ATTRIB/ATTDEF — they are duplicates of ATTRIBs
+            // already attached to INSERT entities in the entity stream
+            for (const e of entities) {
+                if (e.type === 'ATTRIB' || e.type === 'ATTDEF') continue;
+                addEntity(e, null, null);
+            }
+
+            if (!isFinite(minX)) { minX = 0; minY = 0; maxX = 1000; maxY = 1000; }
+
+            if (insertCount > 0) log(`${insertCount} INSERT-Referenzen aufgelöst`);
+            log(`Render-Liste: ${renderList.length} Primitiven, Bounds: (${minX.toFixed(0)}, ${minY.toFixed(0)}) - (${maxX.toFixed(0)}, ${maxY.toFixed(0)})`);
+
+            return {
+                renderList,
+                bounds: { minX, minY, maxX, maxY, width: maxX - minX, height: maxY - minY }
+            };
+        }
+
+        // =============================================
+        // Canvas Rendering
+        // =============================================
+        function resizeCanvas() {
+            const rect = canvasWrap.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            canvas.style.width = rect.width + 'px';
+            canvas.style.height = rect.height + 'px';
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+
+        function worldToScreen(wx, wy) {
+            const rect = canvasWrap.getBoundingClientRect();
+            const sx = (wx - cam.x) * cam.zoom + rect.width / 2;
+            const sy = -(wy - cam.y) * cam.zoom + rect.height / 2; // flip Y
+            return [sx, sy];
+        }
+
+        function screenToWorld(sx, sy) {
+            const rect = canvasWrap.getBoundingClientRect();
+            const wx = (sx - rect.width / 2) / cam.zoom + cam.x;
+            const wy = -(sy - rect.height / 2) / cam.zoom + cam.y; // flip Y
+            return [wx, wy];
+        }
+
+        function render() {
+            if (!drawingData) return;
+            const rect = canvasWrap.getBoundingClientRect();
+            const w = rect.width;
+            const h = rect.height;
+
+            // Clear
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(0, 0, w, h);
+
+            const { renderList } = drawingData;
+
+            // Set up coordinate transform: world -> screen
+            ctx.save();
+            ctx.translate(w / 2, h / 2);
+            ctx.scale(cam.zoom, -cam.zoom); // flip Y
+            ctx.translate(-cam.x, -cam.y);
+
+            // Lines are always 1px regardless of zoom
+            ctx.lineWidth = 1 / cam.zoom;
+
+            for (const item of renderList) {
+                if (hiddenLayers.has(item.l)) continue;
+                ctx.strokeStyle = item.c;
+                ctx.fillStyle = item.c;
+
+                switch (item.t) {
+                    case 'line':
+                        ctx.beginPath();
+                        ctx.moveTo(item.x1, item.y1);
+                        ctx.lineTo(item.x2, item.y2);
+                        ctx.stroke();
+                        break;
+
+                    case 'poly':
+                        ctx.beginPath();
+                        ctx.moveTo(item.verts[0].x, item.verts[0].y);
+                        for (let i = 1; i < item.verts.length; i++) {
+                            const v = item.verts[i];
+                            const prev = item.verts[i - 1];
+                            // Handle bulge (arc segments)
+                            if (prev.bulge && prev.bulge !== 0) {
+                                drawBulgeArc(ctx, prev.x, prev.y, v.x, v.y, prev.bulge);
+                            } else {
+                                ctx.lineTo(v.x, v.y);
+                            }
+                        }
+                        if (item.closed && item.verts.length > 1) {
+                            const last = item.verts[item.verts.length - 1];
+                            const first = item.verts[0];
+                            if (last.bulge && last.bulge !== 0) {
+                                drawBulgeArc(ctx, last.x, last.y, first.x, first.y, last.bulge);
+                            } else {
+                                ctx.lineTo(first.x, first.y);
+                            }
+                        }
+                        ctx.stroke();
+                        break;
+
+                    case 'circle':
+                        ctx.beginPath();
+                        ctx.arc(item.cx, item.cy, item.r, 0, Math.PI * 2);
+                        ctx.stroke();
+                        break;
+
+                    case 'arc':
+                        ctx.beginPath();
+                        // Canvas arc goes clockwise by default; DWG arcs are CCW
+                        ctx.arc(item.cx, item.cy, item.r, item.sa, item.ea, false);
+                        ctx.stroke();
+                        break;
+
+                    case 'ellipse':
+                        ctx.beginPath();
+                        ctx.ellipse(item.cx, item.cy, item.rx, item.ry, item.rot, 0, Math.PI * 2);
+                        ctx.stroke();
+                        break;
+
+                    case 'text': {
+                        // Text needs to be flipped back upright (we're in Y-flipped coords)
+                        // Use actual text height — no minimum clamp, as small text (e.g. 0.075
+                        // in meter-scale drawings) is correct and clamping distorts proportions.
+                        // Text that's too small to read simply disappears at low zoom, which is fine.
+                        const fontSize = item.h;
+                        if (fontSize * cam.zoom < 1.5) break; // skip text too small to render on screen
+                        ctx.save();
+                        ctx.translate(item.x, item.y);
+                        ctx.scale(1, -1); // flip text back
+                        if (item.rot) ctx.rotate(-item.rot);
+                        ctx.font = `${fontSize}px Arial, sans-serif`;
+                        ctx.fillText(item.text, 0, 0);
+                        ctx.restore();
+                        break;
+                    }
+
+                    case 'point': {
+                        const sz = 3 / cam.zoom;
+                        ctx.fillRect(item.x - sz/2, item.y - sz/2, sz, sz);
+                        break;
+                    }
+
+                    case 'hatchfill': {
+                        // Render solid-fill hatch as semi-transparent filled polygon
+                        ctx.save();
+                        ctx.globalAlpha = 0.25;
+                        ctx.beginPath();
+                        for (const path of item.paths) {
+                            if (path.length < 2) continue;
+                            ctx.moveTo(path[0].x, path[0].y);
+                            for (let i = 1; i < path.length; i++) {
+                                const v = path[i];
+                                const prev = path[i - 1];
+                                if (prev.bulge && prev.bulge !== 0) {
+                                    drawBulgeArc(ctx, prev.x, prev.y, v.x, v.y, prev.bulge);
+                                } else {
+                                    ctx.lineTo(v.x, v.y);
+                                }
+                            }
+                            // Close back to first vertex
+                            const last = path[path.length - 1];
+                            const first = path[0];
+                            if (last.bulge && last.bulge !== 0) {
+                                drawBulgeArc(ctx, last.x, last.y, first.x, first.y, last.bulge);
+                            } else {
+                                ctx.lineTo(first.x, first.y);
+                            }
+                            ctx.closePath();
+                        }
+                        ctx.fill();
+                        ctx.restore();
+                        break;
+                    }
+
+                    case 'solid': {
+                        ctx.beginPath();
+                        ctx.moveTo(item.pts[0].x, item.pts[0].y);
+                        for (let i = 1; i < item.pts.length; i++) {
+                            ctx.lineTo(item.pts[i].x, item.pts[i].y);
+                        }
+                        ctx.closePath();
+                        ctx.fill();
+                        break;
+                    }
+                }
+            }
+
+            // === Highlight selected element ===
+            if (selectedItem && !hiddenLayers.has(selectedItem.l)) {
+                const hi = selectedItem;
+                ctx.save();
+                ctx.strokeStyle = '#00FFFF';
+                ctx.fillStyle = '#00FFFF';
+                ctx.lineWidth = 3 / cam.zoom;
+                ctx.shadowColor = '#00FFFF';
+                ctx.shadowBlur = 8;
+
+                switch (hi.t) {
+                    case 'line':
+                        ctx.beginPath();
+                        ctx.moveTo(hi.x1, hi.y1);
+                        ctx.lineTo(hi.x2, hi.y2);
+                        ctx.stroke();
+                        break;
+
+                    case 'poly':
+                        ctx.beginPath();
+                        ctx.moveTo(hi.verts[0].x, hi.verts[0].y);
+                        for (let i = 1; i < hi.verts.length; i++) {
+                            const v = hi.verts[i];
+                            const prev = hi.verts[i - 1];
+                            if (prev.bulge && prev.bulge !== 0) {
+                                drawBulgeArc(ctx, prev.x, prev.y, v.x, v.y, prev.bulge);
+                            } else {
+                                ctx.lineTo(v.x, v.y);
+                            }
+                        }
+                        if (hi.closed && hi.verts.length > 1) {
+                            const last = hi.verts[hi.verts.length - 1];
+                            const first = hi.verts[0];
+                            if (last.bulge && last.bulge !== 0) {
+                                drawBulgeArc(ctx, last.x, last.y, first.x, first.y, last.bulge);
+                            } else {
+                                ctx.lineTo(first.x, first.y);
+                            }
+                        }
+                        ctx.stroke();
+                        break;
+
+                    case 'circle':
+                        ctx.beginPath();
+                        ctx.arc(hi.cx, hi.cy, hi.r, 0, Math.PI * 2);
+                        ctx.stroke();
+                        break;
+
+                    case 'arc':
+                        ctx.beginPath();
+                        ctx.arc(hi.cx, hi.cy, hi.r, hi.sa, hi.ea, false);
+                        ctx.stroke();
+                        break;
+
+                    case 'ellipse':
+                        ctx.beginPath();
+                        ctx.ellipse(hi.cx, hi.cy, hi.rx, hi.ry, hi.rot, 0, Math.PI * 2);
+                        ctx.stroke();
+                        break;
+
+                    case 'text': {
+                        const fontSize = hi.h;
+                        ctx.save();
+                        ctx.translate(hi.x, hi.y);
+                        ctx.scale(1, -1);
+                        if (hi.rot) ctx.rotate(-hi.rot);
+                        ctx.font = `${fontSize}px Arial, sans-serif`;
+                        ctx.fillText(hi.text, 0, 0);
+                        ctx.restore();
+                        break;
+                    }
+
+                    case 'point': {
+                        const sz = 6 / cam.zoom;
+                        ctx.fillRect(hi.x - sz/2, hi.y - sz/2, sz, sz);
+                        break;
+                    }
+
+                    case 'solid': {
+                        ctx.beginPath();
+                        ctx.moveTo(hi.pts[0].x, hi.pts[0].y);
+                        for (let i = 1; i < hi.pts.length; i++) {
+                            ctx.lineTo(hi.pts[i].x, hi.pts[i].y);
+                        }
+                        ctx.closePath();
+                        ctx.globalAlpha = 0.5;
+                        ctx.fill();
+                        ctx.globalAlpha = 1;
+                        ctx.stroke();
+                        break;
+                    }
+
+                    case 'hatchfill': {
+                        ctx.globalAlpha = 0.4;
+                        ctx.beginPath();
+                        for (const path of hi.paths) {
+                            if (path.length < 2) continue;
+                            ctx.moveTo(path[0].x, path[0].y);
+                            for (let i = 1; i < path.length; i++) {
+                                const v = path[i];
+                                const prev = path[i - 1];
+                                if (prev.bulge && prev.bulge !== 0) {
+                                    drawBulgeArc(ctx, prev.x, prev.y, v.x, v.y, prev.bulge);
+                                } else {
+                                    ctx.lineTo(v.x, v.y);
+                                }
+                            }
+                            ctx.closePath();
+                        }
+                        ctx.fill();
+                        ctx.globalAlpha = 1;
+                        break;
+                    }
+                }
+                ctx.restore();
+            }
+
+            ctx.restore();
+        }
+
+        // Draw arc between two points with a bulge factor
+        function drawBulgeArc(ctx, x1, y1, x2, y2, bulge) {
+            const dx = x2 - x1;
+            const dy = y2 - y1;
+            const d = Math.hypot(dx, dy);
+            if (d < 1e-10) { ctx.lineTo(x2, y2); return; }
+
+            const sagitta = Math.abs(bulge) * d / 2;
+            const radius = ((d / 2) * (d / 2) + sagitta * sagitta) / (2 * sagitta);
+
+            const mx = (x1 + x2) / 2;
+            const my = (y1 + y2) / 2;
+            const nx = -dy / d;
+            const ny = dx / d;
+
+            const sign = bulge > 0 ? 1 : -1;
+            const offset = sign * (radius - sagitta);
+            const cx = mx + nx * offset;
+            const cy = my + ny * offset;
+
+            const sa = Math.atan2(y1 - cy, x1 - cx);
+            const ea = Math.atan2(y2 - cy, x2 - cx);
+
+            ctx.arc(cx, cy, Math.abs(radius), sa, ea, bulge < 0);
+        }
+
+        // =============================================
+        // Hit Testing & Feature Popup
+        // =============================================
+        function distPointToSegment(px, py, x1, y1, x2, y2) {
+            const dx = x2 - x1, dy = y2 - y1;
+            const lenSq = dx * dx + dy * dy;
+            if (lenSq < 1e-12) return Math.hypot(px - x1, py - y1);
+            let t = ((px - x1) * dx + (py - y1) * dy) / lenSq;
+            t = Math.max(0, Math.min(1, t));
+            return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
+        }
+
+        function hitTest(wx, wy, tolerance) {
+            if (!drawingData) return null;
+            let best = null;
+            let bestDist = tolerance;
+
+            for (const item of drawingData.renderList) {
+                if (hiddenLayers.has(item.l)) continue;
+                let d = Infinity;
+
+                switch (item.t) {
+                    case 'line':
+                        d = distPointToSegment(wx, wy, item.x1, item.y1, item.x2, item.y2);
+                        break;
+
+                    case 'poly': {
+                        const v = item.verts;
+                        for (let i = 1; i < v.length; i++) {
+                            d = Math.min(d, distPointToSegment(wx, wy, v[i-1].x, v[i-1].y, v[i].x, v[i].y));
+                        }
+                        if (item.closed && v.length > 1) {
+                            d = Math.min(d, distPointToSegment(wx, wy, v[v.length-1].x, v[v.length-1].y, v[0].x, v[0].y));
+                        }
+                        break;
+                    }
+
+                    case 'circle':
+                        d = Math.abs(Math.hypot(wx - item.cx, wy - item.cy) - item.r);
+                        break;
+
+                    case 'arc': {
+                        const dist = Math.hypot(wx - item.cx, wy - item.cy);
+                        const angle = Math.atan2(wy - item.cy, wx - item.cx);
+                        // Normalize angles
+                        let sa = item.sa, ea = item.ea;
+                        let a = angle;
+                        while (a < sa) a += Math.PI * 2;
+                        const inArc = a <= ea || (ea < sa && (a >= sa || a <= ea));
+                        d = inArc ? Math.abs(dist - item.r) : Math.min(
+                            Math.hypot(wx - (item.cx + item.r * Math.cos(sa)), wy - (item.cy + item.r * Math.sin(sa))),
+                            Math.hypot(wx - (item.cx + item.r * Math.cos(ea)), wy - (item.cy + item.r * Math.sin(ea)))
+                        );
+                        break;
+                    }
+
+                    case 'ellipse':
+                        // Approximate: transform to circle space
+                        d = Math.abs(Math.hypot(wx - item.cx, wy - item.cy) - (item.rx + item.ry) / 2);
+                        break;
+
+                    case 'text': {
+                        // Simple bounding box approximation
+                        const tw = item.text.length * item.h * 0.6;
+                        const th = item.h;
+                        if (wx >= item.x && wx <= item.x + tw && wy >= item.y - th && wy <= item.y + th) {
+                            d = 0;
+                        }
+                        break;
+                    }
+
+                    case 'point':
+                        d = Math.hypot(wx - item.x, wy - item.y);
+                        break;
+
+                    case 'solid': {
+                        for (let i = 0; i < item.pts.length; i++) {
+                            const j = (i + 1) % item.pts.length;
+                            d = Math.min(d, distPointToSegment(wx, wy, item.pts[i].x, item.pts[i].y, item.pts[j].x, item.pts[j].y));
+                        }
+                        break;
+                    }
+                }
+
+                if (d < bestDist) {
+                    bestDist = d;
+                    best = item;
+                }
+            }
+            return best;
+        }
+
+        function showFeaturePopup(item, screenX, screenY) {
+            let html = `<div class="feature-popup__title">
+                <span class="feature-popup__badge">${esc(item.et)}</span>
+            </div>`;
+
+            const row = (label, value) =>
+                `<div class="feature-popup__row"><span class="feature-popup__label">${label}</span><span class="feature-popup__value">${value}</span></div>`;
+
+            html += row('Layer', esc(item.l));
+            html += row('Farbe', `<span class="feature-popup__color-swatch" style="background:${item.c}"></span> ${item.c}`);
+            if (item.handle) html += row('Handle', esc(item.handle));
+
+            // Type-specific details
+            switch (item.t) {
+                case 'line':
+                    html += row('Start', `${item.x1.toFixed(2)}, ${item.y1.toFixed(2)}`);
+                    html += row('Ende', `${item.x2.toFixed(2)}, ${item.y2.toFixed(2)}`);
+                    html += row('Länge', Math.hypot(item.x2 - item.x1, item.y2 - item.y1).toFixed(2));
+                    break;
+                case 'poly':
+                    html += row('Vertices', item.verts.length);
+                    html += row('Geschlossen', item.closed ? 'Ja' : 'Nein');
+                    break;
+                case 'circle':
+                    html += row('Zentrum', `${item.cx.toFixed(2)}, ${item.cy.toFixed(2)}`);
+                    html += row('Radius', item.r.toFixed(2));
+                    break;
+                case 'arc':
+                    html += row('Zentrum', `${item.cx.toFixed(2)}, ${item.cy.toFixed(2)}`);
+                    html += row('Radius', item.r.toFixed(2));
+                    html += row('Winkel', `${(item.sa * 180 / Math.PI).toFixed(1)}° - ${(item.ea * 180 / Math.PI).toFixed(1)}°`);
+                    break;
+                case 'ellipse':
+                    html += row('Zentrum', `${item.cx.toFixed(2)}, ${item.cy.toFixed(2)}`);
+                    html += row('Radien', `${item.rx.toFixed(2)} / ${item.ry.toFixed(2)}`);
+                    break;
+                case 'text':
+                    html += row('Text', esc(item.text.length > 30 ? item.text.slice(0, 30) + '...' : item.text));
+                    html += row('Höhe', item.h.toFixed(2));
+                    break;
+                case 'point':
+                    html += row('Position', `${item.x.toFixed(2)}, ${item.y.toFixed(2)}`);
+                    break;
+                case 'solid':
+                    html += row('Ecken', item.pts.length);
+                    break;
+            }
+
+            featurePopup.innerHTML = html;
+
+            // Position popup near click, clamped within canvas-wrap
+            const wrapRect = canvasWrap.getBoundingClientRect();
+            let px = screenX + 12;
+            let py = screenY - 12;
+            // Temporarily show to measure
+            featurePopup.style.left = '0px';
+            featurePopup.style.top = '0px';
+            featurePopup.classList.add('visible');
+            const popRect = featurePopup.getBoundingClientRect();
+            // Clamp right/bottom
+            if (px + popRect.width > wrapRect.width - 8) px = screenX - popRect.width - 12;
+            if (py + popRect.height > wrapRect.height - 8) py = wrapRect.height - popRect.height - 8;
+            if (px < 8) px = 8;
+            if (py < 8) py = 8;
+            featurePopup.style.left = px + 'px';
+            featurePopup.style.top = py + 'px';
+        }
+
+        function hideFeaturePopup() {
+            featurePopup.classList.remove('visible');
+        }
+
+        // =============================================
+        // Zoom Extents
+        // =============================================
+        function zoomExtents() {
+            if (!drawingData) return;
+            const { bounds } = drawingData;
+            const rect = canvasWrap.getBoundingClientRect();
+
+            cam.x = bounds.minX + bounds.width / 2;
+            cam.y = bounds.minY + bounds.height / 2;
+
+            const zx = rect.width / bounds.width;
+            const zy = rect.height / bounds.height;
+            cam.zoom = Math.min(zx, zy) * 0.92;
+
+            render();
+        }
+
+        // =============================================
+        // Pan & Zoom
+        // =============================================
+        canvasWrap.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            hideFeaturePopup();
+            const rect = canvasWrap.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+
+            const [wx, wy] = screenToWorld(mx, my);
+
+            const factor = e.deltaY > 0 ? 0.85 : 1.18;
+            cam.zoom *= factor;
+
+            // Keep mouse world position stable
+            cam.x = wx - (mx - rect.width / 2) / cam.zoom;
+            cam.y = wy + (my - rect.height / 2) / cam.zoom;
+
+            render();
+        }, { passive: false });
+
+        canvasWrap.addEventListener('mousedown', (e) => {
+            isPanning = true;
+            panStart = { x: e.clientX, y: e.clientY, camX: cam.x, camY: cam.y };
+            hideFeaturePopup();
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (isPanning) {
+                const dx = e.clientX - panStart.x;
+                const dy = e.clientY - panStart.y;
+                cam.x = panStart.camX - dx / cam.zoom;
+                cam.y = panStart.camY + dy / cam.zoom; // flipped Y
+                render();
+            }
+
+            // Coords display
+            if (drawingData) {
+                const rect = canvasWrap.getBoundingClientRect();
+                const mx = e.clientX - rect.left;
+                const my = e.clientY - rect.top;
+                if (mx >= 0 && my >= 0 && mx <= rect.width && my <= rect.height) {
+                    const [wx, wy] = screenToWorld(mx, my);
+                    coordsDisplay.textContent = `X: ${wx.toFixed(2)}  Y: ${wy.toFixed(2)}  Zoom: ${(cam.zoom).toFixed(2)}x`;
+                }
+            }
+        });
+
+        window.addEventListener('mouseup', (e) => {
+            if (isPanning && panStart) {
+                const dx = e.clientX - panStart.x;
+                const dy = e.clientY - panStart.y;
+                const moved = Math.hypot(dx, dy);
+                // Treat as click if mouse barely moved (< 4px)
+                if (moved < 4 && drawingData) {
+                    const rect = canvasWrap.getBoundingClientRect();
+                    const sx = e.clientX - rect.left;
+                    const sy = e.clientY - rect.top;
+                    if (sx >= 0 && sy >= 0 && sx <= rect.width && sy <= rect.height) {
+                        const [wx, wy] = screenToWorld(sx, sy);
+                        const tolerance = 8 / cam.zoom; // 8 screen pixels
+                        const hit = hitTest(wx, wy, tolerance);
+                        if (hit) {
+                            selectedItem = hit;
+                            showFeaturePopup(hit, sx, sy);
+                        } else {
+                            selectedItem = null;
+                            hideFeaturePopup();
+                        }
+                        render();
+                    }
+                }
+            }
+            isPanning = false;
+        });
+
+        // Buttons
+        document.getElementById('toggle-bg').addEventListener('click', () => {
+            bgColor = bgColor === BG_DARK ? BG_LIGHT : BG_DARK;
+            canvasWrap.style.background = bgColor;
+            render();
+        });
+        document.getElementById('zoom-in').addEventListener('click', () => { cam.zoom *= 1.4; render(); });
+        document.getElementById('zoom-out').addEventListener('click', () => { cam.zoom /= 1.4; render(); });
+        document.getElementById('zoom-fit').addEventListener('click', zoomExtents);
+
+        // Fullscreen toggle
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
+        fullscreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                viewerPanel.requestFullscreen().catch(err => {
+                    log(`Vollbild fehlgeschlagen: ${err.message}`, 'error');
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        });
+        document.addEventListener('fullscreenchange', () => {
+            if (document.fullscreenElement) {
+                fullscreenBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>';
+                fullscreenBtn.title = 'Vollbild beenden';
+            } else {
+                fullscreenBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>';
+                fullscreenBtn.title = 'Vollbild';
+            }
+            // Re-measure and re-render after layout change
+            setTimeout(() => { resizeCanvas(); render(); }, 100);
+        });
+
+        // Resize handler
+        window.addEventListener('resize', () => {
+            if (!drawingData) return;
+            resizeCanvas();
+            render();
+        });
+
+        // =============================================
+        // Display helpers
+        // =============================================
+        function displayInfo(file, db, entities, layers, elapsed) {
+            document.getElementById('file-name-display').textContent = file.name;
+            document.getElementById('info-version').textContent = db.header?.version || '-';
+            document.getElementById('info-layers').textContent = layers.length;
+            document.getElementById('info-entities').textContent = entities.length;
+            document.getElementById('info-size').textContent = fmtSize(file.size);
+            infoPanel.classList.add('visible');
+        }
+
+        function displayLayers(entities, layers) {
+            layersList.innerHTML = '';
+            hiddenLayers.clear();
+
+            const counts = {};
+            for (const e of entities) counts[e.layer || '0'] = (counts[e.layer || '0'] || 0) + 1;
+
+            for (const l of layers) {
+                const div = document.createElement('div');
+                div.className = 'layer-item';
+                const name = l.name;
+
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.checked = true;
+                cb.className = 'layer-toggle';
+                cb.title = 'Layer ein-/ausblenden';
+
+                cb.addEventListener('change', () => {
+                    if (cb.checked) {
+                        hiddenLayers.delete(name);
+                        div.classList.remove('hidden');
+                    } else {
+                        hiddenLayers.add(name);
+                        div.classList.add('hidden');
+                    }
+                    render();
+                });
+
+                // Click on row (not checkbox) toggles too
+                div.addEventListener('click', (e) => {
+                    if (e.target === cb) return;
+                    cb.checked = !cb.checked;
+                    cb.dispatchEvent(new Event('change'));
+                });
+
+                const colorDiv = document.createElement('div');
+                colorDiv.className = 'layer-color';
+                colorDiv.style.background = aciToHex(l.colorIndex);
+
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'layer-name';
+                nameSpan.textContent = name;
+
+                const countSpan = document.createElement('span');
+                countSpan.className = 'layer-entities';
+                countSpan.textContent = `${counts[name] || 0} entities`;
+
+                div.appendChild(cb);
+                div.appendChild(colorDiv);
+                div.appendChild(nameSpan);
+                div.appendChild(countSpan);
+                layersList.appendChild(div);
+            }
+
+            // Toggle-all checkbox (use onclick to avoid stacking listeners)
+            const toggleAllCb = document.getElementById('layers-toggle-all');
+            toggleAllCb.checked = true;
+            toggleAllCb.onchange = () => {
+                const showAll = toggleAllCb.checked;
+                if (showAll) {
+                    hiddenLayers.clear();
+                    for (const item of layersList.children) {
+                        item.classList.remove('hidden');
+                        item.querySelector('.layer-toggle').checked = true;
+                    }
+                } else {
+                    for (const item of layersList.children) {
+                        item.classList.add('hidden');
+                        item.querySelector('.layer-toggle').checked = false;
+                        hiddenLayers.add(item.querySelector('.layer-name').textContent);
+                    }
+                }
+                render();
+            };
+
+            // Layer search filter
+            const searchInput = document.getElementById('layers-search');
+            searchInput.value = '';
+            searchInput.oninput = () => {
+                const q = searchInput.value.toLowerCase();
+                for (const item of layersList.children) {
+                    const name = item.querySelector('.layer-name').textContent.toLowerCase();
+                    item.style.display = name.includes(q) ? '' : 'none';
+                }
+            };
+
+            layersPanel.classList.add('visible');
+        }
+
+        function displayEntities(entities) {
+            entitiesTbody.innerHTML = '';
+            const typeCounts = {};
+            const typeLayers = {};
+            for (const e of entities) {
+                const t = e.type || 'UNKNOWN';
+                typeCounts[t] = (typeCounts[t] || 0) + 1;
+                if (!typeLayers[t]) typeLayers[t] = new Set();
+                if (e.layer) typeLayers[t].add(e.layer);
+            }
+            const sorted = Object.entries(typeCounts).sort((a, b) => b[1] - a[1]);
+            for (const [type, count] of sorted) {
+                const ls = typeLayers[type] ? Array.from(typeLayers[type]).slice(0, 3).join(', ') : '-';
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><span class="entity-type-badge">${esc(type)}</span></td>
+                    <td>${count}</td>
+                    <td style="font-size:12px; color: var(--color-text-secondary)">${esc(ls)}${typeLayers[type]?.size > 3 ? ' ...' : ''}</td>
+                `;
+                entitiesTbody.appendChild(tr);
+            }
+            entitiesPanel.classList.add('visible');
+        }
+
+        // =============================================
+        // File Handling
+        // =============================================
+        selectBtn.addEventListener('click', (e) => { e.stopPropagation(); fileInput.click(); });
+        uploadZone.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+
+        uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+        uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault(); uploadZone.classList.remove('dragover');
+            if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+        });
+
+        async function handleFile(file) {
+            const ext = file.name.toLowerCase().split('.').pop();
+            if (!['dwg', 'dxf'].includes(ext)) { showStatus('Nur .dwg / .dxf Dateien.', 'error'); return; }
+            if (file.size > MAX_FILE_SIZE) { showStatus('Datei zu gross (max. 50 MB).', 'error'); return; }
+
+            // Reset
+            viewerPanel.classList.remove('visible');
+            layersPanel.classList.remove('visible');
+            entitiesPanel.classList.remove('visible');
+            infoPanel.classList.remove('visible');
+
+            try {
+                const { db, entities, layers, elapsed } = await processDwgFile(file);
+
+                displayInfo(file, db, entities, layers, elapsed);
+
+                showStatus('Zeichnung wird gerendert...');
+                drawingData = prepareDrawingData(entities, layers, db);
+
+                // Panel must be visible before measuring canvas dimensions
+                viewerPanel.classList.add('visible');
+                // Wait one frame for layout to complete
+                await new Promise(r => requestAnimationFrame(r));
+                resizeCanvas();
+                zoomExtents();
+
+                displayLayers(entities, layers);
+                displayEntities(entities);
+
+                showStatus(`Erfolgreich verarbeitet in ${elapsed}s`, 'success');
+            } catch (err) {
+                showStatus(err.message, 'error');
+                log(err.message, 'error');
+                console.error(err);
+            }
+        }
+
+        // =============================================
+        // Utilities
+        // =============================================
+        function fmtSize(bytes) {
+            if (bytes <= 0) return '0 B';
+            const u = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(1024));
+            return (bytes / Math.pow(1024, i)).toFixed(i > 0 ? 1 : 0) + ' ' + u[i];
+        }
+
+        function esc(s) {
+            const d = document.createElement('div');
+            d.textContent = s;
+            return d.innerHTML;
+        }
+
+        const ACI = {
+            0:'#000000', 1:'#FF0000', 2:'#FFFF00', 3:'#00FF00', 4:'#00FFFF',
+            5:'#0000FF', 6:'#FF00FF', 7:'#FFFFFF', 8:'#808080', 9:'#C0C0C0',
+            10:'#FF0000', 11:'#FF7F7F', 12:'#CC0000', 20:'#FF3F00', 21:'#FF9F7F',
+            30:'#FF7F00', 31:'#FFBF7F', 40:'#FFBF00', 41:'#FFDF7F', 50:'#FFFF00',
+            51:'#FFFF7F', 60:'#BFFF00', 70:'#7FFF00', 80:'#3FFF00', 90:'#00FF00',
+            100:'#00FF3F', 110:'#00FF7F', 120:'#00FFBF', 130:'#00FFFF',
+            140:'#00BFFF', 150:'#007FFF', 160:'#003FFF', 170:'#0000FF',
+            180:'#3F00FF', 190:'#7F00FF', 200:'#BF00FF', 210:'#FF00FF',
+            220:'#FF007F', 230:'#FF003F', 240:'#FF0000', 250:'#4C4C4C',
+            251:'#808080', 252:'#A0A0A0', 253:'#C0C0C0', 254:'#E0E0E0',
+            255:'#FFFFFF', 256:'#CCCCCC'
+        };
+        function aciToHex(i) { return ACI[i] || `hsl(${(i * 137) % 360}, 60%, 50%)`; }
+
+        log('DWG Viewer bereit (Canvas 2D). Bitte eine DWG-Datei hochladen.');
+    </script>
 </body>
 </html>
