@@ -11,17 +11,22 @@
 
 **BBL Plan-Check** — BBL Plan Checker / Prüfplattform Flächenmanagement - A prototype for validating floor plan drawings against Swiss Federal BBL CAD standards.
 
-## Live Demo
+## Demo
 
-**https://bbl-dres.github.io/plan-check/**
-
-**Prototype:** **https://bbl-dres.github.io/plan-check/prototype1/**
+**Live Demo (Working Viewer and Checking Engine):** https://bbl-dres.github.io/plan-check/
 
 All processing runs locally in the browser via LibreDWG WebAssembly — no files are uploaded to a server.
 
 <p align="center">
   <img src="assets/Preview4.jpg" width="45%" style="vertical-align: top;"/>
   <img src="assets/Preview5.jpg" width="45%" style="vertical-align: top;"/>
+</p>
+
+**Prototype (Project and IAM Management):** https://bbl-dres.github.io/plan-check/prototype1/
+
+<p align="center">
+  <img src="assets/Preview1.jpg" width="45%" style="vertical-align: top;"/>
+  <img src="assets/Preview3.jpg" width="45%" style="vertical-align: top;"/>
 </p>
 
 ## Features
@@ -37,8 +42,7 @@ All processing runs locally in the browser via LibreDWG WebAssembly — no files
 - **GeoJSON / BCF Export** — Export room geometries and BIM Collaboration Format issues (planned)
 - **API Documentation** — Swagger-style docs rendered from an OpenAPI 3.0 spec (`?view=api-docs`)
 - **Responsive Design** — Mobile-first layout with hamburger menu, touch gestures, and adaptive split view
-- **Swiss Federal CD** — Official colors, typography, and layout following the Swiss Federal Corporate Design guidelines
-
+  
 ## Getting Started
 
 ### View Online
