@@ -70,7 +70,7 @@ a:hover {
 /* Text Utilities */
 .text-center { text-align: center; }
 .text-right { text-align: right; }
-.text-muted { color: var(--color-text-muted); }
+.text-muted { color: var(--color-text-secondary); }
 .text-secondary { color: var(--color-text-secondary); }
 
 /* === HEADER === */
@@ -93,7 +93,7 @@ a:hover {
     gap: var(--space-3);
     text-decoration: none;
     color: inherit;
-    transition: opacity 0.2s ease;
+    transition: opacity var(--duration-normal) ease;
 }
 
 .header__brand:hover {
@@ -260,7 +260,7 @@ a:hover {
     flex: 1;
     height: 4px;
     background: var(--color-border);
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
 }
 
 .video-player__time {
@@ -312,11 +312,11 @@ a:hover {
 .form__input:focus {
     outline: none;
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px var(--color-primary-light);
+    box-shadow: 0 0 0 3px var(--color-focus);
 }
 
 .form__input::placeholder {
-    color: var(--color-empress);
+    color: var(--color-text-secondary);
 }
 
 .form__input-group {
@@ -332,7 +332,7 @@ a:hover {
     left: var(--space-4);
     top: 50%;
     transform: translateY(-50%);
-    color: var(--color-text-muted);
+    color: var(--color-text-secondary);
     pointer-events: none;
 }
 
@@ -397,7 +397,7 @@ a:hover {
 
 .btn:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px var(--color-malibu);
+    box-shadow: 0 0 0 3px var(--color-focus);
 }
 
 /* === PAGE HEADER === */
@@ -427,7 +427,7 @@ a:hover {
     left: var(--space-3);
     top: 50%;
     transform: translateY(-50%);
-    color: var(--color-text-muted);
+    color: var(--color-text-secondary);
     pointer-events: none;
 }
 
@@ -445,7 +445,7 @@ a:hover {
 .search__input:focus {
     outline: none;
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px var(--color-primary-light);
+    box-shadow: 0 0 0 3px var(--color-focus);
 }
 
 /* === VIEW TOGGLE === */
@@ -485,7 +485,7 @@ a:hover {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: var(--space-5);
-    transition: all 0.3s ease;
+    transition: all var(--duration-slow) ease;
 }
 
 .card-grid--list {
@@ -500,7 +500,7 @@ a:hover {
     border: 1px solid var(--color-border-light);
     overflow: hidden;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all var(--duration-normal) ease;
     animation: fadeInUp 0.4s ease backwards;
 }
 
@@ -627,7 +627,7 @@ a:hover {
 .empty-state__icon {
     width: 64px;
     height: 64px;
-    color: var(--color-text-muted);
+    color: var(--color-text-secondary);
     margin-bottom: var(--space-5);
 }
 
@@ -675,7 +675,7 @@ a:hover {
     width: 0;
     height: 2px;
     background: var(--color-primary);
-    transition: width 0.2s ease;
+    transition: width var(--duration-normal) ease;
 }
 
 .breadcrumb__link:hover::after {
@@ -683,7 +683,7 @@ a:hover {
 }
 
 .breadcrumb__separator {
-    color: var(--color-text-muted);
+    color: var(--color-text-secondary);
 }
 
 .breadcrumb__current {
@@ -699,7 +699,7 @@ a:hover {
     background: var(--color-bg-primary);
     border: 1px solid var(--color-border-light);
     box-shadow: var(--shadow-sm);
-    transition: box-shadow 0.2s ease;
+    transition: box-shadow var(--duration-normal) ease;
 }
 
 .project-header:hover {
@@ -993,7 +993,7 @@ a:hover {
 
 .table tbody tr {
     cursor: pointer;
-    transition: background 0.15s ease;
+    transition: background var(--duration-normal) ease;
 }
 
 .table tbody tr:hover {
@@ -1072,7 +1072,7 @@ a:hover {
     padding: var(--space-1) var(--space-2);
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-medium);
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
 }
 
 .badge--info {
@@ -1087,7 +1087,7 @@ a:hover {
 
 .badge--muted {
     background: var(--color-gainsboro);
-    color: var(--color-text-muted);
+    color: var(--color-text-secondary);
 }
 
 /* === STEPPER === */
@@ -1109,7 +1109,7 @@ a:hover {
     position: relative;
     flex: 1;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all var(--duration-normal) ease;
     animation: fadeInUp 0.5s ease backwards;
 }
 
@@ -1140,11 +1140,11 @@ a:hover {
     align-items: center;
     justify-content: center;
     background: var(--color-border-light);
-    color: var(--color-text-muted);
+    color: var(--color-text-secondary);
     margin-bottom: var(--space-2);
     position: relative;
     z-index: 1;
-    transition: transform 0.2s ease;
+    transition: transform var(--duration-normal) ease;
 }
 
 .stepper__item:hover .stepper__indicator {
@@ -1171,7 +1171,7 @@ a:hover {
     color: var(--color-text-secondary);
     text-align: center;
     max-width: 140px;
-    transition: color 0.2s ease;
+    transition: color var(--duration-normal) ease;
 }
 
 .stepper__item:hover .stepper__label {
@@ -1269,7 +1269,7 @@ a:hover {
 
 .metric-card__label {
     font-size: var(--font-size-sm);
-    color: var(--color-text-muted);
+    color: var(--color-text-secondary);
 }
 
 .metric-card--error .metric-card__value { color: var(--color-error); }
@@ -1314,7 +1314,7 @@ a:hover {
 }
 
 .floorplan__room {
-    transition: all 0.2s ease;
+    transition: all var(--duration-normal) ease;
 }
 
 .floorplan__room:hover {
@@ -1507,7 +1507,7 @@ a:hover {
 .donut-legend__color {
     width: 12px;
     height: 12px;
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
     flex-shrink: 0;
 }
 
@@ -1547,7 +1547,7 @@ a:hover {
 .pie-chart__legend-color {
     width: 16px;
     height: 16px;
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
 }
 
 /* === UPLOAD === */
@@ -1560,7 +1560,7 @@ a:hover {
     background: var(--color-bg-secondary);
     padding: var(--space-8);
     text-align: center;
-    transition: all 0.2s ease;
+    transition: all var(--duration-normal) ease;
     cursor: pointer;
 }
 
@@ -1570,7 +1570,7 @@ a:hover {
 }
 
 .upload__zone svg {
-    color: var(--color-text-muted);
+    color: var(--color-text-secondary);
     margin-bottom: var(--space-4);
 }
 
@@ -1631,12 +1631,12 @@ a:hover {
 }
 
 .footer__version {
-    color: var(--color-text-muted);
+    color: var(--color-text-secondary);
 }
 
 .footer__link {
     color: var(--color-text-secondary);
-    transition: color 0.2s ease;
+    transition: color var(--duration-normal) ease;
 }
 
 .footer__link:hover {
@@ -1709,7 +1709,7 @@ a:hover {
 
 /* Focus Indicators */
 *:focus-visible {
-    outline: 3px solid var(--color-primary);
+    outline: 3px solid var(--color-focus);
     outline-offset: 2px;
 }
 
@@ -2008,7 +2008,7 @@ a:hover {
     position: relative;
     border: 2px dashed var(--color-border);
     background: var(--color-bg-secondary);
-    transition: all 0.2s ease;
+    transition: all var(--duration-normal) ease;
     cursor: pointer;
 }
 
@@ -2037,7 +2037,7 @@ a:hover {
     justify-content: center;
     gap: var(--space-2);
     padding: var(--space-6);
-    color: var(--color-text-muted);
+    color: var(--color-text-secondary);
     text-align: center;
     font-size: var(--font-size-sm);
 }
@@ -2146,7 +2146,7 @@ a:hover {
     border-radius: var(--radius-sm);
     cursor: pointer;
     color: var(--color-text-secondary);
-    transition: all 0.15s ease;
+    transition: all var(--duration-normal) ease;
 }
 
 .canvas-viewer__btn:hover {
@@ -2161,7 +2161,7 @@ a:hover {
     left: var(--space-3);
     font-family: var(--font-family-mono);
     font-size: var(--font-size-xs);
-    color: var(--color-text-muted);
+    color: var(--color-text-secondary);
     pointer-events: none;
     z-index: 5;
 }
@@ -2199,7 +2199,7 @@ a:hover {
     border: none;
     cursor: pointer;
     font-size: var(--font-size-lg);
-    color: var(--color-text-muted);
+    color: var(--color-text-secondary);
     line-height: 1;
     padding: 0 2px;
 }
@@ -2299,7 +2299,7 @@ a:hover {
     left: var(--space-2);
     top: 50%;
     transform: translateY(-50%);
-    color: var(--color-text-muted);
+    color: var(--color-text-secondary);
     pointer-events: none;
 }
 
@@ -2310,7 +2310,7 @@ a:hover {
     border-radius: var(--radius-sm);
     font-size: var(--font-size-sm);
     background: var(--color-bg-primary);
-    transition: border-color 0.15s ease;
+    transition: border-color var(--duration-normal) ease;
 }
 
 .validation-panel__search:focus {
@@ -2334,7 +2334,7 @@ a:hover {
     border-radius: var(--radius-sm);
     font-size: var(--font-size-sm);
     cursor: pointer;
-    transition: background 0.15s ease;
+    transition: background var(--duration-normal) ease;
 }
 
 .layer-list__item:hover {
@@ -2344,7 +2344,7 @@ a:hover {
 .layer-list__color {
     width: 14px;
     height: 14px;
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
     flex-shrink: 0;
 }
 
@@ -2356,7 +2356,7 @@ a:hover {
 
 .layer-list__count {
     font-size: var(--font-size-xs);
-    color: var(--color-text-muted);
+    color: var(--color-text-secondary);
 }
 
 /* === ROOM LIST === */
@@ -2372,7 +2372,7 @@ a:hover {
     padding: var(--space-2) var(--space-3);
     border-bottom: 1px solid var(--color-border-light);
     cursor: pointer;
-    transition: background 0.15s ease;
+    transition: background var(--duration-normal) ease;
     font-size: var(--font-size-sm);
 }
 
@@ -2390,7 +2390,7 @@ a:hover {
 }
 
 .room-list__item--error:hover {
-    background: #FFCDD2;
+    background: var(--color-error-border);
 }
 
 .room-list__item--warning {
@@ -2398,7 +2398,7 @@ a:hover {
 }
 
 .room-list__item--warning:hover {
-    background: #FFE0B2;
+    background: var(--color-warning-border);
 }
 
 .room-list__aoid {
@@ -2426,7 +2426,7 @@ a:hover {
 .room-list__separator {
     padding: var(--space-1) var(--space-3);
     font-size: var(--font-size-xs);
-    color: var(--color-text-muted);
+    color: var(--color-text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     background: var(--color-bg-secondary);
@@ -2447,7 +2447,7 @@ a:hover {
     padding: var(--space-2) var(--space-2);
     border-bottom: 1px solid var(--color-border-light);
     cursor: pointer;
-    transition: background 0.15s ease;
+    transition: background var(--duration-normal) ease;
     font-size: var(--font-size-sm);
 }
 
@@ -2478,7 +2478,7 @@ a:hover {
 .sia-tree__color {
     width: 12px;
     height: 12px;
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
     flex-shrink: 0;
 }
 
@@ -2494,7 +2494,7 @@ a:hover {
 
 .sia-tree__percent {
     font-family: var(--font-family-mono);
-    color: var(--color-text-muted);
+    color: var(--color-text-secondary);
     min-width: 48px;
     text-align: right;
     font-size: var(--font-size-xs);
@@ -2568,13 +2568,13 @@ a:hover {
 
 .area-list__detail {
     font-size: var(--font-size-xs);
-    color: var(--color-text-muted);
+    color: var(--color-text-secondary);
 }
 
 .area-list__empty {
     padding: var(--space-4);
     text-align: center;
-    color: var(--color-text-muted);
+    color: var(--color-text-secondary);
     font-size: var(--font-size-sm);
 }
 
@@ -2613,7 +2613,7 @@ a:hover {
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-semibold);
     border-radius: var(--radius-sm);
-    transition: background 0.15s ease;
+    transition: background var(--duration-normal) ease;
     user-select: none;
 }
 
@@ -2630,7 +2630,7 @@ a:hover {
 }
 
 .error-group__chevron {
-    transition: transform 0.2s ease;
+    transition: transform var(--duration-normal) ease;
 }
 
 .error-group--collapsed .error-group__chevron {
@@ -2639,7 +2639,7 @@ a:hover {
 
 .error-group__count {
     font-weight: var(--font-weight-regular);
-    color: var(--color-text-muted);
+    color: var(--color-text-secondary);
     font-size: var(--font-size-xs);
 }
 
@@ -2660,7 +2660,7 @@ a:hover {
     border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
     font-size: var(--font-size-sm);
     cursor: pointer;
-    transition: background 0.15s ease;
+    transition: background var(--duration-normal) ease;
 }
 
 .error-group__item:hover {
@@ -2692,7 +2692,7 @@ a:hover {
 
 .error-group__item-room {
     font-size: var(--font-size-xs);
-    color: var(--color-text-muted);
+    color: var(--color-text-secondary);
 }
 
 .error-group__item-message {

@@ -28,15 +28,16 @@
     --color-smoke: #F5F5F5;
     --color-white: #FFFFFF;
 
-    /* Simplified Variables */
+    /* Semantic Colors */
     --color-primary: var(--color-cerulean);
     --color-primary-hover: #004D73;
     --color-primary-light: var(--color-clear-day);
+    --color-primary-alpha-8: rgba(0, 102, 153, 0.08);
+    --color-primary-alpha-12: rgba(0, 102, 153, 0.12);
     --color-swiss-red: var(--color-venetian-red);
 
-    --color-text-primary: var(--color-night-rider);
-    --color-text-secondary: var(--color-empress);
-    --color-text-muted: #767676;
+    --color-text-primary: var(--color-night-rider);   /* #333333 - 12.6:1 contrast */
+    --color-text-secondary: var(--color-empress);      /* #757575 - 4.6:1 contrast (WCAG AA) */
     --color-text-inverse: var(--color-white);
 
     --color-bg-primary: var(--color-white);
@@ -48,7 +49,9 @@
 
     --color-focus: var(--color-malibu);
 
-    /* Semantic Colors - Traffic Light Scheme for Checking Results */
+    --color-zebra: #F4F6F9;
+
+    /* Semantic Colors - Traffic Light Scheme */
     --color-success: #2E7D32;
     --color-success-light: #E8F5E9;
     --color-success-border: #C8E6C9;
@@ -74,40 +77,34 @@
     --color-warning-marker: var(--color-warning);
     --color-grid: #E0E0E0;
 
-    /* Component Semantic Aliases */
-    --color-surface: var(--color-white);
-    --color-surface-alt: var(--color-smoke);
-    --color-bg: var(--color-bg-page);
-    --color-text: var(--color-text-primary);
-    --color-zebra: #F4F6F9;
-
     /* Typography */
     --font-family-primary: 'Frutiger Neue LT W1G', 'Frutiger LT W01', 'Frutiger', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif;
     --font-family-mono: 'SF Mono', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
-    --font-mono: var(--font-family-mono);
 
     /* Font Size Scale (T-shirt sizing) */
-    --font-size-xs: 0.75rem;    /* 12px */
-    --font-size-sm: 0.875rem;   /* 14px */
-    --font-size-base: 1rem;     /* 16px */
-    --font-size-lg: 1.25rem;    /* 20px */
-    --font-size-xl: 1.5rem;     /* 24px */
-    --font-size-2xl: 2rem;      /* 32px */
-    --font-size-3xl: 2.5rem;    /* 40px */
-    --font-size-4xl: 3rem;      /* 48px */
+    --font-size-2xs: 0.6875rem; /* 11px - Overline labels, small metadata */
+    --font-size-xs: 0.75rem;    /* 12px - Caption, footnotes */
+    --font-size-sm: 0.875rem;   /* 14px - Small text, labels */
+    --font-size-base: 1rem;     /* 16px - Body text */
+    --font-size-lg: 1.25rem;    /* 20px - Large body, H4 */
+    --font-size-xl: 1.5rem;     /* 24px - H3 */
+    --font-size-2xl: 2rem;      /* 32px - H2 */
+    --font-size-3xl: 2.5rem;    /* 40px - H1 */
+    --font-size-4xl: 3rem;      /* 48px - Display */
 
-    /* Semantic Font Sizes (Component-specific) */
-    --font-size-caption: var(--font-size-xs);
-    --font-size-label: var(--font-size-sm);
-    --font-size-body: var(--font-size-base);
-    --font-size-body-large: var(--font-size-lg);
-    --font-size-button: var(--font-size-base);
-    --font-size-button-small: var(--font-size-sm);
-    --font-size-heading-4: var(--font-size-lg);
-    --font-size-heading-3: var(--font-size-xl);
-    --font-size-heading-2: var(--font-size-2xl);
-    --font-size-heading-1: var(--font-size-3xl);
-    --font-size-display: var(--font-size-4xl);
+    /* Semantic Font Sizes */
+    --font-size-overline: var(--font-size-2xs);       /* 11px - Uppercase labels */
+    --font-size-caption: var(--font-size-xs);          /* 12px - Captions, hints */
+    --font-size-label: var(--font-size-sm);            /* 14px - Form labels, metadata */
+    --font-size-body: var(--font-size-base);           /* 16px - Body text */
+    --font-size-body-large: var(--font-size-lg);       /* 20px - Large body text */
+    --font-size-button: var(--font-size-base);         /* 16px - Button text */
+    --font-size-button-small: var(--font-size-sm);     /* 14px - Small button text */
+    --font-size-heading-4: var(--font-size-lg);        /* 20px - Card titles */
+    --font-size-heading-3: var(--font-size-xl);        /* 24px - Section headings */
+    --font-size-heading-2: var(--font-size-2xl);       /* 32px - Page sections */
+    --font-size-heading-1: var(--font-size-3xl);       /* 40px - Page titles */
+    --font-size-display: var(--font-size-4xl);         /* 48px - Hero text */
 
     /* Font Weights */
     --font-weight-light: 300;
@@ -120,6 +117,9 @@
     --line-height-tight: 1.25;
     --line-height-normal: 1.5;
     --line-height-relaxed: 1.75;
+
+    /* Letter Spacing */
+    --letter-spacing-caps: 0.04em;
 
     /* Spacing Scale (8px base unit) */
     --space-1: 0.25rem;   /* 4px */
@@ -135,35 +135,33 @@
     --space-11: 5rem;     /* 80px */
     --space-12: 6rem;     /* 96px */
 
-    /* Semantic Spacing */
-    --gap-xs: var(--space-1);
-    --gap-sm: var(--space-2);
-    --gap-md: var(--space-4);
-    --gap-lg: var(--space-6);
-    --gap-xl: var(--space-8);
-
-    --padding-xs: var(--space-1);
-    --padding-sm: var(--space-2);
-    --padding-md: var(--space-4);
-    --padding-lg: var(--space-6);
-    --padding-xl: var(--space-8);
+    /* Semantic Spacing - Padding */
+    --padding-xs: var(--space-1);   /* 4px */
+    --padding-sm: var(--space-2);   /* 8px */
+    --padding-md: var(--space-4);   /* 16px */
+    --padding-lg: var(--space-6);   /* 32px */
+    --padding-xl: var(--space-8);   /* 48px */
 
     /* Component-specific Spacing */
-    --button-padding-y-sm: 0.5rem;
-    --button-padding-x-sm: var(--space-4);
-    --button-padding-y: var(--space-2);
-    --button-padding-x: var(--space-4);
-    --button-padding-y-lg: var(--space-3);
-    --button-padding-x-lg: var(--space-4);
+    --button-padding-y-sm: var(--space-2);        /* 8px */
+    --button-padding-x-sm: var(--space-4);        /* 16px */
+    --button-padding-y: var(--space-2);            /* 8px */
+    --button-padding-x: var(--space-4);            /* 16px */
+    --button-padding-y-lg: var(--space-3);         /* 12px */
+    --button-padding-x-lg: var(--space-4);         /* 16px */
 
-    --input-padding-y: var(--space-2);
-    --input-padding-x: var(--space-3);
+    --input-padding-y: var(--space-2);             /* 8px */
+    --input-padding-x: var(--space-3);             /* 12px */
+    --input-icon-offset: 2.75rem;                  /* Space for icon in inputs */
 
-    --card-padding: var(--space-4);
-    --card-padding-lg: var(--space-6);
+    --card-padding: var(--space-4);                /* 16px */
+    --card-padding-lg: var(--space-6);             /* 32px */
 
-    --section-spacing: var(--space-6);
-    --section-spacing-lg: var(--space-8);
+    --section-spacing: var(--space-6);             /* 32px */
+    --section-spacing-lg: var(--space-8);          /* 48px */
+
+    --form-field-gap: var(--space-4);              /* 16px - Between form fields */
+    --form-label-gap: var(--space-2);              /* 8px - Label to input */
 
     /* Animation */
     --duration-fast: 0.1s;
@@ -182,14 +180,13 @@
     --radius-md: 4px;
     --radius-lg: 8px;
     --radius-full: 50%;
-    --radius: var(--radius-md);
 
     /* Shadows */
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
     --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.15);
     --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.2);
-    --shadow: var(--shadow-sm);
+    --shadow-dropdown: 0 6px 20px rgba(0, 0, 0, 0.12);
 
     /* Overlays */
     --overlay-light: rgba(0, 0, 0, 0.5);

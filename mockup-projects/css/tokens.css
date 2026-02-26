@@ -28,15 +28,16 @@
     --color-smoke: #F5F5F5;
     --color-white: #FFFFFF;
 
-    /* Simplified Variables */
+    /* Semantic Colors */
     --color-primary: var(--color-cerulean);
     --color-primary-hover: #004D73;
     --color-primary-light: var(--color-clear-day);
+    --color-primary-alpha-8: rgba(0, 102, 153, 0.08);
+    --color-primary-alpha-12: rgba(0, 102, 153, 0.12);
     --color-swiss-red: var(--color-venetian-red);
 
     --color-text-primary: var(--color-night-rider);   /* #333333 - 12.6:1 contrast */
-    --color-text-secondary: var(--color-empress);     /* #757575 - 4.6:1 contrast (WCAG AA) */
-    --color-text-muted: #767676;                      /* #767676 - 4.5:1 contrast (WCAG AA compliant) */
+    --color-text-secondary: var(--color-empress);      /* #757575 - 4.6:1 contrast (WCAG AA) */
     --color-text-inverse: var(--color-white);
 
     --color-bg-primary: var(--color-white);
@@ -48,7 +49,9 @@
 
     --color-focus: var(--color-malibu);
 
-    /* Semantic Colors - Traffic Light Scheme for Checking Results */
+    --color-zebra: #F4F6F9;
+
+    /* Semantic Colors - Traffic Light Scheme */
     --color-success: #2E7D32;
     --color-success-light: #E8F5E9;
     --color-success-border: #C8E6C9;
@@ -79,6 +82,7 @@
     --font-family-mono: 'SF Mono', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
 
     /* Font Size Scale (T-shirt sizing) */
+    --font-size-2xs: 0.6875rem; /* 11px - Overline labels, small metadata */
     --font-size-xs: 0.75rem;    /* 12px - Caption, footnotes */
     --font-size-sm: 0.875rem;   /* 14px - Small text, labels */
     --font-size-base: 1rem;     /* 16px - Body text */
@@ -88,7 +92,8 @@
     --font-size-3xl: 2.5rem;    /* 40px - H1 */
     --font-size-4xl: 3rem;      /* 48px - Display */
 
-    /* Semantic Font Sizes (Component-specific) */
+    /* Semantic Font Sizes */
+    --font-size-overline: var(--font-size-2xs);       /* 11px - Uppercase labels */
     --font-size-caption: var(--font-size-xs);          /* 12px - Captions, hints */
     --font-size-label: var(--font-size-sm);            /* 14px - Form labels, metadata */
     --font-size-body: var(--font-size-base);           /* 16px - Body text */
@@ -113,6 +118,9 @@
     --line-height-normal: 1.5;
     --line-height-relaxed: 1.75;
 
+    /* Letter Spacing */
+    --letter-spacing-caps: 0.04em;
+
     /* Spacing Scale (8px base unit) */
     --space-1: 0.25rem;   /* 4px */
     --space-2: 0.5rem;    /* 8px */
@@ -127,13 +135,6 @@
     --space-11: 5rem;     /* 80px */
     --space-12: 6rem;     /* 96px */
 
-    /* Semantic Spacing - Gaps */
-    --gap-xs: var(--space-1);       /* 4px - Minimal spacing */
-    --gap-sm: var(--space-2);       /* 8px - Tight spacing */
-    --gap-md: var(--space-4);       /* 16px - Default spacing */
-    --gap-lg: var(--space-6);       /* 32px - Generous spacing */
-    --gap-xl: var(--space-8);       /* 48px - Large spacing */
-
     /* Semantic Spacing - Padding */
     --padding-xs: var(--space-1);   /* 4px */
     --padding-sm: var(--space-2);   /* 8px */
@@ -141,33 +142,26 @@
     --padding-lg: var(--space-6);   /* 32px */
     --padding-xl: var(--space-8);   /* 48px */
 
-    /* Semantic Spacing - Margins */
-    --margin-xs: var(--space-1);    /* 4px */
-    --margin-sm: var(--space-2);    /* 8px */
-    --margin-md: var(--space-4);    /* 16px */
-    --margin-lg: var(--space-6);    /* 32px */
-    --margin-xl: var(--space-8);    /* 48px */
-
     /* Component-specific Spacing */
-    --button-padding-y-sm: 0.5rem;            /* 8px - matches 40px height with sm font */
-    --button-padding-x-sm: var(--space-4);    /* 16px */
-    --button-padding-y: var(--space-2);       /* 8px */
-    --button-padding-x: var(--space-4);       /* 16px - consistent with small buttons */
-    --button-padding-y-lg: var(--space-3);    /* 12px */
-    --button-padding-x-lg: var(--space-4);    /* 16px */
+    --button-padding-y-sm: var(--space-2);        /* 8px */
+    --button-padding-x-sm: var(--space-4);        /* 16px */
+    --button-padding-y: var(--space-2);            /* 8px */
+    --button-padding-x: var(--space-4);            /* 16px */
+    --button-padding-y-lg: var(--space-3);         /* 12px */
+    --button-padding-x-lg: var(--space-4);         /* 16px */
 
-    --input-padding-y: var(--space-2);        /* 8px */
-    --input-padding-x: var(--space-3);        /* 12px */
-    --input-icon-offset: 2.75rem;             /* Space for icon in inputs */
+    --input-padding-y: var(--space-2);             /* 8px */
+    --input-padding-x: var(--space-3);             /* 12px */
+    --input-icon-offset: 2.75rem;                  /* Space for icon in inputs */
 
-    --card-padding: var(--space-4);           /* 16px */
-    --card-padding-lg: var(--space-6);        /* 32px */
+    --card-padding: var(--space-4);                /* 16px */
+    --card-padding-lg: var(--space-6);             /* 32px */
 
-    --section-spacing: var(--space-6);        /* 32px */
-    --section-spacing-lg: var(--space-8);     /* 48px */
+    --section-spacing: var(--space-6);             /* 32px */
+    --section-spacing-lg: var(--space-8);          /* 48px */
 
-    --form-field-gap: var(--space-4);         /* 16px - Between form fields */
-    --form-label-gap: var(--space-2);         /* 8px - Label to input */
+    --form-field-gap: var(--space-4);              /* 16px - Between form fields */
+    --form-label-gap: var(--space-2);              /* 8px - Label to input */
 
     /* Animation */
     --duration-fast: 0.1s;
@@ -192,6 +186,7 @@
     --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
     --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.15);
     --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.2);
+    --shadow-dropdown: 0 6px 20px rgba(0, 0, 0, 0.12);
 
     /* Overlays */
     --overlay-light: rgba(0, 0, 0, 0.5);
