@@ -200,6 +200,20 @@ export function renderValidation() {
     log(`Validierung: ${state.roomData.length} R\u00e4ume extrahiert, ${state.validationErrors.length} Befunde`, state.validationErrors.length > 0 ? 'warn' : 'success');
 }
 
+function updateTabCounts() {
+    const errorCountEl = document.getElementById('vtab-error-count');
+    const roomCountEl = document.getElementById('vtab-room-count');
+    const areaCountEl = document.getElementById('vtab-area-count');
+    if (state.resultFilter === 'errors') {
+        if (errorCountEl) errorCountEl.textContent = state.validationErrors.filter(e => e.severity === 'error').length;
+        if (roomCountEl) roomCountEl.textContent = state.roomData.filter(r => r.status === 'error').length;
+    } else {
+        if (errorCountEl) errorCountEl.textContent = state.validationErrors.length;
+        if (roomCountEl) roomCountEl.textContent = state.roomData.length;
+    }
+    if (areaCountEl) areaCountEl.textContent = state.areaData.length;
+}
+
 export function switchValidationTab(tabName) {
     state.validationMode = tabName;
     state.selectedRoom = null;
@@ -223,6 +237,9 @@ export function switchValidationTab(tabName) {
 
     // Set layer filter per tab
     state.tabFilterLayers = null;
+
+    // Update tab counts based on current filter
+    updateTabCounts();
 
     // Render tab content
     switch (tabName) {

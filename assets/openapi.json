@@ -1,0 +1,768 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "BBL Prüfplattform Flächenmanagement API",
+    "version": "1.0.0",
+    "description": "REST API für die automatisierte Validierung von DWG/DXF-Grundrissplänen gemäss den Flächenmanagement-Richtlinien des BBL. Unterstützt Einzeldatei- und Batch-Verarbeitung mit asynchroner Job-Verwaltung sowie Export in PDF, Excel, GeoJSON und BCF.",
+    "contact": {
+      "name": "BBL DRES – Direktion Ressourcen",
+      "url": "https://www.bbl.admin.ch/de/kontakt"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.pruefplattform.admin.ch/v1",
+      "description": "Produktion"
+    },
+    {
+      "url": "https://api-staging.pruefplattform.admin.ch/v1",
+      "description": "Staging"
+    }
+  ],
+  "tags": [
+    { "name": "System", "description": "Health-Check und API-Informationen" },
+    { "name": "Regeln", "description": "Validierungsregeln und deren Dokumentation" },
+    { "name": "Validierung", "description": "Einzeldatei-Prüfung (asynchron)" },
+    { "name": "Export", "description": "PDF-, Excel-, GeoJSON- und BCF-Export" },
+    { "name": "Batch", "description": "Mehrfachdatei-Verarbeitung" }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": ["System"],
+        "summary": "Health-Check",
+        "description": "Gibt den aktuellen Status der API zurück. Nützlich für Monitoring und Load-Balancer.",
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "description": "API ist betriebsbereit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "ok" },
+                    "version": { "type": "string", "example": "1.0.0" },
+                    "uptime": { "type": "number", "example": 86400, "description": "Betriebszeit in Sekunden" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/info": {
+      "get": {
+        "tags": ["System"],
+        "summary": "API-Informationen",
+        "description": "Gibt Versionsinformationen, unterstützte Dateiformate und Grenzwerte der API zurück.",
+        "operationId": "getInfo",
+        "responses": {
+          "200": {
+            "description": "API-Metadaten",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "version": { "type": "string", "example": "1.0.0" },
+                    "supportedFormats": {
+                      "type": "array",
+                      "items": { "type": "string" },
+                      "example": [".dwg", ".dxf"]
+                    },
+                    "maxFileSize": { "type": "string", "example": "50MB" },
+                    "maxBatchSize": { "type": "integer", "example": 20 },
+                    "exportFormats": {
+                      "type": "array",
+                      "items": { "type": "string" },
+                      "example": ["pdf", "excel", "geojson", "bcf"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rules": {
+      "get": {
+        "tags": ["Regeln"],
+        "summary": "Alle Validierungsregeln",
+        "description": "Gibt die Liste aller aktiven Prüfregeln mit Code, Beschreibung und Schweregrad zurück.",
+        "operationId": "getRules",
+        "responses": {
+          "200": {
+            "description": "Liste der Validierungsregeln",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "rules": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Rule" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rules/{code}": {
+      "get": {
+        "tags": ["Regeln"],
+        "summary": "Einzelne Regel",
+        "description": "Gibt die Details einer spezifischen Validierungsregel zurück.",
+        "operationId": "getRuleByCode",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "example": "ROOM_NO_LABEL",
+            "description": "Eindeutiger Regel-Code"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Regeldetails",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Rule" }
+              }
+            }
+          },
+          "404": {
+            "description": "Regel nicht gefunden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/validate": {
+      "post": {
+        "tags": ["Validierung"],
+        "summary": "Datei validieren",
+        "description": "Lädt eine DWG- oder DXF-Datei hoch und startet die asynchrone Validierung. Gibt eine Job-ID zurück, mit der der Status abgefragt werden kann.",
+        "operationId": "createValidation",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["file"],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "DWG- oder DXF-Datei (max. 50 MB)"
+                  },
+                  "roomLayer": {
+                    "type": "string",
+                    "description": "Optionaler Layer-Name für Räume (Standard: A1Z21---E-)",
+                    "example": "A1Z21---E-"
+                  },
+                  "rules": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Optionale Einschränkung auf bestimmte Regeln (Standard: alle)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Validierung gestartet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "jobId": { "type": "string", "format": "uuid", "example": "a3b1c2d4-e5f6-7890-abcd-ef1234567890" },
+                    "status": { "type": "string", "example": "queued" },
+                    "createdAt": { "type": "string", "format": "date-time" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ungültige Datei oder Parameter",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "413": {
+            "description": "Datei zu gross",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{jobId}": {
+      "get": {
+        "tags": ["Validierung"],
+        "summary": "Job-Status abfragen",
+        "description": "Gibt den aktuellen Status eines Validierungs-Jobs zurück. Mögliche Status: `queued`, `processing`, `done`, `failed`.",
+        "operationId": "getJob",
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Job-ID aus der Validierungsanfrage"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Job-Status",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Job" }
+              }
+            }
+          },
+          "404": {
+            "description": "Job nicht gefunden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{jobId}/result": {
+      "get": {
+        "tags": ["Validierung"],
+        "summary": "Validierungsergebnis",
+        "description": "Gibt das vollständige Validierungsergebnis zurück, einschliesslich erkannter Räume, Fehler, Flächen und Kennzahlen. Nur verfügbar wenn Job-Status `done` ist.",
+        "operationId": "getJobResult",
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Validierungsergebnis",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ValidationResult" }
+              }
+            }
+          },
+          "404": {
+            "description": "Job nicht gefunden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "409": {
+            "description": "Job noch nicht abgeschlossen",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{jobId}/export": {
+      "post": {
+        "tags": ["Export"],
+        "summary": "Export erstellen",
+        "description": "Erstellt einen Export aus einem abgeschlossenen Validierungs-Job. Unterstützte Formate: `pdf` (Prüfbericht), `excel` (Raumliste), `geojson` (Grundriss-Geometrien), `bcf` (BIM Collaboration Format für Fehler).",
+        "operationId": "createExport",
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["format"],
+                "properties": {
+                  "format": {
+                    "type": "string",
+                    "enum": ["pdf", "excel", "geojson", "bcf"],
+                    "description": "Gewünschtes Export-Format"
+                  },
+                  "language": {
+                    "type": "string",
+                    "enum": ["de", "fr", "it", "en"],
+                    "default": "de",
+                    "description": "Sprache des Berichts"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Export gestartet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "exportId": { "type": "string", "format": "uuid", "example": "f1e2d3c4-b5a6-7890-fedc-ba0987654321" },
+                    "format": { "type": "string", "example": "pdf" },
+                    "status": { "type": "string", "example": "generating" },
+                    "createdAt": { "type": "string", "format": "date-time" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ungültiges Format",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "409": {
+            "description": "Job noch nicht abgeschlossen",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/exports/{exportId}": {
+      "get": {
+        "tags": ["Export"],
+        "summary": "Export-Status",
+        "description": "Gibt den Status eines laufenden oder abgeschlossenen Exports zurück.",
+        "operationId": "getExport",
+        "parameters": [
+          {
+            "name": "exportId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Export-Status",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Export" }
+              }
+            }
+          },
+          "404": {
+            "description": "Export nicht gefunden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/exports/{exportId}/download": {
+      "get": {
+        "tags": ["Export"],
+        "summary": "Export herunterladen",
+        "description": "Lädt die generierte Export-Datei herunter. Nur verfügbar wenn Export-Status `ready` ist. Der Download-Link ist 24 Stunden gültig.",
+        "operationId": "downloadExport",
+        "parameters": [
+          {
+            "name": "exportId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Export-Datei",
+            "content": {
+              "application/pdf": { "schema": { "type": "string", "format": "binary" } },
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": { "schema": { "type": "string", "format": "binary" } },
+              "application/geo+json": { "schema": { "type": "string", "format": "binary" } },
+              "application/octet-stream": { "schema": { "type": "string", "format": "binary" } }
+            }
+          },
+          "404": {
+            "description": "Export nicht gefunden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "409": {
+            "description": "Export noch nicht bereit",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/batch": {
+      "post": {
+        "tags": ["Batch"],
+        "summary": "Batch-Validierung starten",
+        "description": "Lädt mehrere DWG/DXF-Dateien hoch und startet die parallele Validierung. Maximal 20 Dateien pro Batch.",
+        "operationId": "createBatch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["files"],
+                "properties": {
+                  "files": {
+                    "type": "array",
+                    "items": { "type": "string", "format": "binary" },
+                    "description": "DWG/DXF-Dateien (max. 20, je max. 50 MB)"
+                  },
+                  "roomLayer": {
+                    "type": "string",
+                    "description": "Optionaler Layer-Name für Räume",
+                    "example": "A1Z21---E-"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Batch gestartet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "batchId": { "type": "string", "format": "uuid", "example": "b1a2c3d4-e5f6-7890-abcd-ef1234567890" },
+                    "fileCount": { "type": "integer", "example": 5 },
+                    "status": { "type": "string", "example": "processing" },
+                    "jobs": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "jobId": { "type": "string", "format": "uuid" },
+                          "filename": { "type": "string", "example": "EG_Grundriss.dwg" },
+                          "status": { "type": "string", "example": "queued" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ungültige Dateien oder zu viele Dateien",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/batch/{batchId}": {
+      "get": {
+        "tags": ["Batch"],
+        "summary": "Batch-Status",
+        "description": "Gibt den Status eines Batch-Jobs zurück, einschliesslich Fortschritt der einzelnen Dateien.",
+        "operationId": "getBatch",
+        "parameters": [
+          {
+            "name": "batchId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Batch-Status",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/BatchJob" }
+              }
+            }
+          },
+          "404": {
+            "description": "Batch nicht gefunden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/batch/{batchId}/summary": {
+      "get": {
+        "tags": ["Batch"],
+        "summary": "Batch-Zusammenfassung",
+        "description": "Gibt eine aggregierte Zusammenfassung aller Validierungsergebnisse eines Batches zurück. Nur verfügbar wenn alle Jobs abgeschlossen sind.",
+        "operationId": "getBatchSummary",
+        "parameters": [
+          {
+            "name": "batchId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Aggregierte Ergebnisse",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "batchId": { "type": "string", "format": "uuid" },
+                    "totalFiles": { "type": "integer", "example": 5 },
+                    "passed": { "type": "integer", "example": 3 },
+                    "failed": { "type": "integer", "example": 2 },
+                    "totalRooms": { "type": "integer", "example": 142 },
+                    "totalErrors": { "type": "integer", "example": 7 },
+                    "averageScore": { "type": "number", "example": 87.5 },
+                    "completedAt": { "type": "string", "format": "date-time" },
+                    "files": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "jobId": { "type": "string", "format": "uuid" },
+                          "filename": { "type": "string" },
+                          "score": { "type": "number" },
+                          "rooms": { "type": "integer" },
+                          "errors": { "type": "integer" },
+                          "status": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Batch noch nicht abgeschlossen",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Job": {
+        "type": "object",
+        "properties": {
+          "jobId": { "type": "string", "format": "uuid" },
+          "status": { "type": "string", "enum": ["queued", "processing", "done", "failed"] },
+          "filename": { "type": "string", "example": "EG_Grundriss.dwg" },
+          "progress": { "type": "number", "minimum": 0, "maximum": 100, "example": 75 },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "completedAt": { "type": "string", "format": "date-time", "nullable": true },
+          "error": { "type": "string", "nullable": true, "description": "Fehlermeldung bei Status 'failed'" }
+        }
+      },
+      "ValidationResult": {
+        "type": "object",
+        "properties": {
+          "jobId": { "type": "string", "format": "uuid" },
+          "filename": { "type": "string" },
+          "score": { "type": "number", "minimum": 0, "maximum": 100, "example": 92.5 },
+          "rooms": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Room" }
+          },
+          "errors": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ValidationError" }
+          },
+          "metrics": {
+            "type": "object",
+            "properties": {
+              "totalRooms": { "type": "integer" },
+              "totalArea": { "type": "number", "description": "Gesamtfläche in m²" },
+              "errorCount": { "type": "integer" },
+              "warningCount": { "type": "integer" }
+            }
+          },
+          "fileInfo": {
+            "type": "object",
+            "properties": {
+              "version": { "type": "string", "example": "R2018" },
+              "layers": { "type": "integer" },
+              "entities": { "type": "integer" },
+              "fileSize": { "type": "string", "example": "2.4 MB" }
+            }
+          }
+        }
+      },
+      "Room": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string", "example": "Büro 201" },
+          "layer": { "type": "string", "example": "A1Z21---E-" },
+          "area": { "type": "number", "description": "Fläche in m²", "example": 24.5 },
+          "perimeter": { "type": "number", "description": "Umfang in m", "example": 20.8 },
+          "status": { "type": "string", "enum": ["ok", "warning", "error"] },
+          "polygon": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "x": { "type": "number" },
+                "y": { "type": "number" }
+              }
+            }
+          }
+        }
+      },
+      "ValidationError": {
+        "type": "object",
+        "properties": {
+          "code": { "type": "string", "example": "ROOM_NO_LABEL" },
+          "severity": { "type": "string", "enum": ["error", "warning"] },
+          "message": { "type": "string", "example": "Raum hat kein Beschriftungsattribut" },
+          "layer": { "type": "string", "nullable": true },
+          "roomId": { "type": "string", "nullable": true },
+          "location": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "x": { "type": "number" },
+              "y": { "type": "number" }
+            }
+          }
+        }
+      },
+      "Export": {
+        "type": "object",
+        "properties": {
+          "exportId": { "type": "string", "format": "uuid" },
+          "jobId": { "type": "string", "format": "uuid" },
+          "format": { "type": "string", "enum": ["pdf", "excel", "geojson", "bcf"] },
+          "status": { "type": "string", "enum": ["generating", "ready", "failed"] },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "readyAt": { "type": "string", "format": "date-time", "nullable": true },
+          "expiresAt": { "type": "string", "format": "date-time", "nullable": true, "description": "Download verfügbar bis (24h)" },
+          "downloadUrl": { "type": "string", "nullable": true }
+        }
+      },
+      "BatchJob": {
+        "type": "object",
+        "properties": {
+          "batchId": { "type": "string", "format": "uuid" },
+          "status": { "type": "string", "enum": ["processing", "done", "partial_failure"] },
+          "fileCount": { "type": "integer" },
+          "completedCount": { "type": "integer" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "jobs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "jobId": { "type": "string", "format": "uuid" },
+                "filename": { "type": "string" },
+                "status": { "type": "string" },
+                "progress": { "type": "number" }
+              }
+            }
+          }
+        }
+      },
+      "Rule": {
+        "type": "object",
+        "properties": {
+          "code": { "type": "string", "example": "ROOM_NO_LABEL" },
+          "severity": { "type": "string", "enum": ["error", "warning"] },
+          "category": { "type": "string", "example": "Räume" },
+          "title": { "type": "string", "example": "Fehlende Raumbeschriftung" },
+          "description": { "type": "string", "example": "Jeder geschlossene Raum muss ein TEXT- oder MTEXT-Attribut mit Raumbezeichnung enthalten." },
+          "reference": { "type": "string", "nullable": true, "example": "BBL-FM-Richtlinie §4.2" }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string", "example": "not_found" },
+          "message": { "type": "string", "example": "Die angeforderte Ressource wurde nicht gefunden." }
+        }
+      }
+    },
+    "securitySchemes": {
+      "apiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "API-Schlüssel für die Authentifizierung. Beantragung über das BBL-Portal."
+      }
+    }
+  },
+  "security": [
+    { "apiKey": [] }
+  ]
+}

@@ -112,6 +112,36 @@ const activePointers = new Map();
 function handleCanvasTap(sx, sy) {
     const [wx, wy] = screenToWorld(sx, sy);
     const tolerance = 8 / state.cam.zoom;
+
+    // In rooms/areas mode, prioritize room point-in-polygon so users
+    // interact with rooms, not arbitrary DWG entities (walls, etc.)
+    if (state.validationMode === 'rooms' || state.validationMode === 'areas') {
+        const data = state.validationMode === 'rooms' ? state.roomData : state.areaData;
+        const hiddenSet = state.validationMode === 'rooms' ? state.hiddenRoomIds : state.hiddenAreaIds;
+        const room = data.find(r => !hiddenSet.has(r.id) && pointInPoly(wx, wy, r.vertices));
+        if (room) {
+            state.selectedRoom = room;
+            state.selectedItem = null;
+            hideFeaturePopup();
+            dom.vsideList.querySelectorAll('.vside-item').forEach(el => el.classList.remove('vside-item--selected'));
+            const match = dom.vsideList.querySelector(`[data-handle="${room.handle}"]`);
+            if (match) {
+                match.classList.add('vside-item--selected');
+                match.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
+            render();
+            return;
+        }
+        // Click outside any visible room — deselect
+        state.selectedRoom = null;
+        state.selectedItem = null;
+        hideFeaturePopup();
+        dom.vsideList.querySelectorAll('.vside-item').forEach(el => el.classList.remove('vside-item--selected'));
+        render();
+        return;
+    }
+
+    // Default mode: general entity hit testing
     const hit = hitTest(wx, wy, tolerance);
     if (hit) {
         state.selectedItem = hit;
@@ -122,22 +152,6 @@ function handleCanvasTap(sx, sy) {
         state.selectedRoom = null;
         hideFeaturePopup();
         dom.vsideList.querySelectorAll('.vside-item').forEach(el => el.classList.remove('vside-item--selected'));
-    }
-
-    // In rooms/areas mode, fall back to point-in-polygon
-    if ((state.validationMode === 'rooms' || state.validationMode === 'areas') && !state.selectedRoom) {
-        const data = state.validationMode === 'rooms' ? state.roomData : state.areaData;
-        const hiddenSet = state.validationMode === 'rooms' ? state.hiddenRoomIds : state.hiddenAreaIds;
-        const room = data.find(r => !hiddenSet.has(r.id) && pointInPoly(wx, wy, r.vertices));
-        if (room) {
-            state.selectedRoom = room;
-            dom.vsideList.querySelectorAll('.vside-item').forEach(el => el.classList.remove('vside-item--selected'));
-            const match = dom.vsideList.querySelector(`[data-handle="${room.handle}"]`);
-            if (match) {
-                match.classList.add('vside-item--selected');
-                match.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-            }
-        }
     }
 
     render();
