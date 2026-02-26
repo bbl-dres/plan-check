@@ -15,7 +15,7 @@ Visit the interactive prototype: **https://bbl-dres.github.io/plan-check/**
 
 ## Project Overview
 
-This project aims to replace/modernize the existing BBL floor plan validation platform with an open-source solution that validates DWG/DXF files against BBL CAD-Richtlinie standards before CAFM import.
+A prototype exploring solutions for validating DWG/DXF floor plan files against BBL CAD-Richtlinie standards before CAFM import.
 
 **Target Users:**
 - BBL internal staff (Flächenmanagement team)
