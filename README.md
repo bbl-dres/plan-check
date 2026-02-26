@@ -4,7 +4,7 @@
 
 ## Live Demo
 
-Visit the interactive prototype: **[https://davras5.github.io/plan-check/](https://davras5.github.io/plan-check/)**
+Visit the interactive prototype: **https://bbl-dres.github.io/plan-check/**
 
 > The demo is a static HTML/CSS/JavaScript prototype showcasing the user interface and workflow. Upload, check, and ensure data quality for DWG/DXF floor plans.
 
