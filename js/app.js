@@ -5,7 +5,7 @@
 import { state, dom, initDom, MAX_FILE_SIZE, BG_DARK, BG_LIGHT } from './state.js';
 import { log, showStatus, pointInPoly } from './utils.js';
 import { processDwgFile, prepareDrawingData, displayInfo, buildLayerInfo, displayEntities } from './dwg-processing.js';
-import { resizeCanvas, render, zoomExtents, screenToWorld, hitTest, showFeaturePopup, hideFeaturePopup, syncSideSelection } from './renderer.js';
+import { resizeCanvas, render, zoomExtents, screenToWorld, hitTest, showFeaturePopup, hideFeaturePopup, showPopupForItem, syncSideSelection } from './renderer.js';
 import { renderValidation, switchValidationTab } from './validation.js';
 import { downloadPdfReport, downloadExcelReport, downloadGeoJson, downloadBcf } from './export.js';
 
@@ -118,11 +118,15 @@ function handleCanvasTap(sx, sy) {
     if (state.validationMode === 'rooms' || state.validationMode === 'areas') {
         const data = state.validationMode === 'rooms' ? state.roomData : state.areaData;
         const hiddenSet = state.validationMode === 'rooms' ? state.hiddenRoomIds : state.hiddenAreaIds;
-        const room = data.find(r => !hiddenSet.has(r.id) && pointInPoly(wx, wy, r.vertices));
+        const room = data.find(r => {
+            if (hiddenSet.has(r.id)) return false;
+            if (state.resultFilter === 'errors' && r.status !== 'error') return false;
+            return pointInPoly(wx, wy, r.vertices);
+        });
         if (room) {
             state.selectedRoom = room;
             state.selectedItem = null;
-            hideFeaturePopup();
+            showPopupForItem(room.handle, room.centroid);
             dom.vsideList.querySelectorAll('.vside-item').forEach(el => el.classList.remove('vside-item--selected'));
             const match = dom.vsideList.querySelector(`[data-handle="${room.handle}"]`);
             if (match) {
