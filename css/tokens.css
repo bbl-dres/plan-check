@@ -51,20 +51,20 @@
 
     --color-zebra: #F4F6F9;
 
-    /* Semantic Colors - Traffic Light Scheme */
-    --color-success: #2E7D32;
+    /* Semantic Colors - Traffic Light Scheme (WCAG AA ≥ 4.5:1 on -light bg & with white text) */
+    --color-success: #1B5E20;
     --color-success-light: #E8F5E9;
     --color-success-border: #C8E6C9;
 
-    --color-warning: #F57C00;
+    --color-warning: #BF360C;
     --color-warning-light: #FFF3E0;
     --color-warning-border: #FFE0B2;
 
-    --color-error: #C62828;
+    --color-error: #B71C1C;
     --color-error-light: #FFEBEE;
     --color-error-border: #FFCDD2;
 
-    --color-info: #31708F;
+    --color-info: #1A5276;
     --color-info-light: #D9EDF7;
     --color-info-border: #BCE8F1;
 
