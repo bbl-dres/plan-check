@@ -507,22 +507,31 @@ export function showFeaturePopup(item, screenX, screenY) {
 
     dom.featurePopup.innerHTML = html;
 
-    // Position popup near click, clamped within canvas-wrap
-    const wrapRect = dom.canvasWrap.getBoundingClientRect();
-    let px = screenX + 12;
-    let py = screenY - 12;
-    // Temporarily show to measure
-    dom.featurePopup.style.left = '0px';
-    dom.featurePopup.style.top = '0px';
-    dom.featurePopup.classList.add('visible');
-    const popRect = dom.featurePopup.getBoundingClientRect();
-    // Clamp right/bottom
-    if (px + popRect.width > wrapRect.width - 8) px = screenX - popRect.width - 12;
-    if (py + popRect.height > wrapRect.height - 8) py = wrapRect.height - popRect.height - 8;
-    if (px < 8) px = 8;
-    if (py < 8) py = 8;
-    dom.featurePopup.style.left = px + 'px';
-    dom.featurePopup.style.top = py + 'px';
+    const isMobile = window.innerWidth <= 768;
+
+    if (isMobile) {
+        // Bottom card positioning — CSS handles left/right/bottom via media query
+        dom.featurePopup.style.left = '';
+        dom.featurePopup.style.right = '';
+        dom.featurePopup.style.bottom = '';
+        dom.featurePopup.style.top = '';
+        dom.featurePopup.classList.add('visible');
+    } else {
+        // Position popup near click, clamped within canvas-wrap
+        const wrapRect = dom.canvasWrap.getBoundingClientRect();
+        let px = screenX + 12;
+        let py = screenY - 12;
+        dom.featurePopup.style.left = '0px';
+        dom.featurePopup.style.top = '0px';
+        dom.featurePopup.classList.add('visible');
+        const popRect = dom.featurePopup.getBoundingClientRect();
+        if (px + popRect.width > wrapRect.width - 8) px = screenX - popRect.width - 12;
+        if (py + popRect.height > wrapRect.height - 8) py = wrapRect.height - popRect.height - 8;
+        if (px < 8) px = 8;
+        if (py < 8) py = 8;
+        dom.featurePopup.style.left = px + 'px';
+        dom.featurePopup.style.top = py + 'px';
+    }
 }
 
 export function hideFeaturePopup() {

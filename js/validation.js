@@ -167,7 +167,6 @@ export function renderValidation() {
     const dlIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
     dom.metricsGrid.innerHTML =
         `<div class="info-grid__item"><div class="info-grid__label">R\u00e4ume</div><div class="info-grid__value">${state.roomData.length}</div></div>` +
-        `<div class="info-grid__item"><div class="info-grid__label">NGF</div><div class="info-grid__value">${fmtNum(totalArea)} m\u00B2</div></div>` +
         `<div class="info-grid__item"><div class="info-grid__label">Fehler</div><div class="info-grid__value">${state.validationErrors.length}</div></div>` +
         `<div class="info-grid__item"><div class="info-grid__label">Score</div><div class="info-grid__value" style="color: var(--color-${scoreClass2})">${score2}%</div></div>` +
         `<div class="info-grid__download"><div class="info-grid__download-label">Bericht</div><div class="info-grid__download-links">` +
@@ -366,10 +365,19 @@ function renderErrorsTab() {
     }
 
     // Sort: errors first, then warnings
-    const sorted = state.validationErrors.slice().sort((a, b) => {
+    let sorted = state.validationErrors.slice().sort((a, b) => {
         const order = { error: 0, warning: 1 };
         return (order[a.severity] || 1) - (order[b.severity] || 1);
     });
+
+    // Apply result filter — only errors, no warnings
+    if (state.resultFilter === 'errors') {
+        sorted = sorted.filter(e => e.severity === 'error');
+        if (sorted.length === 0) {
+            dom.vsideList.innerHTML = '<div class="val-empty">Keine Fehler (nur Warnungen vorhanden).</div>';
+            return;
+        }
+    }
 
     for (const err of sorted) {
         const room = state.roomData.find(r => r.id === err.roomId);
@@ -445,9 +453,9 @@ function renderRoomsTab() {
         return (order[a.status] || 2) - (order[b.status] || 2);
     });
 
-    // Apply result filter
+    // Apply result filter — only errors, no warnings or ok
     if (state.resultFilter === 'errors') {
-        sorted = sorted.filter(r => r.status !== 'ok');
+        sorted = sorted.filter(r => r.status === 'error');
         if (sorted.length === 0) {
             dom.vsideList.innerHTML = '<div class="val-empty">Keine Fehler in R\u00e4umen.</div>';
             return;

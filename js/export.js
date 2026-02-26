@@ -45,15 +45,18 @@ export async function downloadPdfReport() {
         const pw = 210, ph = 297, mx = 14, mxr = 196, contentW = mxr - mx;
         const DASH = '\u2014';
         const fmtA = (v) => (v === null || v === undefined) ? DASH : fmtNum(v, v >= 100 ? 0 : 1) + ' m\u00B2';
-        const blue = [0, 114, 177];
-        const blueBg = [232, 242, 250];
-        const dark = [26, 26, 26];
-        const muted = [95, 107, 122];
-        const border = [223, 227, 232];
-        const red = [207, 34, 46];
-        const orange = [191, 135, 0];
-        const green = [26, 127, 55];
-        const zebra = [248, 249, 251];
+        // Colors matched to design tokens (tokens.css)
+        const blue = [0, 102, 153];         // --color-primary: #006699
+        const blueBg = [242, 247, 249];     // --color-primary-light: #F2F7F9
+        const dark = [51, 51, 51];          // --color-text-primary: #333333
+        const muted = [117, 117, 117];      // --color-text-secondary: #757575
+        const border = [204, 204, 204];     // --color-border: #CCCCCC
+        const red = [198, 40, 40];          // --color-error: #C62828
+        const orange = [245, 124, 0];       // --color-warning: #F57C00
+        const green = [46, 125, 50];        // --color-success: #2E7D32
+        const zebra = [244, 246, 249];      // --color-zebra: #F4F6F9
+        const successLight = [232, 245, 233]; // --color-success-light: #E8F5E9
+        const swissRed = [220, 0, 24];      // --color-swiss-red: #DC0018
 
         // Derived KPI data
         const ngf = state.roomData.reduce((s, r) => s + r.area, 0);
@@ -138,8 +141,8 @@ export async function downloadPdfReport() {
         // ════════════════════════════════════════════
         // PAGE 1 — Cover: Title + Info + Summary
         // ════════════════════════════════════════════
-        // Blue accent strip
-        doc.setFillColor(...blue);
+        // Swiss red accent strip (federal identity)
+        doc.setFillColor(...swissRed);
         doc.rect(0, 0, pw, 3, 'F');
 
         doc.setFontSize(22);
@@ -181,7 +184,6 @@ export async function downloadPdfReport() {
             { label: 'R\u00e4ume', value: String(state.roomData.length), color: blue },
             { label: 'Fl\u00e4chen', value: String(state.areaData.length), color: blue },
             { label: 'Fehler', value: String(state.validationErrors.length), color: state.validationErrors.length > 0 ? red : green },
-            { label: 'NGF', value: hasRooms ? fmtA(ngf) : DASH, color: dark },
         ];
         const cardW = (contentW - 6) / metrics.length;
         metrics.forEach((m, i) => {
@@ -274,7 +276,7 @@ export async function downloadPdfReport() {
 
         if (state.validationErrors.length === 0) {
             let ey = 32;
-            doc.setFillColor(234, 250, 238);
+            doc.setFillColor(...successLight);
             doc.roundedRect(mx, ey, contentW, 12, 2, 2, 'F');
             doc.setFontSize(10);
             doc.setTextColor(...green);

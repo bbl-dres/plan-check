@@ -103,8 +103,47 @@ async function handleFile(file) {
 }
 
 // =============================================
-// Pan & Zoom
+// Pan, Zoom & Tap (Pointer Events + Wheel)
 // =============================================
+
+// Track active pointers for pinch detection
+const activePointers = new Map();
+
+function handleCanvasTap(sx, sy) {
+    const [wx, wy] = screenToWorld(sx, sy);
+    const tolerance = 8 / state.cam.zoom;
+    const hit = hitTest(wx, wy, tolerance);
+    if (hit) {
+        state.selectedItem = hit;
+        showFeaturePopup(hit, sx, sy);
+        syncSideSelection(hit.handle);
+    } else {
+        state.selectedItem = null;
+        state.selectedRoom = null;
+        hideFeaturePopup();
+        dom.vsideList.querySelectorAll('.vside-item').forEach(el => el.classList.remove('vside-item--selected'));
+    }
+
+    // In rooms/areas mode, fall back to point-in-polygon
+    if ((state.validationMode === 'rooms' || state.validationMode === 'areas') && !state.selectedRoom) {
+        const data = state.validationMode === 'rooms' ? state.roomData : state.areaData;
+        const hiddenSet = state.validationMode === 'rooms' ? state.hiddenRoomIds : state.hiddenAreaIds;
+        const room = data.find(r => !hiddenSet.has(r.id) && pointInPoly(wx, wy, r.vertices));
+        if (room) {
+            state.selectedRoom = room;
+            dom.vsideList.querySelectorAll('.vside-item').forEach(el => el.classList.remove('vside-item--selected'));
+            const match = dom.vsideList.querySelector(`[data-handle="${room.handle}"]`);
+            if (match) {
+                match.classList.add('vside-item--selected');
+                match.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
+        }
+    }
+
+    render();
+}
+
+// Wheel zoom (desktop)
 dom.canvasWrap.addEventListener('wheel', (e) => {
     e.preventDefault();
     hideFeaturePopup();
@@ -117,88 +156,106 @@ dom.canvasWrap.addEventListener('wheel', (e) => {
     const factor = e.deltaY > 0 ? 0.85 : 1.18;
     state.cam.zoom *= factor;
 
-    // Keep mouse world position stable
     state.cam.x = wx - (mx - rect.width / 2) / state.cam.zoom;
     state.cam.y = wy + (my - rect.height / 2) / state.cam.zoom;
 
     render();
 }, { passive: false });
 
-dom.canvasWrap.addEventListener('mousedown', (e) => {
-    state.isPanning = true;
-    state.panStart = { x: e.clientX, y: e.clientY, camX: state.cam.x, camY: state.cam.y };
-    hideFeaturePopup();
+// Pointer down — start pan or pinch
+dom.canvasWrap.addEventListener('pointerdown', (e) => {
+    activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    if (activePointers.size === 1) {
+        state.isPanning = true;
+        state.panStart = { x: e.clientX, y: e.clientY, camX: state.cam.x, camY: state.cam.y };
+        hideFeaturePopup();
+        dom.canvasWrap.setPointerCapture(e.pointerId);
+    } else if (activePointers.size === 2) {
+        state.isPanning = false;
+        const pts = [...activePointers.values()];
+        state.pinchStart = {
+            dist: Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y),
+            zoom: state.cam.zoom,
+            camX: state.cam.x,
+            camY: state.cam.y,
+        };
+    }
 });
 
-window.addEventListener('mousemove', (e) => {
-    if (state.isPanning) {
+// Pointer move — pan or pinch-zoom
+dom.canvasWrap.addEventListener('pointermove', (e) => {
+    activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    if (activePointers.size === 2 && state.pinchStart) {
+        const pts = [...activePointers.values()];
+        const dist = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
+        const scale = dist / state.pinchStart.dist;
+        state.cam.zoom = state.pinchStart.zoom * scale;
+
+        // Keep midpoint stable
+        const rect = dom.canvasWrap.getBoundingClientRect();
+        const midX = (pts[0].x + pts[1].x) / 2 - rect.left;
+        const midY = (pts[0].y + pts[1].y) / 2 - rect.top;
+        const [wx, wy] = screenToWorld(midX, midY);
+        state.cam.x = wx - (midX - rect.width / 2) / state.cam.zoom;
+        state.cam.y = wy + (midY - rect.height / 2) / state.cam.zoom;
+
+        render();
+    } else if (state.isPanning && activePointers.size === 1) {
         const dx = e.clientX - state.panStart.x;
         const dy = e.clientY - state.panStart.y;
         state.cam.x = state.panStart.camX - dx / state.cam.zoom;
-        state.cam.y = state.panStart.camY + dy / state.cam.zoom; // flipped Y
+        state.cam.y = state.panStart.camY + dy / state.cam.zoom;
         render();
     }
 
     // Coords display
-    if (state.drawingData) {
+    if (state.drawingData && activePointers.size <= 1) {
         const rect = dom.canvasWrap.getBoundingClientRect();
         const mx = e.clientX - rect.left;
         const my = e.clientY - rect.top;
         if (mx >= 0 && my >= 0 && mx <= rect.width && my <= rect.height) {
             const [wx, wy] = screenToWorld(mx, my);
-            dom.coordsDisplay.textContent = `X: ${wx.toFixed(2)}  Y: ${wy.toFixed(2)}  Zoom: ${(state.cam.zoom).toFixed(2)}x`;
+            dom.coordsDisplay.textContent = `X: ${wx.toFixed(2)}  Y: ${wy.toFixed(2)}  Zoom: ${state.cam.zoom.toFixed(2)}x`;
         }
     }
 });
 
-window.addEventListener('mouseup', (e) => {
-    if (state.isPanning && state.panStart) {
+// Pointer up / cancel — end pan, detect tap
+const handlePointerUp = (e) => {
+    const wasPointer = activePointers.get(e.pointerId);
+    activePointers.delete(e.pointerId);
+
+    if (state.isPanning && wasPointer && state.panStart) {
         const dx = e.clientX - state.panStart.x;
         const dy = e.clientY - state.panStart.y;
         const moved = Math.hypot(dx, dy);
-        // Treat as click if mouse barely moved (< 4px)
-        if (moved < 4 && state.drawingData) {
+
+        // Tap detection (< 8px movement)
+        if (moved < 8 && state.drawingData) {
             const rect = dom.canvasWrap.getBoundingClientRect();
             const sx = e.clientX - rect.left;
             const sy = e.clientY - rect.top;
             if (sx >= 0 && sy >= 0 && sx <= rect.width && sy <= rect.height) {
-                const [wx, wy] = screenToWorld(sx, sy);
-                const tolerance = 8 / state.cam.zoom; // 8 screen pixels
-                const hit = hitTest(wx, wy, tolerance);
-                if (hit) {
-                    state.selectedItem = hit;
-                    showFeaturePopup(hit, sx, sy);
-                    syncSideSelection(hit.handle);
-                } else {
-                    state.selectedItem = null;
-                    state.selectedRoom = null;
-                    hideFeaturePopup();
-                    dom.vsideList.querySelectorAll('.vside-item').forEach(el => el.classList.remove('vside-item--selected'));
-                }
-
-                // In rooms/areas mode, if syncSideSelection didn't match a room
-                // (e.g. hitTest found a non-room entity), fall back to point-in-polygon
-                if ((state.validationMode === 'rooms' || state.validationMode === 'areas') && !state.selectedRoom) {
-                    const data = state.validationMode === 'rooms' ? state.roomData : state.areaData;
-                    const hiddenSet = state.validationMode === 'rooms' ? state.hiddenRoomIds : state.hiddenAreaIds;
-                    const room = data.find(r => !hiddenSet.has(r.id) && pointInPoly(wx, wy, r.vertices));
-                    if (room) {
-                        state.selectedRoom = room;
-                        dom.vsideList.querySelectorAll('.vside-item').forEach(el => el.classList.remove('vside-item--selected'));
-                        const match = dom.vsideList.querySelector(`[data-handle="${room.handle}"]`);
-                        if (match) {
-                            match.classList.add('vside-item--selected');
-                            match.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-                        }
-                    }
-                }
-
-                render();
+                handleCanvasTap(sx, sy);
             }
         }
     }
+
     state.isPanning = false;
-});
+    state.pinchStart = null;
+
+    // If one finger remains after lifting second, restart pan
+    if (activePointers.size === 1) {
+        const remaining = [...activePointers.values()][0];
+        state.isPanning = true;
+        state.panStart = { x: remaining.x, y: remaining.y, camX: state.cam.x, camY: state.cam.y };
+    }
+};
+
+dom.canvasWrap.addEventListener('pointerup', handlePointerUp);
+dom.canvasWrap.addEventListener('pointercancel', handlePointerUp);
 
 // =============================================
 // Buttons
@@ -301,6 +358,18 @@ window.addEventListener('resize', () => {
     resizeCanvas();
     render();
 });
+
+// =============================================
+// Mobile: hamburger menu
+// =============================================
+const menuBtn = document.getElementById('header-menu-btn');
+if (menuBtn) {
+    menuBtn.addEventListener('click', () => {
+        const nav = document.querySelector('.header__nav');
+        const isOpen = nav.classList.toggle('open');
+        menuBtn.setAttribute('aria-expanded', isOpen);
+    });
+}
 
 // =============================================
 // Ready

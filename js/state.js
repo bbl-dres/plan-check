@@ -35,6 +35,7 @@ export const state = {
     cam: { x: 0, y: 0, zoom: 1 },
     isPanning: false,
     panStart: { x: 0, y: 0 },
+    pinchStart: null,
     bgColor: BG_LIGHT,
     selectedItem: null,
 
