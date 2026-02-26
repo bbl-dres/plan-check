@@ -130,7 +130,7 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Info Panel */
+        /* Panel base */
         .panel { display: none; margin-top: 16px; background: var(--color-surface); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; border: 1px solid var(--color-border); }
         .panel.visible { display: block; }
         .panel__header {
@@ -138,14 +138,15 @@
             font-weight: 600; font-size: 11px; display: flex; justify-content: space-between; align-items: center;
             color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.5px;
         }
+        .panel__body { padding: 14px 16px; }
 
         .info-grid {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 1px; background: var(--color-border);
         }
-        .info-grid__item { background: var(--color-surface); padding: 16px 18px; }
-        .info-grid__label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--color-text-muted); margin-bottom: 6px; font-weight: 500; }
-        .info-grid__value { font-size: 16px; font-weight: 700; color: var(--color-text); font-variant-numeric: tabular-nums; }
+        .info-grid__item { background: var(--color-surface); padding: 14px 16px; }
+        .info-grid__label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--color-text-muted); margin-bottom: 5px; font-weight: 500; }
+        .info-grid__value { font-size: 20px; font-weight: 700; color: var(--color-text); font-variant-numeric: tabular-nums; }
 
         /* Canvas Viewer */
         .viewer__controls {
@@ -226,12 +227,12 @@
         .layers-list { max-height: 300px; overflow-y: auto; }
         .layer-item {
             display: flex; align-items: center; gap: 10px;
-            padding: 8px 16px; font-size: 13px;
+            padding: 9px 16px; font-size: 13px;
             cursor: pointer; user-select: none; transition: opacity 0.15s, background 0.1s;
         }
         .layer-item:nth-child(even) { background: var(--color-zebra); }
         .layer-item:hover { background: var(--color-primary-light); }
-        .layer-item.hidden { opacity: 0.3; }
+        .layer-item.hidden { opacity: 0.35; }
         .layer-toggle {
             width: 15px; height: 15px; flex-shrink: 0; cursor: pointer; accent-color: var(--color-primary);
         }
@@ -242,11 +243,12 @@
         /* Entities Table */
         .entities-table { width: 100%; border-collapse: collapse; font-size: 13px; }
         .entities-table th {
-            text-align: left; padding: 10px 16px; background: var(--color-surface-alt);
+            text-align: left; padding: 8px 16px; background: transparent;
             border-bottom: 1px solid var(--color-border); font-weight: 600;
-            font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--color-text-secondary);
+            font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; color: var(--color-text-muted);
         }
-        .entities-table td { padding: 10px 16px; }
+        .entities-table td { padding: 9px 16px; border-bottom: 1px solid var(--color-border); }
+        .entities-table tr:last-child td { border-bottom: none; }
         .entities-table tr:nth-child(even) td { background: var(--color-zebra); }
         .entities-table tr:hover td { background: var(--color-primary-light); }
         .entity-type-badge {
@@ -259,7 +261,7 @@
         #console-panel { display: block; }
         .console-body {
             padding: 14px 16px; max-height: 200px; overflow-y: auto;
-            font-family: var(--font-mono); font-size: 12px; line-height: 1.8; color: var(--color-text);
+            font-family: var(--font-mono); font-size: 12px; line-height: 1.7; color: var(--color-text);
         }
         .log-info { color: var(--color-primary); }
         .log-success { color: var(--color-success); }
@@ -314,7 +316,8 @@
         .validation-side__list { flex: 1; overflow-y: auto; }
         .validation-side__summary {
             border-top: 1px solid var(--color-border);
-            padding: 14px 16px; background: var(--color-surface-alt); flex-shrink: 0;
+            padding: 12px 16px; background: var(--color-surface-alt); flex-shrink: 0;
+            font-size: 13px;
         }
         .validation-side__summary:empty { display: none; }
         .validation-viewer { flex: 1; min-width: 0; position: relative; overflow: hidden; }
@@ -323,20 +326,7 @@
         .validation-dashboard {
             display: none; max-height: 800px; overflow-y: auto;
         }
-        .kz-subtabs {
-            display: flex; gap: 0; border-bottom: 1px solid var(--color-border);
-            padding: 0 24px; background: var(--color-surface-alt);
-        }
-        .kz-subtab {
-            padding: 10px 16px; font-size: 13px; font-weight: 600;
-            color: var(--color-text-secondary); text-decoration: none;
-            border-bottom: 2px solid transparent; margin-bottom: -1px;
-            cursor: pointer; transition: color 0.15s, border-color 0.15s;
-        }
-        .kz-subtab:hover { color: var(--color-text); }
-        .kz-subtab--active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
-        .kz-dashboard-content { padding: 24px; }
-        .kz-viewer-content { display: none; height: 700px; }
+        .kz-dashboard-content { padding: 20px 16px; }
 
         /* Side panel list items – consistent across all tabs */
         .vside-item {
@@ -371,11 +361,12 @@
         }
 
         /* Kennzahlen dashboard */
-        .val-kennzahlen { display: grid; grid-template-columns: 55fr 45fr; gap: 32px; }
-        .val-kz-section { margin-bottom: 24px; }
-        .val-kz-title { font-size: 14px; font-weight: 700; margin-bottom: 10px; color: var(--color-text); }
-        .val-kz-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        .val-kz-table td { padding: 7px 10px; }
+        .val-kennzahlen { display: grid; grid-template-columns: 55fr 45fr; gap: 24px; }
+        .val-kz-section { margin-bottom: 20px; }
+        .val-kz-title { font-size: 11px; font-weight: 600; margin-bottom: 8px; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.4px; }
+        .val-kz-table { width: 100%; border-collapse: collapse; font-size: 13px; border: 1px solid var(--color-border); border-radius: var(--radius); overflow: hidden; }
+        .val-kz-table td { padding: 7px 10px; border-bottom: 1px solid var(--color-border); }
+        .val-kz-table tr:last-child td { border-bottom: none; }
         .val-kz-table tr:nth-child(even) { background: var(--color-zebra); }
         .val-kz-table .kz-abbr { font-weight: 600; white-space: nowrap; width: 70px; }
         .val-kz-table .kz-value { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--font-mono); white-space: nowrap; }
@@ -396,7 +387,7 @@
             gap: 10px; padding: 0;
         }
         .val-metric {
-            background: var(--color-surface-alt); border-radius: var(--radius); padding: 10px 12px;
+            background: var(--color-surface-alt); border-radius: var(--radius); padding: 12px 14px;
             border: 1px solid var(--color-border);
         }
         .val-metric__value { font-size: 18px; font-weight: 700; line-height: 1; }
@@ -405,14 +396,14 @@
         .val-metric--warning .val-metric__value { color: var(--color-warning); }
         .val-metric--error .val-metric__value { color: var(--color-error); }
 
-        .val-empty { text-align: center; padding: 24px; color: var(--color-text-secondary); font-size: 13px; }
+        .val-empty { text-align: center; padding: 32px 16px; color: var(--color-text-muted); font-size: 13px; line-height: 1.6; }
 
         /* Wirtschaftlichkeit ratios */
         .val-ratio-list { display: flex; flex-direction: column; gap: 6px; }
-        .val-ratio { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 0; }
+        .val-ratio { display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; }
         .val-ratio__label { color: var(--color-text-secondary); }
         .val-ratio__value { font-weight: 600; font-variant-numeric: tabular-nums; font-family: var(--font-mono); }
-        .val-ratio__ref { color: var(--color-text-secondary); font-size: 11px; }
+        .val-ratio__ref { color: var(--color-text-muted); font-size: 11px; }
 
         @media (max-width: 768px) {
             .validation-split { flex-direction: column; height: auto; }
@@ -506,12 +497,6 @@
             </div>
         </div>
 
-        <!-- Console -->
-        <div class="panel" id="console-panel">
-            <div class="panel__header">Konsole</div>
-            <div class="console-body" id="console-log"></div>
-        </div>
-
         <!-- Info -->
         <div class="panel" id="info-panel">
             <div class="panel__header">Datei-Informationen</div>
@@ -519,7 +504,7 @@
                 <div class="info-grid__item"><div class="info-grid__label">Version</div><div class="info-grid__value" id="info-version">-</div></div>
                 <div class="info-grid__item"><div class="info-grid__label">Layers</div><div class="info-grid__value" id="info-layers">-</div></div>
                 <div class="info-grid__item"><div class="info-grid__label">Entities</div><div class="info-grid__value" id="info-entities">-</div></div>
-                <div class="info-grid__item"><div class="info-grid__label">Dateigrosse</div><div class="info-grid__value" id="info-size">-</div></div>
+                <div class="info-grid__item"><div class="info-grid__label">Dateigrösse</div><div class="info-grid__value" id="info-size">-</div></div>
             </div>
         </div>
 
@@ -530,6 +515,12 @@
                 <thead><tr><th>Typ</th><th>Anzahl</th><th>Layer</th></tr></thead>
                 <tbody id="entities-tbody"></tbody>
             </table>
+        </div>
+
+        <!-- Console -->
+        <div class="panel" id="console-panel">
+            <div class="panel__header">Konsole</div>
+            <div class="console-body" id="console-log"></div>
         </div>
 
     </div>
@@ -1596,11 +1587,16 @@
 
                     case 'poly': {
                         const v = item.verts;
-                        for (let i = 1; i < v.length; i++) {
-                            d = Math.min(d, distPointToSegment(wx, wy, v[i-1].x, v[i-1].y, v[i].x, v[i].y));
-                        }
-                        if (item.closed && v.length > 1) {
-                            d = Math.min(d, distPointToSegment(wx, wy, v[v.length-1].x, v[v.length-1].y, v[0].x, v[0].y));
+                        // For closed polygons, check if point is inside
+                        if (item.closed && v.length > 2 && pointInPoly(wx, wy, v)) {
+                            d = 0;
+                        } else {
+                            for (let i = 1; i < v.length; i++) {
+                                d = Math.min(d, distPointToSegment(wx, wy, v[i-1].x, v[i-1].y, v[i].x, v[i].y));
+                            }
+                            if (item.closed && v.length > 1) {
+                                d = Math.min(d, distPointToSegment(wx, wy, v[v.length-1].x, v[v.length-1].y, v[0].x, v[0].y));
+                            }
                         }
                         break;
                     }
@@ -1846,9 +1842,12 @@
                         if (hit) {
                             selectedItem = hit;
                             showFeaturePopup(hit, sx, sy);
+                            syncSideSelection(hit.handle);
                         } else {
                             selectedItem = null;
+                            selectedRoom = null;
                             hideFeaturePopup();
+                            vsideList.querySelectorAll('.vside-item').forEach(el => el.classList.remove('vside-item--selected'));
                         }
                         render();
                     }
@@ -2346,9 +2345,11 @@
             });
 
             for (const err of sorted) {
+                const room = roomData.find(r => r.id === err.roomId);
                 const div = document.createElement('div');
                 div.className = 'vside-item vside-item--' + err.severity;
                 div.setAttribute('data-search', err.ruleCode + ' ' + err.message);
+                if (room) div.setAttribute('data-handle', room.handle);
 
                 const cb = document.createElement('input');
                 cb.type = 'checkbox';
@@ -2382,14 +2383,12 @@
 
                 div.addEventListener('click', (e) => {
                     if (e.target === cb) return;
-                    // Highlight the room associated with this error
-                    const room = roomData.find(r => r.id === err.roomId);
                     if (room) {
                         vsideList.querySelectorAll('.vside-item').forEach(el => el.classList.remove('vside-item--selected'));
                         div.classList.add('vside-item--selected');
                         selectedRoom = room;
                         zoomToPolygon(room.vertices);
-                        render();
+                        showPopupForItem(room.handle, room.centroid);
                     }
                 });
 
@@ -2423,6 +2422,7 @@
                 const div = document.createElement('div');
                 div.className = 'vside-item';
                 div.setAttribute('data-search', room.aoid + ' ' + room.label);
+                div.setAttribute('data-handle', room.handle);
 
                 const cb = document.createElement('input');
                 cb.type = 'checkbox';
@@ -2460,7 +2460,7 @@
                     div.classList.add('vside-item--selected');
                     selectedRoom = room;
                     zoomToPolygon(room.vertices);
-                    render();
+                    showPopupForItem(room.handle, room.centroid);
                 });
 
                 vsideList.appendChild(div);
@@ -2487,6 +2487,7 @@
                 const div = document.createElement('div');
                 div.className = 'vside-item';
                 div.setAttribute('data-search', area.aoid + ' ' + area.layer);
+                div.setAttribute('data-handle', area.handle);
 
                 const cb = document.createElement('input');
                 cb.type = 'checkbox';
@@ -2524,7 +2525,7 @@
                     div.classList.add('vside-item--selected');
                     selectedRoom = area;
                     zoomToPolygon(area.vertices);
-                    render();
+                    showPopupForItem(area.handle, area.centroid);
                 });
 
                 vsideList.appendChild(div);
@@ -2538,86 +2539,81 @@
         // Tab 5: Kennzahlen (full-width dashboard)
         // ─────────────────────────────────────────────
         function renderKennzahlenTab() {
-            const totalNGF = roomData.reduce((s, r) => s + r.area, 0);
-            const bgf = areaData.length > 0 ? areaData.reduce((s, a) => s + a.area, 0) : totalNGF * 1.3;
-            const kf = bgf - totalNGF;
-            const nf = totalNGF; // Nutzfläche = NGF (all rooms)
-            const hnf = totalNGF * 0.65;
-            const nnf = totalNGF * 0.146;
-            const vf = totalNGF * 0.10;
-            const ff = totalNGF * 0.014;
-            const ngf = hnf + nnf + vf + ff;
+            // ── Derive values only from actual floor plan data ──
+            // NGF: sum of all room polygon areas (directly measured)
+            const ngf = roomData.reduce((s, r) => s + r.area, 0);
+            const hasRooms = roomData.length > 0;
 
-            // Gebäudevolumen estimates (placeholder — no volume in DWG)
-            const gf = bgf;
-            const geschosshoehe = 3.2;
-            const gv = gf * geschosshoehe;
-            const gvOG = gv;
-            const gvUG = gv;
+            // GF: from area polygons on BGF/EBF/GF layers (if present)
+            const hasAreaPolys = areaData.length > 0;
+            const gf = hasAreaPolys ? areaData.reduce((s, a) => s + a.area, 0) : null;
 
-            // DIN 277 sub-categories (default distribution)
-            const hnf1 = totalNGF, hnf2 = totalNGF, hnf3 = totalNGF;
-            const hnf4 = totalNGF, hnf5 = totalNGF, hnf6 = totalNGF;
-            const nnf7 = totalNGF, ff8 = totalNGF, vf9 = vf, buf10 = totalNGF;
+            // KF can be derived only if both GF and NGF are known
+            const kf = (gf !== null && hasRooms) ? gf - ngf : null;
 
-            const fmtArea = (v) => v >= 1000 ? Math.round(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "'") + ' m\u00B2' : v.toFixed(1) + ' m\u00B2';
-            const fmtVol = (v) => v >= 1000 ? Math.round(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "'") + ' m\u00B3' : v.toFixed(1) + ' m\u00B3';
-            const pct = (v, total) => total > 0 ? Math.round((v / total) * 100) + '%' : '0%';
-            const kzRow = (abbr, label, value, total, sep, volFmt) =>
-                `<tr${sep ? ' class="kz-sep"' : ''}><td class="kz-abbr">${esc(abbr)}</td><td>${esc(label)}</td><td class="kz-value">${volFmt ? fmtVol(value) : fmtArea(value)}</td><td class="kz-pct">${pct(value, total)}</td></tr>`;
+            // Room count
+            const roomCount = roomData.length;
 
-            let html = '';
+            // Format helpers
+            const DASH = '\u2014';
+            const fmtArea = (v) => {
+                if (v === null || v === undefined) return DASH;
+                return v >= 1000 ? Math.round(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "'") + ' m\u00B2' : v.toFixed(1) + ' m\u00B2';
+            };
+            const fmtVol = (v) => {
+                if (v === null || v === undefined) return DASH;
+                return v >= 1000 ? Math.round(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "'") + ' m\u00B3' : v.toFixed(1) + ' m\u00B3';
+            };
+            const pct = (v, total) => {
+                if (v === null || v === undefined || total === null || total === undefined || total <= 0) return DASH;
+                return Math.round((v / total) * 100) + '%';
+            };
+            const kzRow = (abbr, label, value, total, volFmt) =>
+                `<tr><td class="kz-abbr">${esc(abbr)}</td><td>${esc(label)}</td><td class="kz-value">${volFmt ? fmtVol(value) : fmtArea(value)}</td><td class="kz-pct">${pct(value, total)}</td></tr>`;
 
-            // Sub-tabs
-            html += '<div class="kz-subtabs">';
-            html += '<a class="kz-subtab kz-subtab--active" data-kzsub="data">Kennzahlen</a>';
-            html += '<a class="kz-subtab" data-kzsub="viewer">Viewer</a>';
-            html += '</div>';
-
-            // Data view
-            html += '<div class="kz-dashboard-content" id="kz-data-view">';
+            let html = '<div class="kz-dashboard-content">';
             html += '<div class="val-kennzahlen">';
 
             // ── Left column ──
             html += '<div>';
 
-            // Gebäudevolumen
+            // Gebäudevolumen — not derivable from 2D floor plan
             html += '<div class="val-kz-section">';
             html += '<div class="val-kz-title">Gebäudevolumen</div>';
             html += '<table class="val-kz-table"><tbody>';
-            html += kzRow('GV', 'Gebäudevolumen', gv, gv, false, true);
-            html += kzRow('GV OG', 'Gebäudevolumen Obergeschosse', gvOG, gv, false, true);
-            html += kzRow('GV UG', 'Gebäudevolumen Untergeschosse', gvUG, gv, false, true);
+            html += kzRow('GV', 'Gebäudevolumen', null, null, true);
+            html += kzRow('GV OG', 'Gebäudevolumen Obergeschosse', null, null, true);
+            html += kzRow('GV UG', 'Gebäudevolumen Untergeschosse', null, null, true);
             html += '</tbody></table></div>';
 
-            // Gebäudeflächen
+            // Gebäudeflächen — show what we can derive
             html += '<div class="val-kz-section">';
             html += '<div class="val-kz-title">Gebäudeflächen</div>';
             html += '<table class="val-kz-table"><tbody>';
             html += kzRow('GF', 'Geschossfläche', gf, gf);
             html += kzRow('KF', 'Konstruktionsfläche', kf, gf);
-            html += kzRow('NGF', 'Nettogeschossfläche', ngf, gf);
-            html += kzRow('NF', 'Nutzfläche', nf, gf);
-            html += kzRow('HNF', 'Hauptnutzfläche', hnf, gf);
-            html += kzRow('NNF', 'Nebennutzfläche', nnf, gf);
-            html += kzRow('VF', 'Verkehrsfläche', vf, gf);
-            html += kzRow('FF', 'Funktionsfläche', ff, gf);
+            html += kzRow('NGF', 'Nettogeschossfläche', hasRooms ? ngf : null, gf);
+            html += kzRow('NF', 'Nutzfläche', hasRooms ? ngf : null, gf);
+            html += kzRow('HNF', 'Hauptnutzfläche', null, gf);
+            html += kzRow('NNF', 'Nebennutzfläche', null, gf);
+            html += kzRow('VF', 'Verkehrsfläche', null, gf);
+            html += kzRow('FF', 'Funktionsfläche', null, gf);
             html += '</tbody></table></div>';
 
-            // Flächen DIN 277
+            // Flächen DIN 277 — sub-categories not derivable from DWG
             html += '<div class="val-kz-section">';
             html += '<div class="val-kz-title">Flächen DIN 277</div>';
             html += '<table class="val-kz-table"><tbody>';
-            html += kzRow('HNF 1', 'Wohnen und Aufenthalt', hnf1, gf);
-            html += kzRow('HNF 2', 'Büroarbeit', hnf2, gf);
-            html += kzRow('HNF 3', 'Produktion', hnf3, gf);
-            html += kzRow('HNF 4', 'Lagern, Verteilen, Verkaufen', hnf4, gf);
-            html += kzRow('HNF 5', 'Bildung, Unterricht, Kultur', hnf5, gf);
-            html += kzRow('HNF 6', 'Heilen, Pflegen', hnf6, gf);
-            html += kzRow('NNF 7', 'Nebennutzfläche', nnf7, gf);
-            html += kzRow('FF 8', 'Betriebstechnische Anlagen', ff8, gf);
-            html += kzRow('VF 9', 'Verkehrserschliessung und -sicherung', vf9, gf);
-            html += kzRow('BUF 10', 'Verschiedene Nutzungen', buf10, gf);
+            html += kzRow('HNF 1', 'Wohnen und Aufenthalt', null, gf);
+            html += kzRow('HNF 2', 'Büroarbeit', null, gf);
+            html += kzRow('HNF 3', 'Produktion', null, gf);
+            html += kzRow('HNF 4', 'Lagern, Verteilen, Verkaufen', null, gf);
+            html += kzRow('HNF 5', 'Bildung, Unterricht, Kultur', null, gf);
+            html += kzRow('HNF 6', 'Heilen, Pflegen', null, gf);
+            html += kzRow('NNF 7', 'Nebennutzfläche', null, gf);
+            html += kzRow('FF 8', 'Betriebstechnische Anlagen', null, gf);
+            html += kzRow('VF 9', 'Verkehrserschliessung und -sicherung', null, gf);
+            html += kzRow('BUF 10', 'Verschiedene Nutzungen', null, gf);
             html += '</tbody></table></div>';
 
             html += '</div>';
@@ -2625,60 +2621,40 @@
             // ── Right column ──
             html += '<div>';
 
-            // Kennzahlen Wirtschaftlichkeit
+            // Kennzahlen Wirtschaftlichkeit — only show ratios if both values are known
             html += '<div class="val-kz-section">';
             html += '<div class="val-kz-title">Kennzahlen Wirtschaftlichkeit von Grundriss</div>';
             html += '<table class="val-kz-table"><tbody>';
-            html += `<tr><td class="kz-abbr">HNF SIA 416 / GF</td><td>Hauptnutzfläche / Geschossfläche</td><td class="kz-value">${gf > 0 ? (hnf / gf).toFixed(2) : '\u2014'}</td></tr>`;
-            html += `<tr><td class="kz-abbr">VMF SIA 165 / GF</td><td>Vermietbare Fläche / Geschossfläche</td><td class="kz-value">${gf > 0 ? (nf * 0.75 / gf).toFixed(2) : '\u2014'}</td></tr>`;
+            html += `<tr><td class="kz-abbr">NGF / GF</td><td>Nettogeschossfläche / Geschossfläche</td><td class="kz-value">${(gf && hasRooms) ? (ngf / gf).toFixed(2) : DASH}</td></tr>`;
+            html += `<tr><td class="kz-abbr">KF / GF</td><td>Konstruktionsfläche / Geschossfläche</td><td class="kz-value">${(gf && kf !== null) ? (kf / gf).toFixed(2) : DASH}</td></tr>`;
             html += '</tbody></table></div>';
 
-            // Donut chart
-            html += buildValidationDonut({ HNF: hnf, NNF: nnf, VF: vf, FF: ff }, kf, gf);
+            // Donut chart — only show segments that have real data
+            const donutSegments = {};
+            if (hasRooms) donutSegments.NGF = ngf;
+            if (kf !== null && kf > 0) donutSegments.KF = kf;
+            const donutTotal = gf || ngf || 1;
+            html += buildValidationDonut(donutSegments, 0, donutTotal);
 
             html += '</div>';
 
             html += '</div>'; // val-kennzahlen
             html += '</div>'; // kz-dashboard-content
 
-            // Viewer sub-tab (reuses main canvas via moving it)
-            html += '<div class="kz-viewer-content" id="kz-viewer-view"></div>';
-
             validationDashboard.innerHTML = html;
-
-            // Wire sub-tab clicks
-            const subTabs = validationDashboard.querySelectorAll('[data-kzsub]');
-            subTabs.forEach(st => {
-                st.onclick = (e) => {
-                    e.preventDefault();
-                    subTabs.forEach(s => s.classList.remove('kz-subtab--active'));
-                    st.classList.add('kz-subtab--active');
-                    const mode = st.getAttribute('data-kzsub');
-                    document.getElementById('kz-data-view').style.display = mode === 'data' ? '' : 'none';
-                    const viewerEl = document.getElementById('kz-viewer-view');
-                    if (mode === 'viewer') {
-                        viewerEl.style.display = 'block';
-                        viewerEl.appendChild(canvasWrap);
-                        tabFilterLayers = null;
-                        resizeCanvas();
-                        render();
-                    } else {
-                        viewerEl.style.display = 'none';
-                        // Move canvas back to split view
-                        document.querySelector('.validation-viewer').appendChild(canvasWrap);
-                    }
-                };
-            });
         }
 
         function buildValidationDonut(totals, kf, gf) {
-            const segments = [
-                { label: 'HNF', value: totals.HNF, color: '#E57373' },
-                { label: 'NNF', value: totals.NNF, color: '#FFB74D' },
-                { label: 'VF',  value: totals.VF,  color: '#FFF176' },
-                { label: 'FF',  value: totals.FF,  color: '#64B5F6' },
-                { label: 'KF',  value: kf,         color: '#CCCCCC' },
-            ].filter(s => s.value > 0);
+            const colorMap = {
+                NGF: '#2E7D32', HNF: '#E57373', NNF: '#FFB74D',
+                VF: '#FFF176', FF: '#64B5F6', KF: '#CCCCCC',
+            };
+            const segments = Object.entries(totals)
+                .filter(([, v]) => v > 0)
+                .map(([label, value]) => ({ label, value, color: colorMap[label] || '#999' }));
+            if (kf > 0) segments.push({ label: 'KF', value: kf, color: '#CCCCCC' });
+
+            if (segments.length === 0) return '<div class="val-empty">Keine Daten für Diagramm.</div>';
 
             const total = gf || 1;
             const r = 60, sw = 24;
@@ -2731,6 +2707,38 @@
             const h = maxY - minY || 1;
             cam.zoom = Math.min(rect.width / w, rect.height / h) * 0.5;
             render();
+        }
+
+        function showPopupForItem(handle, centroid) {
+            if (!drawingData || !handle) return;
+            const item = drawingData.renderList.find(i => i.handle === handle);
+            if (!item) return;
+            // Select it for highlight
+            selectedItem = item;
+            render();
+            // Show popup at centroid screen position
+            const [sx, sy] = worldToScreen(centroid.x, centroid.y);
+            showFeaturePopup(item, sx, sy);
+        }
+
+        // Sync viewer click selection to side panel list
+        function syncSideSelection(handle) {
+            if (!handle || !vsideList) return;
+            vsideList.querySelectorAll('.vside-item').forEach(el => el.classList.remove('vside-item--selected'));
+            const match = vsideList.querySelector(`[data-handle="${handle}"]`);
+            if (match) {
+                match.classList.add('vside-item--selected');
+                match.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
+            // Also update selectedRoom for overlay highlighting
+            if (validationMode === 'rooms') {
+                selectedRoom = roomData.find(r => r.handle === handle) || null;
+            } else if (validationMode === 'areas') {
+                selectedRoom = areaData.find(a => a.handle === handle) || null;
+            } else if (validationMode === 'errors') {
+                const room = roomData.find(r => r.handle === handle);
+                selectedRoom = room || null;
+            }
         }
 
         // =============================================
@@ -2860,22 +2868,70 @@
                 ctx.lineWidth = (selectedRoom && selectedRoom.id === room.id ? 2.5 : 1.5) / cam.zoom;
                 ctx.stroke();
 
-                // Room label at centroid
-                const fontSize = 11 / cam.zoom;
-                if (fontSize * cam.zoom >= 6 && fontSize * cam.zoom <= 30) {
-                    ctx.save();
-                    ctx.translate(room.centroid.x, room.centroid.y);
-                    ctx.scale(1, -1);
-                    ctx.font = `${fontSize * 0.85}px system-ui, sans-serif`;
-                    ctx.fillStyle = bgColor === BG_DARK ? '#FFFFFF' : '#333333';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(room.aoid, 0, 0);
-                    ctx.font = `${fontSize * 0.65}px system-ui, sans-serif`;
-                    ctx.fillStyle = bgColor === BG_DARK ? 'rgba(255,255,255,0.6)' : '#757575';
-                    ctx.fillText(Math.round(room.area) + ' m\u00B2', 0, fontSize * 0.9);
-                    ctx.restore();
-                }
+            }
+
+            // ── Room labels (second pass — collision detection) ──
+            const placedLabels = [];
+            const visibleRooms = roomData.filter(room => {
+                if (validationMode === 'areas') return false;
+                if (tabFilterLayers && !tabFilterLayers.has(room.layer)) return false;
+                if (!tabFilterLayers && hiddenLayers.has(room.layer)) return false;
+                if (validationMode === 'rooms' && hiddenRoomIds.has(room.id)) return false;
+                return true;
+            });
+            // Sort largest rooms first — they get label priority
+            visibleRooms.sort((a, b) => b.area - a.area);
+
+            for (const room of visibleRooms) {
+                // World-space font size: proportional to sqrt of room area, clamped
+                const roomSize = Math.sqrt(room.area);
+                const worldFontSize = Math.max(roomSize * 0.15, 0.4);
+                const screenFontSize = worldFontSize * cam.zoom;
+
+                // Skip if too small or too large on screen
+                if (screenFontSize < 8 || screenFontSize > 60) continue;
+
+                // Compute screen-space bounding box for collision
+                const [sx, sy] = worldToScreen(room.centroid.x, room.centroid.y);
+                const labelW = room.aoid.length * screenFontSize * 0.6 + 8;
+                const labelH = screenFontSize * 2.2;
+                const box = { x: sx - labelW / 2, y: sy - labelH / 2, w: labelW, h: labelH };
+
+                // Check overlap with already placed labels
+                const overlaps = placedLabels.some(p =>
+                    box.x < p.x + p.w && box.x + box.w > p.x &&
+                    box.y < p.y + p.h && box.y + box.h > p.y
+                );
+                if (overlaps) continue;
+                placedLabels.push(box);
+
+                // Draw label
+                ctx.save();
+                ctx.translate(room.centroid.x, room.centroid.y);
+                ctx.scale(1, -1);
+
+                // Background pill
+                const pillW = labelW / cam.zoom;
+                const pillH = labelH / cam.zoom;
+                ctx.fillStyle = 'rgba(255,255,255,0.85)';
+                ctx.beginPath();
+                const pr = 2 / cam.zoom;
+                ctx.roundRect(-pillW / 2, -pillH / 2, pillW, pillH, pr);
+                ctx.fill();
+
+                // Room name
+                ctx.font = `600 ${worldFontSize}px system-ui, sans-serif`;
+                ctx.fillStyle = '#1a1a1a';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(room.aoid, 0, -worldFontSize * 0.2);
+
+                // Area value
+                ctx.font = `${worldFontSize * 0.7}px system-ui, sans-serif`;
+                ctx.fillStyle = '#757575';
+                ctx.fillText(Math.round(room.area) + ' m\u00B2', 0, worldFontSize * 0.55);
+
+                ctx.restore();
             }
         }
 
