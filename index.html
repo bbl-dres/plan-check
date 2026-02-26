@@ -155,6 +155,18 @@
         .info-grid__item { background: var(--color-surface); padding: 14px 16px; }
         .info-grid__label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--color-text-muted); margin-bottom: 5px; font-weight: 500; }
         .info-grid__value { font-size: 20px; font-weight: 700; color: var(--color-text); font-variant-numeric: tabular-nums; }
+        .info-grid__download { background: var(--color-surface); padding: 10px 16px; display: flex; flex-direction: column; justify-content: center; gap: 4px; }
+        .info-grid__download-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--color-text-muted); font-weight: 500; }
+        .info-grid__download-links { display: flex; gap: 6px; flex-wrap: wrap; }
+        .info-grid__dl-btn {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 5px 10px; border-radius: 4px; font-size: 12px; font-weight: 600;
+            border: 1px solid var(--color-primary); background: var(--color-primary-light);
+            color: var(--color-primary); cursor: pointer; transition: all 0.15s;
+            font-family: inherit; text-decoration: none;
+        }
+        .info-grid__dl-btn:hover { background: var(--color-primary); color: white; }
+        .info-grid__dl-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
 
         /* Canvas Viewer */
         .viewer__controls {
@@ -375,7 +387,7 @@
 
         /* Dashboard (Kennzahlen) – full width, no viewer */
         .validation-dashboard {
-            display: none; max-height: 800px; overflow-y: auto;
+            display: none;
         }
         .kz-dashboard-content { padding: 20px 16px; }
 
@@ -1376,10 +1388,24 @@
             // Lines are always 1px regardless of zoom
             ctx.lineWidth = 1 / cam.zoom;
 
+            // In light mode, remap white/near-white colors to black so they remain visible
+            const isLightBg = bgColor === BG_LIGHT;
+            function displayColor(c) {
+                if (!isLightBg || !c) return c;
+                // Parse hex color and check luminance
+                const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(c);
+                if (!m) return c;
+                const r = parseInt(m[1], 16), g = parseInt(m[2], 16), b = parseInt(m[3], 16);
+                // If very light (near-white), swap to dark
+                if (r > 200 && g > 200 && b > 200) return '#1a1a1a';
+                return c;
+            }
+
             for (const item of renderList) {
                 if (tabFilterLayers ? !tabFilterLayers.has(item.l) : hiddenLayers.has(item.l)) continue;
-                ctx.strokeStyle = item.c;
-                ctx.fillStyle = item.c;
+                const dc = displayColor(item.c);
+                ctx.strokeStyle = dc;
+                ctx.fillStyle = dc;
 
                 switch (item.t) {
                     case 'line':
@@ -2846,11 +2872,23 @@
             const okCount2 = roomData.filter(r => r.status === 'ok').length;
             const score2 = roomData.length > 0 ? Math.round((okCount2 / roomData.length) * 100) : 100;
             const scoreClass2 = score2 >= 90 ? 'success' : score2 >= 60 ? 'warning' : 'error';
+            const dlIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
             metricsGrid.innerHTML =
                 `<div class="info-grid__item"><div class="info-grid__label">Räume</div><div class="info-grid__value">${roomData.length}</div></div>` +
                 `<div class="info-grid__item"><div class="info-grid__label">NGF</div><div class="info-grid__value">${fmtNum(totalArea)} m²</div></div>` +
                 `<div class="info-grid__item"><div class="info-grid__label">Fehler</div><div class="info-grid__value">${validationErrors.length}</div></div>` +
-                `<div class="info-grid__item"><div class="info-grid__label">Score</div><div class="info-grid__value" style="color: var(--color-${scoreClass2})">${score2}%</div></div>`;
+                `<div class="info-grid__item"><div class="info-grid__label">Score</div><div class="info-grid__value" style="color: var(--color-${scoreClass2})">${score2}%</div></div>` +
+                `<div class="info-grid__download"><div class="info-grid__download-label">Bericht</div><div class="info-grid__download-links">` +
+                `<button class="info-grid__dl-btn" data-dl="pdf">${dlIcon} PDF</button>` +
+                `<button class="info-grid__dl-btn" data-dl="excel">${dlIcon} Excel</button>` +
+                `</div></div>`;
+            // Wire download buttons in metrics card
+            metricsGrid.querySelectorAll('.info-grid__dl-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (btn.dataset.dl === 'pdf') downloadPdfReport();
+                    else if (btn.dataset.dl === 'excel') downloadExcelReport();
+                });
+            });
             metricsPanel.classList.add('visible');
 
             // Show panel
@@ -2893,32 +2931,9 @@
             validationDashboard.style.display = isDashboard ? 'block' : 'none';
 
             // Set layer filter per tab
-            if (tabName === 'errors') {
-                // Only show layers relevant to errors (room layer for room errors)
-                const errorLayers = new Set();
-                for (const err of validationErrors) {
-                    if (err.roomId != null) {
-                        const room = roomData.find(r => r.id === err.roomId);
-                        if (room) errorLayers.add(room.layer);
-                    }
-                }
-                tabFilterLayers = errorLayers.size > 0 ? errorLayers : new Set();
-            } else if (tabName === 'rooms') {
-                tabFilterLayers = new Set([roomLayerName]);
-            } else if (tabName === 'areas') {
-                // Collect all layers that match area pattern
-                const areaLayers = new Set();
-                if (drawingData) {
-                    for (const item of drawingData.renderList) {
-                        if (item.l && item.l !== roomLayerName && /BGF|EBF|GF/i.test(item.l)) {
-                            areaLayers.add(item.l);
-                        }
-                    }
-                }
-                tabFilterLayers = areaLayers;
-            } else {
-                tabFilterLayers = null;
-            }
+            // Always show the full DWG drawing — never hide original content.
+            // Room/area overlays are drawn on top as a second pass.
+            tabFilterLayers = null;
 
             // Render tab content
             switch (tabName) {
@@ -3529,7 +3544,8 @@
         }
 
         function renderRoomOverlays() {
-            if (!validationMode || validationMode === 'kennzahlen') return;
+            // Only draw overlays in rooms and areas tabs
+            if (validationMode !== 'rooms' && validationMode !== 'areas') return;
 
             // Draw area polygons in areas mode
             if (validationMode === 'areas') {
@@ -3569,22 +3585,13 @@
                 }
             }
 
-            // Draw room overlays (skip in areas mode or if no rooms)
-            if (validationMode === 'areas') return;
+            // Draw room overlays (only in rooms tab)
+            if (validationMode !== 'rooms') return;
             if (roomData.length === 0) return;
 
             for (const room of roomData) {
-                // Respect layer filter (e.g. all layers hidden in overview)
-                if (tabFilterLayers && !tabFilterLayers.has(room.layer)) continue;
-                if (!tabFilterLayers && hiddenLayers.has(room.layer)) continue;
-                // Respect visibility toggle per mode
-                if (validationMode === 'rooms' && hiddenRoomIds.has(room.id)) continue;
-                if (validationMode === 'errors') {
-                    // In errors mode, only show rooms that have visible (non-hidden) errors
-                    const roomErrors = validationErrors.filter(e => e.roomId === room.id);
-                    const allHidden = roomErrors.length > 0 && roomErrors.every(e => hiddenErrorIds.has(e.id));
-                    if (allHidden && roomErrors.length > 0) continue;
-                }
+                if (hiddenLayers.has(room.layer)) continue;
+                if (hiddenRoomIds.has(room.id)) continue;
 
                 const colors = getRoomOverlayColor(room);
                 if (!colors) continue;
@@ -3604,10 +3611,8 @@
             // ── Room labels (second pass — collision detection) ──
             const placedLabels = [];
             const visibleRooms = roomData.filter(room => {
-                if (validationMode === 'areas') return false;
-                if (tabFilterLayers && !tabFilterLayers.has(room.layer)) return false;
-                if (!tabFilterLayers && hiddenLayers.has(room.layer)) return false;
-                if (validationMode === 'rooms' && hiddenRoomIds.has(room.id)) return false;
+                if (hiddenLayers.has(room.layer)) return false;
+                if (hiddenRoomIds.has(room.id)) return false;
                 return true;
             });
             // Sort largest rooms first — they get label priority
