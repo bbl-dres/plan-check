@@ -166,6 +166,7 @@
     /* Animation */
     --duration-fast: 0.1s;
     --duration-normal: 0.15s;
+    --duration-medium: 0.25s;
     --duration-slow: 0.3s;
 
     /* Icons (Lucide) */
@@ -180,6 +181,17 @@
     --radius-md: 4px;
     --radius-lg: 8px;
     --radius-full: 50%;
+    --radius-pill: 0.625rem;         /* 10px */
+
+    /* Z-Index Scale */
+    --z-index-dropdown: 200;
+    --z-index-toast: 1000;
+    --z-index-modal: 1100;
+
+    /* Control Heights */
+    --control-height-sm: 2rem;       /* 32px */
+    --control-height-md: 2.25rem;    /* 36px */
+    --control-height-lg: 2.5rem;     /* 40px */
 
     /* Shadows */
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);

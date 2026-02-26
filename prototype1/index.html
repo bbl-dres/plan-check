@@ -16,8 +16,9 @@
         form-action 'self';
     ">
     <title>BBL Prüfplattform Flächenmanagement</title>
-    <link rel="stylesheet" href="css/tokens.css">
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="../css/tokens.css">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/prototype1.css">
     <script src="https://unpkg.com/lucide@0.562.0/dist/umd/lucide.min.js" integrity="sha384-FmRlymRnpgjuKyAnwH4DftRjl+RqHOlfcw9k4xcpPyovclg/2RZRrvw7qe1koVCP" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" crossorigin="anonymous">
     <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js" crossorigin="anonymous"></script>
@@ -28,16 +29,25 @@
 
     <!-- Swiss Federal Header -->
     <header class="header" role="banner">
-        <div class="header__bar"></div>
         <div class="header__content">
             <a href="#" class="header__brand" id="header-brand-link">
-                <img src="../assets/swiss-logo-flag.svg" alt="Swiss Confederation" class="header__logo" width="40" height="44">
+                <img src="../assets/swiss-logo-flag.svg" alt="" class="header__flag" width="40" height="44">
+                <img src="../assets/swiss-logo-name.svg" alt="Schweizerische Eidgenossenschaft" class="header__name">
+                <div class="header__sep"></div>
                 <div class="header__titles">
                     <span class="header__org">Bundesamt für Bauten und Logistik BBL</span>
                     <span class="header__app">Prüfplattform Flächenmanagement</span>
                 </div>
             </a>
+            <div class="lang-selector">
+                <button class="lang-selector__item lang-selector__item--active" data-lang="de">DE</button>
+                <button class="lang-selector__item" data-lang="fr">FR</button>
+                <button class="lang-selector__item" data-lang="it">IT</button>
+                <button class="lang-selector__item" data-lang="en">EN</button>
+            </div>
             <nav class="header__nav">
+                <a href="https://www.bbl.admin.ch/de/downloads-bauten" target="_blank" rel="noopener" class="header__nav-link">Downloads BBL Bauten</a>
+                <a href="https://www.bbl.admin.ch/de/kontakt" target="_blank" rel="noopener" class="header__nav-link">Kontakt</a>
                 <button class="btn btn--primary btn--sm" id="demo-btn">Demo starten</button>
                 <button class="header__user" aria-label="User menu" id="user-menu-btn">
                     <i data-lucide="user" class="icon icon-md"></i>
@@ -920,13 +930,9 @@
             <span class="footer__version">v1.0.0</span>
             <div class="footer__links">
                 <a href="https://github.com/bbl-dres/plan-check" target="_blank" rel="noopener noreferrer" class="footer__link">Quellencode</a>
-                <span class="footer__separator">|</span>
+                <span class="footer__sep">|</span>
                 <a href="#" class="footer__link" id="nav-api">API</a>
-                <span class="footer__separator">|</span>
-                <a href="https://www.bbl.admin.ch/de/downloads-bauten" class="footer__link" id="nav-standards" target="_blank" rel="noopener noreferrer">Downloads BBL Bauten</a>
-                <span class="footer__separator">|</span>
-                <a href="https://www.bbl.admin.ch/de/kontakt" class="footer__link" target="_blank" rel="noopener noreferrer">Kontakt</a>
-                <span class="footer__separator">|</span>
+                <span class="footer__sep">|</span>
                 <a href="https://www.admin.ch/gov/de/start/rechtliches.html" target="_blank" rel="noopener noreferrer" class="footer__link">Rechtliches</a>
             </div>
         </div>
