@@ -176,14 +176,10 @@
 
         /* Layers */
         .layers-toolbar {
-            display: flex; gap: 8px; padding: 8px 16px;
+            display: flex; gap: 8px; padding: 8px 16px; align-items: center;
             border-bottom: 1px solid var(--color-border); background: #f8f9fa;
         }
-        .layers-toolbar button {
-            padding: 4px 10px; border: 1px solid var(--color-border); border-radius: 4px;
-            background: white; font-size: 12px; cursor: pointer; color: var(--color-text);
-        }
-        .layers-toolbar button:hover { background: #f0f0f0; }
+        .layers-toolbar .layer-toggle { flex-shrink: 0; }
         .layers-search {
             flex: 1; padding: 4px 10px; border: 1px solid var(--color-border); border-radius: 4px;
             font-size: 12px; outline: none; min-width: 0;
@@ -304,9 +300,8 @@
         <div class="panel" id="layers-panel">
             <div class="panel__header">Layers</div>
             <div class="layers-toolbar">
+                <input type="checkbox" id="layers-toggle-all" class="layer-toggle" checked title="Alle ein-/ausblenden">
                 <input type="text" id="layers-search" class="layers-search" placeholder="Layer suchen...">
-                <button id="layers-show-all">Alle anzeigen</button>
-                <button id="layers-hide-all">Alle ausblenden</button>
             </div>
             <div class="layers-list" id="layers-list"></div>
         </div>
@@ -362,6 +357,7 @@
         let isPanning = false;
         let panStart = { x: 0, y: 0 };
         const hiddenLayers = new Set();
+        let selectedItem = null;
 
         // =============================================
         // Logger
@@ -527,8 +523,8 @@
                                 ? e.vertices.map(v => { const p = tp(v.x, v.y); return { x: p.x, y: p.y, bulge: v.bulge }; })
                                 : e.vertices;
                             for (const v of verts) expand(v.x, v.y);
-                            // Check closed flag, or detect implicit closure (first == last vertex)
-                            let closed = !!(e.flag & 1);
+                            // Check closed flag: DWG binary uses bit 512 for LWPOLYLINE, DXF uses bit 1
+                            let closed = !!(e.flag & 512) || !!(e.flag & 1);
                             if (!closed && verts.length > 2) {
                                 const f = verts[0], la = verts[verts.length - 1];
                                 if (Math.abs(f.x - la.x) < 1e-6 && Math.abs(f.y - la.y) < 1e-6) closed = true;
@@ -544,7 +540,7 @@
                                 return { x: p.x, y: p.y, bulge: v.bulge || 0 };
                             });
                             for (const v of verts) expand(v.x, v.y);
-                            const closed = (e.flag & 1) === 1;
+                            const closed = !!(e.flag & 512) || !!(e.flag & 1);
                             renderList.push({ t: 'poly', l, et, handle, verts, closed, c: color });
                         }
                         break;
@@ -557,7 +553,7 @@
                                 return { x: p.x, y: p.y, bulge: 0 };
                             });
                             for (const v of verts) expand(v.x, v.y);
-                            const closed = (e.flag & 1) === 1;
+                            const closed = !!(e.flag & 512) || !!(e.flag & 1);
                             renderList.push({ t: 'poly', l, et, handle, verts, closed, c: color });
                         }
                         break;
@@ -607,7 +603,7 @@
                                 return { x: tp2.x, y: tp2.y, bulge: 0 };
                             });
                             for (const v of verts) expand(v.x, v.y);
-                            const closed = (e.flag & 1) === 1;
+                            const closed = !!(e.flag & 512) || !!(e.flag & 1);
                             renderList.push({ t: 'poly', l, et, handle, verts, closed, c: color });
                         }
                         break;
@@ -1170,6 +1166,123 @@
                 }
             }
 
+            // === Highlight selected element ===
+            if (selectedItem && !hiddenLayers.has(selectedItem.l)) {
+                const hi = selectedItem;
+                ctx.save();
+                ctx.strokeStyle = '#00FFFF';
+                ctx.fillStyle = '#00FFFF';
+                ctx.lineWidth = 3 / cam.zoom;
+                ctx.shadowColor = '#00FFFF';
+                ctx.shadowBlur = 8;
+
+                switch (hi.t) {
+                    case 'line':
+                        ctx.beginPath();
+                        ctx.moveTo(hi.x1, hi.y1);
+                        ctx.lineTo(hi.x2, hi.y2);
+                        ctx.stroke();
+                        break;
+
+                    case 'poly':
+                        ctx.beginPath();
+                        ctx.moveTo(hi.verts[0].x, hi.verts[0].y);
+                        for (let i = 1; i < hi.verts.length; i++) {
+                            const v = hi.verts[i];
+                            const prev = hi.verts[i - 1];
+                            if (prev.bulge && prev.bulge !== 0) {
+                                drawBulgeArc(ctx, prev.x, prev.y, v.x, v.y, prev.bulge);
+                            } else {
+                                ctx.lineTo(v.x, v.y);
+                            }
+                        }
+                        if (hi.closed && hi.verts.length > 1) {
+                            const last = hi.verts[hi.verts.length - 1];
+                            const first = hi.verts[0];
+                            if (last.bulge && last.bulge !== 0) {
+                                drawBulgeArc(ctx, last.x, last.y, first.x, first.y, last.bulge);
+                            } else {
+                                ctx.lineTo(first.x, first.y);
+                            }
+                        }
+                        ctx.stroke();
+                        break;
+
+                    case 'circle':
+                        ctx.beginPath();
+                        ctx.arc(hi.cx, hi.cy, hi.r, 0, Math.PI * 2);
+                        ctx.stroke();
+                        break;
+
+                    case 'arc':
+                        ctx.beginPath();
+                        ctx.arc(hi.cx, hi.cy, hi.r, hi.sa, hi.ea, false);
+                        ctx.stroke();
+                        break;
+
+                    case 'ellipse':
+                        ctx.beginPath();
+                        ctx.ellipse(hi.cx, hi.cy, hi.rx, hi.ry, hi.rot, 0, Math.PI * 2);
+                        ctx.stroke();
+                        break;
+
+                    case 'text': {
+                        const fontSize = hi.h;
+                        ctx.save();
+                        ctx.translate(hi.x, hi.y);
+                        ctx.scale(1, -1);
+                        if (hi.rot) ctx.rotate(-hi.rot);
+                        ctx.font = `${fontSize}px Arial, sans-serif`;
+                        ctx.fillText(hi.text, 0, 0);
+                        ctx.restore();
+                        break;
+                    }
+
+                    case 'point': {
+                        const sz = 6 / cam.zoom;
+                        ctx.fillRect(hi.x - sz/2, hi.y - sz/2, sz, sz);
+                        break;
+                    }
+
+                    case 'solid': {
+                        ctx.beginPath();
+                        ctx.moveTo(hi.pts[0].x, hi.pts[0].y);
+                        for (let i = 1; i < hi.pts.length; i++) {
+                            ctx.lineTo(hi.pts[i].x, hi.pts[i].y);
+                        }
+                        ctx.closePath();
+                        ctx.globalAlpha = 0.5;
+                        ctx.fill();
+                        ctx.globalAlpha = 1;
+                        ctx.stroke();
+                        break;
+                    }
+
+                    case 'hatchfill': {
+                        ctx.globalAlpha = 0.4;
+                        ctx.beginPath();
+                        for (const path of hi.paths) {
+                            if (path.length < 2) continue;
+                            ctx.moveTo(path[0].x, path[0].y);
+                            for (let i = 1; i < path.length; i++) {
+                                const v = path[i];
+                                const prev = path[i - 1];
+                                if (prev.bulge && prev.bulge !== 0) {
+                                    drawBulgeArc(ctx, prev.x, prev.y, v.x, v.y, prev.bulge);
+                                } else {
+                                    ctx.lineTo(v.x, v.y);
+                                }
+                            }
+                            ctx.closePath();
+                        }
+                        ctx.fill();
+                        ctx.globalAlpha = 1;
+                        break;
+                    }
+                }
+                ctx.restore();
+            }
+
             ctx.restore();
         }
 
@@ -1445,10 +1558,13 @@
                         const tolerance = 8 / cam.zoom; // 8 screen pixels
                         const hit = hitTest(wx, wy, tolerance);
                         if (hit) {
+                            selectedItem = hit;
                             showFeaturePopup(hit, sx, sy);
                         } else {
+                            selectedItem = null;
                             hideFeaturePopup();
                         }
+                        render();
                     }
                 }
             }
@@ -1562,22 +1678,23 @@
                 layersList.appendChild(div);
             }
 
-            // Show/Hide all buttons (use onclick to avoid stacking listeners)
-            document.getElementById('layers-show-all').onclick = () => {
-                hiddenLayers.clear();
-                for (const item of layersList.children) {
-                    item.classList.remove('hidden');
-                    item.querySelector('.layer-toggle').checked = true;
-                }
-                render();
-            };
-
-            document.getElementById('layers-hide-all').onclick = () => {
-                for (const item of layersList.children) {
-                    item.classList.add('hidden');
-                    const cb = item.querySelector('.layer-toggle');
-                    cb.checked = false;
-                    hiddenLayers.add(item.querySelector('.layer-name').textContent);
+            // Toggle-all checkbox (use onclick to avoid stacking listeners)
+            const toggleAllCb = document.getElementById('layers-toggle-all');
+            toggleAllCb.checked = true;
+            toggleAllCb.onchange = () => {
+                const showAll = toggleAllCb.checked;
+                if (showAll) {
+                    hiddenLayers.clear();
+                    for (const item of layersList.children) {
+                        item.classList.remove('hidden');
+                        item.querySelector('.layer-toggle').checked = true;
+                    }
+                } else {
+                    for (const item of layersList.children) {
+                        item.classList.add('hidden');
+                        item.querySelector('.layer-toggle').checked = false;
+                        hiddenLayers.add(item.querySelector('.layer-name').textContent);
+                    }
                 }
                 render();
             };
