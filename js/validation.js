@@ -118,7 +118,7 @@ function runValidation(rooms) {
             errors.push({
                 id: errorId++, roomId: room.id, severity: 'error',
                 ruleCode: 'GEOM_002',
-                message: `Raum ${room.aoid}: Polygon hat weniger als 3 Vertices`
+                message: `Raum ${room.aoid}: Polygon hat weniger als 3 Eckpunkte`
             });
             room.status = 'error';
         }
@@ -131,7 +131,7 @@ function runValidation(rooms) {
             errors.push({
                 id: errorId++, roomId: room.id, severity: 'error',
                 ruleCode: 'GEOM_003',
-                message: `Raum ${room.aoid}: Polygon nicht vollst\u00e4ndig geschlossen (L\u00fccke: ${gap.toFixed(1)}mm)`
+                message: `Raum ${room.aoid}: Polygon nicht vollst\u00e4ndig geschlossen (L\u00fccke: ${gap.toFixed(1)} mm)`
             });
             room.status = 'error';
         }
@@ -152,9 +152,11 @@ export function renderValidation() {
     state.validationErrors = runValidation(state.roomData);
 
     // Update tab counts
+    const layerCountEl = document.getElementById('vtab-layer-count');
     const errorCountEl = document.getElementById('vtab-error-count');
     const roomCountEl = document.getElementById('vtab-room-count');
     const areaCountEl = document.getElementById('vtab-area-count');
+    if (layerCountEl) layerCountEl.textContent = state.layerInfo.length;
     if (errorCountEl) errorCountEl.textContent = state.validationErrors.length;
     if (roomCountEl) roomCountEl.textContent = state.roomData.length;
     if (areaCountEl) areaCountEl.textContent = state.areaData.length;
@@ -201,9 +203,11 @@ export function renderValidation() {
 }
 
 function updateTabCounts() {
+    const layerCountEl = document.getElementById('vtab-layer-count');
     const errorCountEl = document.getElementById('vtab-error-count');
     const roomCountEl = document.getElementById('vtab-room-count');
     const areaCountEl = document.getElementById('vtab-area-count');
+    if (layerCountEl) layerCountEl.textContent = state.layerInfo.length;
     if (state.resultFilter === 'errors') {
         if (errorCountEl) errorCountEl.textContent = state.validationErrors.filter(e => e.severity === 'error').length;
         if (roomCountEl) roomCountEl.textContent = state.roomData.filter(r => r.status === 'error').length;
@@ -328,7 +332,7 @@ function renderOverviewTab() {
 
         const value = document.createElement('span');
         value.className = 'vside-item__value';
-        value.textContent = l.count + ' entities';
+        value.textContent = l.count + ' Objekte';
 
         div.appendChild(cb);
         div.appendChild(icon);
@@ -678,7 +682,7 @@ function renderKennzahlenTab() {
 
     // Kennzahlen Wirtschaftlichkeit
     html += '<div class="val-kz-section">';
-    html += '<div class="val-kz-title">Kennzahlen Wirtschaftlichkeit von Grundriss</div>';
+    html += '<div class="val-kz-title">Wirtschaftlichkeitskennzahlen</div>';
     html += '<table class="val-kz-table"><tbody>';
     html += `<tr><td class="kz-abbr">NGF / GF</td><td>Nettogeschossfl\u00e4che / Geschossfl\u00e4che</td><td class="kz-value">${(gf && hasRooms) ? (ngf / gf).toFixed(2) : DASH}</td></tr>`;
     html += `<tr><td class="kz-abbr">KF / GF</td><td>Konstruktionsfl\u00e4che / Geschossfl\u00e4che</td><td class="kz-value">${(gf && kf !== null) ? (kf / gf).toFixed(2) : DASH}</td></tr>`;

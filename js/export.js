@@ -87,7 +87,7 @@ export async function downloadPdfReport() {
             // Running header text
             doc.setFontSize(7.5);
             doc.setTextColor(...muted);
-            doc.text('Plan-Check Bericht', mx, 13);
+            doc.text('Pr\u00fcfbericht', mx, 13);
             doc.text(state.lastFile.name, mxr, 13, { align: 'right' });
             // Section title
             if (title) {
@@ -148,7 +148,7 @@ export async function downloadPdfReport() {
         doc.setFontSize(22);
         doc.setTextColor(...dark);
         doc.setFont(undefined, 'bold');
-        doc.text('Plan-Check Bericht', mx, 22);
+        doc.text('Pr\u00fcfbericht', mx, 22);
         doc.setFont(undefined, 'normal');
         doc.setFontSize(10);
         doc.setTextColor(...muted);
@@ -169,8 +169,8 @@ export async function downloadPdfReport() {
                 ['Dateiname', state.lastFile.name],
                 ['Dateigr\u00f6sse', fmtSize(state.lastFile.size)],
                 ['DWG-Version', state.lastDbInfo?.version || '-'],
-                ['Layers', String(state.lastDbInfo?.layerCount ?? '-')],
-                ['Entities', String(state.lastDbInfo?.entityCount ?? '-')],
+                ['Layer', String(state.lastDbInfo?.layerCount ?? '-')],
+                ['Objekte', String(state.lastDbInfo?.entityCount ?? '-')],
                 ['Hochgeladen', state.lastUploadTime ? state.lastUploadTime.toLocaleString('de-CH') : '-'],
                 ['Verarbeitungszeit', state.lastElapsed ? state.lastElapsed + ' s' : '-'],
                 ['Raum-Layer', state.roomLayerName],
@@ -259,11 +259,11 @@ export async function downloadPdfReport() {
         let uy = addImage(overviewImg, 28, 110);
 
         uy += 6;
-        uy = sectionSubtitle('Layer-\u00dcbersicht (' + state.layerInfo.length + ' Layers)', uy);
+        uy = sectionSubtitle('Layer-\u00dcbersicht (' + state.layerInfo.length + ' Layer)', uy);
         doc.autoTable({
             ...tableBase,
             startY: uy,
-            head: [['Layer', 'Entities', 'Farbe']],
+            head: [['Layer', 'Objekte', 'Farbe']],
             body: state.layerInfo.map(l => [l.name, String(l.count), l.colorHex]),
             columnStyles: { 1: { cellWidth: 22, halign: 'right' }, 2: { cellWidth: 20 } },
         });
@@ -290,14 +290,14 @@ export async function downloadPdfReport() {
                 head: [['#', 'Schweregrad', 'Regel', 'Meldung', 'Raum']],
                 body: state.validationErrors.map(e => {
                     const room = state.roomData.find(r => r.id === e.roomId);
-                    return [String(e.id), e.severity, e.ruleCode, e.message, room ? room.aoid : '-'];
+                    return [String(e.id), e.severity === 'error' ? 'Fehler' : 'Warnung', e.ruleCode, e.message, room ? room.aoid : '-'];
                 }),
                 columnStyles: { 0: { cellWidth: 8 }, 1: { cellWidth: 22 }, 2: { cellWidth: 18 } },
                 didParseCell: (data) => {
                     if (data.section === 'body' && data.column.index === 1) {
                         const sev = data.cell.raw;
-                        if (sev === 'error') data.cell.styles.textColor = red;
-                        else if (sev === 'warning') data.cell.styles.textColor = orange;
+                        if (sev === 'Fehler') data.cell.styles.textColor = red;
+                        else if (sev === 'Warnung') data.cell.styles.textColor = orange;
                     }
                 },
             });
@@ -323,14 +323,17 @@ export async function downloadPdfReport() {
                 ...tableBase,
                 startY: ry,
                 head: [['#', 'Bezeichnung', 'Fl\u00e4che (m\u00B2)', 'Layer', 'Status']],
-                body: state.roomData.map(r => [String(r.id), r.aoid, fmtNum(r.area, 2), r.layer, r.status]),
+                body: state.roomData.map(r => {
+                    const st = { error: 'Fehler', warning: 'Warnung', ok: 'OK' };
+                    return [String(r.id), r.aoid, fmtNum(r.area, 2), r.layer, st[r.status] || r.status];
+                }),
                 columnStyles: { 0: { cellWidth: 8 }, 2: { cellWidth: 24, halign: 'right' }, 4: { cellWidth: 16 } },
                 didParseCell: (data) => {
                     if (data.section === 'body' && data.column.index === 4) {
                         const st = data.cell.raw;
-                        if (st === 'error') data.cell.styles.textColor = red;
-                        else if (st === 'warning') data.cell.styles.textColor = orange;
-                        else if (st === 'ok') data.cell.styles.textColor = green;
+                        if (st === 'Fehler') data.cell.styles.textColor = red;
+                        else if (st === 'Warnung') data.cell.styles.textColor = orange;
+                        else if (st === 'OK') data.cell.styles.textColor = green;
                     }
                 },
             });
@@ -430,7 +433,7 @@ export async function downloadPdfReport() {
 
         // Wirtschaftlichkeit
         kzY = doc.lastAutoTable.finalY + 6;
-        kzY = sectionSubtitle('Kennzahlen Wirtschaftlichkeit', kzY);
+        kzY = sectionSubtitle('Wirtschaftlichkeitskennzahlen', kzY);
         doc.autoTable({
             ...tableBase,
             startY: kzY,
@@ -469,8 +472,8 @@ export async function downloadExcelReport() {
             ['Dateiname', state.lastFile.name],
             ['Dateigr\u00f6sse', fmtSize(state.lastFile.size)],
             ['DWG-Version', state.lastDbInfo?.version || '-'],
-            ['Layers', state.lastDbInfo?.layerCount ?? '-'],
-            ['Entities', state.lastDbInfo?.entityCount ?? '-'],
+            ['Layer', state.lastDbInfo?.layerCount ?? '-'],
+            ['Objekte', state.lastDbInfo?.entityCount ?? '-'],
             ['Hochgeladen', state.lastUploadTime ? state.lastUploadTime.toLocaleString('de-CH') : '-'],
             ['Verarbeitungszeit', state.lastElapsed ? state.lastElapsed + ' s' : '-'],
             ['Raum-Layer', state.roomLayerName],
@@ -485,7 +488,7 @@ export async function downloadExcelReport() {
         // ── Sheet 2: Übersicht (layers) ──
         const layerRows = state.layerInfo.map(l => [l.name, l.count, l.colorHex]);
         const wsLayers = XLSX.utils.aoa_to_sheet([
-            ['Layer', 'Anzahl Entities', 'Farbe'],
+            ['Layer', 'Anzahl Objekte', 'Farbe'],
             ...layerRows
         ]);
         wsLayers['!cols'] = [{ wch: 30 }, { wch: 18 }, { wch: 10 }];
@@ -494,7 +497,7 @@ export async function downloadExcelReport() {
         // ── Sheet 3: Fehlermeldungen ──
         const errorRows = state.validationErrors.map(e => {
             const room = state.roomData.find(r => r.id === e.roomId);
-            return [e.id, e.severity, e.ruleCode, e.message, room ? room.aoid : '-'];
+            return [e.id, e.severity === 'error' ? 'Fehler' : 'Warnung', e.ruleCode, e.message, room ? room.aoid : '-'];
         });
         const wsErrors = XLSX.utils.aoa_to_sheet([
             ['#', 'Schweregrad', 'Regel', 'Meldung', 'Raum'],
@@ -504,12 +507,13 @@ export async function downloadExcelReport() {
         XLSX.utils.book_append_sheet(wb, wsErrors, 'Fehlermeldungen');
 
         // ── Sheet 4: Räume ──
+        const statusMap = { error: 'Fehler', warning: 'Warnung', ok: 'OK' };
         const roomRows = state.roomData.map(r => [
-            r.id, r.aoid, r.area, r.layer, r.status,
+            r.id, r.aoid, r.area, r.layer, statusMap[r.status] || r.status,
             r.vertices.length, r.handle || '-'
         ]);
         const wsRooms = XLSX.utils.aoa_to_sheet([
-            ['#', 'Bezeichnung', 'Fl\u00e4che (m\u00B2)', 'Layer', 'Status', 'Vertices', 'Handle'],
+            ['#', 'Bezeichnung', 'Fl\u00e4che (m\u00B2)', 'Layer', 'Status', 'Eckpunkte', 'Handle'],
             ...roomRows
         ]);
         wsRooms['!cols'] = [{ wch: 5 }, { wch: 20 }, { wch: 14 }, { wch: 22 }, { wch: 10 }, { wch: 10 }, { wch: 10 }];

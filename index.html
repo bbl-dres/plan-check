@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DWG Viewer Prototype - LibreDWG WebAssembly</title>
+    <title>Prüfplattform Flächenmanagement</title>
     <link rel="stylesheet" href="css/tokens.css">
     <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -25,7 +25,7 @@
                 <button class="lang-selector__item" data-lang="it">IT</button>
                 <button class="lang-selector__item" data-lang="en">EN</button>
             </div>
-            <button class="header__menu-btn" id="header-menu-btn" aria-label="Menu" aria-expanded="false">
+            <button class="header__menu-btn" id="header-menu-btn" aria-label="Menü" aria-expanded="false">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
             </button>
             <nav class="header__nav">
@@ -64,9 +64,9 @@
                 <div class="viewer__controls">
                     <button id="toggle-bg" title="Hintergrund umschalten"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></button>
                     <span class="viewer__sep"></span>
-                    <button id="zoom-in" title="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35M11 8v6m-3-3h6"/></svg></button>
-                    <button id="zoom-out" title="Zoom out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35M8 11h6"/></svg></button>
-                    <button id="zoom-fit" title="Zoom Extents"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
+                    <button id="zoom-in" title="Vergrössern"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35M11 8v6m-3-3h6"/></svg></button>
+                    <button id="zoom-out" title="Verkleinern"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35M8 11h6"/></svg></button>
+                    <button id="zoom-fit" title="Gesamtansicht"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
                     <span class="viewer__sep"></span>
                     <button id="fullscreen-btn" title="Vollbild"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg></button>
                     <span class="viewer__sep"></span>
@@ -96,7 +96,7 @@
                 </div>
             </div>
             <div class="validation-tabs">
-                <a href="#" class="validation-tabs__tab validation-tabs__tab--active" data-vtab="overview">Übersicht</a>
+                <a href="#" class="validation-tabs__tab validation-tabs__tab--active" data-vtab="overview">Layer (<span id="vtab-layer-count">0</span>)</a>
                 <a href="#" class="validation-tabs__tab" data-vtab="errors">Fehlermeldungen (<span id="vtab-error-count">0</span>)</a>
                 <a href="#" class="validation-tabs__tab" data-vtab="rooms">Räume (<span id="vtab-room-count">0</span>)</a>
                 <a href="#" class="validation-tabs__tab" data-vtab="areas">Flächen (<span id="vtab-area-count">0</span>)</a>
@@ -133,15 +133,15 @@
             <div class="panel__header">Datei-Informationen</div>
             <div class="info-grid">
                 <div class="info-grid__item"><div class="info-grid__label">Version</div><div class="info-grid__value" id="info-version">-</div></div>
-                <div class="info-grid__item"><div class="info-grid__label">Layers</div><div class="info-grid__value" id="info-layers">-</div></div>
-                <div class="info-grid__item"><div class="info-grid__label">Entities</div><div class="info-grid__value" id="info-entities">-</div></div>
+                <div class="info-grid__item"><div class="info-grid__label">Layer</div><div class="info-grid__value" id="info-layers">-</div></div>
+                <div class="info-grid__item"><div class="info-grid__label">Objekte</div><div class="info-grid__value" id="info-entities">-</div></div>
                 <div class="info-grid__item"><div class="info-grid__label">Dateigrösse</div><div class="info-grid__value" id="info-size">-</div></div>
             </div>
         </div>
 
         <!-- Entities -->
         <div class="panel" id="entities-panel">
-            <div class="panel__header">Entity-Zusammenfassung</div>
+            <div class="panel__header">Objektübersicht</div>
             <table class="entities-table">
                 <thead><tr><th>Typ</th><th>Anzahl</th><th>Layer</th></tr></thead>
                 <tbody id="entities-tbody"></tbody>

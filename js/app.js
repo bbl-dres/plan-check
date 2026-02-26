@@ -25,7 +25,7 @@ dom.fileInput.addEventListener('change', (e) => { if (e.target.files[0]) handleF
 document.getElementById('load-demo').addEventListener('click', async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    const DEMO_PATH = 'assets/Test files/2011-DM-0-A04-6A1.dwg';
+    const DEMO_PATH = 'assets/test-files/2011-DM-0-A04-6A1.dwg';
     try {
         log('Demo-Datei wird geladen...');
         showStatus('Demo-Datei wird geladen...');
@@ -388,4 +388,4 @@ if (menuBtn) {
 // =============================================
 // Ready
 // =============================================
-log('DWG Viewer bereit (Canvas 2D). Bitte eine DWG-Datei hochladen.');
+log('Pr\u00fcfplattform bereit. Bitte eine DWG- oder DXF-Datei hochladen.');

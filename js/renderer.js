@@ -465,7 +465,7 @@ export function showFeaturePopup(item, screenX, screenY) {
             html += row('L\u00e4nge', Math.hypot(item.x2 - item.x1, item.y2 - item.y1).toFixed(2));
             break;
         case 'poly':
-            html += row('Vertices', item.verts.length);
+            html += row('Eckpunkte', item.verts.length);
             html += row('Geschlossen', item.closed ? 'Ja' : 'Nein');
             break;
         case 'circle':
@@ -499,7 +499,7 @@ export function showFeaturePopup(item, screenX, screenY) {
                 totalVerts += path.length;
                 totalArea += Math.abs(computePolygonArea(path));
             }
-            html += row('Vertices', totalVerts);
+            html += row('Eckpunkte', totalVerts);
             if (totalArea > 0) html += row('Fl\u00e4che', fmtNum(totalArea, 1) + ' m\u00B2');
             break;
         }
