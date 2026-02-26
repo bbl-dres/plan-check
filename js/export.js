@@ -594,7 +594,131 @@ export async function downloadExcelReport() {
 }
 
 export function downloadGeoJson() {
-    log('GeoJSON Export (noch nicht implementiert)', 'warn');
+    if (!state.lastFile) { log('Keine Datei geladen.', 'warn'); return; }
+    if (state.roomData.length === 0 && state.areaData.length === 0) {
+        log('Keine R\u00e4ume oder Fl\u00e4chen f\u00fcr GeoJSON-Export vorhanden.', 'warn');
+        return;
+    }
+    log('GeoJSON wird erstellt...');
+
+    try {
+        const features = [];
+
+        for (const room of state.roomData) {
+            features.push({
+                type: 'Feature',
+                geometry: {
+                    type: 'Polygon',
+                    coordinates: [linearizeRing(room.vertices)],
+                },
+                properties: {
+                    featureType: 'room',
+                    id: room.id,
+                    name: room.aoid,
+                    area_m2: room.area,
+                    layer: room.layer,
+                    handle: room.handle,
+                    label: room.label,
+                    status: room.status,
+                    siaCategory: room.siaCategory,
+                },
+            });
+        }
+
+        for (const area of state.areaData) {
+            features.push({
+                type: 'Feature',
+                geometry: {
+                    type: 'Polygon',
+                    coordinates: [linearizeRing(area.vertices)],
+                },
+                properties: {
+                    featureType: 'area',
+                    id: area.id,
+                    name: area.aoid,
+                    area_m2: area.area,
+                    layer: area.layer,
+                    handle: area.handle,
+                },
+            });
+        }
+
+        const geojson = { type: 'FeatureCollection', features };
+        const json = JSON.stringify(geojson, null, 2);
+        const blob = new Blob([json], { type: 'application/geo+json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const baseName = state.lastFile.name.replace(/\.[^.]+$/, '');
+        a.download = `${baseName}_Raeume.geojson`;
+        a.click();
+        URL.revokeObjectURL(url);
+
+        log(`GeoJSON exportiert: ${state.roomData.length} R\u00e4ume, ${state.areaData.length} Fl\u00e4chen.`, 'success');
+    } catch (err) {
+        log('GeoJSON-Export fehlgeschlagen: ' + err.message, 'error');
+        console.error(err);
+    }
+}
+
+// Convert vertices (with optional bulge arcs) to a closed GeoJSON coordinate ring
+function linearizeRing(verts) {
+    const coords = [];
+    for (let i = 0; i < verts.length; i++) {
+        const v = verts[i];
+        coords.push([v.x, v.y]);
+        // If this vertex has a bulge, interpolate arc to the next vertex
+        if (v.bulge && v.bulge !== 0) {
+            const next = verts[(i + 1) % verts.length];
+            const arcPts = bulgeToPoints(v.x, v.y, next.x, next.y, v.bulge);
+            // Skip first point (already added) and last (will be added as next vertex)
+            for (let j = 1; j < arcPts.length - 1; j++) {
+                coords.push(arcPts[j]);
+            }
+        }
+    }
+    // Close ring: first point == last point
+    if (coords.length > 0) {
+        coords.push([coords[0][0], coords[0][1]]);
+    }
+    return coords;
+}
+
+// Interpolate a bulge arc between two points into a series of [x, y] coordinates
+function bulgeToPoints(x1, y1, x2, y2, bulge) {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const d = Math.hypot(dx, dy);
+    if (d < 1e-10) return [[x1, y1], [x2, y2]];
+
+    const sagitta = Math.abs(bulge) * d / 2;
+    const radius = ((d / 2) * (d / 2) + sagitta * sagitta) / (2 * sagitta);
+
+    const mx = (x1 + x2) / 2;
+    const my = (y1 + y2) / 2;
+    const nx = -dy / d;
+    const ny = dx / d;
+
+    const sign = bulge > 0 ? 1 : -1;
+    const offset = sign * (radius - sagitta);
+    const cx = mx + nx * offset;
+    const cy = my + ny * offset;
+
+    const sa = Math.atan2(y1 - cy, x1 - cx);
+    const ea = Math.atan2(y2 - cy, x2 - cx);
+
+    // Determine sweep
+    let sweep = ea - sa;
+    if (bulge > 0 && sweep < 0) sweep += 2 * Math.PI;
+    if (bulge < 0 && sweep > 0) sweep -= 2 * Math.PI;
+
+    const steps = Math.max(8, Math.round(Math.abs(sweep) / (Math.PI / 16)));
+    const pts = [];
+    for (let i = 0; i <= steps; i++) {
+        const t = sa + (sweep * i) / steps;
+        pts.push([cx + Math.abs(radius) * Math.cos(t), cy + Math.abs(radius) * Math.sin(t)]);
+    }
+    return pts;
 }
 
 export function downloadBcf() {
