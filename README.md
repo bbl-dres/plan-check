@@ -91,11 +91,12 @@ plan-check/
 | Excel Export | [SheetJS](https://sheetjs.com/) |
 | Build Tools | None — vanilla HTML/CSS/JS |
 
-## API (Planned)
+## Roadmap
 
-A REST API for automated batch validation is documented at [`?view=api-docs`](https://bbl-dres.github.io/plan-check/?view=api-docs). The OpenAPI 3.0 spec is at [`assets/openapi.json`](assets/openapi.json).
-
-Key endpoints: `/validate`, `/jobs/{jobId}/result`, `/jobs/{jobId}/export`, `/batch`.
+- **REST API** — Backend service for automated batch validation. Documented at [`?view=api-docs`](https://bbl-dres.github.io/plan-check/?view=api-docs) with an [OpenAPI 3.0 spec](assets/openapi.json). Key endpoints: `/validate`, `/jobs/{jobId}/result`, `/export`, `/batch`.
+- **Configurable Rule Sets** — Interchangeable checking configurations and rule definitions loaded from external files, replacing the currently hard-coded validation rules.
+- **Advanced Geometry Checks** — Geometry consistency validation including duplicate detection, overlapping polygons, gap analysis, and self-intersection checks.
+- **Auto-Corrections** — Suggesting fixes and automatically applying corrections to the drawing — closing open polygons, snapping endpoints, removing duplicate entities.
 
 ## Documentation
 
