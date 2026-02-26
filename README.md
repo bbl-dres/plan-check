@@ -1,6 +1,6 @@
 # plan-check
 
-**BBL Prüfplattform Flächenmanagement** - A prototype for validating floor plan drawings against Swiss Federal BBL CAD standards and SIA 416 area calculations.
+**BBL Plan Checker / Prüfplattform Flächenmanagement** - A prototype for validating floor plan drawings against Swiss Federal BBL CAD standards and SIA 416 area calculations.
 
 ## Live Demo
 
