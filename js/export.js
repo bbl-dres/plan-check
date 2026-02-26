@@ -4,7 +4,7 @@
 
 import { state, dom } from './state.js';
 import { fmtSize, fmtNum, log } from './utils.js';
-import { render } from './renderer.js';
+import { render, zoomExtents } from './renderer.js';
 
 function loadScript(src) {
     return new Promise((resolve, reject) => {
@@ -25,13 +25,23 @@ async function loadJsPDF() {
 
 function captureCanvasForMode(mode) {
     const prevMode = state.validationMode;
-    const prevSelected = state.selectedRoom;
+    const prevSelectedRoom = state.selectedRoom;
+    const prevSelectedItem = state.selectedItem;
+    const prevCam = { ...state.cam };
+
     state.validationMode = mode;
     state.selectedRoom = null;
-    render();
+    state.selectedItem = null;
+    zoomExtents();
+
     const imgData = dom.canvas.toDataURL('image/png');
+
     state.validationMode = prevMode;
-    state.selectedRoom = prevSelected;
+    state.selectedRoom = prevSelectedRoom;
+    state.selectedItem = prevSelectedItem;
+    state.cam.x = prevCam.x;
+    state.cam.y = prevCam.y;
+    state.cam.zoom = prevCam.zoom;
     render();
     return imgData;
 }
