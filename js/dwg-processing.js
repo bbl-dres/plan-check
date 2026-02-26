@@ -66,16 +66,49 @@ export function prepareDrawingData(entities, layers, db) {
         return layerColorMap[e.layer] || '#CCCCCC';
     }
 
+    // Enhancement 3: $INSUNITS from header
+    state.insunits = db.header?.$INSUNITS ?? db.header?.INSUNITS ?? null;
+
+    // Enhancement 8: STYLE table → styleFontMap
+    state.styleFontMap = {};
+    const styleEntries = db.tables?.STYLE?.entries || [];
+    for (const s of styleEntries) {
+        if (s.name) {
+            state.styleFontMap[s.name] = s.fontName || s.bigFontName || s.fileName || '';
+        }
+    }
+
+    // Enhancement 6: LAYOUT table → paperSpaceLayouts
+    state.paperSpaceLayouts = [];
+    const layoutEntries = db.tables?.LAYOUT?.entries || [];
+    for (const lay of layoutEntries) {
+        const name = lay.name || lay.layoutName || '';
+        if (name && name.toUpperCase() !== 'MODEL') {
+            state.paperSpaceLayouts.push(name);
+        }
+    }
+
+    // Helper: check if entity uses ByLayer color
+    function isByLayer(e) {
+        return !e.colorIndex || e.colorIndex === 256 || e.colorIndex === 0;
+    }
+
     const blockMap = {};
     let blockCount = 0;
     const blockRecords = db.tables?.BLOCK_RECORD?.entries || [];
+    // Enhancement 5: XREF detection
+    state.xrefBlocks = [];
     for (const br of blockRecords) {
         if (br.name && br.entities && br.entities.length > 0) {
             blockMap[br.name] = br;
             blockCount++;
         }
+        if (br.xrefPath || (br.flags && (br.flags & 4))) {
+            state.xrefBlocks.push({ name: br.name || '', xrefPath: br.xrefPath || '' });
+        }
     }
     if (blockCount > 0) log(`${blockCount} Block-Definitionen geladen`);
+    if (state.xrefBlocks.length > 0) log(`${state.xrefBlocks.length} XREF-Blöcke erkannt`);
 
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
     function expand(x, y) {
@@ -102,6 +135,11 @@ export function prepareDrawingData(entities, layers, db) {
         };
     }
 
+    // Enhancement 4: collect non-zero Z entities
+    state.nonZeroZEntities = [];
+    // Enhancement 9: collect DIMENSION info
+    state.dimensionInfo = [];
+
     function addEntity(e, tf, parentLayer) {
         if (e.isVisible === 1) return;
 
@@ -109,6 +147,19 @@ export function prepareDrawingData(entities, layers, db) {
         const l = e.layer || parentLayer || '0';
         const et = e.type || 'UNKNOWN';
         const handle = e.handle || '';
+        const byLayer = isByLayer(e);
+
+        // Enhancement 4: Z-coordinate check
+        function checkZ(pt) {
+            if (pt && pt.z && Math.abs(pt.z) > 1e-6) {
+                state.nonZeroZEntities.push({ handle, layer: l, type: et, z: pt.z });
+            }
+        }
+        if (e.startPoint) checkZ(e.startPoint);
+        if (e.endPoint) checkZ(e.endPoint);
+        if (e.insertionPoint) checkZ(e.insertionPoint);
+        if (e.center) checkZ(e.center);
+        if (e.vertices && e.vertices.length > 0) checkZ(e.vertices[0]);
 
         function tp(px, py) {
             if (!tf) return { x: px, y: py };
@@ -121,7 +172,7 @@ export function prepareDrawingData(entities, layers, db) {
                     const p1 = tp(e.startPoint.x, e.startPoint.y);
                     const p2 = tp(e.endPoint.x, e.endPoint.y);
                     expand(p1.x, p1.y); expand(p2.x, p2.y);
-                    renderList.push({ t: 'line', l, et, handle, x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, c: color });
+                    renderList.push({ t: 'line', l, et, handle, x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, c: color, byLayer });
                 }
                 break;
 
@@ -136,7 +187,8 @@ export function prepareDrawingData(entities, layers, db) {
                         const f = verts[0], la = verts[verts.length - 1];
                         if (Math.abs(f.x - la.x) < 1e-6 && Math.abs(f.y - la.y) < 1e-6) closed = true;
                     }
-                    renderList.push({ t: 'poly', l, et, handle, verts, closed, c: color });
+                    const width = e.constantWidth || e.width || 0;
+                    renderList.push({ t: 'poly', l, et, handle, verts, closed, c: color, byLayer, width });
                 }
                 break;
 
@@ -148,7 +200,8 @@ export function prepareDrawingData(entities, layers, db) {
                     });
                     for (const v of verts) expand(v.x, v.y);
                     const closed = !!(e.flag & 512) || !!(e.flag & 1);
-                    renderList.push({ t: 'poly', l, et, handle, verts, closed, c: color });
+                    const width = e.constantWidth || e.width || 0;
+                    renderList.push({ t: 'poly', l, et, handle, verts, closed, c: color, byLayer, width });
                 }
                 break;
             }
@@ -161,7 +214,7 @@ export function prepareDrawingData(entities, layers, db) {
                     });
                     for (const v of verts) expand(v.x, v.y);
                     const closed = !!(e.flag & 512) || !!(e.flag & 1);
-                    renderList.push({ t: 'poly', l, et, handle, verts, closed, c: color });
+                    renderList.push({ t: 'poly', l, et, handle, verts, closed, c: color, byLayer });
                 }
                 break;
             }
@@ -171,7 +224,7 @@ export function prepareDrawingData(entities, layers, db) {
                     const c = tp(e.center.x, e.center.y);
                     const r = e.radius * Math.abs(tf ? (tf.xScale || 1) : 1);
                     expand(c.x - r, c.y - r); expand(c.x + r, c.y + r);
-                    renderList.push({ t: 'circle', l, et, handle, cx: c.x, cy: c.y, r, c: color });
+                    renderList.push({ t: 'circle', l, et, handle, cx: c.x, cy: c.y, r, c: color, byLayer });
                 }
                 break;
 
@@ -181,7 +234,7 @@ export function prepareDrawingData(entities, layers, db) {
                     const r = e.radius * Math.abs(tf ? (tf.xScale || 1) : 1);
                     const rotOff = tf ? (tf.rotation || 0) * Math.PI / 180 : 0;
                     expand(c.x - r, c.y - r); expand(c.x + r, c.y + r);
-                    renderList.push({ t: 'arc', l, et, handle, cx: c.x, cy: c.y, r, sa: e.startAngle + rotOff, ea: e.endAngle + rotOff, c: color });
+                    renderList.push({ t: 'arc', l, et, handle, cx: c.x, cy: c.y, r, sa: e.startAngle + rotOff, ea: e.endAngle + rotOff, c: color, byLayer });
                 }
                 break;
 
@@ -192,7 +245,7 @@ export function prepareDrawingData(entities, layers, db) {
                     const ry = rx * (e.axisRatio || e.minorToMajorRatio || 0.5);
                     const rot = Math.atan2(e.majorAxisEndPoint.y, e.majorAxisEndPoint.x) + (tf ? (tf.rotation || 0) * Math.PI / 180 : 0);
                     expand(c.x - rx, c.y - rx); expand(c.x + rx, c.y + rx);
-                    renderList.push({ t: 'ellipse', l, et, handle, cx: c.x, cy: c.y, rx, ry, rot, c: color });
+                    renderList.push({ t: 'ellipse', l, et, handle, cx: c.x, cy: c.y, rx, ry, rot, c: color, byLayer });
                 }
                 break;
 
@@ -210,7 +263,7 @@ export function prepareDrawingData(entities, layers, db) {
                     });
                     for (const v of verts) expand(v.x, v.y);
                     const closed = !!(e.flag & 512) || !!(e.flag & 1);
-                    renderList.push({ t: 'poly', l, et, handle, verts, closed, c: color });
+                    renderList.push({ t: 'poly', l, et, handle, verts, closed, c: color, byLayer });
                 }
                 break;
             }
@@ -224,7 +277,8 @@ export function prepareDrawingData(entities, layers, db) {
                 const scale = Math.abs(tf ? (tf.xScale || 1) : 1);
                 const rotRad = ((e.rotation || 0) + (tf ? (tf.rotation || 0) : 0)) * Math.PI / 180;
                 expand(p.x, p.y);
-                renderList.push({ t: 'text', l, et, handle, x: p.x, y: p.y, text: e.text, h: (e.textHeight || 2.5) * scale, rot: rotRad, c: color });
+                const fontName = state.styleFontMap[e.styleName || e.style || ''] || '';
+                renderList.push({ t: 'text', l, et, handle, x: p.x, y: p.y, text: e.text, h: (e.textHeight || 2.5) * scale, rot: rotRad, c: color, byLayer, fontName });
                 break;
             }
 
@@ -243,7 +297,8 @@ export function prepareDrawingData(entities, layers, db) {
                         .replace(/\\[LlOoKk]/g, '')
                         .replace(/[{}]/g, '')
                         .replace(/\\\\/g, '\\');
-                    renderList.push({ t: 'text', l, et: 'MTEXT', handle, x: p.x, y: p.y, text: clean, h: (e.textHeight || 2.5) * scale, rot: rotRad, c: color });
+                    const fontName = state.styleFontMap[e.styleName || e.style || ''] || '';
+                    renderList.push({ t: 'text', l, et: 'MTEXT', handle, x: p.x, y: p.y, text: clean, h: (e.textHeight || 2.5) * scale, rot: rotRad, c: color, byLayer, fontName });
                 }
                 break;
             }
@@ -260,7 +315,8 @@ export function prepareDrawingData(entities, layers, db) {
                 const scale = Math.abs(tf ? (tf.xScale || 1) : 1);
                 const rotRad = ((e.rotation || 0) + (tf ? (tf.rotation || 0) : 0)) * Math.PI / 180;
                 expand(p.x, p.y);
-                renderList.push({ t: 'text', l, et: 'ATTRIB', handle, x: p.x, y: p.y, text: e.text, h: (e.textHeight || 2.5) * scale, rot: rotRad, c: color });
+                const fontName = state.styleFontMap[e.styleName || e.style || ''] || '';
+                renderList.push({ t: 'text', l, et: 'ATTRIB', handle, x: p.x, y: p.y, text: e.text, h: (e.textHeight || 2.5) * scale, rot: rotRad, c: color, byLayer, fontName });
                 break;
             }
 
@@ -269,7 +325,7 @@ export function prepareDrawingData(entities, layers, db) {
                 if (pt && pt.x != null) {
                     const p = tp(pt.x, pt.y);
                     expand(p.x, p.y);
-                    renderList.push({ t: 'point', l, et, handle, x: p.x, y: p.y, c: color });
+                    renderList.push({ t: 'point', l, et, handle, x: p.x, y: p.y, c: color, byLayer });
                 }
                 break;
             }
@@ -282,7 +338,7 @@ export function prepareDrawingData(entities, layers, db) {
                 if (pts.length >= 3) {
                     const tpts = pts.map(p => tp(p.x, p.y));
                     for (const p of tpts) expand(p.x, p.y);
-                    renderList.push({ t: 'solid', l, et, handle, pts: tpts, c: color });
+                    renderList.push({ t: 'solid', l, et, handle, pts: tpts, c: color, byLayer });
                 }
                 break;
             }
@@ -362,7 +418,7 @@ export function prepareDrawingData(entities, layers, db) {
                         if (verts.length > 1) {
                             for (const v of verts) expand(v.x, v.y);
                             const polyVerts = verts.map(v => ({ x: v.x, y: v.y, bulge: 0 }));
-                            renderList.push({ t: 'poly', l, et, handle, verts: polyVerts, closed: true, c: color });
+                            renderList.push({ t: 'poly', l, et, handle, verts: polyVerts, closed: true, c: color, byLayer });
                             if (isSolidFill) paths.push(polyVerts);
                         }
                     }
@@ -372,17 +428,24 @@ export function prepareDrawingData(entities, layers, db) {
                             : bp.vertices.map(v => ({ x: v.x, y: v.y, bulge: v.bulge || 0 }));
                         for (const v of verts) expand(v.x, v.y);
                         const closed = bp.isClosed !== false;
-                        renderList.push({ t: 'poly', l, et, handle, verts, closed, c: color });
+                        renderList.push({ t: 'poly', l, et, handle, verts, closed, c: color, byLayer });
                         if (isSolidFill) paths.push(verts);
                     }
                 }
                 if (isSolidFill && paths.length > 0) {
-                    renderList.push({ t: 'hatchfill', l, et, handle, paths, c: color });
+                    const pn = e.patternName || '';
+                    renderList.push({ t: 'hatchfill', l, et, handle, paths, c: color, byLayer, patternName: pn });
                 }
                 break;
             }
 
             case 'DIMENSION': {
+                // Enhancement 9: collect dimension info
+                state.dimensionInfo.push({
+                    handle,
+                    layer: l,
+                    associative: !!(e.flag && (e.flag & 1)),
+                });
                 if (e.name && blockMap[e.name]) {
                     const block = blockMap[e.name];
                     const ins = {
@@ -403,13 +466,13 @@ export function prepareDrawingData(entities, layers, db) {
                         const p1 = tp(pts[i].x, pts[i].y);
                         const p2 = tp(pts[i + 1].x, pts[i + 1].y);
                         expand(p1.x, p1.y); expand(p2.x, p2.y);
-                        renderList.push({ t: 'line', l, et, handle, x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, c: color });
+                        renderList.push({ t: 'line', l, et, handle, x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, c: color, byLayer });
                     }
                     if (e.textPoint && e.measurement != null) {
                         const p = tp(e.textPoint.x, e.textPoint.y);
                         expand(p.x, p.y);
                         const txt = e.text || e.measurement.toFixed(0);
-                        renderList.push({ t: 'text', l, et, handle, x: p.x, y: p.y, text: txt, h: 2.5, rot: 0, c: color });
+                        renderList.push({ t: 'text', l, et, handle, x: p.x, y: p.y, text: txt, h: 2.5, rot: 0, c: color, byLayer });
                     }
                 }
                 break;
@@ -422,7 +485,7 @@ export function prepareDrawingData(entities, layers, db) {
                         return { x: p.x, y: p.y, bulge: 0 };
                     });
                     for (const v of verts) expand(v.x, v.y);
-                    renderList.push({ t: 'poly', l, et, handle, verts, closed: false, c: color });
+                    renderList.push({ t: 'poly', l, et, handle, verts, closed: false, c: color, byLayer });
                 }
                 break;
             }
@@ -435,7 +498,7 @@ export function prepareDrawingData(entities, layers, db) {
                         return { x: p.x, y: p.y, bulge: 0 };
                     });
                     for (const v of verts) expand(v.x, v.y);
-                    renderList.push({ t: 'poly', l, et, handle, verts, closed: false, c: color });
+                    renderList.push({ t: 'poly', l, et, handle, verts, closed: false, c: color, byLayer });
                 }
                 break;
             }
@@ -446,7 +509,7 @@ export function prepareDrawingData(entities, layers, db) {
                     const tpts = pts.map(p => tp(p.x, p.y));
                     for (const p of tpts) expand(p.x, p.y);
                     const verts = tpts.map(p => ({ x: p.x, y: p.y, bulge: 0 }));
-                    renderList.push({ t: 'poly', l, et, handle, verts, closed: true, c: color });
+                    renderList.push({ t: 'poly', l, et, handle, verts, closed: true, c: color, byLayer });
                 }
                 break;
             }
@@ -457,7 +520,7 @@ export function prepareDrawingData(entities, layers, db) {
                     const len = 1e6;
                     const p2 = tp(e.basePoint.x + e.direction.x * len, e.basePoint.y + e.direction.y * len);
                     expand(p1.x, p1.y);
-                    renderList.push({ t: 'line', l, et, handle, x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, c: color });
+                    renderList.push({ t: 'line', l, et, handle, x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, c: color, byLayer });
                 }
                 break;
             }
@@ -467,7 +530,7 @@ export function prepareDrawingData(entities, layers, db) {
                     const len = 1e6;
                     const p1 = tp(e.basePoint.x - e.direction.x * len, e.basePoint.y - e.direction.y * len);
                     const p2 = tp(e.basePoint.x + e.direction.x * len, e.basePoint.y + e.direction.y * len);
-                    renderList.push({ t: 'line', l, et, handle, x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, c: color });
+                    renderList.push({ t: 'line', l, et, handle, x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, c: color, byLayer });
                 }
                 break;
             }

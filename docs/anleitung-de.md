@@ -20,6 +20,8 @@
 11. [API-Zugang](#api-zugang)
 12. [FAQ](#faq)
 
+> **Hinweis:** Die vollständige Beschreibung aller Prüfregeln inkl. Referenz zur CAD-Richtlinie BBL V1.0 finden Sie unter [Prüfregeln (pruefregeln-de.md)](pruefregeln-de.md).
+
 ---
 
 ## Überblick
@@ -199,36 +201,97 @@ Klicken Sie auf den Button **«Nur Fehler»** in der Tab-Leiste, um ausschliessl
 
 ## Datei-Anforderungen
 
-### Layer-Konvention
+### Layerstruktur gemäss CAD-Richtlinie BBL V1.0
 
-Die Plattform erkennt Räume auf dem Layer **`A1Z21---E-`** (gemäss BBL-Layer-Standard). Dieser Layer muss geschlossene Polylinien (LWPOLYLINE) enthalten, die die Raumgrenzen definieren.
+Die Plattform prüft CAFM-Pläne anhand der in der **CAD-Richtlinie BBL V1.0** (Kap. 5.2) definierten Layerstruktur. Der Plan darf ausschliesslich die nachfolgenden Layer enthalten:
+
+| Layer | Beschreibung | Inhalt |
+|-------|-------------|--------|
+| `R_RAUMPOLYGON` | Raumpolygone (NGF) | Geschlossene LWPOLYLINE pro Raum |
+| `R_RAUMPOLYGON-ABZUG` | Abzugsflächenpolygone | Stützen, Kernzonen etc. innerhalb eines NGF-Polygons |
+| `R_GESCHOSSPOLYGON` | Geschosspolygone (GF) | Geschlossene LWPOLYLINE pro Geschoss |
+| `R_AOID` | AOID-Textfelder | TEXT mit eindeutiger Raum-ID innerhalb des Polygons |
+| `A_ARCHITEKTUR` | Architekturobjekte | Wände, Türen, Fenster, Treppen, Einbauten |
+| `A_SCHRAFFUR` | Schraffuren | SOLID-Schraffuren für massive Wände |
+| `A_ELEKTRO` | Elektroinstallationen | Schaltschränke, Apparate |
+| `A_HEIZUNG-KUEHLUNG` | Heizung/Kühlung | Radiatoren, Apparate |
+| `A_LUEFTUNG` | Lüftung | Drallauslässe, Apparate |
+| `A_SANITAER` | Sanitäranlagen | WC, Lavabo, Duschen |
+| `V_ACHSEN` | Gebäudeachsen | Achsenlinien und -texte |
+| `V_BEMASSUNG` | Hauptmasse | Massobjekte gem. SIA400 |
+| `V_PLANLAYOUT` | Plankopf/Planrahmen | Planrahmen und Plankopf im Modellbereich |
+| `V_REFERENZPUNKT` | Referenzpunkte | Referenzpunkt-Symbol |
+| `V_TEXT` | Informationstexte | Ergänzende Planbeschriftung |
+
+> Detaillierte Farbzuordnungen und RGB-Werte siehe [Prüfregeln — Layerreferenz](pruefregeln-de.md#layerstruktur-cafm-plan--referenz).
 
 ### Empfohlene Planstruktur
 
-| Element | Layer-Muster | Typ |
-|---------|-------------|-----|
-| Raumpolygone | `A1Z21---E-` | Geschlossene LWPOLYLINE |
-| Raumbeschriftung | Beliebig | TEXT oder MTEXT innerhalb des Polygons |
-| Flächenpolygone | Layer mit `BGF`, `EBF` oder `GF` | Geschlossene LWPOLYLINE |
-| Architektur | `A1------W-` u.a. | Beliebige Entitäten |
+| Element | Layer | Typ |
+|---------|-------|-----|
+| Raumpolygone | `R_RAUMPOLYGON` | Geschlossene LWPOLYLINE (ohne Bogensegmente) |
+| Abzugsflächen | `R_RAUMPOLYGON-ABZUG` | Geschlossene LWPOLYLINE |
+| Geschosspolygon | `R_GESCHOSSPOLYGON` | Geschlossene LWPOLYLINE |
+| Raumstempel (AOID) | `R_AOID` | TEXT innerhalb des Polygons |
+| Architektur | `A_ARCHITEKTUR` | Linien, Kreise, Texte (keine MULTILINE, ELLIPSE, SPLINE, OLE) |
+| Schraffuren | `A_SCHRAFFUR` | SOLID-Schraffuren |
+| Bemassungen | `V_BEMASSUNG` | Assoziative Massobjekte |
+| Planrahmen/Plankopf | `V_PLANLAYOUT` | Im Modellbereich (keine Layouts erlaubt) |
+
+### Musterdatei
+
+Zum Kennenlernen der Plattform und der korrekten Planstruktur steht der offizielle BBL-Musterplan zur Verfügung:
+
+- **`CAD.V01-CAFM-Plan-DE.dwg`** — CAFM-Musterplan mit korrekter Layerstruktur, Beispielräumen und AOID-Nummern (Anhang CAD.V01 der CAD-Richtlinie).
+
+Laden Sie die Datei über **«Demo-Projekt laden»** oder verwenden Sie die Datei direkt aus dem Verzeichnis `assets/test-files/`.
 
 ### Häufige Planfehler
 
-- **Nicht geschlossene Polygone:** Raumpolygone müssen geschlossen sein (Start- und Endpunkt identisch oder Lücke < 0.1 mm).
-- **Fehlende Raumbeschriftung:** Jeder Raum sollte ein TEXT- oder MTEXT-Element innerhalb des Polygons enthalten.
-- **Falscher Layer:** Raumpolygone müssen auf dem Layer `A1Z21---E-` liegen.
-- **Sehr kleine Flächen:** Räume unter 1 m² werden als Warnung gemeldet.
+- **Nicht geschlossene Polygone:** Raumpolygone müssen geschlossen sein (Start- und Endpunkt identisch).
+- **Bogensegmente:** In Raum- und Geschosspolygonen sind Bogensegmente (bulge) nicht zulässig.
+- **Fehlende AOID:** Jeder Raum muss ein TEXT-Element mit der AOID auf Layer `R_AOID` innerhalb des Polygons enthalten.
+- **Falscher Layer:** Raumpolygone müssen auf `R_RAUMPOLYGON` liegen, Geschosspolygone auf `R_GESCHOSSPOLYGON`.
+- **Sehr kleine Flächen:** Räume unter 0.25 m² werden als Warnung gemeldet.
+- **Unzulässige Entitätstypen:** MULTILINE, ELLIPSE, SPLINE und OLE sind nicht erlaubt.
+- **Layouts:** Paper-Space-Layouts sind nicht erlaubt; Planrahmen und Plankopf im Modellbereich platzieren.
+- **Farbe nicht VONLAYER:** Alle Elementfarben müssen auf VONLAYER (ByLayer) stehen.
+- **Doppelte Polygone:** Identische Raumpolygone müssen gelöscht werden.
 
 ---
 
 ## Validierungsregeln
 
+Die Prüfregeln basieren auf der **CAD-Richtlinie BBL V1.0** (Stand 01.01.2026). Die vollständige Regelbeschreibung mit Referenzen zur Richtlinie finden Sie unter **[Prüfregeln (pruefregeln-de.md)](pruefregeln-de.md)**.
+
+### Übersicht Prüfkategorien
+
+| Präfix | Kategorie | Anzahl Regeln |
+|--------|-----------|---------------|
+| `LAYER` | Layerstruktur | 8 |
+| `POLY` | Raumpolygone | 7 |
+| `GPOLY` | Geschosspolygone | 5 |
+| `AOID` | Raumstempel / AOID | 6 |
+| `GEOM` | Geometrie allgemein | 5 |
+| `TEXT` | Textelemente | 2 |
+| `STYLE` | Linientypen und Farben | 2 |
+| `LAYOUT` | Planlayout | 2 |
+| `DIM` | Masselemente | 2 |
+| `HATCH` | Schraffurelemente | 1 |
+
+### Wichtigste Regeln (Auszug)
+
 | Code | Schweregrad | Beschreibung |
 |------|------------|--------------|
-| `LABEL_001` | Warnung | Raum hat keine Textbezeichnung (TEXT/MTEXT) |
-| `GEOM_001` | Warnung | Raumfläche ist sehr klein (< 1 m²) |
-| `GEOM_002` | Fehler | Polygon hat weniger als 3 Vertices |
-| `GEOM_003` | Fehler | Polygon nicht vollständig geschlossen (Lücke > 0.1 mm) |
+| `LAYER_001` | Fehler | Pflicht-Layer `R_RAUMPOLYGON` fehlt |
+| `LAYER_002` | Fehler | Pflicht-Layer `R_AOID` fehlt |
+| `LAYER_003` | Fehler | Pflicht-Layer `R_GESCHOSSPOLYGON` fehlt |
+| `POLY_001` | Fehler | Raumpolygon ist nicht geschlossen |
+| `POLY_002` | Fehler | Raumpolygon enthält Bogensegmente |
+| `POLY_004` | Warnung | Raumfläche < 0.25 m² |
+| `AOID_001` | Fehler | Raumpolygon hat keine AOID |
+| `AOID_002` | Fehler | AOID ist nicht eindeutig |
+| `GEOM_003` | Fehler | Unzulässiger Entitätstyp (MULTILINE, ELLIPSE, SPLINE, OLE) |
 
 ---
 
@@ -258,17 +321,25 @@ DWG-Dateien von AutoCAD R13 bis R2024 werden unterstützt. Ältere Versionen kö
 
 ### Warum werden keine Räume erkannt?
 
-- Stellen Sie sicher, dass die Raumpolygone auf dem Layer **`A1Z21---E-`** liegen.
+- Stellen Sie sicher, dass die Raumpolygone auf dem Layer **`R_RAUMPOLYGON`** liegen (gemäss CAD-Richtlinie BBL V1.0).
 - Prüfen Sie, ob die Polylinien **geschlossen** sind (Closed-Flag gesetzt).
 - Überprüfen Sie, ob die Polylinien vom Typ **LWPOLYLINE** sind.
+- Stellen Sie sicher, dass die Polylinien **keine Bogensegmente** (bulge) enthalten.
 
-### Warum fehlen Raumbeschriftungen?
+### Warum fehlen AOID-Nummern?
 
-Die Plattform sucht nach TEXT- oder MTEXT-Entitäten, die geometrisch **innerhalb** des Raumpolygons liegen. Texte ausserhalb des Polygons oder auf anderen Layern werden dem Raum nicht zugeordnet.
+Die Plattform sucht nach TEXT-Entitäten auf dem Layer **`R_AOID`**, deren Basispunkt geometrisch **innerhalb** des Raumpolygons liegt. Prüfen Sie:
+- Liegt der Text auf dem korrekten Layer `R_AOID`?
+- Liegt der Einfügepunkt des Textes innerhalb des Polygons?
+- Entspricht die AOID dem Format `WWWW.GG.EE.RRR` (z.B. `2011.DM.04.045`)?
 
 ### Kann ich eigene Validierungsregeln definieren?
 
-In der aktuellen Version ist der Regelsatz vordefiniert. Über die API können zukünftig Regeln selektiv aktiviert oder deaktiviert werden.
+In der aktuellen Version ist der Regelsatz gemäss CAD-Richtlinie BBL V1.0 vordefiniert (40 Prüfregeln in 10 Kategorien). Über die API können zukünftig Regeln selektiv aktiviert oder deaktiviert werden. Die vollständige Regelbeschreibung finden Sie unter [Prüfregeln](pruefregeln-de.md).
+
+### Gibt es eine Musterdatei zum Testen?
+
+Ja. Der offizielle BBL-Musterplan **`CAD.V01-CAFM-Plan-DE.dwg`** steht über «Demo-Projekt laden» zur Verfügung. Diese Datei enthält die korrekte Layerstruktur und Beispielräume mit AOID-Nummern gemäss CAD-Richtlinie BBL V1.0.
 
 ### Wie wird der Score berechnet?
 

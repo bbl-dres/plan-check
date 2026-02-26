@@ -6,6 +6,16 @@ export const MAX_FILE_SIZE = 50 * 1024 * 1024;
 export const BG_DARK = '#1a1a2e';
 export const BG_LIGHT = '#ffffff';
 
+// CAD-Richtlinie BBL V1.0 — CAFM Layer definitions
+export const CAFM_LAYERS = {
+    required: ['R_RAUMPOLYGON', 'R_AOID', 'R_GESCHOSSPOLYGON', 'A_ARCHITEKTUR', 'A_SCHRAFFUR', 'V_BEMASSUNG', 'V_PLANLAYOUT'],
+    optional: ['R_RAUMPOLYGON-ABZUG', 'A_ELEKTRO', 'A_HEIZUNG-KUEHLUNG', 'A_LUEFTUNG', 'A_SANITAER', 'V_ACHSEN', 'V_REFERENZPUNKT', 'V_TEXT'],
+    get all() { return [...this.required, ...this.optional]; },
+    requiredR: ['R_RAUMPOLYGON', 'R_AOID', 'R_GESCHOSSPOLYGON'],
+};
+
+export const AOID_TEXT_LAYERS = ['V_PLANLAYOUT', 'V_ACHSEN', 'V_TEXT', 'R_AOID'];
+
 export const SIA_COLORS = {
     HNF: { fill: 'rgba(229,115,115,0.35)', stroke: '#E57373', hex: '#E57373', label: 'Hauptnutzfläche' },
     NNF: { fill: 'rgba(255,183,77,0.35)',  stroke: '#FFB74D', hex: '#FFB74D', label: 'Nebennutzfläche' },
@@ -45,10 +55,20 @@ export const state = {
     validationErrors: [],
     validationMode: null,
     selectedRoom: null,
-    roomLayerName: 'A1Z21---E-',
+    roomLayerName: 'R_RAUMPOLYGON',
     tabFilterLayers: null,
     layerInfo: [],
     resultFilter: 'all',
+    validationAborted: false,
+    abortReason: null,
+
+    // Parser-enriched data (populated by dwg-processing.js)
+    insunits: null,
+    nonZeroZEntities: [],
+    xrefBlocks: [],
+    paperSpaceLayouts: [],
+    styleFontMap: {},
+    dimensionInfo: [],
 
     // Hidden sets
     hiddenLayers: new Set(),

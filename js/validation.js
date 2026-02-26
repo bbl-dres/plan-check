@@ -2,8 +2,8 @@
 // Room Extraction, Validation Rules & Tab UI
 // =============================================
 
-import { state, dom } from './state.js';
-import { fmtNum, esc, computePolygonArea, pointInPoly, log } from './utils.js';
+import { state, dom, CAFM_LAYERS, AOID_TEXT_LAYERS } from './state.js';
+import { fmtNum, esc, computePolygonArea, pointInPoly, log, hasSelfIntersection, hashVertices, visualCenter } from './utils.js';
 import { render, resizeCanvas, zoomToPolygon, showPopupForItem } from './renderer.js';
 import { downloadPdfReport, downloadExcelReport } from './export.js';
 
@@ -11,35 +11,38 @@ import { downloadPdfReport, downloadExcelReport } from './export.js';
 // Room Extraction & Validation
 // =============================================
 
+// ── Error helper ──
+let errorId = 1;
+function mkErr(severity, ruleCode, message, category, extra = {}) {
+    return { id: errorId++, severity, ruleCode, message, category, ...extra };
+}
+
+// ── Room & Area Extraction ──
 function extractRooms(renderList) {
-    // Collect text items for label matching
+    // AOID texts only from R_AOID layer
+    const aoidTexts = renderList.filter(item => item.t === 'text' && item.l === 'R_AOID');
     const textItems = renderList.filter(item => item.t === 'text');
 
-    // Find room polygons: closed polylines on the room layer
+    // Room polygons on R_RAUMPOLYGON
     const roomPolys = renderList.filter(item =>
         item.t === 'poly' && item.closed && item.l === state.roomLayerName
     );
 
-    // Find area polygons: closed polylines on layers containing 'BGF' or 'EBF'
+    // Floor polygons on R_GESCHOSSPOLYGON
     const areaPolys = renderList.filter(item =>
-        item.t === 'poly' && item.closed &&
-        item.l !== state.roomLayerName &&
-        (/BGF|EBF|GF/i.test(item.l))
+        item.t === 'poly' && item.closed && item.l === 'R_GESCHOSSPOLYGON'
     );
 
     const rooms = roomPolys.map((poly, idx) => {
-        const area = computePolygonArea(poly.verts);
-        // Centroid
-        let cx = 0, cy = 0;
-        for (const v of poly.verts) { cx += v.x; cy += v.y; }
-        cx /= poly.verts.length;
-        cy /= poly.verts.length;
+        const areaM2 = computePolygonArea(poly.verts) / 1e6; // mm² → m²
+        const center = visualCenter(poly.verts);
 
-        // Find text label inside polygon
+        // Find AOID text(s) inside polygon
         let label = '';
-        for (const t of textItems) {
+        const aoidMatches = [];
+        for (const t of aoidTexts) {
             if (pointInPoly(t.x, t.y, poly.verts)) {
-                // Prefer shorter texts (likely room ID, not long descriptions)
+                aoidMatches.push(t.text.trim());
                 if (!label || t.text.length < label.length) {
                     label = t.text.trim();
                 }
@@ -49,23 +52,22 @@ function extractRooms(renderList) {
         return {
             id: idx + 1,
             aoid: label || `R${idx + 1}`,
-            area: Math.round(area * 100) / 100,
-            centroid: { x: cx, y: cy },
+            area: Math.round(areaM2 * 100) / 100,
+            centroid: center,
             vertices: poly.verts,
             layer: poly.l,
             handle: poly.handle,
-            label: label,
-            status: 'ok', // will be updated by validation
-            siaCategory: 'HNF', // default, no SIA info in DWG
+            label,
+            aoidMatches,
+            et: poly.et,
+            status: 'ok',
+            siaCategory: 'HNF',
         };
     });
 
     const areas = areaPolys.map((poly, idx) => {
-        const area = computePolygonArea(poly.verts);
-        let cx = 0, cy = 0;
-        for (const v of poly.verts) { cx += v.x; cy += v.y; }
-        cx /= poly.verts.length;
-        cy /= poly.verts.length;
+        const areaM2 = computePolygonArea(poly.verts) / 1e6;
+        const center = visualCenter(poly.verts);
 
         let label = '';
         for (const t of textItems) {
@@ -77,63 +79,496 @@ function extractRooms(renderList) {
         return {
             id: 1000 + idx,
             aoid: label || poly.l,
-            area: Math.round(area * 100) / 100,
-            centroid: { x: cx, y: cy },
+            area: Math.round(areaM2 * 100) / 100,
+            centroid: center,
             vertices: poly.verts,
             layer: poly.l,
             handle: poly.handle,
+            et: poly.et,
+            status: 'ok',
         };
     });
 
     return { rooms, areas };
 }
 
-function runValidation(rooms) {
+// =============================================
+// 42-Rule Validation Engine
+// =============================================
+
+function runAbortChecks() {
     const errors = [];
-    let errorId = 1;
+    const layerNames = state.layerInfo.map(l => l.name);
 
+    // ABORT_001: No required R_* layers
+    const hasAnyR = CAFM_LAYERS.requiredR.some(r => layerNames.includes(r));
+    if (!hasAnyR) {
+        errors.push(mkErr('abort', 'ABORT_001',
+            'Layerstruktur wird nicht eingehalten \u2014 keiner der Pflicht-Layer (R_RAUMPOLYGON, R_AOID, R_GESCHOSSPOLYGON) vorhanden', 'ABORT'));
+    }
+
+    // ABORT_002: $INSUNITS not mm (4)
+    if (state.insunits !== null && state.insunits !== 4) {
+        const unitNames = { 0: 'Ohne', 1: 'Zoll', 2: 'Fuss', 3: 'Meilen', 4: 'Millimeter', 5: 'Zentimeter', 6: 'Meter' };
+        errors.push(mkErr('abort', 'ABORT_002',
+            `Zeichnungseinheit ist nicht Millimeter (1:1) \u2014 aktuell: ${unitNames[state.insunits] || state.insunits}`, 'ABORT'));
+    }
+
+    return errors;
+}
+
+function runLayerRules() {
+    const errors = [];
+    const layerNames = state.layerInfo.map(l => l.name);
+
+    const checks = [
+        { code: 'LAYER_001', name: 'R_RAUMPOLYGON', severity: 'error' },
+        { code: 'LAYER_002', name: 'R_AOID', severity: 'error' },
+        { code: 'LAYER_003', name: 'R_GESCHOSSPOLYGON', severity: 'error' },
+        { code: 'LAYER_004', name: 'A_ARCHITEKTUR', severity: 'warning' },
+        { code: 'LAYER_005', name: 'V_PLANLAYOUT', severity: 'warning' },
+        { code: 'LAYER_006', name: 'V_BEMASSUNG', severity: 'warning' },
+        { code: 'LAYER_007', name: 'A_SCHRAFFUR', severity: 'warning' },
+    ];
+
+    for (const chk of checks) {
+        if (!layerNames.includes(chk.name)) {
+            errors.push(mkErr(chk.severity, chk.code,
+                `Pflicht-Layer fehlt: ${chk.name} nicht vorhanden`, 'LAYER', { layer: chk.name }));
+        }
+    }
+
+    // LAYER_008: Unknown layers
+    const allowed = new Set(CAFM_LAYERS.all);
+    for (const l of state.layerInfo) {
+        if (l.name === '0' || l.name === 'Defpoints') continue;
+        if (!allowed.has(l.name)) {
+            errors.push(mkErr('warning', 'LAYER_008',
+                `Unbekannter Layer: ${l.name} ist nicht in der zul\u00e4ssigen Layerliste`, 'LAYER', { layer: l.name }));
+        }
+    }
+
+    return errors;
+}
+
+function runPolyRules(renderList) {
+    const errors = [];
+    const layerName = 'R_RAUMPOLYGON';
+    const items = renderList.filter(item => item.l === layerName);
+    const polys = items.filter(item => item.t === 'poly');
+
+    // POLY_006: Entity type must be LWPOLYLINE
+    for (const item of items) {
+        if (item.t === 'poly' && item.et !== 'LWPOLYLINE') {
+            errors.push(mkErr('error', 'POLY_006',
+                `Element auf ${layerName} ist keine LWPOLYLINE (Typ: ${item.et})`, 'POLY', { handle: item.handle }));
+        }
+    }
+
+    for (const poly of polys) {
+        // POLY_001: Closed check
+        if (!poly.closed) {
+            errors.push(mkErr('error', 'POLY_001',
+                `Raumpolygon ist nicht geschlossen`, 'POLY', { handle: poly.handle }));
+        }
+
+        // POLY_002: Arc segments
+        const hasBulge = poly.verts.some(v => v.bulge && Math.abs(v.bulge) > 1e-6);
+        if (hasBulge) {
+            errors.push(mkErr('error', 'POLY_002',
+                `Raumpolygon enth\u00e4lt Bogensegmente (bulge \u2260 0)`, 'POLY', { handle: poly.handle }));
+        }
+
+        // POLY_003: Vertex count
+        if (poly.verts.length < 3) {
+            errors.push(mkErr('error', 'POLY_003',
+                `Polygon hat weniger als 3 Eckpunkte`, 'POLY', { handle: poly.handle }));
+        }
+
+        // POLY_004: Area too small
+        if (poly.closed && poly.verts.length >= 3) {
+            const areaM2 = computePolygonArea(poly.verts) / 1e6;
+            if (areaM2 < 0.25) {
+                errors.push(mkErr('warning', 'POLY_004',
+                    `Raumfl\u00e4che sehr klein (${areaM2.toFixed(2)} m\u00B2 < 0.25 m\u00B2)`, 'POLY', { handle: poly.handle }));
+            }
+        }
+
+        // POLY_007: Self-intersection
+        if (poly.closed && poly.verts.length >= 4 && hasSelfIntersection(poly.verts)) {
+            errors.push(mkErr('warning', 'POLY_007',
+                `Raumpolygon hat Selbst\u00fcberschneidung`, 'POLY', { handle: poly.handle }));
+        }
+    }
+
+    // POLY_005: Duplicate polygons
+    const hashes = new Map();
+    for (const poly of polys) {
+        const h = hashVertices(poly.verts);
+        if (hashes.has(h)) {
+            errors.push(mkErr('warning', 'POLY_005',
+                `M\u00f6gliches doppeltes Polygon (identische Geometrie)`, 'POLY', { handle: poly.handle }));
+        } else {
+            hashes.set(h, poly);
+        }
+    }
+
+    return errors;
+}
+
+function runGPolyRules(renderList) {
+    const errors = [];
+    const layerName = 'R_GESCHOSSPOLYGON';
+    const items = renderList.filter(item => item.l === layerName);
+    const polys = items.filter(item => item.t === 'poly');
+
+    // GPOLY_004: No floor polygon at all
+    if (polys.length === 0) {
+        errors.push(mkErr('warning', 'GPOLY_004',
+            'Kein Geschosspolygon vorhanden', 'GPOLY'));
+        return errors;
+    }
+
+    // GPOLY_003: Entity type must be LWPOLYLINE
+    for (const item of items) {
+        if (item.t === 'poly' && item.et !== 'LWPOLYLINE') {
+            errors.push(mkErr('error', 'GPOLY_003',
+                `Element auf ${layerName} ist keine LWPOLYLINE (Typ: ${item.et})`, 'GPOLY', { handle: item.handle }));
+        }
+    }
+
+    for (const poly of polys) {
+        // GPOLY_001: Closed check
+        if (!poly.closed) {
+            errors.push(mkErr('error', 'GPOLY_001',
+                'Geschosspolygon ist nicht geschlossen', 'GPOLY', { handle: poly.handle }));
+        }
+
+        // GPOLY_002: Arc segments
+        if (poly.verts.some(v => v.bulge && Math.abs(v.bulge) > 1e-6)) {
+            errors.push(mkErr('error', 'GPOLY_002',
+                'Geschosspolygon enth\u00e4lt Bogensegmente (bulge \u2260 0)', 'GPOLY', { handle: poly.handle }));
+        }
+    }
+
+    // GPOLY_005: Duplicate polygons
+    const hashes = new Map();
+    for (const poly of polys) {
+        const h = hashVertices(poly.verts);
+        if (hashes.has(h)) {
+            errors.push(mkErr('warning', 'GPOLY_005',
+                'M\u00f6gliches doppeltes Geschosspolygon', 'GPOLY', { handle: poly.handle }));
+        } else {
+            hashes.set(h, poly);
+        }
+    }
+
+    return errors;
+}
+
+function runAoidRules(renderList, rooms) {
+    const errors = [];
+    const aoidTexts = renderList.filter(item => item.t === 'text' && item.l === 'R_AOID');
+    const roomPolys = renderList.filter(item =>
+        item.t === 'poly' && item.closed && item.l === state.roomLayerName
+    );
+
+    // AOID_001: Room without AOID
     for (const room of rooms) {
-        // Check: room has a text label
-        if (!room.label) {
-            errors.push({
-                id: errorId++, roomId: room.id, severity: 'warning',
-                ruleCode: 'LABEL_001',
-                message: `Raum ${room.aoid} hat keine Textbezeichnung`
-            });
-            if (room.status === 'ok') room.status = 'warning';
+        if (room.aoidMatches.length === 0) {
+            errors.push(mkErr('error', 'AOID_001',
+                `Raum ${room.aoid}: kein AOID-Text auf R_AOID innerhalb des Polygons`, 'AOID',
+                { roomId: room.id, handle: room.handle }));
         }
+    }
 
-        // Check: polygon area is reasonable (> 1 m²)
-        if (room.area < 1) {
-            errors.push({
-                id: errorId++, roomId: room.id, severity: 'warning',
-                ruleCode: 'GEOM_001',
-                message: `Raum ${room.aoid}: Fl\u00e4che sehr klein (${room.area} m\u00B2)`
-            });
-            if (room.status === 'ok') room.status = 'warning';
+    // AOID_004: Multiple AOIDs in same polygon
+    for (const room of rooms) {
+        if (room.aoidMatches.length > 1) {
+            errors.push(mkErr('warning', 'AOID_004',
+                `Raum ${room.aoid}: ${room.aoidMatches.length} Texte auf R_AOID innerhalb desselben Polygons`, 'AOID',
+                { roomId: room.id, handle: room.handle }));
         }
+    }
 
-        // Check: polygon has enough vertices
-        if (room.vertices.length < 3) {
-            errors.push({
-                id: errorId++, roomId: room.id, severity: 'error',
-                ruleCode: 'GEOM_002',
-                message: `Raum ${room.aoid}: Polygon hat weniger als 3 Eckpunkte`
-            });
-            room.status = 'error';
+    // AOID_002: Duplicate AOIDs
+    const aoidCounts = {};
+    for (const room of rooms) {
+        if (room.label) {
+            aoidCounts[room.label] = (aoidCounts[room.label] || 0) + 1;
         }
+    }
+    for (const [aoid, count] of Object.entries(aoidCounts)) {
+        if (count > 1) {
+            const dupeRooms = rooms.filter(r => r.label === aoid);
+            for (const room of dupeRooms) {
+                errors.push(mkErr('error', 'AOID_002',
+                    `AOID "${aoid}" ist nicht eindeutig (${count}\u00d7 vorhanden)`, 'AOID',
+                    { roomId: room.id, handle: room.handle }));
+            }
+        }
+    }
 
-        // Check: polygon closure gap
-        const first = room.vertices[0];
-        const last = room.vertices[room.vertices.length - 1];
-        const gap = Math.hypot(first.x - last.x, first.y - last.y);
-        if (gap > 0.1 && gap < 10) {
-            errors.push({
-                id: errorId++, roomId: room.id, severity: 'error',
-                ruleCode: 'GEOM_003',
-                message: `Raum ${room.aoid}: Polygon nicht vollst\u00e4ndig geschlossen (L\u00fccke: ${gap.toFixed(1)} mm)`
-            });
-            room.status = 'error';
+    // AOID_003: Format check — WWWW.GG.EE.RRR or WWWW.G.RRR
+    const aoidRegex = /^\d{4}\.[A-Za-z0-9]{1,4}\.\d{2}\.\d{3}$/;
+    const parkingRegex = /^\d{4}\.\d+\.\d{3}$/;
+    for (const room of rooms) {
+        if (room.label && !aoidRegex.test(room.label) && !parkingRegex.test(room.label)) {
+            errors.push(mkErr('warning', 'AOID_003',
+                `AOID-Format ung\u00fcltig: "${room.label}" (erwartet: WWWW.GG.EE.RRR)`, 'AOID',
+                { roomId: room.id, handle: room.handle }));
+        }
+    }
+
+    // AOID_005: AOID text outside all room polygons
+    for (const txt of aoidTexts) {
+        let insideAny = false;
+        for (const poly of roomPolys) {
+            if (pointInPoly(txt.x, txt.y, poly.verts)) {
+                insideAny = true;
+                break;
+            }
+        }
+        if (!insideAny) {
+            errors.push(mkErr('warning', 'AOID_005',
+                `AOID-Text "${txt.text.trim()}" auf R_AOID liegt ausserhalb aller Raumpolygone`, 'AOID',
+                { handle: txt.handle }));
+        }
+    }
+
+    return errors;
+}
+
+function runGeomRules(renderList) {
+    const errors = [];
+
+    // GEOM_001: Drawing unit not mm
+    if (state.insunits !== null && state.insunits !== 4) {
+        const unitNames = { 0: 'Ohne', 1: 'Zoll', 2: 'Fuss', 3: 'Meilen', 4: 'Millimeter', 5: 'Zentimeter', 6: 'Meter' };
+        errors.push(mkErr('error', 'GEOM_001',
+            `Zeichnungseinheit ist nicht Millimeter \u2014 aktuell: ${unitNames[state.insunits] || state.insunits}`, 'GEOM'));
+    }
+
+    // GEOM_002: Non-zero Z coordinates
+    if (state.nonZeroZEntities.length > 0) {
+        const count = state.nonZeroZEntities.length;
+        const sample = state.nonZeroZEntities.slice(0, 3).map(e => `${e.type}@${e.layer}`).join(', ');
+        errors.push(mkErr('warning', 'GEOM_002',
+            `${count} Element(e) mit Z-Koordinate \u2260 0 (z.B. ${sample})`, 'GEOM'));
+    }
+
+    // GEOM_003: Forbidden entity types
+    const forbidden = new Set(['MLINE', 'ELLIPSE', 'SPLINE']);
+    const foundForbidden = {};
+    for (const item of renderList) {
+        if (forbidden.has(item.et)) {
+            foundForbidden[item.et] = (foundForbidden[item.et] || 0) + 1;
+        }
+    }
+    for (const [type, count] of Object.entries(foundForbidden)) {
+        errors.push(mkErr('error', 'GEOM_003',
+            `Unzul\u00e4ssiger Entit\u00e4tstyp: ${type} (${count}\u00d7 vorhanden)`, 'GEOM'));
+    }
+
+    // GEOM_004: XREF blocks
+    if (state.xrefBlocks.length > 0) {
+        for (const xref of state.xrefBlocks) {
+            errors.push(mkErr('warning', 'GEOM_004',
+                `Externe Referenz (XREF): "${xref.name}"${xref.xrefPath ? ` \u2192 ${xref.xrefPath}` : ''}`, 'GEOM'));
+        }
+    }
+
+    // GEOM_005: Elements outside plan frame
+    const framePolys = renderList.filter(item =>
+        item.t === 'poly' && item.closed && item.l === 'V_PLANLAYOUT' && item.verts.length >= 4
+    );
+    if (framePolys.length > 0) {
+        // Use largest closed poly on V_PLANLAYOUT as plan frame
+        let framePoly = framePolys[0];
+        let maxArea = 0;
+        for (const fp of framePolys) {
+            const a = computePolygonArea(fp.verts);
+            if (a > maxArea) { maxArea = a; framePoly = fp; }
+        }
+        // Get frame bounding box
+        let fMinX = Infinity, fMinY = Infinity, fMaxX = -Infinity, fMaxY = -Infinity;
+        for (const v of framePoly.verts) {
+            if (v.x < fMinX) fMinX = v.x; if (v.x > fMaxX) fMaxX = v.x;
+            if (v.y < fMinY) fMinY = v.y; if (v.y > fMaxY) fMaxY = v.y;
+        }
+        // Check CAFM-relevant layers for items outside frame bounds (with tolerance)
+        const tol = 100; // 100mm tolerance
+        const cafmLayers = new Set(CAFM_LAYERS.all);
+        let outsideCount = 0;
+        for (const item of renderList) {
+            if (!cafmLayers.has(item.l)) continue;
+            if (item.l === 'V_PLANLAYOUT') continue;
+            let x, y;
+            if (item.t === 'text' || item.t === 'point') { x = item.x; y = item.y; }
+            else if (item.t === 'poly' && item.verts.length > 0) { x = item.verts[0].x; y = item.verts[0].y; }
+            else if (item.t === 'line') { x = item.x1; y = item.y1; }
+            else if (item.t === 'circle' || item.t === 'arc' || item.t === 'ellipse') { x = item.cx; y = item.cy; }
+            else continue;
+            if (x < fMinX - tol || x > fMaxX + tol || y < fMinY - tol || y > fMaxY + tol) {
+                outsideCount++;
+            }
+        }
+        if (outsideCount > 0) {
+            errors.push(mkErr('warning', 'GEOM_005',
+                `${outsideCount} Element(e) liegen ausserhalb des Planrahmens`, 'GEOM'));
+        }
+    }
+
+    return errors;
+}
+
+function runTextRules(renderList) {
+    const errors = [];
+    const texts = renderList.filter(item => item.t === 'text');
+    const allowedLayers = new Set(AOID_TEXT_LAYERS);
+
+    // TEXT_001: Text on wrong layer
+    const wrongLayers = {};
+    for (const t of texts) {
+        if (!allowedLayers.has(t.l)) {
+            wrongLayers[t.l] = (wrongLayers[t.l] || 0) + 1;
+        }
+    }
+    for (const [layer, count] of Object.entries(wrongLayers)) {
+        errors.push(mkErr('warning', 'TEXT_001',
+            `${count} Textelement(e) auf unzul\u00e4ssigem Layer "${layer}"`, 'TEXT', { layer }));
+    }
+
+    // TEXT_002: Font not ARIAL
+    const wrongFonts = {};
+    for (const t of texts) {
+        if (t.l === 'V_PLANLAYOUT') continue; // exempt per spec
+        if (t.fontName && !/arial/i.test(t.fontName)) {
+            wrongFonts[t.fontName] = (wrongFonts[t.fontName] || 0) + 1;
+        }
+    }
+    for (const [font, count] of Object.entries(wrongFonts)) {
+        errors.push(mkErr('warning', 'TEXT_002',
+            `${count} Text(e) verwenden Schriftart "${font}" statt ARIAL`, 'TEXT'));
+    }
+
+    return errors;
+}
+
+function runStyleRules(renderList) {
+    const errors = [];
+
+    // STYLE_001: Polyline width ≠ 0
+    const widthPolys = renderList.filter(item =>
+        item.t === 'poly' && item.width && item.width > 0
+    );
+    if (widthPolys.length > 0) {
+        const layers = [...new Set(widthPolys.map(p => p.l))].slice(0, 3).join(', ');
+        errors.push(mkErr('warning', 'STYLE_001',
+            `${widthPolys.length} Polylinie(n) mit Breite \u2260 0 mm (Layer: ${layers})`, 'STYLE'));
+    }
+
+    // STYLE_002: Color not ByLayer
+    const cafmLayers = new Set(CAFM_LAYERS.all);
+    const notByLayer = renderList.filter(item => cafmLayers.has(item.l) && item.byLayer === false);
+    if (notByLayer.length > 0) {
+        const layers = [...new Set(notByLayer.map(p => p.l))].slice(0, 3).join(', ');
+        errors.push(mkErr('warning', 'STYLE_002',
+            `${notByLayer.length} Element(e) mit Farbe nicht VONLAYER (Layer: ${layers})`, 'STYLE'));
+    }
+
+    return errors;
+}
+
+function runLayoutRules() {
+    const errors = [];
+
+    // LAYOUT_001: Paper Space layouts present
+    if (state.paperSpaceLayouts.length > 0) {
+        errors.push(mkErr('warning', 'LAYOUT_001',
+            `${state.paperSpaceLayouts.length} Layout-Tab(s) (Paper Space) vorhanden: ${state.paperSpaceLayouts.join(', ')}`, 'LAYOUT'));
+    }
+
+    // LAYOUT_002: No plan frame on V_PLANLAYOUT
+    const { renderList } = state.drawingData;
+    const framePolys = renderList.filter(item =>
+        item.t === 'poly' && item.closed && item.l === 'V_PLANLAYOUT' && item.verts.length >= 4
+    );
+    if (framePolys.length === 0) {
+        errors.push(mkErr('warning', 'LAYOUT_002',
+            'Kein Planrahmen auf V_PLANLAYOUT erkannt', 'LAYOUT'));
+    }
+
+    return errors;
+}
+
+function runDimRules() {
+    const errors = [];
+
+    // DIM_001: No dimensions on V_BEMASSUNG
+    const dimsOnLayer = state.dimensionInfo.filter(d => d.layer === 'V_BEMASSUNG');
+    if (dimsOnLayer.length === 0) {
+        errors.push(mkErr('warning', 'DIM_001',
+            'Keine Masselemente auf V_BEMASSUNG vorhanden', 'DIM'));
+    }
+
+    // DIM_002: Non-associative dimensions
+    const nonAssoc = state.dimensionInfo.filter(d => !d.associative);
+    if (nonAssoc.length > 0) {
+        errors.push(mkErr('warning', 'DIM_002',
+            `${nonAssoc.length} Masselement(e) sind nicht assoziativ`, 'DIM'));
+    }
+
+    return errors;
+}
+
+function runHatchRules(renderList) {
+    const errors = [];
+
+    // HATCH_001: Hatch on A_SCHRAFFUR not SOLID
+    const hatches = renderList.filter(item => item.t === 'hatchfill' && item.l === 'A_SCHRAFFUR');
+    const nonSolid = hatches.filter(h => h.patternName && h.patternName.toUpperCase() !== 'SOLID');
+    if (nonSolid.length > 0) {
+        const patterns = [...new Set(nonSolid.map(h => h.patternName))].join(', ');
+        errors.push(mkErr('warning', 'HATCH_001',
+            `${nonSolid.length} Schraffur(en) auf A_SCHRAFFUR nicht vom Typ SOLID (${patterns})`, 'HATCH'));
+    }
+
+    return errors;
+}
+
+function runAllRules(renderList, rooms) {
+    let errors = [];
+    errors = errors.concat(runLayerRules());
+    errors = errors.concat(runPolyRules(renderList));
+    errors = errors.concat(runGPolyRules(renderList));
+    errors = errors.concat(runAoidRules(renderList, rooms));
+    errors = errors.concat(runGeomRules(renderList));
+    errors = errors.concat(runTextRules(renderList));
+    errors = errors.concat(runStyleRules(renderList));
+    errors = errors.concat(runLayoutRules());
+    errors = errors.concat(runDimRules());
+    errors = errors.concat(runHatchRules(renderList));
+
+    // Update room statuses based on errors
+    for (const err of errors) {
+        if (err.roomId) {
+            const room = rooms.find(r => r.id === err.roomId);
+            if (room) {
+                if (err.severity === 'error') room.status = 'error';
+                else if (err.severity === 'warning' && room.status === 'ok') room.status = 'warning';
+            }
+        }
+    }
+
+    // Update area statuses based on GPOLY errors (matched by handle)
+    for (const err of errors) {
+        if (err.category === 'GPOLY' && err.handle) {
+            const area = state.areaData.find(a => a.handle === err.handle);
+            if (area) {
+                if (err.severity === 'error') area.status = 'error';
+                else if (err.severity === 'warning' && area.status === 'ok') area.status = 'warning';
+            }
         }
     }
 
@@ -146,10 +581,32 @@ function runValidation(rooms) {
 
 export function renderValidation() {
     const { renderList } = state.drawingData;
+
+    // Reset error counter
+    errorId = 1;
+    state.validationAborted = false;
+    state.abortReason = null;
+
+    // Run abort checks first
+    const abortErrors = runAbortChecks();
+    if (abortErrors.length > 0) {
+        state.validationAborted = true;
+        state.abortReason = abortErrors.map(e => e.message).join('; ');
+        state.validationErrors = abortErrors;
+        state.roomData = [];
+        state.areaData = [];
+        renderAbortUI(abortErrors);
+        log(`Pr\u00fcfung abgebrochen: ${state.abortReason}`, 'error');
+        return;
+    }
+
+    // Extract rooms and areas
     const extracted = extractRooms(renderList);
     state.roomData = extracted.rooms;
     state.areaData = extracted.areas;
-    state.validationErrors = runValidation(state.roomData);
+
+    // Run all 42 rules
+    state.validationErrors = runAllRules(renderList, state.roomData);
 
     // Update tab counts
     const layerCountEl = document.getElementById('vtab-layer-count');
@@ -162,15 +619,18 @@ export function renderValidation() {
     if (areaCountEl) areaCountEl.textContent = state.areaData.length;
 
     // Show metrics panel
-    const totalArea = state.roomData.reduce((s, r) => s + r.area, 0);
-    const okCount2 = state.roomData.filter(r => r.status === 'ok').length;
-    const score2 = state.roomData.length > 0 ? Math.round((okCount2 / state.roomData.length) * 100) : 100;
-    const scoreClass2 = score2 >= 90 ? 'success' : score2 >= 60 ? 'warning' : 'error';
+    const errCount = state.validationErrors.filter(e => e.severity === 'error').length;
+    const warnCount = state.validationErrors.filter(e => e.severity === 'warning').length;
+    const totalRules = 42;
+    const passedRules = totalRules - new Set(state.validationErrors.map(e => e.ruleCode)).size;
+    const score = Math.round((passedRules / totalRules) * 100);
+    const scoreClass = score >= 90 ? 'success' : score >= 60 ? 'warning' : 'error';
+    const ngf = state.roomData.reduce((s, r) => s + r.area, 0);
     const dlIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
     dom.metricsGrid.innerHTML =
         `<div class="info-grid__item"><div class="info-grid__label">R\u00e4ume</div><div class="info-grid__value">${state.roomData.length}</div></div>` +
-        `<div class="info-grid__item"><div class="info-grid__label">Fehler</div><div class="info-grid__value">${state.validationErrors.length}</div></div>` +
-        `<div class="info-grid__item"><div class="info-grid__label">Score</div><div class="info-grid__value" style="color: var(--color-${scoreClass2})">${score2}%</div></div>` +
+        `<div class="info-grid__item"><div class="info-grid__label">NGF</div><div class="info-grid__value">${fmtNum(ngf, 1)} m\u00B2</div></div>` +
+        `<div class="info-grid__item"><div class="info-grid__label">Score (${passedRules}/${totalRules})</div><div class="info-grid__value" style="color: var(--color-${scoreClass})">${score}%</div></div>` +
         `<div class="info-grid__download"><div class="info-grid__download-label">Bericht</div><div class="info-grid__download-links">` +
         `<button class="info-grid__dl-btn" data-dl="pdf">${dlIcon} PDF</button>` +
         `<button class="info-grid__dl-btn" data-dl="excel">${dlIcon} Excel</button>` +
@@ -199,7 +659,31 @@ export function renderValidation() {
     // Render initial tab
     switchValidationTab('overview');
 
-    log(`Validierung: ${state.roomData.length} R\u00e4ume extrahiert, ${state.validationErrors.length} Befunde`, state.validationErrors.length > 0 ? 'warn' : 'success');
+    const rulesFired = new Set(state.validationErrors.map(e => e.ruleCode)).size;
+    log(`Validierung: ${state.roomData.length} R\u00e4ume, ${state.areaData.length} Fl\u00e4chen, ${rulesFired} Regeln ausgel\u00f6st (${errCount} Fehler, ${warnCount} Warnungen), Score ${score}%`,
+        errCount > 0 ? 'error' : warnCount > 0 ? 'warn' : 'success');
+}
+
+function renderAbortUI(abortErrors) {
+    // Show metrics with abort state
+    dom.metricsGrid.innerHTML =
+        `<div class="info-grid__item" style="grid-column: 1/-1"><div class="info-grid__label">Pr\u00fcfung abgebrochen</div>` +
+        `<div class="info-grid__value" style="color: var(--color-error)">\u26D4 ${abortErrors.map(e => e.ruleCode).join(', ')}</div></div>`;
+    dom.metricsPanel.classList.add('visible');
+
+    // Show validation panel with abort message
+    dom.validationPanel.classList.add('visible');
+    dom.validationSplit.style.display = 'none';
+    dom.validationDashboard.style.display = 'block';
+    dom.validationDashboard.innerHTML =
+        `<div class="kz-dashboard-content" style="padding: 2rem; text-align: center;">` +
+        `<h2 style="color: var(--color-error); margin-bottom: 1rem;">\u26D4 Pr\u00fcfung abgebrochen</h2>` +
+        abortErrors.map(e =>
+            `<div style="margin: 0.5rem 0; padding: 1rem; background: rgba(255,0,0,0.08); border-radius: 8px; border-left: 4px solid var(--color-error);">` +
+            `<strong>${e.ruleCode}</strong>: ${esc(e.message)}</div>`
+        ).join('') +
+        `<p style="margin-top: 1.5rem; color: var(--color-text-secondary);">Der Plan erf\u00fcllt nicht die Grundvoraussetzungen der CAD-Richtlinie BBL V1.0.<br>` +
+        `Bitte korrigieren Sie die oben genannten Punkte und laden Sie den Plan erneut hoch.</p></div>`;
 }
 
 function updateTabCounts() {
@@ -544,11 +1028,17 @@ function renderAreasTab() {
     dom.vsideSummary.innerHTML = '';
 
     if (state.areaData.length === 0) {
-        dom.vsideList.innerHTML = '<div class="val-empty">Keine Fl\u00e4chenpolygone gefunden.<br><small>Erwartet: geschlossene Polylinien auf Layern mit BGF/EBF/GF.</small></div>';
+        dom.vsideList.innerHTML = '<div class="val-empty">Keine Fl\u00e4chenpolygone gefunden.<br><small>Erwartet: geschlossene Polylinien auf Layer R_GESCHOSSPOLYGON.</small></div>';
         return;
     }
 
-    for (const area of state.areaData) {
+    // Sort: errors first, then warnings, then ok (same as rooms)
+    const sorted = state.areaData.slice().sort((a, b) => {
+        const order = { error: 0, warning: 1, ok: 2 };
+        return (order[a.status] || 2) - (order[b.status] || 2);
+    });
+
+    for (const area of sorted) {
         const div = document.createElement('div');
         div.className = 'vside-item';
         div.setAttribute('data-search', area.aoid + ' ' + area.layer);
@@ -562,13 +1052,13 @@ function renderAreasTab() {
             ev.stopPropagation();
             if (cb.checked) { state.hiddenAreaIds.delete(area.id); div.classList.remove('hidden'); }
             else { state.hiddenAreaIds.add(area.id); div.classList.add('hidden'); }
-            updateToggleAll(state.hiddenAreaIds, state.areaData.map(a => a.id));
+            updateToggleAll(state.hiddenAreaIds, sorted.map(a => a.id));
             render();
         });
 
-        const icon = document.createElement('div');
-        icon.className = 'vside-item__icon';
-        icon.style.background = '#0072b1';
+        const status = document.createElement('span');
+        status.className = 'vside-item__status';
+        status.textContent = area.status === 'ok' ? '\u2713' : area.status === 'warning' ? '\u26A0' : '\u2716';
 
         const name = document.createElement('span');
         name.className = 'vside-item__name';
@@ -580,7 +1070,7 @@ function renderAreasTab() {
         value.textContent = fmtNum(area.area, 1) + ' m\u00B2';
 
         div.appendChild(cb);
-        div.appendChild(icon);
+        div.appendChild(status);
         div.appendChild(name);
         div.appendChild(value);
 
@@ -596,7 +1086,7 @@ function renderAreasTab() {
         dom.vsideList.appendChild(div);
     }
 
-    wireToggleAll(state.hiddenAreaIds, state.areaData.map(a => a.id));
+    wireToggleAll(state.hiddenAreaIds, sorted.map(a => a.id));
     wireSearch('data-search');
 }
 

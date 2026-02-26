@@ -642,6 +642,15 @@ function getRoomOverlayColor(room) {
     }
 }
 
+function getAreaOverlayColor(area) {
+    if (state.selectedRoom && state.selectedRoom.id === area.id) {
+        return { fill: 'rgba(0,102,153,0.35)', stroke: '#006699' };
+    }
+    if (area.status === 'error') return { fill: 'rgba(198,40,40,0.25)', stroke: '#C62828' };
+    if (area.status === 'warning') return { fill: 'rgba(245,124,0,0.25)', stroke: '#F57C00' };
+    return { fill: 'rgba(46,125,50,0.20)', stroke: '#2E7D32' };
+}
+
 function drawPolyPath(verts) {
     const ctx = dom.ctx;
     ctx.moveTo(verts[0].x, verts[0].y);
@@ -671,13 +680,12 @@ function renderRoomOverlays() {
     // Only draw overlays in rooms and areas tabs
     if (state.validationMode !== 'rooms' && state.validationMode !== 'areas') return;
 
-    // Draw area polygons in areas mode
+    // Draw area polygons in areas mode (same style as rooms)
     if (state.validationMode === 'areas') {
         for (const area of state.areaData) {
             if (state.hiddenAreaIds.has(area.id)) continue;
-            const colors = (state.selectedRoom && state.selectedRoom.id === area.id)
-                ? { fill: 'rgba(0,102,153,0.35)', stroke: '#006699' }
-                : { fill: 'rgba(0,102,153,0.12)', stroke: '#006699' };
+            const colors = getAreaOverlayColor(area);
+            if (!colors) continue;
 
             ctx.beginPath();
             drawPolyPath(area.vertices);
@@ -685,27 +693,57 @@ function renderRoomOverlays() {
             ctx.fillStyle = colors.fill;
             ctx.fill();
             ctx.strokeStyle = colors.stroke;
-            ctx.lineWidth = 2.5 / cam.zoom;
-            ctx.setLineDash([6 / cam.zoom, 4 / cam.zoom]);
+            ctx.lineWidth = (state.selectedRoom && state.selectedRoom.id === area.id ? 2.5 : 1.5) / cam.zoom;
             ctx.stroke();
-            ctx.setLineDash([]);
+        }
 
-            // Area label
-            const fontSize = 14 / cam.zoom;
-            if (fontSize * cam.zoom >= 6 && fontSize * cam.zoom <= 30) {
-                ctx.save();
-                ctx.translate(area.centroid.x, area.centroid.y);
-                ctx.scale(1, -1);
-                ctx.font = `bold ${fontSize}px system-ui, sans-serif`;
-                ctx.fillStyle = '#006699';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(area.aoid, 0, 0);
-                ctx.font = `${fontSize * 0.7}px system-ui, sans-serif`;
-                ctx.fillStyle = '#555';
-                ctx.fillText(fmtNum(area.area, 1) + ' m\u00B2', 0, fontSize * 1.1);
-                ctx.restore();
-            }
+        // Area labels (second pass — collision detection, same as rooms)
+        const placedAreaLabels = [];
+        const visibleAreas = state.areaData.filter(a => !state.hiddenAreaIds.has(a.id));
+        visibleAreas.sort((a, b) => b.area - a.area);
+
+        const areaFontSize = 11;
+        const areaWorldFont = areaFontSize / cam.zoom;
+
+        for (const area of visibleAreas) {
+            const [sx, sy] = worldToScreen(area.centroid.x, area.centroid.y);
+            const labelW = area.aoid.length * areaFontSize * 0.6 + 12;
+            const labelH = areaFontSize * 2.4;
+            const box = { x: sx - labelW / 2, y: sy - labelH / 2, w: labelW, h: labelH };
+
+            const overlaps = placedAreaLabels.some(p =>
+                box.x < p.x + p.w && box.x + box.w > p.x &&
+                box.y < p.y + p.h && box.y + box.h > p.y
+            );
+            if (overlaps) continue;
+            placedAreaLabels.push(box);
+
+            ctx.save();
+            ctx.translate(area.centroid.x, area.centroid.y);
+            ctx.scale(1, -1);
+
+            // Background pill
+            const pillW = labelW / cam.zoom;
+            const pillH = labelH / cam.zoom;
+            ctx.fillStyle = 'rgba(255,255,255,0.85)';
+            ctx.beginPath();
+            const pr = 2 / cam.zoom;
+            ctx.roundRect(-pillW / 2, -pillH / 2, pillW, pillH, pr);
+            ctx.fill();
+
+            // Area name
+            ctx.font = `600 ${areaWorldFont}px system-ui, sans-serif`;
+            ctx.fillStyle = '#1a1a1a';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(area.aoid, 0, -areaWorldFont * 0.2);
+
+            // Area value
+            ctx.font = `${areaWorldFont * 0.7}px system-ui, sans-serif`;
+            ctx.fillStyle = '#757575';
+            ctx.fillText(fmtNum(area.area, 1) + ' m\u00B2', 0, areaWorldFont * 0.55);
+
+            ctx.restore();
         }
     }
 

@@ -25,14 +25,14 @@ dom.fileInput.addEventListener('change', (e) => { if (e.target.files[0]) handleF
 document.getElementById('load-demo').addEventListener('click', async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    const DEMO_PATH = 'assets/test-files/2011-DM-0-A04-6A1.dwg';
+    const DEMO_PATH = 'assets/test-files/CAD.V01-CAFM-Plan-DE.dwg';
     try {
         log('Demo-Datei wird geladen...');
         showStatus('Demo-Datei wird geladen...');
         const resp = await fetch(DEMO_PATH);
         if (!resp.ok) throw new Error(`Demo-Datei nicht gefunden (${resp.status})`);
         const blob = await resp.blob();
-        const file = new File([blob], '2011-DM-0-A04-6A1.dwg', { type: 'application/octet-stream' });
+        const file = new File([blob], 'CAD.V01-CAFM-Plan-DE.dwg', { type: 'application/octet-stream' });
         handleFile(file);
     } catch (err) {
         showStatus(err.message, 'error');
