@@ -1095,18 +1095,29 @@ function renderAreasTab() {
 // ─────────────────────────────────────────────
 function renderKennzahlenTab() {
     // ── Derive values only from actual floor plan data ──
-    const ngf = state.roomData.reduce((s, r) => s + r.area, 0);
     const hasRooms = state.roomData.length > 0;
-
     const hasAreaPolys = state.areaData.length > 0;
-    const gf = hasAreaPolys ? state.areaData.reduce((s, a) => s + a.area, 0) : null;
 
+    // SIA 416 category sums from room data
+    const catSum = { HNF: 0, NNF: 0, VF: 0, FF: 0 };
+    for (const r of state.roomData) {
+        const cat = r.siaCategory || 'HNF';
+        if (cat in catSum) catSum[cat] += r.area;
+        else catSum.HNF += r.area; // unknown → HNF
+    }
+    const hnf = catSum.HNF;
+    const nnf = catSum.NNF;
+    const vf = catSum.VF;
+    const ff = catSum.FF;
+    const nf = hnf + nnf;           // NF = HNF + NNF
+    const ngf = nf + vf + ff;       // NGF = NF + VF + FF
+    const gf = hasAreaPolys ? state.areaData.reduce((s, a) => s + a.area, 0) : null;
     const kf = (gf !== null && hasRooms) ? gf - ngf : null;
 
     // Format helpers
     const DASH = '\u2014';
     const fmtArea = (v) => {
-        if (v === null || v === undefined) return DASH;
+        if (v === null || v === undefined || v === 0) return DASH;
         return fmtNum(v, v >= 100 ? 0 : 1) + ' m\u00B2';
     };
     const fmtVol = (v) => {
@@ -1114,7 +1125,7 @@ function renderKennzahlenTab() {
         return fmtNum(v, v >= 100 ? 0 : 1) + ' m\u00B3';
     };
     const pct = (v, total) => {
-        if (v === null || v === undefined || total === null || total === undefined || total <= 0) return DASH;
+        if (v === null || v === undefined || v === 0 || total === null || total === undefined || total <= 0) return DASH;
         return Math.round((v / total) * 100) + '%';
     };
     const kzRow = (abbr, label, value, total, volFmt) =>
@@ -1126,7 +1137,7 @@ function renderKennzahlenTab() {
     // ── Left column ──
     html += '<div>';
 
-    // Gebäudevolumen
+    // Geb\u00e4udevolumen
     html += '<div class="val-kz-section">';
     html += '<div class="val-kz-title">Geb\u00e4udevolumen</div>';
     html += '<table class="val-kz-table"><tbody>';
@@ -1135,34 +1146,39 @@ function renderKennzahlenTab() {
     html += kzRow('GV UG', 'Geb\u00e4udevolumen Untergeschosse', null, null, true);
     html += '</tbody></table></div>';
 
-    // Gebäudeflächen
+    // Geb\u00e4udefl\u00e4chen — filled from room + area data
     html += '<div class="val-kz-section">';
     html += '<div class="val-kz-title">Geb\u00e4udefl\u00e4chen</div>';
     html += '<table class="val-kz-table"><tbody>';
     html += kzRow('GF', 'Geschossfl\u00e4che', gf, gf);
     html += kzRow('KF', 'Konstruktionsfl\u00e4che', kf, gf);
     html += kzRow('NGF', 'Nettogeschossfl\u00e4che', hasRooms ? ngf : null, gf);
-    html += kzRow('NF', 'Nutzfl\u00e4che', hasRooms ? ngf : null, gf);
-    html += kzRow('HNF', 'Hauptnutzfl\u00e4che', null, gf);
-    html += kzRow('NNF', 'Nebennutzfl\u00e4che', null, gf);
-    html += kzRow('VF', 'Verkehrsfl\u00e4che', null, gf);
-    html += kzRow('FF', 'Funktionsfl\u00e4che', null, gf);
+    html += kzRow('NF', 'Nutzfl\u00e4che', hasRooms ? nf : null, gf);
+    html += kzRow('HNF', 'Hauptnutzfl\u00e4che', hasRooms ? hnf : null, gf);
+    html += kzRow('NNF', 'Nebennutzfl\u00e4che', hasRooms ? nnf : null, gf);
+    html += kzRow('VF', 'Verkehrsfl\u00e4che', hasRooms ? vf : null, gf);
+    html += kzRow('FF', 'Funktionsfl\u00e4che', hasRooms ? ff : null, gf);
     html += '</tbody></table></div>';
 
-    // Flächen DIN 277
+    // Fl\u00e4chen DIN 277 — sub-category sums
+    const din277Sum = {};
+    for (const r of state.roomData) {
+        const sub = r.din277 || null;
+        if (sub) din277Sum[sub] = (din277Sum[sub] || 0) + r.area;
+    }
     html += '<div class="val-kz-section">';
     html += '<div class="val-kz-title">Fl\u00e4chen DIN 277</div>';
     html += '<table class="val-kz-table"><tbody>';
-    html += kzRow('HNF 1', 'Wohnen und Aufenthalt', null, gf);
-    html += kzRow('HNF 2', 'B\u00fcroarbeit', null, gf);
-    html += kzRow('HNF 3', 'Produktion', null, gf);
-    html += kzRow('HNF 4', 'Lagern, Verteilen, Verkaufen', null, gf);
-    html += kzRow('HNF 5', 'Bildung, Unterricht, Kultur', null, gf);
-    html += kzRow('HNF 6', 'Heilen, Pflegen', null, gf);
-    html += kzRow('NNF 7', 'Nebennutzfl\u00e4che', null, gf);
-    html += kzRow('FF 8', 'Betriebstechnische Anlagen', null, gf);
-    html += kzRow('VF 9', 'Verkehrserschliessung und -sicherung', null, gf);
-    html += kzRow('BUF 10', 'Verschiedene Nutzungen', null, gf);
+    html += kzRow('HNF 1', 'Wohnen und Aufenthalt', din277Sum['1'] || null, gf);
+    html += kzRow('HNF 2', 'B\u00fcroarbeit', din277Sum['2'] || null, gf);
+    html += kzRow('HNF 3', 'Produktion', din277Sum['3'] || null, gf);
+    html += kzRow('HNF 4', 'Lagern, Verteilen, Verkaufen', din277Sum['4'] || null, gf);
+    html += kzRow('HNF 5', 'Bildung, Unterricht, Kultur', din277Sum['5'] || null, gf);
+    html += kzRow('HNF 6', 'Heilen, Pflegen', din277Sum['6'] || null, gf);
+    html += kzRow('NNF 7', 'Sonstige Nutzungen', din277Sum['7'] || null, gf);
+    html += kzRow('FF 8', 'Betriebstechnische Anlagen', din277Sum['8'] || null, gf);
+    html += kzRow('VF 9', 'Verkehrserschliessung und -sicherung', din277Sum['9'] || null, gf);
+    html += kzRow('BUF 10', 'Verschiedene Nutzungen', din277Sum['10'] || null, gf);
     html += '</tbody></table></div>';
 
     html += '</div>';
@@ -1170,17 +1186,22 @@ function renderKennzahlenTab() {
     // ── Right column ──
     html += '<div>';
 
-    // Kennzahlen Wirtschaftlichkeit
+    // Wirtschaftlichkeitskennzahlen
     html += '<div class="val-kz-section">';
     html += '<div class="val-kz-title">Wirtschaftlichkeitskennzahlen</div>';
     html += '<table class="val-kz-table"><tbody>';
     html += `<tr><td class="kz-abbr">NGF / GF</td><td>Nettogeschossfl\u00e4che / Geschossfl\u00e4che</td><td class="kz-value">${(gf && hasRooms) ? (ngf / gf).toFixed(2) : DASH}</td></tr>`;
     html += `<tr><td class="kz-abbr">KF / GF</td><td>Konstruktionsfl\u00e4che / Geschossfl\u00e4che</td><td class="kz-value">${(gf && kf !== null) ? (kf / gf).toFixed(2) : DASH}</td></tr>`;
+    html += `<tr><td class="kz-abbr">NF / NGF</td><td>Nutzfl\u00e4che / Nettogeschossfl\u00e4che</td><td class="kz-value">${(hasRooms && ngf > 0) ? (nf / ngf).toFixed(2) : DASH}</td></tr>`;
+    html += `<tr><td class="kz-abbr">HNF / NGF</td><td>Hauptnutzfl\u00e4che / Nettogeschossfl\u00e4che</td><td class="kz-value">${(hasRooms && ngf > 0) ? (hnf / ngf).toFixed(2) : DASH}</td></tr>`;
     html += '</tbody></table></div>';
 
-    // Donut chart
+    // Donut chart — SIA 416 breakdown: HNF, NNF, VF, FF, KF
     const donutSegments = {};
-    if (hasRooms) donutSegments.NGF = ngf;
+    if (hnf > 0) donutSegments.HNF = hnf;
+    if (nnf > 0) donutSegments.NNF = nnf;
+    if (vf > 0) donutSegments.VF = vf;
+    if (ff > 0) donutSegments.FF = ff;
     if (kf !== null && kf > 0) donutSegments.KF = kf;
     const donutTotal = gf || ngf || 1;
     html += buildValidationDonut(donutSegments, 0, donutTotal);
