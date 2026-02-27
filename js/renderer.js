@@ -70,6 +70,17 @@ function drawBulgeArc(ctx, x1, y1, x2, y2, bulge) {
     ctx.arc(cx, cy, Math.abs(radius), sa, ea, bulge < 0);
 }
 
+// Throttled render — coalesces rapid calls (pan, zoom) into a single rAF
+let _renderPending = false;
+export function scheduleRender() {
+    if (_renderPending) return;
+    _renderPending = true;
+    requestAnimationFrame(() => {
+        _renderPending = false;
+        render();
+    });
+}
+
 export function render() {
     if (!state.drawingData) return;
     const ctx = dom.ctx;
@@ -473,7 +484,8 @@ export function showFeaturePopup(item, screenX, screenY) {
         `<div class="feature-popup__row"><span class="feature-popup__label">${label}</span><span class="feature-popup__value">${value}</span></div>`;
 
     html += row('Layer', esc(item.l));
-    html += row('Farbe', `<span class="feature-popup__color-swatch" style="background:${item.c}"></span> ${item.c}`);
+    const safeColor = /^#[0-9a-fA-F]{3,8}$|^hsl\(\d{1,3},\s?\d{1,3}%,\s?\d{1,3}%\)$|^rgba?\(\d/.test(item.c) ? item.c : '#CCCCCC';
+    html += row('Farbe', `<span class="feature-popup__color-swatch" style="background:${safeColor}"></span> ${esc(item.c)}`);
     if (item.handle) html += row('Handle', esc(item.handle));
 
     // Type-specific details
