@@ -241,7 +241,7 @@ body {
     background: var(--color-error); color: var(--color-text-inverse);
     border-color: var(--color-error); outline: none;
 }
-.filter-toggle--active:hover { background: #a31f1f; border-color: #a31f1f; color: var(--color-text-inverse); }
+.filter-toggle--active:hover { background: var(--color-error-dark); border-color: var(--color-error-dark); color: var(--color-text-inverse); }
 .filter-toggle:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
 .filter-toggle--active:focus-visible { outline-color: var(--color-error); }
 .filter-toggle svg { width: var(--icon-size-sm); height: var(--icon-size-sm); }

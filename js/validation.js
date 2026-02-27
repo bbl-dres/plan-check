@@ -98,14 +98,6 @@ function extractRooms(renderList) {
 
 function runAbortChecks() {
     const errors = [];
-    const layerNames = state.layerInfo.map(l => l.name);
-
-    // ABORT_001: No required R_* layers
-    const hasAnyR = CAFM_LAYERS.requiredR.some(r => layerNames.includes(r));
-    if (!hasAnyR) {
-        errors.push(mkErr('abort', 'ABORT_001',
-            'Layerstruktur wird nicht eingehalten \u2014 keiner der Pflicht-Layer (R_RAUMPOLYGON, R_AOID, R_GESCHOSSPOLYGON) vorhanden', 'ABORT'));
-    }
 
     // ABORT_002: $INSUNITS not mm (4)
     if (state.insunits !== null && state.insunits !== 4) {

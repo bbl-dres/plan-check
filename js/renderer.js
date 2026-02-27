@@ -5,6 +5,21 @@
 import { state, dom, BG_LIGHT, SIA_COLORS } from './state.js';
 import { esc, computePolygonArea, fmtNum, pointInPoly, distPointToSegment } from './utils.js';
 
+// Canvas overlay colors — mirrors tokens.css (Canvas2D can't read CSS vars)
+const OV = {
+    highlight:     '#0099CC',
+    highlightGlow: 'rgba(0, 153, 204, 0.6)',
+    selectedFill:  'rgba(0, 102, 153, 0.35)',  selectedStroke:  '#006699',
+    errorFill:     'rgba(183, 28, 28, 0.30)',   errorStroke:     '#B71C1C',
+    warningFill:   'rgba(191, 54, 12, 0.30)',   warningStroke:   '#BF360C',
+    successFill:   'rgba(27, 94, 32, 0.25)',    successStroke:   '#1B5E20',
+    neutralFill:   'rgba(180, 180, 180, 0.15)', neutralStroke:   'rgba(150, 150, 150, 0.5)',
+    mutedFill:     'rgba(200, 200, 200, 0.10)', mutedStroke:     'rgba(180, 180, 180, 0.3)',
+    labelBg:       'rgba(255, 255, 255, 0.88)',
+    labelText:     '#333333',
+    labelSecondary:'#757575',
+};
+
 export function resizeCanvas() {
     const rect = dom.canvasWrap.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
@@ -223,11 +238,11 @@ export function render() {
     for (const hi of itemsToHighlight) {
         if (state.hiddenLayers.has(hi.l)) continue;
         ctx.save();
-        ctx.strokeStyle = '#00FFFF';
-        ctx.fillStyle = '#00FFFF';
+        ctx.strokeStyle = OV.highlight;
+        ctx.fillStyle = OV.highlight;
         ctx.lineWidth = 3 / cam.zoom;
-        ctx.shadowColor = '#00FFFF';
-        ctx.shadowBlur = 8;
+        ctx.shadowColor = OV.highlightGlow;
+        ctx.shadowBlur = 10;
 
         switch (hi.t) {
             case 'line':
@@ -690,30 +705,30 @@ export function syncSideSelection(handle) {
 
 function getRoomOverlayColor(room) {
     if (state.selectedRoom && state.selectedRoom.id === room.id) {
-        return { fill: 'rgba(0,102,153,0.35)', stroke: '#006699' };
+        return { fill: OV.selectedFill, stroke: OV.selectedStroke };
     }
 
     switch (state.validationMode) {
         case 'overview':
-            return { fill: 'rgba(180,180,180,0.15)', stroke: 'rgba(150,150,150,0.5)' };
+            return { fill: OV.neutralFill, stroke: OV.neutralStroke };
         case 'rooms':
-            if (room.status === 'error') return { fill: 'rgba(198,40,40,0.25)', stroke: '#C62828' };
-            if (room.status === 'warning') return { fill: 'rgba(245,124,0,0.25)', stroke: '#F57C00' };
-            return { fill: 'rgba(46,125,50,0.20)', stroke: '#2E7D32' };
+            if (room.status === 'error') return { fill: OV.errorFill, stroke: OV.errorStroke };
+            if (room.status === 'warning') return { fill: OV.warningFill, stroke: OV.warningStroke };
+            return { fill: OV.successFill, stroke: OV.successStroke };
         case 'errors': {
             const hasError = state.validationErrors.some(e => e.roomId === room.id);
             if (hasError) {
                 const sev = state.validationErrors.find(e => e.roomId === room.id).severity;
                 return sev === 'error'
-                    ? { fill: 'rgba(198,40,40,0.30)', stroke: '#C62828' }
-                    : { fill: 'rgba(245,124,0,0.30)', stroke: '#F57C00' };
+                    ? { fill: OV.errorFill, stroke: OV.errorStroke }
+                    : { fill: OV.warningFill, stroke: OV.warningStroke };
             }
-            return { fill: 'rgba(200,200,200,0.08)', stroke: 'rgba(180,180,180,0.3)' };
+            return { fill: OV.mutedFill, stroke: OV.mutedStroke };
         }
         case 'kennzahlen':
-            return SIA_COLORS[room.siaCategory] || { fill: 'rgba(180,180,180,0.20)', stroke: '#999' };
+            return SIA_COLORS[room.siaCategory] || { fill: OV.neutralFill, stroke: OV.neutralStroke };
         case 'areas':
-            return { fill: 'rgba(200,200,200,0.08)', stroke: 'rgba(180,180,180,0.3)' };
+            return { fill: OV.mutedFill, stroke: OV.mutedStroke };
         default:
             return null;
     }
@@ -721,11 +736,11 @@ function getRoomOverlayColor(room) {
 
 function getAreaOverlayColor(area) {
     if (state.selectedRoom && state.selectedRoom.id === area.id) {
-        return { fill: 'rgba(0,102,153,0.35)', stroke: '#006699' };
+        return { fill: OV.selectedFill, stroke: OV.selectedStroke };
     }
-    if (area.status === 'error') return { fill: 'rgba(198,40,40,0.25)', stroke: '#C62828' };
-    if (area.status === 'warning') return { fill: 'rgba(245,124,0,0.25)', stroke: '#F57C00' };
-    return { fill: 'rgba(46,125,50,0.20)', stroke: '#2E7D32' };
+    if (area.status === 'error') return { fill: OV.errorFill, stroke: OV.errorStroke };
+    if (area.status === 'warning') return { fill: OV.warningFill, stroke: OV.warningStroke };
+    return { fill: OV.successFill, stroke: OV.successStroke };
 }
 
 function drawPolyPath(verts) {
@@ -802,7 +817,7 @@ function renderRoomOverlays() {
             // Background pill
             const pillW = labelW / cam.zoom;
             const pillH = labelH / cam.zoom;
-            ctx.fillStyle = 'rgba(255,255,255,0.85)';
+            ctx.fillStyle = OV.labelBg;
             ctx.beginPath();
             const pr = 2 / cam.zoom;
             ctx.roundRect(-pillW / 2, -pillH / 2, pillW, pillH, pr);
@@ -810,14 +825,14 @@ function renderRoomOverlays() {
 
             // Area name
             ctx.font = `600 ${areaWorldFont}px system-ui, sans-serif`;
-            ctx.fillStyle = '#1a1a1a';
+            ctx.fillStyle = OV.labelText;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(area.aoid, 0, -areaWorldFont * 0.2);
 
             // Area value
             ctx.font = `${areaWorldFont * 0.7}px system-ui, sans-serif`;
-            ctx.fillStyle = '#757575';
+            ctx.fillStyle = OV.labelSecondary;
             ctx.fillText(fmtNum(area.area, 1) + ' m\u00B2', 0, areaWorldFont * 0.55);
 
             ctx.restore();
@@ -885,7 +900,7 @@ function renderRoomOverlays() {
         // Background pill
         const pillW = labelW / cam.zoom;
         const pillH = labelH / cam.zoom;
-        ctx.fillStyle = 'rgba(255,255,255,0.85)';
+        ctx.fillStyle = OV.labelBg;
         ctx.beginPath();
         const pr = 2 / cam.zoom;
         ctx.roundRect(-pillW / 2, -pillH / 2, pillW, pillH, pr);
@@ -893,14 +908,14 @@ function renderRoomOverlays() {
 
         // Room name
         ctx.font = `600 ${worldFontSize}px system-ui, sans-serif`;
-        ctx.fillStyle = '#1a1a1a';
+        ctx.fillStyle = OV.labelText;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(room.aoid, 0, -worldFontSize * 0.2);
 
         // Area value
         ctx.font = `${worldFontSize * 0.7}px system-ui, sans-serif`;
-        ctx.fillStyle = '#757575';
+        ctx.fillStyle = OV.labelSecondary;
         ctx.fillText(fmtNum(room.area) + ' m\u00B2', 0, worldFontSize * 0.55);
 
         ctx.restore();
