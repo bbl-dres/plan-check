@@ -108,6 +108,13 @@ export const dom = {
     vsideSummary: null,
     vsideSearch: null,
     vsideToggleAll: null,
+    // Tab count badge elements
+    vtabRulesCount: null,
+    vtabRulesTotal: null,
+    vtabLayerCount: null,
+    vtabErrorCount: null,
+    vtabRoomCount: null,
+    vtabAreaCount: null,
 };
 
 export function initDom() {
@@ -133,4 +140,10 @@ export function initDom() {
     dom.vsideSummary = document.getElementById('validation-side-summary');
     dom.vsideSearch = document.getElementById('vside-search');
     dom.vsideToggleAll = document.getElementById('vside-toggle-all');
+    dom.vtabRulesCount = document.getElementById('vtab-rules-count');
+    dom.vtabRulesTotal = document.getElementById('vtab-rules-total');
+    dom.vtabLayerCount = document.getElementById('vtab-layer-count');
+    dom.vtabErrorCount = document.getElementById('vtab-error-count');
+    dom.vtabRoomCount = document.getElementById('vtab-room-count');
+    dom.vtabAreaCount = document.getElementById('vtab-area-count');
 }

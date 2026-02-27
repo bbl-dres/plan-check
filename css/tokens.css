@@ -69,7 +69,7 @@
     --font-family-mono: 'SF Mono', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
 
     /* Font Size Scale (T-shirt sizing) */
-    --font-size-2xs: 0.8125rem; /* 13px - Overline labels, small metadata */
+    --font-size-2xs: 0.75rem;   /* 12px - Overline labels, small metadata */
     --font-size-xs: 0.8125rem;  /* 13px - Caption, footnotes */
     --font-size-sm: 0.875rem;   /* 14px - Small text, labels */
     --font-size-base: 1rem;     /* 16px - Body text */
