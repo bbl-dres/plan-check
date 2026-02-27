@@ -9,9 +9,11 @@ import { log, showStatus, fmtSize, fmtNum, aciToHex, esc, computePolygonArea } f
 async function initLibreDwg() {
     if (state.libredwg) return state.libredwg;
     log('LibreDWG WebAssembly wird geladen (~15 MB)...');
-    showStatus('LibreDWG WebAssembly wird geladen...');
+    // 2.4 Phased loading feedback
+    showStatus('1/4 \u2014 LibreDWG WebAssembly wird heruntergeladen (~15 MB)...');
     try {
         const mod = await import('https://cdn.jsdelivr.net/npm/@mlightcad/libredwg-web@0.6.6/dist/libredwg-web.js');
+        showStatus('2/4 \u2014 WebAssembly wird initialisiert...');
         state.libredwg = await mod.LibreDwg.create();
         log('LibreDWG WebAssembly geladen', 'success');
         return state.libredwg;
@@ -32,7 +34,7 @@ export async function processDwgFile(file) {
     const dwgLib = await initLibreDwg();
     const fileType = file.name.toLowerCase().endsWith('.dxf') ? 1 : 0;
 
-    showStatus('DWG wird geparst...');
+    showStatus('3/4 \u2014 DWG wird geparst...');
     log('DWG wird geparst...');
 
     // Intercept console output from LibreDWG WASM to capture error codes
@@ -92,7 +94,7 @@ export async function processDwgFile(file) {
     }
     log('DWG geparst', 'success');
 
-    showStatus('Daten werden konvertiert...');
+    showStatus('4/4 \u2014 Zeichnungsdaten werden aufbereitet...');
     const { database: db, stats } = dwgLib.convertEx(dwgPtr);
     if (stats.unknownEntityCount > 0) log(`${stats.unknownEntityCount} unbekannte Entity-Typen`, 'warn');
 
