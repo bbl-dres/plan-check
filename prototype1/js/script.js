@@ -1458,10 +1458,11 @@ function openProjectDetail(projectId, skipHashUpdate = false) {
     const formattedGF = totalGF > 0 ? `${totalGF.toLocaleString('de-CH')} m²` : '0 m²';
     document.getElementById('project-gf').textContent = formattedGF;
 
-    // Render documents, users, and rules
+    // Render documents, users, rules, and settings
     renderDocuments();
     renderUsers();
     renderRules();
+    populateSettings();
 
     // Update tab counts
     const ruleSetId = currentProject ? currentProject.ruleSetId : 1;
@@ -1957,6 +1958,102 @@ function renderRules() {
     }).join('');
 }
 
+// === SETTINGS TAB ===
+function populateSettings() {
+    if (!currentProject) return;
+
+    // General fields
+    const setVal = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.value = value ?? '';
+    };
+    setVal('settings-project-number', currentProject.number);
+    setVal('settings-project-name', currentProject.name);
+    setVal('settings-project-phase', currentProject.phase);
+    setVal('settings-project-language', currentProject.language);
+    setVal('settings-project-status', currentProject.status);
+
+    // Rule set dropdown
+    const ruleSelect = document.getElementById('settings-project-ruleset');
+    if (ruleSelect) {
+        ruleSelect.innerHTML = mockRuleSets.map(rs =>
+            `<option value="${rs.id}"${rs.id === currentProject.ruleSetId ? ' selected' : ''}>${escapeHtml(rs.name)}</option>`
+        ).join('');
+    }
+
+    // Project image preview
+    const imgPreview = document.getElementById('settings-project-image-preview');
+    if (imgPreview) {
+        imgPreview.src = currentProject.imageUrl || '';
+    }
+}
+
+function setupSettingsHandlers() {
+    const controller = getListenerController('settings');
+    const signal = controller.signal;
+
+    // Save
+    const form = document.getElementById('project-settings-form');
+    form?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (!currentProject) return;
+
+        currentProject.number = document.getElementById('settings-project-number').value;
+        currentProject.name = document.getElementById('settings-project-name').value;
+        currentProject.phase = document.getElementById('settings-project-phase').value;
+        currentProject.language = document.getElementById('settings-project-language').value;
+        currentProject.status = document.getElementById('settings-project-status').value;
+
+        const ruleSetVal = document.getElementById('settings-project-ruleset').value;
+        currentProject.ruleSetId = parseInt(ruleSetVal, 10);
+
+        // Refresh the detail view with updated data
+        openProjectDetail(currentProject.id, true);
+
+        showToast('Einstellungen gespeichert', 'success');
+    }, { signal });
+
+    // Cancel — reset form to current project values
+    document.getElementById('settings-cancel-btn')?.addEventListener('click', () => {
+        populateSettings();
+        showToast('Änderungen verworfen', 'info');
+    }, { signal });
+
+    // Archive
+    document.getElementById('settings-archive-btn')?.addEventListener('click', () => {
+        if (!currentProject) return;
+        currentProject.status = 'completed';
+        openProjectDetail(currentProject.id, true);
+        showToast('Projekt archiviert', 'success');
+    }, { signal });
+
+    // Delete
+    document.getElementById('settings-delete-btn')?.addEventListener('click', () => {
+        if (!currentProject) return;
+        const idx = mockProjects.findIndex(p => p.id === currentProject.id);
+        if (idx !== -1) {
+            mockProjects.splice(idx, 1);
+            currentProject = null;
+            switchView('projects');
+            renderProjects();
+            showToast('Projekt gelöscht', 'success');
+        }
+    }, { signal });
+
+    // Image change
+    document.getElementById('settings-project-image-input')?.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const imgPreview = document.getElementById('settings-project-image-preview');
+            if (imgPreview) imgPreview.src = ev.target.result;
+            if (currentProject) currentProject.imageUrl = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+    }, { signal });
+}
+
 // === VALIDATION VIEW ===
 function openValidationView(documentId, skipHashUpdate = false) {
     currentDocument = mockDocuments.find(d => d.id === documentId);
@@ -1980,14 +2077,6 @@ function openValidationView(documentId, skipHashUpdate = false) {
 
     // Room count
     document.getElementById('step1-room-count').textContent = docRooms.length;
-
-    // Calculate GF (Geschossfläche) - sum of all GF areas
-    const totalGF = docAreas
-        .filter(a => a.aofunction === 'Geschossfläche')
-        .reduce((sum, a) => sum + a.area, 0);
-    document.getElementById('step1-gf').textContent = totalGF > 0
-        ? `${totalGF.toLocaleString('de-CH')} m²`
-        : '0 m²';
 
     // Calculate NGF (Nettogeschossfläche) - sum of all room areas as approximation
     const totalNGF = docRooms.reduce((sum, r) => sum + r.area, 0);
@@ -2259,14 +2348,26 @@ function updateValidationTabCounts() {
         ? mockCheckingResults.filter(r => r.documentId === docId).length
         : mockCheckingResults.length;
 
+    // Count layers (static mock)
+    const layerCount = 9;
+
+    // Count rules from project's rule set
+    const ruleSetId = currentProject ? currentProject.ruleSetId : 1;
+    const ruleSet = mockRuleSets.find(rs => rs.id === ruleSetId);
+    const rulesCount = ruleSet ? ruleSet.rules.length : 0;
+
     // Update Step 1 (validation view) tab counts
+    const valLayersCount = document.getElementById('val-tab-layers-count');
     const valRoomsCount = document.getElementById('val-tab-rooms-count');
     const valAreasCount = document.getElementById('val-tab-areas-count');
     const valErrorsCount = document.getElementById('val-tab-errors-count');
+    const valRulesCount = document.getElementById('val-tab-rules-count');
 
+    if (valLayersCount) valLayersCount.textContent = layerCount;
     if (valRoomsCount) valRoomsCount.textContent = roomCount;
     if (valAreasCount) valAreasCount.textContent = areaCount;
     if (valErrorsCount) valErrorsCount.textContent = errorCount;
+    if (valRulesCount) valRulesCount.textContent = rulesCount;
 
     // Update Step 2 tab counts
     // Step 2 errors are simulated Excel matching errors (last N rooms don't match)
@@ -2447,11 +2548,11 @@ function setupTabs() {
     const controller = getListenerController('tabs');
     const signal = controller.signal;
 
-    // Project detail tabs (documents, users, rules)
-    setupTabGroup('data-tab', 'tab-', ['tab-documents', 'tab-users', 'tab-rules'], signal);
+    // Project detail tabs (documents, users, rules, settings)
+    setupTabGroup('data-tab', 'tab-', ['tab-documents', 'tab-users', 'tab-rules', 'tab-settings'], signal);
 
-    // Validation view tabs - Step 1 (overview, errors, rooms, areas)
-    setupTabGroup('data-val-tab', 'val-tab-', ['val-tab-overview', 'val-tab-errors', 'val-tab-rooms', 'val-tab-areas'], signal);
+    // Validation view tabs - Step 1 (overview, rooms, areas, errors, rules)
+    setupTabGroup('data-val-tab', 'val-tab-', ['val-tab-overview', 'val-tab-rooms', 'val-tab-areas', 'val-tab-errors', 'val-tab-rules'], signal);
 
     // Step 2 tabs (rooms, errors)
     setupTabGroup('data-step2-tab', 'step2-tab-', ['step2-tab-rooms', 'step2-tab-errors'], signal);
@@ -2849,6 +2950,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupModals();
     setupDocumentActions();
     setupUserActions();
+    setupSettingsHandlers();
     initFilters();
 
     // Initialize Lucide icons (global initialization on page load)

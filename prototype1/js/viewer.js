@@ -183,12 +183,7 @@ var FloorPlanViewer = (function () {
             case 'kennzahlen':
                 // Kennzahlen mode: rooms colored by SIA category
                 return SIA_COLORS[room.siaCategory] || DEFAULT_COLOR;
-            case 'errors': {
-                // If room has errors/warnings, use status colors; else dim
-                if (highlightMap[room.id]) return highlightMap[room.id];
-                return DIMMED_COLOR;
-            }
-            default: // overview
+            default: // overview, errors, rules
                 return DEFAULT_COLOR;
         }
     }
@@ -214,13 +209,17 @@ var FloorPlanViewer = (function () {
 
         var strokeWidth = 1.5 / cam.zoom;
 
-        // Draw area polygons first (behind rooms) in areas mode
-        if (mode === 'areas') {
+        // Draw area polygons (behind rooms); skip only in 'rooms' mode
+        if (mode !== 'rooms') {
             for (const area of areas) {
                 if (!area.vertices || area.vertices.length < 3) continue;
                 var aColors = (area.id === selectedRoomId)
                     ? SELECTED_COLOR
-                    : { fill: 'rgba(0,102,153,0.12)', stroke: '#006699' };
+                    : (area.id === hoveredRoomId)
+                    ? HOVERED_COLOR
+                    : (mode === 'areas')
+                    ? (STATUS_COLORS[area.status] || DEFAULT_COLOR)
+                    : DEFAULT_COLOR;
                 ctx.beginPath();
                 ctx.moveTo(area.vertices[0][0], area.vertices[0][1]);
                 for (let i = 1; i < area.vertices.length; i++) {
@@ -230,10 +229,8 @@ var FloorPlanViewer = (function () {
                 ctx.fillStyle = aColors.fill;
                 ctx.fill();
                 ctx.strokeStyle = aColors.stroke;
-                ctx.lineWidth = 2.5 / cam.zoom;
-                ctx.setLineDash([6 / cam.zoom, 4 / cam.zoom]);
+                ctx.lineWidth = 2 / cam.zoom;
                 ctx.stroke();
-                ctx.setLineDash([]);
 
                 // Area label
                 var acx = 0, acy = 0;
@@ -246,7 +243,7 @@ var FloorPlanViewer = (function () {
                     ctx.translate(acx, acy);
                     ctx.scale(1, -1);
                     ctx.font = 'bold ' + afontSize + 'px system-ui, -apple-system, sans-serif';
-                    ctx.fillStyle = '#006699';
+                    ctx.fillStyle = aColors.stroke;
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     ctx.fillText(area.aoid || 'GF', 0, 0);

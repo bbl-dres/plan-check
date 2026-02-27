@@ -4,7 +4,7 @@
  * Depends on: FloorPlanViewer (viewer.js), renderStatusIcon & mock data (script.js).
  */
 /* eslint-disable no-var */
-/* global FloorPlanViewer, mockGeometry, mockCheckingResults, renderStatusIcon, lucide */
+/* global FloorPlanViewer, mockGeometry, mockCheckingResults, mockRuleSets, currentProject, renderStatusIcon, lucide */
 var ValidationView = (function () {
     'use strict';
 
@@ -90,11 +90,12 @@ var ValidationView = (function () {
         // Wire up tab switching
         setupTabCallbacks();
 
-        // Wire up room search
-        setupRoomSearch();
+        // Wire up search inputs and toggle-all checkboxes
+        setupSearchInputs();
+        setupToggleAll();
 
         // Render initial tab and fit viewer
-        switchTab('overview');
+        switchTab('rules');
         requestAnimationFrame(function () {
             FloorPlanViewer.zoomExtents();
         });
@@ -105,7 +106,6 @@ var ValidationView = (function () {
     function updateMetrics() {
         var roomCountEl = document.getElementById('step1-room-count');
         var ngfEl = document.getElementById('step1-ngf');
-        var gfEl = document.getElementById('step1-gf');
         var scoreEl = document.getElementById('step1-score-value');
         var scoreCard = document.getElementById('step1-score-card');
 
@@ -115,14 +115,18 @@ var ValidationView = (function () {
         var ngf = docRooms.reduce(function (sum, r) { return sum + r.area; }, 0);
         if (ngfEl) ngfEl.textContent = ngf.toFixed(2) + ' m\u00B2';
 
-        // GF = Geschossfläche area from docAreas if available
-        var bgf = docAreas.find(function (a) { return a.aoid && a.aoid.indexOf('GF') !== -1; });
-        if (gfEl) gfEl.textContent = (bgf ? bgf.area : 0) + ' m\u00B2';
-
-        // Score based on room statuses
-        var okCount = docRooms.filter(function (r) { return r.status === 'ok'; }).length;
-        var score = docRooms.length > 0 ? Math.round((okCount / docRooms.length) * 100) : 0;
+        // Score based on checking rules (passed / total)
+        var rules = getProjectRules();
+        var totalRules = rules.length;
+        var failedCodes = {};
+        for (var i = 0; i < docErrors.length; i++) {
+            failedCodes[docErrors[i].ruleCode] = true;
+        }
+        var passedRules = rules.filter(function (r) { return !failedCodes[r.code]; }).length;
+        var score = totalRules > 0 ? Math.round((passedRules / totalRules) * 100) : 0;
         if (scoreEl) scoreEl.textContent = score + '%';
+        var scoreDetail = document.getElementById('step1-score-detail');
+        if (scoreDetail) scoreDetail.textContent = passedRules + '/' + totalRules;
         if (scoreCard) {
             scoreCard.classList.remove('metric-card--success', 'metric-card--warning', 'metric-card--error');
             if (score >= 90) scoreCard.classList.add('metric-card--success');
@@ -132,12 +136,26 @@ var ValidationView = (function () {
     }
 
     function updateTabCounts() {
+        var layersCount = document.getElementById('val-tab-layers-count');
         var roomsCount = document.getElementById('val-tab-rooms-count');
-        var errorsCount = document.getElementById('val-tab-errors-count');
         var areasCount = document.getElementById('val-tab-areas-count');
+        var errorsCount = document.getElementById('val-tab-errors-count');
+        var rulesCount = document.getElementById('val-tab-rules-count');
+        if (layersCount) layersCount.textContent = MOCK_LAYERS.length;
         if (roomsCount) roomsCount.textContent = docRooms.length;
-        if (errorsCount) errorsCount.textContent = docErrors.length;
         if (areasCount) areasCount.textContent = docAreas.length;
+        if (errorsCount) errorsCount.textContent = docErrors.length;
+        if (rulesCount) {
+            var rules = getProjectRules();
+            rulesCount.textContent = rules.length;
+        }
+    }
+
+    function getProjectRules() {
+        var ruleSetId = (typeof currentProject !== 'undefined' && currentProject) ? currentProject.ruleSetId : 1;
+        var ruleSets = (typeof mockRuleSets !== 'undefined') ? mockRuleSets : [];
+        var ruleSet = ruleSets.find(function (rs) { return rs.id === ruleSetId; });
+        return ruleSet ? ruleSet.rules : [];
     }
 
     function setupTabCallbacks() {
@@ -153,20 +171,76 @@ var ValidationView = (function () {
         });
     }
 
-    function setupRoomSearch() {
+    function setupSearchInputs() {
         var signal = abortController ? abortController.signal : undefined;
         var opts = signal ? { signal: signal } : {};
-        var searchInput = document.getElementById('room-search');
-        if (!searchInput) return;
-        searchInput.addEventListener('input', function () {
-            var query = searchInput.value.toLowerCase().trim();
-            var items = document.querySelectorAll('.room-list__item');
+
+        // Layer search
+        setupListSearch('layer-search', '#layer-list .panel-list__item', function (item, query) {
+            var name = (item.getAttribute('data-name') || '').toLowerCase();
+            return name.indexOf(query) !== -1;
+        }, opts);
+
+        // Room search
+        setupListSearch('room-search', '#room-list .panel-list__item', function (item, query) {
+            var aoid = (item.getAttribute('data-aoid') || '').toLowerCase();
+            var func = (item.getAttribute('data-func') || '').toLowerCase();
+            return aoid.indexOf(query) !== -1 || func.indexOf(query) !== -1;
+        }, opts);
+
+        // Area search
+        setupListSearch('area-search', '#area-list .panel-list__item', function (item, query) {
+            var aoid = (item.getAttribute('data-aoid') || '').toLowerCase();
+            var detail = (item.getAttribute('data-detail') || '').toLowerCase();
+            return aoid.indexOf(query) !== -1 || detail.indexOf(query) !== -1;
+        }, opts);
+
+        // Error search
+        setupListSearch('error-search', '.error-list__item', function (item, query) {
+            var code = (item.getAttribute('data-code') || '').toLowerCase();
+            var msg = (item.getAttribute('data-msg') || '').toLowerCase();
+            return code.indexOf(query) !== -1 || msg.indexOf(query) !== -1;
+        }, opts);
+
+        // Rule search
+        setupListSearch('val-rule-search', '.rule-list__item', function (item, query) {
+            var code = (item.getAttribute('data-code') || '').toLowerCase();
+            var name = (item.getAttribute('data-name') || '').toLowerCase();
+            return code.indexOf(query) !== -1 || name.indexOf(query) !== -1;
+        }, opts);
+    }
+
+    function setupListSearch(inputId, itemSelector, matchFn, opts) {
+        var input = document.getElementById(inputId);
+        if (!input) return;
+        input.addEventListener('input', function () {
+            var query = input.value.toLowerCase().trim();
+            var items = document.querySelectorAll(itemSelector);
             items.forEach(function (item) {
-                var aoid = (item.getAttribute('data-aoid') || '').toLowerCase();
-                var func = (item.getAttribute('data-func') || '').toLowerCase();
-                item.style.display = (!query || aoid.indexOf(query) !== -1 || func.indexOf(query) !== -1) ? '' : 'none';
+                item.style.display = (!query || matchFn(item, query)) ? '' : 'none';
             });
         }, opts);
+    }
+
+    function setupToggleAll() {
+        var signal = abortController ? abortController.signal : undefined;
+        var opts = signal ? { signal: signal } : {};
+
+        var toggles = [
+            { id: 'layer-toggle-all', list: '#layer-list' },
+            { id: 'room-toggle-all', list: '#room-list' },
+            { id: 'area-toggle-all', list: '#area-list' },
+        ];
+
+        toggles.forEach(function (cfg) {
+            var toggle = document.getElementById(cfg.id);
+            if (!toggle) return;
+            toggle.addEventListener('change', function () {
+                var checked = toggle.checked;
+                var checkboxes = document.querySelectorAll(cfg.list + ' .panel-list__item input[type="checkbox"]');
+                checkboxes.forEach(function (cb) { cb.checked = checked; });
+            }, opts);
+        });
     }
 
     // --- Tab switching ---
@@ -182,15 +256,11 @@ var ValidationView = (function () {
             case 'areas': renderAreasPanel(); break;
             case 'kennzahlen': renderKennzahlenPanel(); break;
             case 'errors': renderErrorsPanel(); break;
+            case 'rules': renderRulesPanel(); break;
         }
 
         // Update viewer mode
         FloorPlanViewer.setMode(tabName);
-
-        // Set up mode-specific highlights
-        if (tabName === 'errors') {
-            applyErrorHighlights();
-        }
 
         // Re-initialize Lucide icons in the panel
         if (typeof lucide !== 'undefined') {
@@ -204,53 +274,48 @@ var ValidationView = (function () {
 
     function renderOverviewPanel() {
         var layerList = document.getElementById('layer-list');
+        if (!layerList) return;
 
-        if (layerList) {
-            var html = '';
-            for (var i = 0; i < MOCK_LAYERS.length; i++) {
-                var l = MOCK_LAYERS[i];
-                html += '<label class="layer-list__item">' +
-                    '<input type="checkbox" checked> ' +
-                    '<span class="layer-list__color" style="background:' + l.color + '"></span>' +
-                    '<span class="layer-list__name">' + escapeHtml(l.name) + '</span>' +
-                    '<span class="layer-list__count">' + l.count + '</span>' +
-                    '</label>';
-            }
-            layerList.innerHTML = html;
+        var html = '';
+        for (var i = 0; i < MOCK_LAYERS.length; i++) {
+            var l = MOCK_LAYERS[i];
+            html += '<label class="panel-list__item" data-name="' + escapeHtml(l.name) + '">' +
+                '<input type="checkbox" checked> ' +
+                '<i data-lucide="check-circle-2" class="icon icon-sm panel-list__icon panel-list__icon--ok"></i>' +
+                '<span class="panel-list__color" style="background:' + l.color + '"></span>' +
+                '<span class="panel-list__name">' + escapeHtml(l.name) + '</span>' +
+                '<span class="panel-list__value">' + l.count + ' Objekte</span>' +
+                '</label>';
         }
+        layerList.innerHTML = html;
     }
 
     function renderRoomsPanel() {
         var roomListEl = document.getElementById('room-list');
         if (!roomListEl) return;
 
-        // Sort: errors first, then warnings, then ok
-        var sorted = docRooms.slice().sort(function (a, b) {
-            var order = { error: 0, warning: 1, ok: 2 };
-            return (order[a.status] || 2) - (order[b.status] || 2);
-        });
-
         var html = '';
-        for (var i = 0; i < sorted.length; i++) {
-            var room = sorted[i];
+        for (var i = 0; i < docRooms.length; i++) {
+            var room = docRooms[i];
+            var icon = room.status === 'error'
+                ? '<i data-lucide="x-circle" class="icon icon-sm panel-list__icon panel-list__icon--error"></i>'
+                : room.status === 'warning'
+                ? '<i data-lucide="alert-triangle" class="icon icon-sm panel-list__icon panel-list__icon--warning"></i>'
+                : '<i data-lucide="check-circle-2" class="icon icon-sm panel-list__icon panel-list__icon--ok"></i>';
 
-            var itemClass = 'room-list__item';
-            if (room.status === 'error') itemClass += ' room-list__item--error';
-            else if (room.status === 'warning') itemClass += ' room-list__item--warning';
-
-            html += '<div class="' + itemClass + '" data-room-id="' + room.id + '" ' +
+            html += '<div class="panel-list__item" data-room-id="' + room.id + '" ' +
                 'data-aoid="' + escapeHtml(room.aoid) + '" data-func="' + escapeHtml(room.aofunction) + '">' +
-                '<span class="room-list__aoid">' + escapeHtml(room.aoid) + '</span>' +
-                '<span class="room-list__area">' + room.area + ' m\u00B2</span>' +
-                '<span class="room-list__func">' + escapeHtml(room.aofunction) + '</span>' +
-                '<span class="room-list__status">' + renderStatusIcon(room.status) + '</span>' +
+                '<input type="checkbox" checked> ' +
+                icon +
+                '<span class="panel-list__name">' + escapeHtml(room.aoid) + '</span>' +
+                '<span class="panel-list__value">' + room.area + ' m\u00B2</span>' +
                 '</div>';
         }
 
         roomListEl.innerHTML = html;
 
         // Click handlers
-        var items = roomListEl.querySelectorAll('.room-list__item');
+        var items = roomListEl.querySelectorAll('.panel-list__item');
         items.forEach(function (item) {
             item.addEventListener('click', function () {
                 var roomId = parseInt(item.getAttribute('data-room-id'), 10);
@@ -259,11 +324,6 @@ var ValidationView = (function () {
                 FloorPlanViewer.zoomToRoom(roomId);
             });
         });
-
-        // Re-init lucide icons for status pills
-        if (typeof lucide !== 'undefined') {
-            requestAnimationFrame(function () { lucide.createIcons(); });
-        }
     }
 
     function renderAreasPanel() {
@@ -272,20 +332,23 @@ var ValidationView = (function () {
 
         var html = '';
 
-        // Show GF/EBF area entries from docAreas
         if (docAreas.length === 0) {
-            html = '<div class="area-list__empty">Keine Flächenpolygone vorhanden.</div>';
+            html = '<div class="panel-list__empty">Keine Flächenpolygone vorhanden.</div>';
         } else {
             for (var i = 0; i < docAreas.length; i++) {
                 var area = docAreas[i];
-                var statusClass = area.status === 'error' ? ' area-list__item--error' :
-                    area.status === 'warning' ? ' area-list__item--warning' : '';
-                html += '<div class="area-list__item' + statusClass + '" data-area-id="' + area.id + '">' +
-                    '<div class="area-list__header">' +
-                    '<span class="area-list__aoid">' + escapeHtml(area.aoid) + '</span>' +
-                    '<span class="area-list__value">' + area.area.toFixed(1) + ' m\u00B2</span>' +
-                    '</div>' +
-                    '<div class="area-list__detail">' + escapeHtml(area.aofunction || 'Flächenpolygon') + '</div>' +
+                var icon = area.status === 'error'
+                    ? '<i data-lucide="x-circle" class="icon icon-sm panel-list__icon panel-list__icon--error"></i>'
+                    : area.status === 'warning'
+                    ? '<i data-lucide="alert-triangle" class="icon icon-sm panel-list__icon panel-list__icon--warning"></i>'
+                    : '<i data-lucide="check-circle-2" class="icon icon-sm panel-list__icon panel-list__icon--ok"></i>';
+
+                html += '<div class="panel-list__item" data-area-id="' + area.id + '" ' +
+                    'data-aoid="' + escapeHtml(area.aoid) + '" data-detail="' + escapeHtml(area.aofunction) + '">' +
+                    '<input type="checkbox" checked> ' +
+                    icon +
+                    '<span class="panel-list__name">' + escapeHtml(area.aoid) + '</span>' +
+                    '<span class="panel-list__value">' + area.area.toFixed(1) + ' m\u00B2</span>' +
                     '</div>';
             }
         }
@@ -293,13 +356,12 @@ var ValidationView = (function () {
         areaListEl.innerHTML = html;
 
         // Click handlers to highlight area in viewer
-        var items = areaListEl.querySelectorAll('.area-list__item');
+        var items = areaListEl.querySelectorAll('.panel-list__item');
         items.forEach(function (item) {
             item.addEventListener('click', function () {
                 var areaId = parseInt(item.getAttribute('data-area-id'), 10);
-                // Remove previous selection
-                items.forEach(function (el) { el.classList.remove('area-list__item--selected'); });
-                item.classList.add('area-list__item--selected');
+                items.forEach(function (el) { el.classList.remove('panel-list__item--selected'); });
+                item.classList.add('panel-list__item--selected');
                 FloorPlanViewer.selectRoom(areaId);
                 FloorPlanViewer.zoomToRoom(areaId);
             });
@@ -467,64 +529,44 @@ var ValidationView = (function () {
         var groupsEl = document.getElementById('error-groups');
         if (!groupsEl) return;
 
-        var errorItems = docErrors.filter(function (e) { return e.severity === 'error'; });
-        var warningItems = docErrors.filter(function (e) { return e.severity === 'warning'; });
-
         var html = '';
 
-        if (errorItems.length > 0) {
-            html += '<div class="error-group">' +
-                '<div class="error-group__header error-group__header--error" data-toggle-group>' +
-                '<i data-lucide="chevron-down" class="icon icon-sm error-group__chevron"></i>' +
-                '<i data-lucide="x-circle" class="icon icon-sm"></i>' +
-                'Fehler <span class="error-group__count">(' + errorItems.length + ')</span>' +
-                '</div>' +
-                '<div class="error-group__body">';
-            for (var i = 0; i < errorItems.length; i++) {
-                html += renderErrorGroupItem(errorItems[i]);
-            }
-            html += '</div></div>';
-        }
-
-        if (warningItems.length > 0) {
-            html += '<div class="error-group">' +
-                '<div class="error-group__header error-group__header--warning" data-toggle-group>' +
-                '<i data-lucide="chevron-down" class="icon icon-sm error-group__chevron"></i>' +
-                '<i data-lucide="alert-triangle" class="icon icon-sm"></i>' +
-                'Warnungen <span class="error-group__count">(' + warningItems.length + ')</span>' +
-                '</div>' +
-                '<div class="error-group__body">';
-            for (var j = 0; j < warningItems.length; j++) {
-                html += renderErrorGroupItem(warningItems[j]);
-            }
-            html += '</div></div>';
-        }
-
         if (docErrors.length === 0) {
-            html = '<div class="error-item" style="border-left-color:var(--color-success);background:var(--color-success-light)">' +
-                '<div class="error-item__message">Keine Fehler oder Warnungen gefunden.</div></div>';
+            html = '<div class="error-list__empty">Keine Fehler oder Warnungen gefunden.</div>';
+        } else {
+            for (var i = 0; i < docErrors.length; i++) {
+                var err = docErrors[i];
+                var icon = err.severity === 'error'
+                    ? '<i data-lucide="x-circle" class="icon icon-sm error-list__icon error-list__icon--error"></i>'
+                    : '<i data-lucide="alert-triangle" class="icon icon-sm error-list__icon error-list__icon--warning"></i>';
+
+                // Try to find which room this error references
+                var roomId = '';
+                var aoidMatch = err.message.match(/([A-Z0-9]+\.[0-9]+)/i);
+                if (aoidMatch) {
+                    var room = docRooms.find(function (r) { return r.aoid === aoidMatch[1]; });
+                    if (room) roomId = room.id;
+                }
+
+                html += '<div class="error-list__item" data-code="' + escapeHtml(err.ruleCode) + '" data-msg="' + escapeHtml(err.message) + '"' +
+                    (roomId ? ' data-room-id="' + roomId + '"' : '') + '>' +
+                    icon +
+                    '<span class="error-list__code">' + escapeHtml(err.ruleCode) + '</span>' +
+                    '<span class="error-list__message">' + escapeHtml(err.message) + '</span>' +
+                    '</div>';
+            }
         }
 
         groupsEl.innerHTML = html;
 
-        // Toggle collapse
-        var headers = groupsEl.querySelectorAll('[data-toggle-group]');
-        headers.forEach(function (header) {
-            header.addEventListener('click', function () {
-                header.parentElement.classList.toggle('error-group--collapsed');
-            });
-        });
-
-        // Click error items to zoom to affected room
-        var items = groupsEl.querySelectorAll('.error-group__item');
+        // Click error items to highlight and zoom to affected room
+        var items = groupsEl.querySelectorAll('.error-list__item[data-room-id]');
         items.forEach(function (item) {
+            item.style.cursor = 'pointer';
             item.addEventListener('click', function () {
-                var roomId = item.getAttribute('data-room-id');
-                if (roomId) {
-                    var id = parseInt(roomId, 10);
-                    FloorPlanViewer.selectRoom(id);
-                    FloorPlanViewer.zoomToRoom(id);
-                }
+                var id = parseInt(item.getAttribute('data-room-id'), 10);
+                FloorPlanViewer.selectRoom(id);
+                FloorPlanViewer.zoomToRoom(id);
             });
         });
     }
@@ -552,6 +594,45 @@ var ValidationView = (function () {
             '</div>' +
             '<div class="error-group__item-message">' + escapeHtml(err.message) + '</div>' +
             '</div>';
+    }
+
+    function renderRulesPanel() {
+        var listEl = document.getElementById('val-rule-list');
+        if (!listEl) return;
+
+        var rules = getProjectRules();
+        var html = '';
+
+        // Build a set of rule codes that have errors/warnings for this document
+        var failedRules = {};
+        for (var e = 0; e < docErrors.length; e++) {
+            var code = docErrors[e].ruleCode;
+            if (!failedRules[code] || docErrors[e].severity === 'error') {
+                failedRules[code] = docErrors[e].severity;
+            }
+        }
+
+        if (rules.length === 0) {
+            html = '<div class="rule-list__empty">Keine Prüfregeln vorhanden.</div>';
+        } else {
+            for (var i = 0; i < rules.length; i++) {
+                var rule = rules[i];
+                var severity = failedRules[rule.code] || 'ok';
+                var icon = severity === 'error'
+                    ? '<i data-lucide="x-circle" class="icon icon-sm rule-list__icon rule-list__icon--error"></i>'
+                    : severity === 'warning'
+                    ? '<i data-lucide="alert-triangle" class="icon icon-sm rule-list__icon rule-list__icon--warning"></i>'
+                    : '<i data-lucide="check-circle-2" class="icon icon-sm rule-list__icon rule-list__icon--ok"></i>';
+
+                html += '<div class="rule-list__item" data-code="' + escapeHtml(rule.code) + '" data-name="' + escapeHtml(rule.name) + '">' +
+                    '<span class="rule-list__code">' + escapeHtml(rule.code) + '</span>' +
+                    icon +
+                    '<span class="rule-list__name">' + escapeHtml(rule.name) + '</span>' +
+                    '</div>';
+            }
+        }
+
+        listEl.innerHTML = html;
     }
 
     // --- Helpers ---
@@ -587,16 +668,16 @@ var ValidationView = (function () {
 
     function selectRoomInList(roomId) {
         // Remove previous selection
-        var items = document.querySelectorAll('.room-list__item');
+        var items = document.querySelectorAll('#room-list .panel-list__item');
         items.forEach(function (item) {
-            item.classList.remove('room-list__item--selected');
+            item.classList.remove('panel-list__item--selected');
         });
 
         // Add selection
         if (roomId) {
-            var target = document.querySelector('.room-list__item[data-room-id="' + roomId + '"]');
+            var target = document.querySelector('#room-list .panel-list__item[data-room-id="' + roomId + '"]');
             if (target) {
-                target.classList.add('room-list__item--selected');
+                target.classList.add('panel-list__item--selected');
                 target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
         }

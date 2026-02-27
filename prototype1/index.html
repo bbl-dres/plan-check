@@ -9,9 +9,8 @@
         style-src 'self' 'unsafe-inline' https://unpkg.com;
         img-src 'self' data: https://images.unsplash.com https://*.basemaps.cartocdn.com;
         font-src 'self';
-        connect-src 'self' https://*.basemaps.cartocdn.com https://basemaps.cartocdn.com;
+        connect-src 'self' https://unpkg.com https://*.basemaps.cartocdn.com https://basemaps.cartocdn.com;
         worker-src blob:;
-        frame-ancestors 'none';
         base-uri 'self';
         form-action 'self';
     ">
@@ -324,9 +323,10 @@
                 <div class="tabs-card">
                     <div class="tabs tabs--with-actions">
                         <ul class="tabs__list">
-                            <li><a href="#" class="tabs__tab tabs__tab--active" data-tab="documents">Abgabe Grundrisse (<span id="tab-documents-count">0</span>)</a></li>
+                            <li><a href="#" class="tabs__tab tabs__tab--active" data-tab="documents">Grundrisse (<span id="tab-documents-count">0</span>)</a></li>
                             <li><a href="#" class="tabs__tab" data-tab="users">Benutzer (<span id="tab-users-count">0</span>)</a></li>
                             <li><a href="#" class="tabs__tab" data-tab="rules">Prüfregeln (<span id="tab-rules-count">0</span>)</a></li>
+                            <li><a href="#" class="tabs__tab" data-tab="settings">Projekt Einstellungen</a></li>
                         </ul>
                         <div class="tabs__actions" id="tabs-actions-documents">
                             <button class="btn btn--secondary btn--sm" id="edit-document-btn" disabled>
@@ -357,6 +357,7 @@
                             </button>
                         </div>
                         <div class="tabs__actions" id="tabs-actions-rules" style="display: none;"></div>
+                        <div class="tabs__actions" id="tabs-actions-settings" style="display: none;"></div>
                     </div>
 
                     <div class="tab-content">
@@ -418,6 +419,104 @@
                                 <!-- Rules rendered by JS -->
                             </tbody>
                         </table>
+                    </div>
+                    <div class="tab-pane" id="tab-settings">
+                        <form class="settings-form" id="project-settings-form">
+                            <fieldset class="settings-section">
+                                <legend class="settings-section__title">Allgemein</legend>
+                                <div class="settings-form__grid">
+                                    <div class="form__field">
+                                        <label for="settings-project-number" class="form__label">Projektnummer</label>
+                                        <input type="text" class="form__input" id="settings-project-number" name="projectNumber">
+                                    </div>
+                                    <div class="form__field">
+                                        <label for="settings-project-name" class="form__label">Projektname</label>
+                                        <input type="text" class="form__input" id="settings-project-name" name="name">
+                                    </div>
+                                    <div class="form__field">
+                                        <label for="settings-project-phase" class="form__label">SIA Phase</label>
+                                        <select class="form__input form__select" id="settings-project-phase" name="phase">
+                                            <option value="31">31 - Vorprojekt</option>
+                                            <option value="32">32 - Bauprojekt</option>
+                                            <option value="33">33 - Bewilligungsverfahren</option>
+                                            <option value="41">41 - Ausschreibung</option>
+                                            <option value="51">51 - Ausführungsprojekt</option>
+                                            <option value="52">52 - Ausführung</option>
+                                            <option value="53">53 - Inbetriebnahme</option>
+                                        </select>
+                                    </div>
+                                    <div class="form__field">
+                                        <label for="settings-project-language" class="form__label">Sprache</label>
+                                        <select class="form__input form__select" id="settings-project-language" name="language">
+                                            <option value="de">Deutsch</option>
+                                            <option value="fr">Français</option>
+                                            <option value="it">Italiano</option>
+                                        </select>
+                                    </div>
+                                    <div class="form__field">
+                                        <label for="settings-project-status" class="form__label">Status</label>
+                                        <select class="form__input form__select" id="settings-project-status" name="status">
+                                            <option value="active">Aktiv</option>
+                                            <option value="completed">Abgeschlossen</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </fieldset>
+
+                            <fieldset class="settings-section">
+                                <legend class="settings-section__title">Prüfung</legend>
+                                <div class="form__field">
+                                    <label for="settings-project-ruleset" class="form__label">Regelsatz</label>
+                                    <select class="form__input form__select" id="settings-project-ruleset" name="ruleSetId">
+                                        <!-- Options populated dynamically from rules.json -->
+                                    </select>
+                                </div>
+                                <p class="settings-section__hint">
+                                    <i data-lucide="info" class="icon icon-sm" aria-hidden="true"></i>
+                                    Definiert welche Prüfregeln auf die Grundrisse angewendet werden. Einzelne Regeln können im Tab «Prüfregeln» eingesehen werden.
+                                </p>
+                            </fieldset>
+
+                            <fieldset class="settings-section">
+                                <legend class="settings-section__title">Projektbild</legend>
+                                <div class="settings-image">
+                                    <div class="settings-image__preview">
+                                        <img src="" alt="Projektbild" id="settings-project-image-preview">
+                                    </div>
+                                    <div class="settings-image__actions">
+                                        <label class="btn btn--secondary btn--sm" for="settings-project-image-input">
+                                            <i data-lucide="upload" class="icon icon-sm" aria-hidden="true"></i>
+                                            Bild ändern
+                                        </label>
+                                        <input type="file" id="settings-project-image-input" name="image" accept="image/*" class="sr-only">
+                                    </div>
+                                </div>
+                            </fieldset>
+
+                            <fieldset class="settings-section settings-section--danger">
+                                <legend class="settings-section__title">Gefahrenzone</legend>
+                                <div class="settings-danger__item">
+                                    <div class="settings-danger__text">
+                                        <p class="settings-danger__label">Projekt archivieren</p>
+                                        <p class="settings-danger__description">Setzt den Status auf «Abgeschlossen». Keine weiteren Prüfungen möglich.</p>
+                                    </div>
+                                    <button type="button" class="btn btn--outline-danger btn--sm" id="settings-archive-btn">Archivieren</button>
+                                </div>
+                                <hr class="settings-danger__divider">
+                                <div class="settings-danger__item">
+                                    <div class="settings-danger__text">
+                                        <p class="settings-danger__label">Projekt löschen</p>
+                                        <p class="settings-danger__description">Löscht das Projekt und alle zugehörigen Daten unwiderruflich.</p>
+                                    </div>
+                                    <button type="button" class="btn btn--danger btn--sm" id="settings-delete-btn">Löschen</button>
+                                </div>
+                            </fieldset>
+
+                            <div class="settings-form__actions">
+                                <button type="button" class="btn btn--secondary" id="settings-cancel-btn">Abbrechen</button>
+                                <button type="submit" class="btn btn--primary">Speichern</button>
+                            </div>
+                        </form>
                     </div>
                     </div>
                 </div>
@@ -732,21 +831,24 @@
                             <span class="metric-card__value" id="step1-ngf">0 m²</span>
                             <span class="metric-card__label">SIA 416 Nettogeschossfläche NGF</span>
                         </div>
-                        <div class="metric-card">
-                            <span class="metric-card__value" id="step1-gf">0 m²</span>
-                            <span class="metric-card__label">SIA 416 Geschossfläche GF</span>
-                        </div>
                         <div class="metric-card" id="step1-score-card">
                             <span class="metric-card__value" id="step1-score-value">0%</span>
-                            <span class="metric-card__label">Score</span>
+                            <span class="metric-card__label">Score (<span id="step1-score-detail">0/0</span>)</span>
+                        </div>
+                        <div class="metric-card metric-card--action" id="step1-download-card">
+                            <button class="btn btn--secondary btn--sm" id="download-report-btn" disabled>
+                                <i data-lucide="download" class="icon icon-sm" aria-hidden="true"></i>
+                                Bericht herunterladen
+                            </button>
                         </div>
                     </div>
 
                     <div class="tabs-card">
                         <div class="tabs">
                             <ul class="tabs__list">
-                                <li><a href="#" class="tabs__tab tabs__tab--active" data-val-tab="overview">Layers</a></li>
+                                <li><a href="#" class="tabs__tab tabs__tab--active" data-val-tab="rules">Prüfregeln (<span id="val-tab-rules-count">0</span>)</a></li>
                                 <li><a href="#" class="tabs__tab" data-val-tab="errors">Fehlermeldungen (<span id="val-tab-errors-count">0</span>)</a></li>
+                                <li><a href="#" class="tabs__tab" data-val-tab="overview">Layers (<span id="val-tab-layers-count">0</span>)</a></li>
                                 <li><a href="#" class="tabs__tab" data-val-tab="rooms">Räume (<span id="val-tab-rooms-count">0</span>)</a></li>
                                 <li><a href="#" class="tabs__tab" data-val-tab="areas">Flächen (<span id="val-tab-areas-count">0</span>)</a></li>
                             </ul>
@@ -755,40 +857,66 @@
                         <div class="split-view split-view--viewer">
                             <!-- LEFT: Panel (changes per tab) -->
                             <div class="split-view__left" id="validation-panel">
-                                <!-- Tab 1: Overview -->
-                                <div class="tab-pane tab-pane--active" id="val-tab-overview">
-                                    <div class="validation-panel__section">
-                                        <h4 class="validation-panel__title">
-                                            <i data-lucide="layers" class="icon icon-sm"></i>
-                                            Layer
-                                        </h4>
-                                        <div id="layer-list" class="layer-list">
-                                            <!-- Rendered by JS -->
+                                <!-- Layers -->
+                                <div class="tab-pane" id="val-tab-overview">
+                                    <div class="validation-panel__toolbar">
+                                        <input type="checkbox" id="layer-toggle-all" checked title="Alle ein-/ausblenden">
+                                        <div class="validation-panel__search-wrapper">
+                                            <i data-lucide="search" class="icon icon-sm validation-panel__search-icon"></i>
+                                            <input type="text" class="validation-panel__search" id="layer-search" placeholder="Layer suchen...">
                                         </div>
+                                    </div>
+                                    <div id="layer-list" class="layer-list">
+                                        <!-- Rendered by JS -->
                                     </div>
                                 </div>
 
-                                <!-- Tab 2: Rooms -->
+                                <!-- Räume -->
                                 <div class="tab-pane" id="val-tab-rooms">
-                                    <div class="validation-panel__search-wrapper">
-                                        <i data-lucide="search" class="icon icon-sm validation-panel__search-icon"></i>
-                                        <input type="text" class="validation-panel__search" id="room-search" placeholder="Raum suchen...">
+                                    <div class="validation-panel__toolbar">
+                                        <input type="checkbox" id="room-toggle-all" checked title="Alle ein-/ausblenden">
+                                        <div class="validation-panel__search-wrapper">
+                                            <i data-lucide="search" class="icon icon-sm validation-panel__search-icon"></i>
+                                            <input type="text" class="validation-panel__search" id="room-search" placeholder="Raum suchen...">
+                                        </div>
                                     </div>
                                     <div id="room-list" class="room-list">
                                         <!-- Rendered by JS -->
                                     </div>
                                 </div>
 
-                                <!-- Tab 4: Areas (GF/EBF gross polygons) -->
+                                <!-- Flächen -->
                                 <div class="tab-pane" id="val-tab-areas">
+                                    <div class="validation-panel__toolbar">
+                                        <input type="checkbox" id="area-toggle-all" checked title="Alle ein-/ausblenden">
+                                        <div class="validation-panel__search-wrapper">
+                                            <i data-lucide="search" class="icon icon-sm validation-panel__search-icon"></i>
+                                            <input type="text" class="validation-panel__search" id="area-search" placeholder="Fläche suchen...">
+                                        </div>
+                                    </div>
                                     <div id="area-list" class="area-list">
                                         <!-- Rendered by JS -->
                                     </div>
                                 </div>
 
-                                <!-- Tab 2: Errors -->
+                                <!-- Fehlermeldungen -->
                                 <div class="tab-pane" id="val-tab-errors">
+                                    <div class="validation-panel__search-wrapper">
+                                        <i data-lucide="search" class="icon icon-sm validation-panel__search-icon"></i>
+                                        <input type="text" class="validation-panel__search" id="error-search" placeholder="Fehler suchen...">
+                                    </div>
                                     <div id="error-groups" class="error-groups">
+                                        <!-- Rendered by JS -->
+                                    </div>
+                                </div>
+
+                                <!-- Prüfregeln -->
+                                <div class="tab-pane tab-pane--active" id="val-tab-rules">
+                                    <div class="validation-panel__search-wrapper">
+                                        <i data-lucide="search" class="icon icon-sm validation-panel__search-icon"></i>
+                                        <input type="text" class="validation-panel__search" id="val-rule-search" placeholder="Regel suchen...">
+                                    </div>
+                                    <div id="val-rule-list" class="rule-list">
                                         <!-- Rendered by JS -->
                                     </div>
                                 </div>
