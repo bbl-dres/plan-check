@@ -176,7 +176,8 @@ export function prepareDrawingData(entities, layers, db) {
     function transformPoint(px, py, ins) {
         const sx = (ins.xScale || 1);
         const sy = (ins.yScale || 1);
-        const rot = (ins.rotation || 0) * Math.PI / 180;
+        // libredwg-web returns rotation in radians (not degrees)
+        const rot = (ins.rotation || 0);
         const cos = Math.cos(rot);
         const sin = Math.sin(rot);
         const bx = ins.baseX || 0;
@@ -290,7 +291,7 @@ export function prepareDrawingData(entities, layers, db) {
                 if (e.center && e.radius != null && e.startAngle != null && e.endAngle != null) {
                     const c = tp(e.center.x, e.center.y);
                     const r = e.radius * Math.abs(tf ? (tf.xScale || 1) : 1);
-                    const rotOff = tf ? (tf.rotation || 0) * Math.PI / 180 : 0;
+                    const rotOff = tf ? (tf.rotation || 0) : 0;
                     let sa, ea;
                     if (tfMirrored) {
                         // Mirror reflects angles and reverses arc direction (swap start/end)
@@ -320,7 +321,7 @@ export function prepareDrawingData(entities, layers, db) {
                     const my = e.majorAxisEndPoint.y * sy;
                     const rx = Math.hypot(mx, my);
                     const ry = rx * (e.axisRatio || e.minorToMajorRatio || 0.5);
-                    const rot = Math.atan2(my, mx) + (tf ? (tf.rotation || 0) * Math.PI / 180 : 0);
+                    const rot = Math.atan2(my, mx) + (tf ? (tf.rotation || 0) : 0);
                     expand(c.x - rx, c.y - rx); expand(c.x + rx, c.y + rx);
                     renderList.push({ t: 'ellipse', l, et, handle, cx: c.x, cy: c.y, rx, ry, rot, c: color, byLayer });
                 }
@@ -352,7 +353,7 @@ export function prepareDrawingData(entities, layers, db) {
                 if (!pt) break;
                 const p = tp(pt.x, pt.y);
                 const scale = Math.abs(tf ? (tf.xScale || 1) : 1);
-                const rotRad = ((e.rotation || 0) + (tf ? (tf.rotation || 0) : 0)) * Math.PI / 180;
+                const rotRad = (e.rotation || 0) + (tf ? (tf.rotation || 0) : 0);
                 expand(p.x, p.y);
                 const fontName = state.styleFontMap[e.styleName || e.style || ''] || '';
                 renderList.push({ t: 'text', l, et, handle, x: p.x, y: p.y, text: e.text, h: (e.textHeight || 2.5) * scale, rot: rotRad, c: color, byLayer, fontName });
@@ -364,7 +365,7 @@ export function prepareDrawingData(entities, layers, db) {
                 if (pt && e.text) {
                     const p = tp(pt.x, pt.y);
                     const scale = Math.abs(tf ? (tf.xScale || 1) : 1);
-                    const rotRad = ((e.rotation || 0) + (tf ? (tf.rotation || 0) : 0)) * Math.PI / 180;
+                    const rotRad = (e.rotation || 0) + (tf ? (tf.rotation || 0) : 0);
                     expand(p.x, p.y);
                     const clean = e.text
                         .replace(/\\P/g, '\n')
@@ -396,7 +397,7 @@ export function prepareDrawingData(entities, layers, db) {
                 const p = tp(pt.x, pt.y);
                 const scale = Math.abs(tf ? (tf.xScale || 1) : 1);
                 const rotation = (tb && tb.rotation) || e.rotation || 0;
-                const rotRad = (rotation + (tf ? (tf.rotation || 0) : 0)) * Math.PI / 180;
+                const rotRad = rotation + (tf ? (tf.rotation || 0) : 0);
                 expand(p.x, p.y);
                 const sName = (tb && tb.styleName) || e.styleName || e.style || '';
                 const fontName = state.styleFontMap[sName] || '';
@@ -637,7 +638,7 @@ export function prepareDrawingData(entities, layers, db) {
                 if (ez != null && ez < 0) {
                     ipx = -ipx;
                     eYScale = -eYScale;
-                    eRotation = 180 - eRotation;
+                    eRotation = Math.PI - eRotation;
                 }
 
                 const origin = block.origin || block.basePoint;
