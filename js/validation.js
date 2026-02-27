@@ -4,7 +4,7 @@
 
 import { state, dom, CAFM_LAYERS, AOID_TEXT_LAYERS } from './state.js';
 import { fmtNum, esc, computePolygonArea, pointInPoly, log, hasSelfIntersection, hashVertices, visualCenter } from './utils.js';
-import { render, resizeCanvas, zoomToPolygon, showPopupForItem } from './renderer.js';
+import { render, resizeCanvas, zoomToPolygon, zoomToItems, zoomToBounds, getItemBounds, showPopupForItem } from './renderer.js';
 import { downloadPdfReport, downloadExcelReport } from './export.js';
 
 // =============================================
@@ -428,28 +428,30 @@ function runTextRules(renderList) {
     const allowedLayers = new Set(AOID_TEXT_LAYERS);
 
     // TEXT_001: Text on wrong layer
-    const wrongLayers = {};
+    const wrongLayerMap = {};
     for (const t of texts) {
         if (!allowedLayers.has(t.l)) {
-            wrongLayers[t.l] = (wrongLayers[t.l] || 0) + 1;
+            if (!wrongLayerMap[t.l]) wrongLayerMap[t.l] = [];
+            wrongLayerMap[t.l].push(t.handle);
         }
     }
-    for (const [layer, count] of Object.entries(wrongLayers)) {
+    for (const [layer, handles] of Object.entries(wrongLayerMap)) {
         errors.push(mkErr('warning', 'TEXT_001',
-            `${count} Textelement(e) auf unzul\u00e4ssigem Layer "${layer}"`, 'TEXT', { layer }));
+            `${handles.length} Textelement(e) auf unzul\u00e4ssigem Layer "${layer}"`, 'TEXT', { layer, handles }));
     }
 
     // TEXT_002: Font not ARIAL
-    const wrongFonts = {};
+    const wrongFontMap = {};
     for (const t of texts) {
         if (t.l === 'V_PLANLAYOUT') continue; // exempt per spec
         if (t.fontName && !/arial/i.test(t.fontName)) {
-            wrongFonts[t.fontName] = (wrongFonts[t.fontName] || 0) + 1;
+            if (!wrongFontMap[t.fontName]) wrongFontMap[t.fontName] = [];
+            wrongFontMap[t.fontName].push(t.handle);
         }
     }
-    for (const [font, count] of Object.entries(wrongFonts)) {
+    for (const [font, handles] of Object.entries(wrongFontMap)) {
         errors.push(mkErr('warning', 'TEXT_002',
-            `${count} Text(e) verwenden Schriftart "${font}" statt ARIAL`, 'TEXT'));
+            `${handles.length} Text(e) verwenden Schriftart "${font}" statt ARIAL`, 'TEXT', { handles }));
     }
 
     return errors;
@@ -465,7 +467,8 @@ function runStyleRules(renderList) {
     if (widthPolys.length > 0) {
         const layers = [...new Set(widthPolys.map(p => p.l))].slice(0, 3).join(', ');
         errors.push(mkErr('warning', 'STYLE_001',
-            `${widthPolys.length} Polylinie(n) mit Breite \u2260 0 mm (Layer: ${layers})`, 'STYLE'));
+            `${widthPolys.length} Polylinie(n) mit Breite \u2260 0 mm (Layer: ${layers})`, 'STYLE',
+            { handles: widthPolys.map(p => p.handle) }));
     }
 
     // STYLE_002: Color not ByLayer
@@ -474,7 +477,8 @@ function runStyleRules(renderList) {
     if (notByLayer.length > 0) {
         const layers = [...new Set(notByLayer.map(p => p.l))].slice(0, 3).join(', ');
         errors.push(mkErr('warning', 'STYLE_002',
-            `${notByLayer.length} Element(e) mit Farbe nicht VONLAYER (Layer: ${layers})`, 'STYLE'));
+            `${notByLayer.length} Element(e) mit Farbe nicht VONLAYER (Layer: ${layers})`, 'STYLE',
+            { handles: notByLayer.map(p => p.handle) }));
     }
 
     return errors;
@@ -516,7 +520,8 @@ function runDimRules() {
     const nonAssoc = state.dimensionInfo.filter(d => !d.associative);
     if (nonAssoc.length > 0) {
         errors.push(mkErr('warning', 'DIM_002',
-            `${nonAssoc.length} Masselement(e) sind nicht assoziativ`, 'DIM'));
+            `${nonAssoc.length} Masselement(e) sind nicht assoziativ`, 'DIM',
+            { handles: nonAssoc.map(d => d.handle) }));
     }
 
     return errors;
@@ -531,7 +536,8 @@ function runHatchRules(renderList) {
     if (nonSolid.length > 0) {
         const patterns = [...new Set(nonSolid.map(h => h.patternName))].join(', ');
         errors.push(mkErr('warning', 'HATCH_001',
-            `${nonSolid.length} Schraffur(en) auf A_SCHRAFFUR nicht vom Typ SOLID (${patterns})`, 'HATCH'));
+            `${nonSolid.length} Schraffur(en) auf A_SCHRAFFUR nicht vom Typ SOLID (${patterns})`, 'HATCH',
+            { handles: nonSolid.map(h => h.handle) }));
     }
 
     return errors;
@@ -601,12 +607,26 @@ export function renderValidation() {
     }
 
     // Extract rooms and areas
+    log('R\u00e4ume und Fl\u00e4chen werden extrahiert...');
     const extracted = extractRooms(renderList);
     state.roomData = extracted.rooms;
     state.areaData = extracted.areas;
+    log(`${state.roomData.length} R\u00e4ume auf ${state.roomLayerName}, ${state.areaData.length} Geschossfl\u00e4che(n) erkannt`, 'success');
 
     // Run all 42 rules
+    log('42 Pr\u00fcfregeln werden ausgef\u00fchrt...');
     state.validationErrors = runAllRules(renderList, state.roomData);
+
+    // Log validation summary
+    const _errCount = state.validationErrors.filter(e => e.severity === 'error').length;
+    const _warnCount = state.validationErrors.filter(e => e.severity === 'warning').length;
+    const _rulesCodes = new Set(state.validationErrors.map(e => e.ruleCode));
+    if (_errCount === 0 && _warnCount === 0) {
+        log('Validierung abgeschlossen: keine Fehler oder Warnungen', 'success');
+    } else {
+        log(`Validierung abgeschlossen: ${_errCount} Fehler, ${_warnCount} Warnungen in ${_rulesCodes.size} Regel(n)`,
+            _errCount > 0 ? 'error' : 'warn');
+    }
 
     // Update tab counts
     const layerCountEl = document.getElementById('vtab-layer-count');
@@ -626,6 +646,8 @@ export function renderValidation() {
     const score = Math.round((passedRules / totalRules) * 100);
     const scoreClass = score >= 90 ? 'success' : score >= 60 ? 'warning' : 'error';
     const ngf = state.roomData.reduce((s, r) => s + r.area, 0);
+    log(`Score: ${passedRules}/${totalRules} Regeln bestanden (${score}%) \u2014 NGF: ${fmtNum(ngf, 1)} m\u00B2`,
+        scoreClass === 'warning' ? 'warn' : scoreClass);
     const dlIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
     dom.metricsGrid.innerHTML =
         `<div class="info-grid__item"><div class="info-grid__label">R\u00e4ume</div><div class="info-grid__value">${state.roomData.length}</div></div>` +
@@ -788,10 +810,21 @@ function renderOverviewTab() {
     dom.vsideList.innerHTML = '';
     dom.vsideSummary.innerHTML = '';
 
-    // Render layer list with checkboxes
+    // Determine layer status: required/optional = ok, default = ok, unknown = warning
+    const allowedSet = new Set(CAFM_LAYERS.all);
+    const defaultLayers = new Set(['0', 'Defpoints']);
+
+    function getLayerStatus(layerName) {
+        if (allowedSet.has(layerName)) return 'ok';
+        if (defaultLayers.has(layerName)) return 'ok';
+        return 'warning';
+    }
+
+    // Render layer list with checkboxes and status icons
     for (const l of state.layerInfo) {
+        const layerStatus = getLayerStatus(l.name);
         const div = document.createElement('div');
-        div.className = 'vside-item' + (state.hiddenLayers.has(l.name) ? ' hidden' : '');
+        div.className = 'vside-item vside-item--' + layerStatus + (state.hiddenLayers.has(l.name) ? ' hidden' : '');
         div.setAttribute('data-search', l.name);
 
         const cb = document.createElement('input');
@@ -806,6 +839,13 @@ function renderOverviewTab() {
             render();
         });
 
+        const status = document.createElement('span');
+        status.className = 'vside-item__status';
+        status.textContent = layerStatus === 'ok' ? '\u2713' : '\u26A0';
+        status.title = layerStatus === 'ok'
+            ? (allowedSet.has(l.name) ? 'Zul\u00e4ssiger CAFM-Layer' : 'Standard-Layer')
+            : 'Unbekannter Layer \u2014 nicht in der CAFM-Layerliste';
+
         const icon = document.createElement('div');
         icon.className = 'vside-item__icon';
         icon.style.background = l.colorHex;
@@ -819,6 +859,7 @@ function renderOverviewTab() {
         value.textContent = l.count + ' Objekte';
 
         div.appendChild(cb);
+        div.appendChild(status);
         div.appendChild(icon);
         div.appendChild(name);
         div.appendChild(value);
@@ -889,7 +930,13 @@ function renderErrorsTab() {
         const div = document.createElement('div');
         div.className = 'vside-item vside-item--' + err.severity;
         div.setAttribute('data-search', err.ruleCode + ' ' + err.message);
-        if (room) div.setAttribute('data-handle', room.handle);
+        // Link to geometry: prefer room handle, then direct handle
+        const errHandle = room ? room.handle : err.handle;
+        if (errHandle) div.setAttribute('data-handle', errHandle);
+
+        // Determine if this error can be located in the viewer
+        const canLocate = !!(room || err.handle || (err.handles && err.handles.length > 0));
+        if (canLocate) div.classList.add('vside-item--locatable');
 
         const cb = document.createElement('input');
         cb.type = 'checkbox';
@@ -923,12 +970,39 @@ function renderErrorsTab() {
 
         div.addEventListener('click', (e) => {
             if (e.target === cb) return;
+            dom.vsideList.querySelectorAll('.vside-item').forEach(el => el.classList.remove('vside-item--selected'));
+            div.classList.add('vside-item--selected');
+
             if (room) {
-                dom.vsideList.querySelectorAll('.vside-item').forEach(el => el.classList.remove('vside-item--selected'));
-                div.classList.add('vside-item--selected');
+                // Error linked to a room — zoom to room polygon
                 state.selectedRoom = room;
+                state.selectedItem = null;
+                state.highlightedItems = null;
                 zoomToPolygon(room.vertices);
                 showPopupForItem(room.handle, room.centroid);
+            } else if (err.handles && err.handles.length > 0 && state.drawingData) {
+                // Aggregate error with multiple handles — highlight all, zoom to fit
+                const items = err.handles
+                    .map(h => state.drawingData.renderList.find(i => i.handle === h))
+                    .filter(Boolean);
+                if (items.length > 0) {
+                    state.selectedRoom = null;
+                    state.selectedItem = items[0];
+                    state.highlightedItems = items;
+                    zoomToItems(items);
+                }
+            } else if (err.handle && state.drawingData) {
+                // Single handle — find and zoom to the entity
+                const item = state.drawingData.renderList.find(i => i.handle === err.handle);
+                if (item) {
+                    state.selectedRoom = null;
+                    state.highlightedItems = null;
+                    state.selectedItem = item;
+                    const bounds = getItemBounds(item);
+                    if (bounds) {
+                        zoomToBounds(bounds.minX, bounds.minY, bounds.maxX, bounds.maxY, 0.5);
+                    }
+                }
             }
         });
 

@@ -48,6 +48,7 @@ export const state = {
     pinchStart: null,
     bgColor: BG_LIGHT,
     selectedItem: null,
+    highlightedItems: null,
 
     // Validation
     roomData: [],

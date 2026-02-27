@@ -130,7 +130,12 @@ body {
     font-size: var(--font-size-caption); display: none; font-weight: var(--font-weight-medium);
 }
 .status--loading { background: var(--color-primary-light); color: var(--color-primary); display: flex; align-items: center; gap: var(--space-3); }
-.status--success { background: var(--color-success-light); color: var(--color-success); }
+.status--success { background: var(--color-success-light); color: var(--color-success); justify-content: space-between; display: flex; align-items: center; }
+.status__console-link {
+    color: inherit; opacity: 0.7; text-decoration: none; font-size: var(--font-size-caption);
+    cursor: pointer; padding: var(--space-1) var(--space-2); border-radius: var(--radius-sm);
+}
+.status__console-link:hover { opacity: 1; text-decoration: underline; }
 .status--error { background: var(--color-error-light); color: var(--color-error); }
 
 /* Spinner */
@@ -441,6 +446,7 @@ body {
 }
 .vside-item--error .vside-item__status { color: var(--color-error); }
 .vside-item--warning .vside-item__status { color: var(--color-warning); }
+.vside-item--ok .vside-item__status { color: var(--color-success); }
 .vside-item__toggle {
     width: 15px; height: 15px; flex-shrink: 0;
     cursor: pointer; accent-color: var(--color-primary);

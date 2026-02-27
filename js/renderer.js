@@ -215,9 +215,13 @@ export function render() {
         }
     }
 
-    // === Highlight selected element ===
-    if (state.selectedItem && !state.hiddenLayers.has(state.selectedItem.l)) {
-        const hi = state.selectedItem;
+    // === Highlight selected/highlighted elements ===
+    const itemsToHighlight = state.highlightedItems && state.highlightedItems.length > 0
+        ? state.highlightedItems
+        : (state.selectedItem ? [state.selectedItem] : []);
+
+    for (const hi of itemsToHighlight) {
+        if (state.hiddenLayers.has(hi.l)) continue;
         ctx.save();
         ctx.strokeStyle = '#00FFFF';
         ctx.fillStyle = '#00FFFF';
@@ -573,6 +577,79 @@ export function zoomToPolygon(verts) {
     const h = maxY - minY || 1;
     state.cam.zoom = Math.min(rect.width / w, rect.height / h) * 0.5;
     render();
+}
+
+export function getItemBounds(item) {
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    function expand(x, y) {
+        if (x < minX) minX = x;
+        if (y < minY) minY = y;
+        if (x > maxX) maxX = x;
+        if (y > maxY) maxY = y;
+    }
+    switch (item.t) {
+        case 'line':
+            expand(item.x1, item.y1);
+            expand(item.x2, item.y2);
+            break;
+        case 'poly':
+            for (const v of item.verts) expand(v.x, v.y);
+            break;
+        case 'circle':
+            expand(item.cx - item.r, item.cy - item.r);
+            expand(item.cx + item.r, item.cy + item.r);
+            break;
+        case 'arc':
+            expand(item.cx - item.r, item.cy - item.r);
+            expand(item.cx + item.r, item.cy + item.r);
+            break;
+        case 'ellipse':
+            expand(item.cx - item.rx, item.cy - item.ry);
+            expand(item.cx + item.rx, item.cy + item.ry);
+            break;
+        case 'text':
+            expand(item.x, item.y);
+            expand(item.x + (item.h || 10) * (item.text || '').length * 0.6, item.y + (item.h || 10));
+            break;
+        case 'point':
+            expand(item.x, item.y);
+            break;
+        case 'hatchfill':
+            for (const path of item.paths) {
+                for (const v of path) expand(v.x, v.y);
+            }
+            break;
+        case 'solid':
+            for (const p of item.pts) expand(p.x, p.y);
+            break;
+    }
+    if (minX === Infinity) return null;
+    return { minX, minY, maxX, maxY };
+}
+
+export function zoomToBounds(minX, minY, maxX, maxY, padding) {
+    const rect = dom.canvasWrap.getBoundingClientRect();
+    state.cam.x = (minX + maxX) / 2;
+    state.cam.y = (minY + maxY) / 2;
+    const w = maxX - minX || 1;
+    const h = maxY - minY || 1;
+    state.cam.zoom = Math.min(rect.width / w, rect.height / h) * (padding || 0.5);
+    render();
+}
+
+export function zoomToItems(items) {
+    if (!items || items.length === 0) return;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const item of items) {
+        const b = getItemBounds(item);
+        if (!b) continue;
+        if (b.minX < minX) minX = b.minX;
+        if (b.minY < minY) minY = b.minY;
+        if (b.maxX > maxX) maxX = b.maxX;
+        if (b.maxY > maxY) maxY = b.maxY;
+    }
+    if (minX === Infinity) return;
+    zoomToBounds(minX, minY, maxX, maxY, 0.5);
 }
 
 export function showPopupForItem(handle, centroid) {

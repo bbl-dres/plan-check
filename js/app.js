@@ -77,10 +77,13 @@ async function handleFile(file) {
         displayInfo(file, db, entities, layers, elapsed);
 
         showStatus('Zeichnung wird gerendert...');
+        log('Zeichnungsdaten werden aufbereitet...');
         state.drawingData = prepareDrawingData(entities, layers, db);
+        log(`${state.drawingData.renderList.length} Objekte f\u00fcr Darstellung vorbereitet`, 'success');
 
         // Build layer info for Übersicht side panel
         buildLayerInfo(entities, layers);
+        log(`${state.layerInfo.length} Layer erkannt`);
 
         // Panel must be visible before measuring canvas dimensions
         dom.validationPanel.classList.add('visible');
@@ -92,6 +95,7 @@ async function handleFile(file) {
         displayEntities(entities);
 
         // Run validation (extract rooms, check rules, render tabs)
+        log('Validierung wird gestartet...');
         renderValidation();
 
         showStatus(`${file.name} erfolgreich verarbeitet in ${elapsed}s`, 'success');
@@ -126,6 +130,7 @@ function handleCanvasTap(sx, sy) {
         if (room) {
             state.selectedRoom = room;
             state.selectedItem = null;
+            state.highlightedItems = null;
             showPopupForItem(room.handle, room.centroid);
             dom.vsideList.querySelectorAll('.vside-item').forEach(el => el.classList.remove('vside-item--selected'));
             const match = dom.vsideList.querySelector(`[data-handle="${room.handle}"]`);
@@ -139,6 +144,7 @@ function handleCanvasTap(sx, sy) {
         // Click outside any visible room — deselect
         state.selectedRoom = null;
         state.selectedItem = null;
+        state.highlightedItems = null;
         hideFeaturePopup();
         dom.vsideList.querySelectorAll('.vside-item').forEach(el => el.classList.remove('vside-item--selected'));
         render();
@@ -149,11 +155,13 @@ function handleCanvasTap(sx, sy) {
     const hit = hitTest(wx, wy, tolerance);
     if (hit) {
         state.selectedItem = hit;
+        state.highlightedItems = null;
         showFeaturePopup(hit, sx, sy);
         syncSideSelection(hit.handle);
     } else {
         state.selectedItem = null;
         state.selectedRoom = null;
+        state.highlightedItems = null;
         hideFeaturePopup();
         dom.vsideList.querySelectorAll('.vside-item').forEach(el => el.classList.remove('vside-item--selected'));
     }

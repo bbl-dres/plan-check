@@ -17,9 +17,18 @@ export function log(msg, type = 'info') {
 export function showStatus(msg, type = 'loading') {
     dom.statusEl.className = `status status--${type}`;
     dom.statusEl.style.display = 'flex';
-    dom.statusEl.innerHTML = type === 'loading'
-        ? `<div class="spinner"></div><span>${msg}</span>`
-        : msg;
+    if (type === 'loading') {
+        dom.statusEl.innerHTML = `<div class="spinner"></div><span>${msg}</span>`;
+    } else if (type === 'success') {
+        dom.statusEl.innerHTML = `<span>${msg}</span><a href="#console-panel" class="status__console-link">Konsole &#x25BE;</a>`;
+        dom.statusEl.querySelector('.status__console-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            const consolePanelEl = document.getElementById('console-panel');
+            if (consolePanelEl) consolePanelEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    } else {
+        dom.statusEl.innerHTML = msg;
+    }
 }
 
 // Format file size
