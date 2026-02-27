@@ -80,7 +80,7 @@ Nach der Verarbeitung erscheint die **Ergebnis-Karte** mit den wichtigsten Kennz
 |----------|-------------|
 | **Räume** | Anzahl der erkannten Raum-Polygone |
 | **Fehler** | Anzahl der Validierungsbefunde (Fehler und Warnungen) |
-| **Score** | Prozentualer Anteil der fehlerfreien Räume |
+| **Score** | Anteil der bestandenen Prüfregeln (Details siehe [Score-Berechnung](pruefregeln-de.md#score-berechnung)) |
 | **Bericht** | Schnellzugriff auf PDF- und Excel-Export |
 
 Der Score wird farbig dargestellt:
@@ -335,7 +335,7 @@ Die Plattform sucht nach TEXT-Entitäten auf dem Layer **`R_AOID`**, deren Basis
 
 ### Kann ich eigene Validierungsregeln definieren?
 
-In der aktuellen Version ist der Regelsatz gemäss CAD-Richtlinie BBL V1.0 vordefiniert (40 Prüfregeln in 10 Kategorien). Über die API können zukünftig Regeln selektiv aktiviert oder deaktiviert werden. Die vollständige Regelbeschreibung finden Sie unter [Prüfregeln](pruefregeln-de.md).
+In der aktuellen Version ist der Regelsatz gemäss CAD-Richtlinie BBL V1.0 vordefiniert (40 Prüfregeln in 10 Kategorien). Alle Regeln werden immer vollständig ausgeführt — es gibt keine Abbruchkriterien. Über die API können zukünftig Regeln selektiv aktiviert oder deaktiviert werden. Die vollständige Regelbeschreibung finden Sie unter [Prüfregeln](pruefregeln-de.md).
 
 ### Gibt es eine Musterdatei zum Testen?
 
@@ -343,7 +343,7 @@ Ja. Der offizielle BBL-Musterplan **`CAD.V01-CAFM-Plan-DE.dwg`** steht über «D
 
 ### Wie wird der Score berechnet?
 
-Der Score entspricht dem Anteil der Räume ohne Fehler oder Warnungen an der Gesamtzahl der erkannten Räume: `Score = (Räume mit Status «OK» / Gesamtanzahl Räume) × 100%`.
+Der Score entspricht dem Anteil der bestandenen Prüfregeln: `Score = (bestandene Regeln / 40) × 100%`. Eine Regel gilt als bestanden, wenn kein Befund mit dem entsprechenden Regelcode erzeugt wurde. Details und geplante Verbesserungen der Scoring-Methode finden Sie unter [Score-Berechnung](pruefregeln-de.md#score-berechnung).
 
 ### Welchen Browser soll ich verwenden?
 

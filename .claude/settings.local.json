@@ -37,7 +37,10 @@
       "Bash(python -c \"import os; print\\(os.path.exists\\(''c:/Users/DavidRasner/Documents/GitHub/plan-check/mockup-projects/index.html''\\)\\)\")",
       "Bash(python -m http.server 8081)",
       "WebFetch(domain:cdnjs.com)",
-      "Bash(ls -la /c/Users/DavidRasner/Documents/GitHub/plan-check/*.html)"
+      "Bash(ls -la /c/Users/DavidRasner/Documents/GitHub/plan-check/*.html)",
+      "WebFetch(domain:www.gnu.org)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(gh api repos/mlightcad/libredwg-web/git/trees/main --jq '.tree[].path')"
     ]
   }
 }

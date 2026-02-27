@@ -6,17 +6,17 @@
 
 1. [Übersicht](#übersicht)
 2. [Prüfkategorien](#prüfkategorien)
-3. [Abbruchkriterien](#abbruchkriterien)
-4. [Regeln — Layerstruktur (LAYER)](#regeln--layerstruktur-layer)
-5. [Regeln — Raumpolygone (POLY)](#regeln--raumpolygone-poly)
-6. [Regeln — Geschosspolygone (GPOLY)](#regeln--geschosspolygone-gpoly)
-7. [Regeln — AOID / Raumstempel (AOID)](#regeln--aoid--raumstempel-aoid)
-8. [Regeln — Geometrie allgemein (GEOM)](#regeln--geometrie-allgemein-geom)
-9. [Regeln — Textelemente (TEXT)](#regeln--textelemente-text)
-10. [Regeln — Linientypen und Farben (STYLE)](#regeln--linientypen-und-farben-style)
-11. [Regeln — Planlayout (LAYOUT)](#regeln--planlayout-layout)
-12. [Regeln — Masselemente (DIM)](#regeln--masselemente-dim)
-13. [Regeln — Schraffurelemente (HATCH)](#regeln--schraffurelemente-hatch)
+3. [Regeln — Layerstruktur (LAYER)](#regeln--layerstruktur-layer)
+4. [Regeln — Raumpolygone (POLY)](#regeln--raumpolygone-poly)
+5. [Regeln — Geschosspolygone (GPOLY)](#regeln--geschosspolygone-gpoly)
+6. [Regeln — AOID / Raumstempel (AOID)](#regeln--aoid--raumstempel-aoid)
+7. [Regeln — Geometrie allgemein (GEOM)](#regeln--geometrie-allgemein-geom)
+8. [Regeln — Textelemente (TEXT)](#regeln--textelemente-text)
+9. [Regeln — Linientypen und Farben (STYLE)](#regeln--linientypen-und-farben-style)
+10. [Regeln — Planlayout (LAYOUT)](#regeln--planlayout-layout)
+11. [Regeln — Masselemente (DIM)](#regeln--masselemente-dim)
+12. [Regeln — Schraffurelemente (HATCH)](#regeln--schraffurelemente-hatch)
+13. [Score-Berechnung](#score-berechnung)
 14. [Schweregrade](#schweregrade)
 15. [Layerstruktur CAFM-Plan — Referenz](#layerstruktur-cafm-plan--referenz)
 16. [AOID-Format — Referenz](#aoid-format--referenz)
@@ -41,35 +41,25 @@ Die Prüfung deckt folgende Bereiche ab:
 - **Masselemente** — Assoziative Massobjekte vorhanden
 - **Schraffurelemente** — SOLID-Schraffuren auf korrektem Layer
 
+Alle Regeln werden immer vollständig ausgeführt. Es gibt keine Abbruchkriterien — auch bei fehlender Layerstruktur wird der Viewer angezeigt und die Befunde werden aufgelistet.
+
 ---
 
 ## Prüfkategorien
 
-| Präfix | Kategorie | Beschreibung |
-|--------|-----------|--------------|
-| `LAYER` | Layerstruktur | Prüfung der zulässigen Layer und Elementzuordnung |
-| `POLY` | Raumpolygone | Prüfung der NGF-Raumpolygone |
-| `GPOLY` | Geschosspolygone | Prüfung der Geschossflächenpolygone |
-| `AOID` | Raumstempel | Prüfung der AOID-Textelemente |
-| `GEOM` | Geometrie | Allgemeine geometrische Prüfungen |
-| `TEXT` | Textelemente | Prüfung von Texten und Schriftarten |
-| `STYLE` | Linientypen/Farben | Prüfung der grafischen Eigenschaften |
-| `LAYOUT` | Planlayout | Prüfung Modellbereich und Layout-Tabs |
-| `DIM` | Masselemente | Prüfung der Bemassungsobjekte |
-| `HATCH` | Schraffurelemente | Prüfung der Schraffuren |
-
----
-
-## Abbruchkriterien
-
-Die Planprüfung wird **ohne weitere Prüfung abgebrochen**, wenn eines der folgenden Kriterien zutrifft (Richtlinie Kap. 3.1):
-
-| Code | Beschreibung | Referenz |
-|------|-------------|----------|
-| `ABORT_001` | Die Layerstruktur wird nicht eingehalten (keiner der Pflicht-Layer vorhanden) | Kap. 3.1 |
-| `ABORT_002` | Die Zeichnungseinheit ist nicht Millimeter (1:1) | Kap. 4.2 |
-
-Bei Abbruch werden keine weiteren Regeln geprüft. Der Plan muss zuerst die Grundvoraussetzungen erfüllen.
+| Präfix | Kategorie | Anzahl | Beschreibung |
+|--------|-----------|--------|--------------|
+| `LAYER` | Layerstruktur | 8 | Prüfung der zulässigen Layer und Elementzuordnung |
+| `POLY` | Raumpolygone | 7 | Prüfung der NGF-Raumpolygone |
+| `GPOLY` | Geschosspolygone | 5 | Prüfung der Geschossflächenpolygone |
+| `AOID` | Raumstempel | 6 | Prüfung der AOID-Textelemente |
+| `GEOM` | Geometrie | 5 | Allgemeine geometrische Prüfungen |
+| `TEXT` | Textelemente | 2 | Prüfung von Texten und Schriftarten |
+| `STYLE` | Linientypen/Farben | 2 | Prüfung der grafischen Eigenschaften |
+| `LAYOUT` | Planlayout | 2 | Prüfung Modellbereich und Layout-Tabs |
+| `DIM` | Masselemente | 2 | Prüfung der Bemassungsobjekte |
+| `HATCH` | Schraffurelemente | 1 | Prüfung der Schraffuren |
+| | **Total** | **40** | |
 
 ---
 
@@ -237,11 +227,46 @@ Referenz: Richtlinie Kap. 5.7
 
 ---
 
+## Score-Berechnung
+
+Der aktuelle Score basiert auf der Anzahl bestandener Regelcodes:
+
+```
+Score = (bestandene Regeln / 40) × 100%
+```
+
+Eine Regel gilt als «bestanden», wenn kein Befund mit diesem Regelcode erzeugt wurde. Jede Regel zählt gleich (1/40).
+
+### Bekannte Einschränkungen
+
+Die aktuelle Methode hat folgende Schwächen, die in einer zukünftigen Version adressiert werden:
+
+1. **Gleiche Gewichtung** — Strukturelle Regeln (fehlende Pflicht-Layer, keine Räume) zählen gleich viel wie kosmetische Regeln (Schriftart, Polylinienbreite). Ein Plan ohne jegliche CAFM-Layer kann trotzdem 80% erreichen.
+
+2. **Keine Mengenberücksichtigung** — Ob AOID_001 für 1 oder 30 Räume auslöst, es zählt als 1 fehlgeschlagene Regel. Die Schwere des Problems wird nicht abgebildet.
+
+3. **Keine Severity-Gewichtung** — Fehler und Warnungen haben den gleichen Einfluss auf den Score.
+
+### Mögliche Verbesserungen (zur Diskussion)
+
+**Option A — Gewichtete Kategorien:**
+Strukturelle Regeln (LAYER, POLY, AOID) erhalten mehr Gewicht als kosmetische (TEXT, STYLE, DIM).
+
+**Option B — Instanzbasiert:**
+Score pro Raum berechnen (z.B. 25/30 Räume fehlerfrei = 83%). Kombiniert mit einem strukturellen Checklisten-Score.
+
+**Option C — Severity-gewichtet:**
+Fehler zählen doppelt oder dreifach gegenüber Warnungen.
+
+**Option D — Gate + Score:**
+Bestimmte Regeln (LAYER_001–003) fungieren als «Gate»: wenn alle drei Pflicht-Layer fehlen, wird der Score auf max. 25% begrenzt, unabhängig davon, wie viele andere Regeln bestanden werden. Der restliche Score wird normal berechnet.
+
+---
+
 ## Schweregrade
 
 | Schweregrad | Symbol | Beschreibung |
 |-------------|--------|--------------|
-| **Abbruch** | ⛔ | Prüfung wird vollständig abgebrochen. Plan nicht prüfbar. |
 | **Fehler** | ✖ | Muss behoben werden. Plan wird nicht freigegeben. |
 | **Warnung** | ⚠ | Sollte überprüft werden. Plan kann mit Warnungen freigegeben werden. |
 
@@ -360,15 +385,14 @@ RULE-BY-RULE ASSESSMENT
 🔨 = implementable with moderate parser enhancement (new table/logic)
 ❌ = not feasible in browser
 
-─── ABORT CRITERIA (2) ────────────────────────────────────────────────────────
-
-✅ ABORT_001  Layer structure not met
-             → Check state.layerInfo for required R_* layers. Trivial.
+─── ABORT CRITERIA (1) ────────────────────────────────────────────────────────
 
 🔧 ABORT_002  Drawing unit not mm
              → Need to read $INSUNITS from db.header. Minor: add one line
                to extract header variable during parsing. Can also heuristic-
                check coordinate magnitude (mm plans have values in thousands).
+             NOTE: ABORT_001 removed — missing layers are now handled by
+             LAYER_001/002/003 rules without aborting validation.
 
 ─── LAYER (8 rules) ───────────────────────────────────────────────────────────
 
@@ -566,7 +590,7 @@ SUMMARY
 
                         Total   ✅ Now   🔧 Minor   🔨 Moderate   ❌ None
   ──────────────────────────────────────────────────────────────────────────
-  ABORT criteria          2       1        1           0             0
+  ABORT criteria          1       0        1           0             0
   LAYER rules             8       8        0           0             0
   POLY rules              7       7        0           0             0
   GPOLY rules             5       5        0           0             0
@@ -578,16 +602,16 @@ SUMMARY
   DIM rules               2       1        0           1             0
   HATCH rules             1       1        0           0             0
   ──────────────────────────────────────────────────────────────────────────
-  TOTAL                  42      31        7           4             0
+  TOTAL                  41      30        7           4             0
 
-  ✅ 31 rules (74%) — implementable RIGHT NOW with current parser
+  ✅ 30 rules (73%) — implementable RIGHT NOW with current parser
   🔧  7 rules (17%) — need minor parser enhancements (1-3 lines each):
        ABORT_002, GEOM_001, GEOM_002, GEOM_004, STYLE_001, STYLE_002, LAYOUT_001
-  🔨  4 rules  (9%) — need moderate parser enhancements (new table reads):
+  🔨  4 rules (10%) — need moderate parser enhancements (new table reads):
        GEOM_005, TEXT_002, LAYOUT_002, DIM_002
   ❌  0 rules  (0%) — nothing is blocked by browser-only architecture
 
-  ALL 42 RULES ARE FEASIBLE IN PURE JS/TS WITHOUT A BACKEND.
+  ALL 41 RULES ARE FEASIBLE IN PURE JS/TS WITHOUT A BACKEND.
 
 Parser enhancement roadmap (priority order):
   1. Add colorIndex/byLayer flag to renderList items         → unlocks STYLE_002

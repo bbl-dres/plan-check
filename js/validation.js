@@ -605,8 +605,8 @@ export function renderValidation() {
     state.areaData = extracted.areas;
     log(`${state.roomData.length} R\u00e4ume auf ${state.roomLayerName}, ${state.areaData.length} Geschossfl\u00e4che(n) erkannt`, 'success');
 
-    // Run all 42 rules
-    log('42 Pr\u00fcfregeln werden ausgef\u00fchrt...');
+    // Run all 40 rules
+    log('40 Pr\u00fcfregeln werden ausgef\u00fchrt...');
     state.validationErrors = runAllRules(renderList, state.roomData);
 
     // Log validation summary
@@ -633,7 +633,7 @@ export function renderValidation() {
     // Show metrics panel
     const errCount = state.validationErrors.filter(e => e.severity === 'error').length;
     const warnCount = state.validationErrors.filter(e => e.severity === 'warning').length;
-    const totalRules = 42;
+    const totalRules = 40;
     const passedRules = totalRules - new Set(state.validationErrors.map(e => e.ruleCode)).size;
     const score = Math.round((passedRules / totalRules) * 100);
     const scoreClass = score >= 90 ? 'success' : score >= 60 ? 'warning' : 'error';

@@ -34,8 +34,62 @@ export async function processDwgFile(file) {
 
     showStatus('DWG wird geparst...');
     log('DWG wird geparst...');
-    const dwgPtr = dwgLib.dwg_read_data(buffer, fileType);
-    if (dwgPtr == null) throw new Error('DWG konnte nicht gelesen werden');
+
+    // Intercept console output from LibreDWG WASM to capture error codes
+    const wasmErrors = [];
+    const origWarn = console.warn;
+    const origError = console.error;
+    const origLog = console.log;
+    const capture = (orig, ...args) => {
+        const msg = args.map(a => String(a)).join(' ');
+        if (/error code/i.test(msg)) wasmErrors.push(msg);
+        orig.apply(console, args);
+    };
+    console.warn = (...a) => capture(origWarn, ...a);
+    console.error = (...a) => capture(origError, ...a);
+    console.log = (...a) => capture(origLog, ...a);
+
+    let dwgPtr;
+    try {
+        dwgPtr = dwgLib.dwg_read_data(buffer, fileType);
+    } finally {
+        console.warn = origWarn;
+        console.error = origError;
+        console.log = origLog;
+    }
+
+    if (dwgPtr == null) {
+        const codeMatch = wasmErrors.length > 0 && wasmErrors[0].match(/error code:\s*(\d+)/i);
+        const code = codeMatch ? parseInt(codeMatch[1]) : 0;
+        let detail = '';
+        if (code > 0) {
+            const flags = [];
+            if (code & 1) flags.push('CRC-Fehler');
+            if (code & 2) flags.push('nicht unterstützte Features');
+            if (code & 4) flags.push('unbekannte Objektklassen');
+            if (code & 8) flags.push('ungültiger Typ');
+            if (code & 16) flags.push('ungültiger Handle');
+            if (code & 32) flags.push('ungültige EED');
+            if (code & 64) flags.push('Werte ausserhalb des gültigen Bereichs');
+            if (code & 128) flags.push('Klassen nicht gefunden');
+            if (code & 256) flags.push('Sektion nicht gefunden');
+            if (code & 512) flags.push('Seite nicht gefunden');
+            if (code & 1024) flags.push('interner Fehler');
+            if (code & 2048) flags.push('ungültige DWG-Datei');
+            if (code & 4096) flags.push('IO-Fehler');
+            if (code & 8192) flags.push('Speicherfehler');
+            detail = ` (Code ${code}: ${flags.join(', ')}). Die Datei enthält möglicherweise proprietäre AutoCAD-Erweiterungen (ARX). Versuchen Sie, die Datei in einem anderen CAD-Programm neu zu speichern.`;
+        }
+        throw new Error(`DWG konnte nicht gelesen werden${detail}`);
+    }
+
+    if (wasmErrors.length > 0) {
+        const codeMatch = wasmErrors[0].match(/error code:\s*(\d+)/i);
+        const code = codeMatch ? parseInt(codeMatch[1]) : 0;
+        if (code > 0) {
+            log(`LibreDWG Warnung (Code ${code}): Datei wurde geladen, aber einige Elemente sind möglicherweise unvollständig. Die Datei enthält evtl. proprietäre AutoCAD-Erweiterungen.`, 'warn');
+        }
+    }
     log('DWG geparst', 'success');
 
     showStatus('Daten werden konvertiert...');
@@ -166,6 +220,10 @@ export function prepareDrawingData(entities, layers, db) {
             return transformPoint(px, py, tf);
         }
 
+        // Detect mirroring: negative determinant of scale means reflection
+        const tfMirrored = tf && ((tf.xScale || 1) * (tf.yScale || 1)) < 0;
+        const tfSxNeg = tf && (tf.xScale || 1) < 0;
+
         switch (e.type) {
             case 'LINE':
                 if (e.startPoint && e.endPoint) {
@@ -179,7 +237,7 @@ export function prepareDrawingData(entities, layers, db) {
             case 'LWPOLYLINE':
                 if (e.vertices && e.vertices.length > 1) {
                     const verts = tf
-                        ? e.vertices.map(v => { const p = tp(v.x, v.y); return { x: p.x, y: p.y, bulge: v.bulge }; })
+                        ? e.vertices.map(v => { const p = tp(v.x, v.y); return { x: p.x, y: p.y, bulge: tfMirrored ? -(v.bulge || 0) : v.bulge }; })
                         : e.vertices;
                     for (const v of verts) expand(v.x, v.y);
                     let closed = !!(e.flag & 512) || !!(e.flag & 1);
@@ -196,7 +254,7 @@ export function prepareDrawingData(entities, layers, db) {
                 if (e.vertices && e.vertices.length > 1) {
                     const verts = e.vertices.map(v => {
                         const p = tp(v.x, v.y);
-                        return { x: p.x, y: p.y, bulge: v.bulge || 0 };
+                        return { x: p.x, y: p.y, bulge: tfMirrored ? -(v.bulge || 0) : (v.bulge || 0) };
                     });
                     for (const v of verts) expand(v.x, v.y);
                     const closed = !!(e.flag & 512) || !!(e.flag & 1);
@@ -233,17 +291,36 @@ export function prepareDrawingData(entities, layers, db) {
                     const c = tp(e.center.x, e.center.y);
                     const r = e.radius * Math.abs(tf ? (tf.xScale || 1) : 1);
                     const rotOff = tf ? (tf.rotation || 0) * Math.PI / 180 : 0;
+                    let sa, ea;
+                    if (tfMirrored) {
+                        // Mirror reflects angles and reverses arc direction (swap start/end)
+                        if (tfSxNeg) {
+                            sa = Math.PI - e.endAngle + rotOff;
+                            ea = Math.PI - e.startAngle + rotOff;
+                        } else {
+                            sa = -e.endAngle + rotOff;
+                            ea = -e.startAngle + rotOff;
+                        }
+                    } else {
+                        sa = e.startAngle + rotOff;
+                        ea = e.endAngle + rotOff;
+                    }
                     expand(c.x - r, c.y - r); expand(c.x + r, c.y + r);
-                    renderList.push({ t: 'arc', l, et, handle, cx: c.x, cy: c.y, r, sa: e.startAngle + rotOff, ea: e.endAngle + rotOff, c: color, byLayer });
+                    renderList.push({ t: 'arc', l, et, handle, cx: c.x, cy: c.y, r, sa, ea, c: color, byLayer });
                 }
                 break;
 
             case 'ELLIPSE':
                 if (e.center && e.majorAxisEndPoint) {
                     const c = tp(e.center.x, e.center.y);
-                    const rx = Math.hypot(e.majorAxisEndPoint.x, e.majorAxisEndPoint.y) * Math.abs(tf ? (tf.xScale || 1) : 1);
+                    // Transform the major axis vector through scale (then rotation is added)
+                    const sx = tf ? (tf.xScale || 1) : 1;
+                    const sy = tf ? (tf.yScale || 1) : 1;
+                    const mx = e.majorAxisEndPoint.x * sx;
+                    const my = e.majorAxisEndPoint.y * sy;
+                    const rx = Math.hypot(mx, my);
                     const ry = rx * (e.axisRatio || e.minorToMajorRatio || 0.5);
-                    const rot = Math.atan2(e.majorAxisEndPoint.y, e.majorAxisEndPoint.x) + (tf ? (tf.rotation || 0) * Math.PI / 180 : 0);
+                    const rot = Math.atan2(my, mx) + (tf ? (tf.rotation || 0) * Math.PI / 180 : 0);
                     expand(c.x - rx, c.y - rx); expand(c.x + rx, c.y + rx);
                     renderList.push({ t: 'ellipse', l, et, handle, cx: c.x, cy: c.y, rx, ry, rot, c: color, byLayer });
                 }
@@ -305,18 +382,26 @@ export function prepareDrawingData(entities, layers, db) {
 
             case 'ATTRIB': {
                 if (e.flags && (e.flags & 1)) break;
-                if (!e.text) break;
-                const useEnd = ((e.halign || 0) > 0 || (e.valign || 0) > 0);
+                // libredwg-web: e.text is a DwgTextBase object with .text, .startPoint, .endPoint, .textHeight, etc.
+                const tb = (typeof e.text === 'object' && e.text !== null) ? e.text : null;
+                const textStr = tb ? tb.text : (typeof e.text === 'string' ? e.text : null);
+                if (!textStr) break;
+                const halign = tb ? (tb.halign || 0) : (e.halign || 0);
+                const valign = tb ? (tb.valign || 0) : (e.valign || 0);
+                const useEnd = (halign > 0 || valign > 0);
                 const pt = useEnd
-                    ? (e.alignmentPoint || e.endPoint || e.insertionPoint)
-                    : (e.insertionPoint || e.startPoint);
+                    ? (e.alignmentPoint || (tb && tb.endPoint) || e.endPoint || (tb && tb.startPoint) || e.insertionPoint)
+                    : ((tb && tb.startPoint) || e.insertionPoint || (tb && tb.endPoint) || e.startPoint);
                 if (!pt) break;
                 const p = tp(pt.x, pt.y);
                 const scale = Math.abs(tf ? (tf.xScale || 1) : 1);
-                const rotRad = ((e.rotation || 0) + (tf ? (tf.rotation || 0) : 0)) * Math.PI / 180;
+                const rotation = (tb && tb.rotation) || e.rotation || 0;
+                const rotRad = (rotation + (tf ? (tf.rotation || 0) : 0)) * Math.PI / 180;
                 expand(p.x, p.y);
-                const fontName = state.styleFontMap[e.styleName || e.style || ''] || '';
-                renderList.push({ t: 'text', l, et: 'ATTRIB', handle, x: p.x, y: p.y, text: e.text, h: (e.textHeight || 2.5) * scale, rot: rotRad, c: color, byLayer, fontName });
+                const sName = (tb && tb.styleName) || e.styleName || e.style || '';
+                const fontName = state.styleFontMap[sName] || '';
+                const tHeight = (tb && tb.textHeight) || e.textHeight || 2.5;
+                renderList.push({ t: 'text', l, et: 'ATTRIB', handle, x: p.x, y: p.y, text: textStr, h: tHeight * scale, rot: rotRad, c: color, byLayer, fontName });
                 break;
             }
 
@@ -362,7 +447,7 @@ export function prepareDrawingData(entities, layers, db) {
                                 const r = edge.radius ?? 0;
                                 const sa = edge.startAngle ?? 0;
                                 const ea = edge.endAngle ?? Math.PI * 2;
-                                const ccw = edge.isCCW !== false;
+                                const ccw = tfMirrored ? (edge.isCCW === false) : (edge.isCCW !== false);
                                 let sweep = ccw ? (ea - sa) : (sa - ea);
                                 if (sweep <= 0) sweep += Math.PI * 2;
                                 const steps = Math.max(12, Math.ceil(Math.abs(sweep) / (Math.PI / 16)));
@@ -560,12 +645,15 @@ export function prepareDrawingData(entities, layers, db) {
 
                 if (hasAttribs) {
                     if (insertCount <= 3) {
-                        console.log(`INSERT "${e.name}" attribs:`, e.attribs.map(a => ({
-                            type: a.type, tag: a.tag, flags: a.flags,
-                            text: a.text,
-                            insertionPoint: a.insertionPoint,
-                            alignmentPoint: a.alignmentPoint
-                        })));
+                        console.log(`INSERT "${e.name}" attribs:`, e.attribs.map(a => {
+                            const tb = (typeof a.text === 'object' && a.text !== null) ? a.text : null;
+                            return {
+                                type: a.type, tag: a.tag, flags: a.flags,
+                                textStr: tb ? tb.text : a.text,
+                                textObj: tb ? { startPoint: tb.startPoint, endPoint: tb.endPoint, textHeight: tb.textHeight } : null,
+                                alignmentPoint: a.alignmentPoint
+                            };
+                        }));
                     }
                     for (const attr of e.attribs) {
                         addEntity(attr, tf, l);
