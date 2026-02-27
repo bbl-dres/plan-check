@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Option B — Flat Table | Prüfregeln</title>
+    <link rel="stylesheet" href="../../css/tokens.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: var(--font-family-primary);
+            background: var(--color-bg-page);
+            color: var(--color-text-primary);
+            display: flex;
+            justify-content: center;
+            padding: 32px;
+        }
+        .wireframe-label {
+            position: fixed; top: 0; left: 0; right: 0;
+            background: var(--color-primary); color: var(--color-text-inverse);
+            padding: 8px 16px; font-size: 13px; font-weight: 600;
+            text-align: center; z-index: 100;
+        }
+        .side-panel {
+            width: 380px;
+            background: var(--color-bg-primary);
+            border: 1px solid var(--color-border);
+            box-shadow: var(--shadow-md);
+            display: flex;
+            flex-direction: column;
+            max-height: calc(100vh - 100px);
+            margin-top: 32px;
+        }
+
+        /* Toolbar */
+        .toolbar {
+            display: flex; gap: 8px; padding: 12px 16px; align-items: center;
+            border-bottom: 1px solid var(--color-border); background: var(--color-bg-secondary);
+            flex-shrink: 0;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; padding: 6px 10px; border: 1px solid var(--color-border);
+            font-size: 12px; outline: none; background: var(--color-bg-primary);
+            font-family: inherit;
+        }
+        .toolbar input[type="text"]:focus {
+            border-color: var(--color-primary); box-shadow: 0 0 0 2px rgba(0,102,153,0.12);
+        }
+        .toolbar select {
+            padding: 6px 8px; border: 1px solid var(--color-border);
+            font-size: 11px; background: var(--color-bg-primary); cursor: pointer;
+            font-family: inherit;
+        }
+
+        /* Table header */
+        .table-header {
+            display: flex; align-items: center;
+            padding: 6px 16px; background: var(--color-bg-secondary);
+            border-bottom: 1px solid var(--color-border);
+            font-size: 10px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.04em;
+            color: var(--color-text-secondary);
+            flex-shrink: 0;
+        }
+        .table-header span { cursor: pointer; user-select: none; }
+        .table-header span:hover { color: var(--color-primary); }
+        .th-code { width: 80px; }
+        .th-sev { width: 24px; text-align: center; }
+        .th-desc { flex: 1; padding: 0 8px; }
+        .th-count { width: 40px; text-align: right; }
+        .sort-arrow { font-size: 9px; margin-left: 2px; }
+
+        /* List */
+        .list { flex: 1; overflow-y: auto; }
+
+        /* Rule row */
+        .rule {
+            display: flex; align-items: center;
+            padding: 7px 16px;
+            font-size: 12px; cursor: pointer;
+            transition: background 0.1s;
+            border-bottom: 1px solid var(--color-border-light);
+        }
+        .rule:nth-child(even) { background: var(--color-zebra); }
+        .rule:hover { background: var(--color-primary-light); }
+
+        .rule__code {
+            width: 80px; flex-shrink: 0;
+            font-family: var(--font-family-mono);
+            font-weight: 600; font-size: 11px;
+            color: var(--color-primary);
+        }
+        .rule__sev {
+            width: 24px; flex-shrink: 0; text-align: center;
+            font-size: 12px; font-weight: 700;
+        }
+        .rule__sev--pass { color: var(--color-success); }
+        .rule__sev--fail { color: var(--color-error); }
+        .rule__sev--warn { color: var(--color-warning); }
+
+        .rule__desc {
+            flex: 1; padding: 0 8px;
+            font-size: 11px; color: var(--color-text-secondary);
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .rule__count {
+            width: 40px; flex-shrink: 0; text-align: right;
+            font-size: 11px; font-family: var(--font-family-mono);
+            color: var(--color-text-secondary);
+            font-variant-numeric: tabular-nums;
+        }
+        .rule__count--active { color: var(--color-error); font-weight: 600; }
+
+        /* Category separator row */
+        .cat-sep {
+            display: flex; align-items: center;
+            padding: 5px 16px;
+            background: var(--color-bg-secondary);
+            border-bottom: 1px solid var(--color-border);
+            font-size: 10px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.04em;
+            color: var(--color-text-secondary);
+        }
+        .cat-sep__label { flex: 1; }
+        .cat-sep__stats {
+            font-family: var(--font-family-mono); font-size: 10px;
+        }
+
+        /* Summary */
+        .summary {
+            border-top: 1px solid var(--color-border);
+            padding: 10px 16px; background: var(--color-bg-secondary);
+            flex-shrink: 0; font-size: 12px;
+            display: flex; gap: 12px; align-items: center;
+        }
+        .summary__stat {
+            display: flex; align-items: center; gap: 4px;
+        }
+        .summary__dot {
+            width: 8px; height: 8px; border-radius: 50%;
+        }
+        .summary__dot--pass { background: var(--color-success); }
+        .summary__dot--fail { background: var(--color-error); }
+        .summary__dot--warn { background: var(--color-warning); }
+        .summary__val {
+            font-weight: 600; font-variant-numeric: tabular-nums;
+            font-family: var(--font-family-mono);
+        }
+        .summary__label { color: var(--color-text-secondary); font-size: 11px; }
+        .summary__score {
+            margin-left: auto; font-weight: 700;
+            font-size: 14px; color: var(--color-primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="wireframe-label">Option B — Flat Table (sortable columns, category separators)</div>
+
+    <div class="side-panel">
+        <div class="toolbar">
+            <input type="text" placeholder="Regel suchen..." id="search">
+            <select id="filter">
+                <option value="all">Alle</option>
+                <option value="fail">Fehler</option>
+                <option value="warn">Warnungen</option>
+                <option value="pass">Bestanden</option>
+            </select>
+        </div>
+
+        <div class="table-header">
+            <span class="th-code" onclick="sortBy('code')">Code <span class="sort-arrow" id="sort-code"></span></span>
+            <span class="th-sev" onclick="sortBy('sev')"><span class="sort-arrow" id="sort-sev"></span></span>
+            <span class="th-desc" onclick="sortBy('desc')">Beschreibung <span class="sort-arrow" id="sort-desc"></span></span>
+            <span class="th-count" onclick="sortBy('count')">Anz. <span class="sort-arrow" id="sort-count"></span></span>
+        </div>
+
+        <div class="list" id="list"></div>
+
+        <div class="summary" id="summary"></div>
+    </div>
+
+    <script>
+        const RULES = [
+            { cat: 'LAYER', code: 'LAYER_001', sev: 'error',   desc: 'Pflicht-Layer fehlt: R_RAUMPOLYGON' },
+            { cat: 'LAYER', code: 'LAYER_002', sev: 'error',   desc: 'Pflicht-Layer fehlt: R_AOID' },
+            { cat: 'LAYER', code: 'LAYER_003', sev: 'error',   desc: 'Pflicht-Layer fehlt: R_GESCHOSSPOLYGON' },
+            { cat: 'LAYER', code: 'LAYER_004', sev: 'warning', desc: 'Pflicht-Layer fehlt: A_ARCHITEKTUR' },
+            { cat: 'LAYER', code: 'LAYER_005', sev: 'warning', desc: 'Pflicht-Layer fehlt: V_PLANLAYOUT' },
+            { cat: 'LAYER', code: 'LAYER_006', sev: 'warning', desc: 'Pflicht-Layer fehlt: V_BEMASSUNG' },
+            { cat: 'LAYER', code: 'LAYER_007', sev: 'warning', desc: 'Pflicht-Layer fehlt: A_SCHRAFFUR' },
+            { cat: 'LAYER', code: 'LAYER_008', sev: 'warning', desc: 'Unbekannter Layer vorhanden' },
+            { cat: 'POLY',  code: 'POLY_001',  sev: 'error',   desc: 'Raumpolygon ist nicht geschlossen' },
+            { cat: 'POLY',  code: 'POLY_002',  sev: 'error',   desc: 'Raumpolygon enthält Bogensegmente' },
+            { cat: 'POLY',  code: 'POLY_003',  sev: 'error',   desc: 'Polygon hat weniger als 3 Eckpunkte' },
+            { cat: 'POLY',  code: 'POLY_004',  sev: 'warning', desc: 'Raumfläche sehr klein (< 0.25 m²)' },
+            { cat: 'POLY',  code: 'POLY_005',  sev: 'warning', desc: 'Mögliches doppeltes Polygon' },
+            { cat: 'POLY',  code: 'POLY_006',  sev: 'error',   desc: 'Element auf R_RAUMPOLYGON ist keine LWPOLYLINE' },
+            { cat: 'POLY',  code: 'POLY_007',  sev: 'warning', desc: 'Raumpolygon hat Selbstüberschneidung' },
+            { cat: 'GPOLY', code: 'GPOLY_001', sev: 'error',   desc: 'Geschosspolygon ist nicht geschlossen' },
+            { cat: 'GPOLY', code: 'GPOLY_002', sev: 'error',   desc: 'Geschosspolygon enthält Bogensegmente' },
+            { cat: 'GPOLY', code: 'GPOLY_003', sev: 'error',   desc: 'Element auf R_GESCHOSSPOLYGON ist keine LWPOLYLINE' },
+            { cat: 'GPOLY', code: 'GPOLY_004', sev: 'warning', desc: 'Kein Geschosspolygon vorhanden' },
+            { cat: 'GPOLY', code: 'GPOLY_005', sev: 'warning', desc: 'Mögliches doppeltes Geschosspolygon' },
+            { cat: 'AOID',  code: 'AOID_001',  sev: 'error',   desc: 'Raumpolygon hat keine AOID' },
+            { cat: 'AOID',  code: 'AOID_002',  sev: 'error',   desc: 'AOID ist nicht eindeutig' },
+            { cat: 'AOID',  code: 'AOID_003',  sev: 'warning', desc: 'AOID-Format ungültig' },
+            { cat: 'AOID',  code: 'AOID_004',  sev: 'warning', desc: 'Mehrere Texte auf R_AOID im Polygon' },
+            { cat: 'AOID',  code: 'AOID_005',  sev: 'warning', desc: 'AOID-Text ausserhalb aller Raumpolygone' },
+            { cat: 'AOID',  code: 'AOID_006',  sev: 'warning', desc: 'AOID-Basispunkt ausserhalb Polygon' },
+            { cat: 'GEOM',  code: 'GEOM_001',  sev: 'error',   desc: 'Zeichnungseinheit ist nicht Millimeter' },
+            { cat: 'GEOM',  code: 'GEOM_002',  sev: 'warning', desc: 'Element hat Z-Koordinate ≠ 0' },
+            { cat: 'GEOM',  code: 'GEOM_003',  sev: 'error',   desc: 'Unzulässiger Entitätstyp vorhanden' },
+            { cat: 'GEOM',  code: 'GEOM_004',  sev: 'warning', desc: 'Externe Referenz (XREF) vorhanden' },
+            { cat: 'GEOM',  code: 'GEOM_005',  sev: 'warning', desc: 'Element ausserhalb des Schnittrahmens' },
+            { cat: 'TEXT',  code: 'TEXT_001',   sev: 'warning', desc: 'Textelement auf unzulässigem Layer' },
+            { cat: 'TEXT',  code: 'TEXT_002',   sev: 'warning', desc: 'Schriftart ist nicht ARIAL' },
+            { cat: 'STYLE', code: 'STYLE_001', sev: 'warning', desc: 'Polylinienbreite ist nicht 0 mm' },
+            { cat: 'STYLE', code: 'STYLE_002', sev: 'warning', desc: 'Farbe ist nicht VONLAYER' },
+            { cat: 'LAYOUT',code: 'LAYOUT_001',sev: 'warning', desc: 'Layout-Tab (Paper Space) vorhanden' },
+            { cat: 'LAYOUT',code: 'LAYOUT_002',sev: 'warning', desc: 'Kein Planrahmen auf V_PLANLAYOUT erkannt' },
+            { cat: 'DIM',   code: 'DIM_001',   sev: 'warning', desc: 'Keine Masselemente auf V_BEMASSUNG' },
+            { cat: 'DIM',   code: 'DIM_002',   sev: 'warning', desc: 'Masselement ist nicht assoziativ' },
+            { cat: 'HATCH', code: 'HATCH_001', sev: 'warning', desc: 'Schraffur auf A_SCHRAFFUR ist nicht SOLID' },
+        ];
+
+        const CAT_LABELS = {
+            LAYER: 'Layerstruktur', POLY: 'Raumpolygone', GPOLY: 'Geschosspolygone',
+            AOID: 'Raumstempel', GEOM: 'Geometrie', TEXT: 'Textelemente',
+            STYLE: 'Linientypen/Farben', LAYOUT: 'Planlayout', DIM: 'Masselemente', HATCH: 'Schraffuren'
+        };
+
+        // Simulate violations
+        const VIOLATIONS = {
+            'LAYER_008': 3, 'POLY_002': 2, 'POLY_004': 1, 'POLY_007': 1,
+            'AOID_001': 4, 'AOID_003': 2, 'AOID_005': 1,
+            'GEOM_002': 12, 'TEXT_001': 5, 'TEXT_002': 8,
+            'STYLE_002': 15, 'LAYOUT_001': 1, 'DIM_001': 1, 'HATCH_001': 2
+        };
+
+        let currentSort = { field: 'code', dir: 'asc' };
+
+        function getStatus(code) {
+            const count = VIOLATIONS[code] || 0;
+            if (count === 0) return 'pass';
+            const rule = RULES.find(r => r.code === code);
+            return rule?.sev === 'error' ? 'fail' : 'warn';
+        }
+
+        function sortBy(field) {
+            if (currentSort.field === field) {
+                currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort = { field, dir: 'asc' };
+            }
+            renderList();
+        }
+
+        function renderList() {
+            const search = document.getElementById('search').value.toLowerCase();
+            const filter = document.getElementById('filter').value;
+            const list = document.getElementById('list');
+
+            let filtered = RULES.filter(r => {
+                const status = getStatus(r.code);
+                if (filter === 'fail' && status !== 'fail') return false;
+                if (filter === 'warn' && status !== 'warn') return false;
+                if (filter === 'pass' && status !== 'pass') return false;
+                if (search && !r.code.toLowerCase().includes(search) && !r.desc.toLowerCase().includes(search)) return false;
+                return true;
+            });
+
+            // Sort
+            const sevOrder = { error: 0, warning: 1 };
+            if (currentSort.field !== 'code') {
+                filtered.sort((a, b) => {
+                    let va, vb;
+                    if (currentSort.field === 'sev') { va = sevOrder[a.sev] ?? 2; vb = sevOrder[b.sev] ?? 2; }
+                    else if (currentSort.field === 'count') { va = VIOLATIONS[a.code] || 0; vb = VIOLATIONS[b.code] || 0; }
+                    else if (currentSort.field === 'desc') { va = a.desc; vb = b.desc; }
+                    if (va < vb) return currentSort.dir === 'asc' ? -1 : 1;
+                    if (va > vb) return currentSort.dir === 'asc' ? 1 : -1;
+                    return 0;
+                });
+            }
+
+            // Update sort arrows
+            ['code', 'sev', 'desc', 'count'].forEach(f => {
+                const el = document.getElementById('sort-' + f);
+                if (currentSort.field === f) {
+                    el.textContent = currentSort.dir === 'asc' ? '\u25B2' : '\u25BC';
+                } else {
+                    el.textContent = '';
+                }
+            });
+
+            let html = '';
+            let lastCat = '';
+            const showCatSeps = currentSort.field === 'code';
+
+            for (const r of filtered) {
+                if (showCatSeps && r.cat !== lastCat) {
+                    lastCat = r.cat;
+                    const catRules = filtered.filter(x => x.cat === r.cat);
+                    const passCount = catRules.filter(x => getStatus(x.code) === 'pass').length;
+                    html += `<div class="cat-sep">
+                        <span class="cat-sep__label">${CAT_LABELS[r.cat]}</span>
+                        <span class="cat-sep__stats">${passCount}/${catRules.length}</span>
+                    </div>`;
+                }
+
+                const status = getStatus(r.code);
+                const count = VIOLATIONS[r.code] || 0;
+                const icon = status === 'pass' ? '\u2713' : status === 'fail' ? '\u2716' : '\u26A0';
+                const countClass = count > 0 ? 'rule__count--active' : '';
+
+                html += `<div class="rule">
+                    <span class="rule__code">${r.code}</span>
+                    <span class="rule__sev rule__sev--${status}">${icon}</span>
+                    <span class="rule__desc" title="${r.desc}">${r.desc}</span>
+                    <span class="rule__count ${countClass}">${count > 0 ? count : '\u2014'}</span>
+                </div>`;
+            }
+
+            list.innerHTML = html;
+            renderSummary();
+        }
+
+        function renderSummary() {
+            const pass = RULES.filter(r => getStatus(r.code) === 'pass').length;
+            const fail = RULES.filter(r => getStatus(r.code) === 'fail').length;
+            const warn = RULES.filter(r => getStatus(r.code) === 'warn').length;
+            const score = Math.round(pass / RULES.length * 100);
+
+            document.getElementById('summary').innerHTML = `
+                <span class="summary__stat"><span class="summary__dot summary__dot--pass"></span><span class="summary__val">${pass}</span><span class="summary__label">OK</span></span>
+                <span class="summary__stat"><span class="summary__dot summary__dot--fail"></span><span class="summary__val">${fail}</span><span class="summary__label">Fehler</span></span>
+                <span class="summary__stat"><span class="summary__dot summary__dot--warn"></span><span class="summary__val">${warn}</span><span class="summary__label">Warn.</span></span>
+                <span class="summary__score">${score}%</span>
+            `;
+        }
+
+        document.getElementById('search').addEventListener('input', renderList);
+        document.getElementById('filter').addEventListener('change', renderList);
+        renderList();
+    </script>
+</body>
+</html>
