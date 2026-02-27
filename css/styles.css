@@ -548,7 +548,7 @@ body {
 /* Error tab: grid layout for aligned columns */
 .vside-item--errors {
     display: grid;
-    grid-template-columns: 90px 18px 120px 1fr;
+    grid-template-columns: 18px 90px 120px 1fr;
     gap: var(--space-3);
 }
 .vside-item__rule-id {

@@ -1033,8 +1033,8 @@ function renderErrorsTab() {
         value.textContent = err.message;
         value.title = err.message;
 
-        div.appendChild(ruleId);
         div.appendChild(status);
+        div.appendChild(ruleId);
         div.appendChild(elemRef);
         div.appendChild(value);
 
@@ -1424,8 +1424,8 @@ function renderRulesTab() {
             div.setAttribute('data-cat', cat);
             div.setAttribute('data-search', r.code + ' ' + r.desc + ' ' + cat);
             div.innerHTML =
-                `<span class="rules-row__code">${r.code}</span>` +
                 `<span class="rules-row__sev rules-row__sev--${status}">${icon}</span>` +
+                `<span class="rules-row__code">${r.code}</span>` +
                 `<span class="rules-row__desc" title="${esc(r.desc)}">${esc(r.desc)}</span>` +
                 `<span class="rules-row__count${countClass}">${count > 0 ? count : '\u2014'}</span>`;
 
