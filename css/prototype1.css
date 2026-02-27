@@ -691,7 +691,7 @@ a:hover {
     min-width: 20px;
     height: 20px;
     padding: 0 6px;
-    font-size: var(--font-size-2xs);
+    font-size: var(--font-size-xs);
     font-weight: var(--font-weight-bold);
     color: var(--color-white);
     background: var(--color-primary);

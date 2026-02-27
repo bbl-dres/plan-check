@@ -51,6 +51,12 @@ async function handleFile(file) {
     if (!['dwg', 'dxf'].includes(ext)) { showStatus('Nur .dwg / .dxf Dateien.', 'error'); return; }
     if (file.size > MAX_FILE_SIZE) { showStatus('Datei zu gross (max. 50 MB).', 'error'); return; }
 
+    // 2.1 Confirm before replacing current analysis
+    if (state.drawingData) {
+        const confirmed = window.confirm('Aktuelle Analyse ersetzen? Alle bisherigen Ergebnisse gehen verloren.');
+        if (!confirmed) return;
+    }
+
     // Reset
     dom.entitiesPanel.classList.remove('visible');
     dom.infoPanel.classList.remove('visible');
@@ -98,6 +104,14 @@ async function handleFile(file) {
         renderValidation();
 
         showStatus(`${file.name} erfolgreich verarbeitet in ${elapsed}s`, 'success');
+
+        // 1.1 Collapse upload zone and auto-scroll to validation
+        dom.uploadZone.classList.add('upload-zone--collapsed');
+
+        // 4.1 Move focus to validation panel for screen reader users
+        dom.validationPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        dom.validationPanel.setAttribute('tabindex', '-1');
+        dom.validationPanel.focus({ preventScroll: true });
     } catch (err) {
         showStatus(err.message, 'error');
         log(err.message, 'error');
@@ -287,6 +301,73 @@ dom.canvasWrap.addEventListener('pointerup', handlePointerUp);
 dom.canvasWrap.addEventListener('pointercancel', handlePointerUp);
 
 // =============================================
+// Keyboard shortcuts for canvas viewer (2.5)
+// =============================================
+document.addEventListener('keydown', (e) => {
+    if (!state.drawingData) return;
+    // Ignore when focus is in an input, textarea, or contenteditable
+    const tag = e.target.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target.isContentEditable) return;
+
+    switch (e.key) {
+        case '+':
+        case '=':
+            e.preventDefault();
+            state.cam.zoom *= 1.4;
+            render();
+            break;
+        case '-':
+            e.preventDefault();
+            state.cam.zoom /= 1.4;
+            render();
+            break;
+        case 'f':
+        case 'F':
+            if (!e.ctrlKey && !e.metaKey) {
+                e.preventDefault();
+                zoomExtents();
+            }
+            break;
+        case 'Escape':
+            state.selectedItem = null;
+            state.selectedRoom = null;
+            state.highlightedItems = null;
+            hideFeaturePopup();
+            dom.vsideList.querySelectorAll('.vside-item').forEach(el => el.classList.remove('vside-item--selected'));
+            render();
+            break;
+        case 'ArrowUp':
+            if (e.target === dom.canvas || document.activeElement === dom.canvas) {
+                e.preventDefault();
+                state.cam.y += 50 / state.cam.zoom;
+                render();
+            }
+            break;
+        case 'ArrowDown':
+            if (e.target === dom.canvas || document.activeElement === dom.canvas) {
+                e.preventDefault();
+                state.cam.y -= 50 / state.cam.zoom;
+                render();
+            }
+            break;
+        case 'ArrowLeft':
+            if (e.target === dom.canvas || document.activeElement === dom.canvas) {
+                e.preventDefault();
+                state.cam.x -= 50 / state.cam.zoom;
+                render();
+            }
+            break;
+        case 'ArrowRight':
+            if (e.target === dom.canvas || document.activeElement === dom.canvas) {
+                e.preventDefault();
+                state.cam.x += 50 / state.cam.zoom;
+                render();
+            }
+            break;
+    }
+});
+
+// =============================================
 // Buttons
 // =============================================
 document.getElementById('toggle-bg').addEventListener('click', () => {
@@ -321,22 +402,52 @@ document.addEventListener('fullscreenchange', () => {
     setTimeout(() => { resizeCanvas(); render(); }, 100);
 });
 
-// Language selector (placeholder)
-document.querySelectorAll('.lang-selector__item').forEach(btn => {
-    btn.addEventListener('click', () => {
-        document.querySelectorAll('.lang-selector__item').forEach(b => b.classList.remove('lang-selector__item--active'));
-        btn.classList.add('lang-selector__item--active');
-        log(`Sprache: ${btn.dataset.lang.toUpperCase()} (noch nicht implementiert)`, 'warn');
+// 1.3 Console panel collapse/expand toggle
+const consoleToggle = document.getElementById('console-toggle');
+const consoleLog = document.getElementById('console-log');
+if (consoleToggle && consoleLog) {
+    consoleToggle.addEventListener('click', () => {
+        const isExpanded = consoleToggle.getAttribute('aria-expanded') === 'true';
+        consoleToggle.setAttribute('aria-expanded', isExpanded ? 'false' : 'true');
+        consoleLog.classList.toggle('console-body--collapsed', isExpanded);
+        consoleLog.classList.toggle('console-body--expanded', !isExpanded);
     });
+    consoleToggle.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); consoleToggle.click(); }
+    });
+}
+
+// 3.3 Scroll fade indicators for validation tabs
+const tabsEl = document.querySelector('.validation-tabs');
+if (tabsEl) {
+    tabsEl.addEventListener('scroll', () => {
+        tabsEl.classList.toggle('validation-tabs--scrolled',
+            tabsEl.scrollLeft + tabsEl.clientWidth < tabsEl.scrollWidth - 4);
+    });
+}
+
+// 2.3 Language selector: disable non-functional buttons
+document.querySelectorAll('.lang-selector__item').forEach(btn => {
+    if (btn.dataset.lang !== 'de') {
+        btn.disabled = true;
+        btn.title = 'Sprache noch nicht verfügbar';
+        btn.classList.add('lang-selector__item--disabled');
+    }
 });
 
-// Status filter segmented buttons
+// Status filter segmented buttons (4.5: aria-pressed)
+document.querySelectorAll('#status-filter .status-filter__btn').forEach(b => {
+    b.setAttribute('aria-pressed', b.classList.contains('status-filter__btn--active') ? 'true' : 'false');
+});
 document.getElementById('status-filter').addEventListener('click', (e) => {
     const btn = e.target.closest('[data-filter]');
     if (!btn) return;
     state.resultFilter = btn.getAttribute('data-filter');
-    document.querySelectorAll('#status-filter .status-filter__btn').forEach(b =>
-        b.classList.toggle('status-filter__btn--active', b === btn));
+    document.querySelectorAll('#status-filter .status-filter__btn').forEach(b => {
+        const isActive = b === btn;
+        b.classList.toggle('status-filter__btn--active', isActive);
+        b.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    });
     if (state.validationMode) switchValidationTab(state.validationMode);
 });
 
