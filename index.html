@@ -11,7 +11,7 @@
     <header class="header" role="banner">
         <div class="header__content">
             <a href="?" class="header__brand">
-                <img src="assets/swiss-logo-flag.svg" alt="" class="header__flag" aria-hidden="true">
+                <img src="assets/swiss-logo-flag.svg" alt="" class="header__flag">
                 <img src="assets/swiss-logo-name.svg" alt="Schweizerische Eidgenossenschaft" class="header__name">
                 <div class="header__sep"></div>
                 <div class="header__titles">
@@ -26,7 +26,7 @@
                 <button class="lang-selector__item" data-lang="en">EN</button>
             </div>
             <button class="header__menu-btn" id="header-menu-btn" aria-label="Menü" aria-expanded="false">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
             </button>
             <nav class="header__nav">
                 <a href="https://www.bbl.admin.ch/de/downloads-bauten" target="_blank" rel="noopener" class="header__nav-link">Downloads BBL Bauten</a>
@@ -39,7 +39,7 @@
     <div class="container">
         <!-- Upload -->
         <div class="upload-zone" id="upload-zone">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
             </svg>
             <p>DWG-Datei hierher ziehen oder klicken</p>
@@ -49,7 +49,7 @@
             <p class="upload-zone__demo-hint">Keine Datei? <a href="#" id="load-demo" class="upload-zone__demo-link">Demo-Projekt laden</a></p>
         </div>
 
-        <div class="status" id="status" aria-live="polite"></div>
+        <div class="status" id="status"></div>
 
         <!-- Metrics (independent section) -->
         <div class="panel" id="metrics-panel">
@@ -62,47 +62,46 @@
             <div class="panel__header">
                 <span>Validierung</span>
             </div>
-            <div class="validation-tabs" role="tablist" aria-label="Validierung">
-                <button class="validation-tabs__tab validation-tabs__tab--active" role="tab" aria-selected="true" data-vtab="rules" id="vtab-rules">Prüfregeln (<span id="vtab-rules-count">0</span>/<span id="vtab-rules-total">40</span>)</button>
-                <button class="validation-tabs__tab" role="tab" aria-selected="false" data-vtab="errors" id="vtab-errors">Fehlermeldungen (<span id="vtab-error-count">0</span>)</button>
-                <button class="validation-tabs__tab" role="tab" aria-selected="false" data-vtab="overview" id="vtab-overview">Layer (<span id="vtab-layer-count">0</span>)</button>
-                <button class="validation-tabs__tab" role="tab" aria-selected="false" data-vtab="rooms" id="vtab-rooms">Räume (<span id="vtab-room-count">0</span>)</button>
-                <button class="validation-tabs__tab" role="tab" aria-selected="false" data-vtab="areas" id="vtab-areas">Flächen (<span id="vtab-area-count">0</span>)</button>
-                <button class="validation-tabs__tab" role="tab" aria-selected="false" data-vtab="kennzahlen" id="vtab-kennzahlen">Kennzahlen</button>
+            <div class="validation-tabs">
+                <a href="#" class="validation-tabs__tab validation-tabs__tab--active" data-vtab="rules">Prüfregeln (<span id="vtab-rules-count">0</span>/<span id="vtab-rules-total">40</span>)</a>
+                <a href="#" class="validation-tabs__tab" data-vtab="errors">Fehlermeldungen (<span id="vtab-error-count">0</span>)</a>
+                <a href="#" class="validation-tabs__tab" data-vtab="overview">Layer (<span id="vtab-layer-count">0</span>)</a>
+                <a href="#" class="validation-tabs__tab" data-vtab="rooms">Räume (<span id="vtab-room-count">0</span>)</a>
+                <a href="#" class="validation-tabs__tab" data-vtab="areas">Flächen (<span id="vtab-area-count">0</span>)</a>
+                <a href="#" class="validation-tabs__tab" data-vtab="kennzahlen">Kennzahlen</a>
                 <div class="status-filter" id="status-filter" role="group" aria-label="Status Filter">
-                    <button class="status-filter__btn status-filter__btn--active" data-filter="all" aria-pressed="true">Alle</button>
-                    <button class="status-filter__btn" data-filter="warnings" aria-pressed="false">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    <button class="status-filter__btn status-filter__btn--active" data-filter="all">Alle</button>
+                    <button class="status-filter__btn" data-filter="warnings">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                         Warnungen
                     </button>
-                    <button class="status-filter__btn" data-filter="errors" aria-pressed="false">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                    <button class="status-filter__btn" data-filter="errors">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
                         Fehler
                     </button>
                 </div>
             </div>
-            <div class="validation-body" role="tabpanel" aria-labelledby="vtab-rules">
+            <div class="validation-body">
                 <div class="validation-split" id="validation-split">
                     <div class="validation-side" id="validation-side">
                         <div class="validation-side__toolbar">
-                            <input type="checkbox" class="layer-toggle" id="vside-toggle-all" checked aria-label="Alle ein-/ausblenden">
-                            <label for="vside-toggle-all" class="sr-only">Alle ein-/ausblenden</label>
-                            <input type="text" class="layers-search" id="vside-search" placeholder="Suchen..." aria-label="Listenelemente durchsuchen">
+                            <input type="checkbox" class="layer-toggle" id="vside-toggle-all" checked title="Alle ein-/ausblenden">
+                            <input type="text" class="layers-search" id="vside-search" placeholder="Suchen...">
                         </div>
                         <div class="validation-side__list" id="validation-side-list"></div>
                         <div class="validation-side__summary" id="validation-side-summary"></div>
                     </div>
                     <div class="validation-viewer">
                         <div class="viewer__canvas-wrap" id="canvas-wrap">
-                            <canvas id="dwg-canvas" tabindex="0" role="img" aria-label="Interaktive Grundrissansicht. Verwenden Sie +/- zum Zoomen, Pfeiltasten zum Navigieren, F für Gesamtansicht, Escape zum Abwählen."></canvas>
+                            <canvas id="dwg-canvas"></canvas>
                             <div class="viewer__controls">
-                                <button id="toggle-bg" title="Hintergrund umschalten" aria-label="Hintergrund umschalten"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></button>
+                                <button id="toggle-bg" title="Hintergrund umschalten"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></button>
                                 <span class="viewer__sep"></span>
-                                <button id="zoom-in" title="Vergrössern (+)" aria-label="Vergrössern"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35M11 8v6m-3-3h6"/></svg></button>
-                                <button id="zoom-out" title="Verkleinern (-)" aria-label="Verkleinern"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35M8 11h6"/></svg></button>
-                                <button id="zoom-fit" title="Gesamtansicht (F)" aria-label="Gesamtansicht"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
+                                <button id="zoom-in" title="Vergrössern"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35M11 8v6m-3-3h6"/></svg></button>
+                                <button id="zoom-out" title="Verkleinern"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35M8 11h6"/></svg></button>
+                                <button id="zoom-fit" title="Gesamtansicht"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
                                 <span class="viewer__sep"></span>
-                                <button id="fullscreen-btn" title="Vollbild" aria-label="Vollbild"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg></button>
+                                <button id="fullscreen-btn" title="Vollbild"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg></button>
                             </div>
                             <div class="viewer__coords" id="coords-display">X: 0 Y: 0</div>
                             <div class="feature-popup" id="feature-popup"></div>
@@ -133,13 +132,10 @@
             </table>
         </div>
 
-        <!-- Console (1.3: collapsed by default, toggle on click) -->
+        <!-- Console -->
         <div class="panel" id="console-panel">
-            <div class="panel__header console-header" id="console-toggle" role="button" tabindex="0" aria-expanded="false" aria-controls="console-log">
-                <span>Konsole</span>
-                <span class="console-header__chevron" aria-hidden="true"></span>
-            </div>
-            <div class="console-body console-body--collapsed" id="console-log"></div>
+            <div class="panel__header">Konsole</div>
+            <div class="console-body" id="console-log"></div>
         </div>
 
     </div>

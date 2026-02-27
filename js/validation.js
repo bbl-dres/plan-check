@@ -12,46 +12,46 @@ import { downloadPdfReport, downloadExcelReport } from './export.js';
 // =============================================
 
 const ALL_RULES = [
-    { cat: 'LAYER', code: 'LAYER_001', sev: 'error',   desc: 'Pflicht-Layer fehlt: R_RAUMPOLYGON', fix: 'Layer R_RAUMPOLYGON anlegen mit geschlossenen LWPOLYLINE-Raumgrenzen.' },
-    { cat: 'LAYER', code: 'LAYER_002', sev: 'error',   desc: 'Pflicht-Layer fehlt: R_AOID', fix: 'Layer R_AOID anlegen und TEXT-Elemente mit Raumbezeichnungen innerhalb der Raumpolygone platzieren.' },
-    { cat: 'LAYER', code: 'LAYER_003', sev: 'error',   desc: 'Pflicht-Layer fehlt: R_GESCHOSSPOLYGON', fix: 'Layer R_GESCHOSSPOLYGON anlegen mit einer geschlossenen LWPOLYLINE f\u00fcr die Geschossfl\u00e4che.' },
-    { cat: 'LAYER', code: 'LAYER_004', sev: 'warning', desc: 'Pflicht-Layer fehlt: A_ARCHITEKTUR', fix: 'Layer A_ARCHITEKTUR f\u00fcr architektonische Elemente (W\u00e4nde, T\u00fcren, Fenster) anlegen.' },
-    { cat: 'LAYER', code: 'LAYER_005', sev: 'warning', desc: 'Pflicht-Layer fehlt: V_PLANLAYOUT', fix: 'Layer V_PLANLAYOUT mit Planrahmen und Schriftfeld anlegen.' },
-    { cat: 'LAYER', code: 'LAYER_006', sev: 'warning', desc: 'Pflicht-Layer fehlt: V_BEMASSUNG', fix: 'Layer V_BEMASSUNG f\u00fcr Masselemente (DIMENSION) anlegen.' },
-    { cat: 'LAYER', code: 'LAYER_007', sev: 'warning', desc: 'Pflicht-Layer fehlt: A_SCHRAFFUR', fix: 'Layer A_SCHRAFFUR f\u00fcr Solid-Schraffuren anlegen.' },
-    { cat: 'LAYER', code: 'LAYER_008', sev: 'warning', desc: 'Unbekannter Layer vorhanden', fix: 'Layer umbenennen oder entfernen gem\u00e4ss CAD-Richtlinie BBL V1.0 Layerliste.' },
-    { cat: 'POLY',  code: 'POLY_001',  sev: 'error',   desc: 'Raumpolygon ist nicht geschlossen', fix: 'Polygon schliessen: letzten Eckpunkt mit dem ersten verbinden (PEDIT > Schliessen).' },
-    { cat: 'POLY',  code: 'POLY_002',  sev: 'error',   desc: 'Raumpolygon enth\u00e4lt Bogensegmente', fix: 'Bogensegmente in gerade Liniensegmente umwandeln (Flatten/Explode und neu zeichnen).' },
-    { cat: 'POLY',  code: 'POLY_003',  sev: 'error',   desc: 'Polygon hat weniger als 3 Eckpunkte', fix: 'Polygon pr\u00fcfen und fehlende Eckpunkte erg\u00e4nzen oder degeneriertes Element l\u00f6schen.' },
-    { cat: 'POLY',  code: 'POLY_004',  sev: 'warning', desc: 'Raumfl\u00e4che sehr klein (< 0.25 m\u00B2)', fix: 'Pr\u00fcfen, ob dieses Polygon beabsichtigt ist oder versehentlich erstellt wurde.' },
-    { cat: 'POLY',  code: 'POLY_005',  sev: 'warning', desc: 'M\u00f6gliches doppeltes Polygon', fix: 'Doppeltes Polygon entfernen \u2014 jeder Raum darf nur einmal vorhanden sein.' },
-    { cat: 'POLY',  code: 'POLY_006',  sev: 'error',   desc: 'Element auf R_RAUMPOLYGON ist keine LWPOLYLINE', fix: 'Nur geschlossene LWPOLYLINE-Elemente auf R_RAUMPOLYGON verwenden. Andere Geometrie auf einen anderen Layer verschieben.' },
-    { cat: 'POLY',  code: 'POLY_007',  sev: 'warning', desc: 'Raumpolygon hat Selbst\u00fcberschneidung', fix: 'Polygon-Kanten pr\u00fcfen und \u00dcberschneidung korrigieren, sodass keine Kanten sich kreuzen.' },
-    { cat: 'GPOLY', code: 'GPOLY_001', sev: 'error',   desc: 'Geschosspolygon ist nicht geschlossen', fix: 'Geschosspolygon schliessen (PEDIT > Schliessen).' },
-    { cat: 'GPOLY', code: 'GPOLY_002', sev: 'error',   desc: 'Geschosspolygon enth\u00e4lt Bogensegmente', fix: 'Bogensegmente im Geschosspolygon durch gerade Segmente ersetzen.' },
-    { cat: 'GPOLY', code: 'GPOLY_003', sev: 'error',   desc: 'Element auf R_GESCHOSSPOLYGON ist keine LWPOLYLINE', fix: 'Nur LWPOLYLINE f\u00fcr Geschosspolygone verwenden.' },
-    { cat: 'GPOLY', code: 'GPOLY_004', sev: 'warning', desc: 'Kein Geschosspolygon vorhanden', fix: 'Eine geschlossene LWPOLYLINE auf R_GESCHOSSPOLYGON anlegen, die die gesamte Geschossfl\u00e4che umschliesst.' },
-    { cat: 'GPOLY', code: 'GPOLY_005', sev: 'warning', desc: 'M\u00f6gliches doppeltes Geschosspolygon', fix: '\u00dcberz\u00e4hliges Geschosspolygon entfernen.' },
-    { cat: 'AOID',  code: 'AOID_001',  sev: 'error',   desc: 'Raumpolygon hat keine AOID', fix: 'TEXT-Element mit Raumbezeichnung auf Layer R_AOID innerhalb des Polygons platzieren.' },
-    { cat: 'AOID',  code: 'AOID_002',  sev: 'error',   desc: 'AOID ist nicht eindeutig', fix: 'Jede AOID darf nur einmal vorkommen. Doppelte Bezeichnung umbenennen.' },
-    { cat: 'AOID',  code: 'AOID_003',  sev: 'warning', desc: 'AOID-Format ung\u00fcltig', fix: 'AOID-Format gem\u00e4ss Vorgabe pr\u00fcfen (z.B. Geb\u00e4ude-Geschoss-Raum).' },
-    { cat: 'AOID',  code: 'AOID_004',  sev: 'warning', desc: 'Mehrere Texte auf R_AOID im Polygon', fix: '\u00dcberz\u00e4hlige Texte auf R_AOID aus dem Polygon entfernen \u2014 nur ein Text pro Raum.' },
-    { cat: 'AOID',  code: 'AOID_005',  sev: 'warning', desc: 'AOID-Text ausserhalb aller Raumpolygone', fix: 'Text innerhalb eines Raumpolygons positionieren oder \u00fcberfl\u00fcssigen Text l\u00f6schen.' },
-    { cat: 'AOID',  code: 'AOID_006',  sev: 'warning', desc: 'AOID-Basispunkt ausserhalb Polygon', fix: 'Basispunkt des Textes innerhalb des zugeh\u00f6rigen Raumpolygons verschieben.' },
-    { cat: 'GEOM',  code: 'GEOM_001',  sev: 'error',   desc: 'Zeichnungseinheit ist nicht Millimeter', fix: '$INSUNITS auf 4 (Millimeter) setzen: EINHEITEN > Zeichnungseinheit > Millimeter.' },
-    { cat: 'GEOM',  code: 'GEOM_002',  sev: 'warning', desc: 'Element hat Z-Koordinate \u2260 0', fix: 'Alle Elemente auf Z=0 setzen (FLATTEN oder manuell korrigieren).' },
-    { cat: 'GEOM',  code: 'GEOM_003',  sev: 'error',   desc: 'Unzul\u00e4ssiger Entit\u00e4tstyp vorhanden', fix: 'Nur zul\u00e4ssige Entit\u00e4tstypen verwenden. REGION und 3DSOLID entfernen oder in LWPOLYLINE umwandeln.' },
-    { cat: 'GEOM',  code: 'GEOM_004',  sev: 'warning', desc: 'Externe Referenz (XREF) vorhanden', fix: 'XREF-Verweise aufl\u00f6sen (XREF > Binden) und alle Geometrie direkt in die Zeichnung einf\u00fcgen.' },
-    { cat: 'GEOM',  code: 'GEOM_005',  sev: 'warning', desc: 'Element ausserhalb des Schnittrahmens', fix: 'Element innerhalb des Planrahmens verschieben oder l\u00f6schen.' },
-    { cat: 'TEXT',  code: 'TEXT_001',   sev: 'warning', desc: 'Textelement auf unzul\u00e4ssigem Layer', fix: 'Texte gem\u00e4ss Layervorgabe auf den korrekten Layer verschieben.' },
-    { cat: 'TEXT',  code: 'TEXT_002',   sev: 'warning', desc: 'Schriftart ist nicht ARIAL', fix: 'Textstil auf ARIAL umstellen (STIL > Schriftart > Arial).' },
-    { cat: 'STYLE', code: 'STYLE_001', sev: 'warning', desc: 'Polylinienbreite ist nicht 0 mm', fix: 'Polylinienbreite auf 0 setzen: PEDIT > Breite > 0.' },
-    { cat: 'STYLE', code: 'STYLE_002', sev: 'warning', desc: 'Farbe ist nicht VONLAYER', fix: 'Farbe des Elements auf VONLAYER setzen (Farbzuweisung 256).' },
-    { cat: 'LAYOUT',code: 'LAYOUT_001',sev: 'warning', desc: 'Layout-Tab (Paper Space) vorhanden', fix: 'Alle Layout-Tabs (Paper Space) l\u00f6schen \u2014 nur Model Space verwenden.' },
-    { cat: 'LAYOUT',code: 'LAYOUT_002',sev: 'warning', desc: 'Kein Planrahmen auf V_PLANLAYOUT erkannt', fix: 'Planrahmen als geschlossene LWPOLYLINE auf Layer V_PLANLAYOUT anlegen.' },
-    { cat: 'DIM',   code: 'DIM_001',   sev: 'warning', desc: 'Keine Masselemente auf V_BEMASSUNG', fix: 'DIMENSION-Elemente auf Layer V_BEMASSUNG erstellen.' },
-    { cat: 'DIM',   code: 'DIM_002',   sev: 'warning', desc: 'Masselement ist nicht assoziativ', fix: 'Masselemente assoziativ erstellen (DIMASSOC=2).' },
-    { cat: 'HATCH', code: 'HATCH_001', sev: 'warning', desc: 'Schraffur auf A_SCHRAFFUR ist nicht SOLID', fix: 'Schraffurmuster auf SOLID \u00e4ndern (SCHRAFFUR > Muster > SOLID).' },
+    { cat: 'LAYER', code: 'LAYER_001', sev: 'error',   desc: 'Pflicht-Layer fehlt: R_RAUMPOLYGON' },
+    { cat: 'LAYER', code: 'LAYER_002', sev: 'error',   desc: 'Pflicht-Layer fehlt: R_AOID' },
+    { cat: 'LAYER', code: 'LAYER_003', sev: 'error',   desc: 'Pflicht-Layer fehlt: R_GESCHOSSPOLYGON' },
+    { cat: 'LAYER', code: 'LAYER_004', sev: 'warning', desc: 'Pflicht-Layer fehlt: A_ARCHITEKTUR' },
+    { cat: 'LAYER', code: 'LAYER_005', sev: 'warning', desc: 'Pflicht-Layer fehlt: V_PLANLAYOUT' },
+    { cat: 'LAYER', code: 'LAYER_006', sev: 'warning', desc: 'Pflicht-Layer fehlt: V_BEMASSUNG' },
+    { cat: 'LAYER', code: 'LAYER_007', sev: 'warning', desc: 'Pflicht-Layer fehlt: A_SCHRAFFUR' },
+    { cat: 'LAYER', code: 'LAYER_008', sev: 'warning', desc: 'Unbekannter Layer vorhanden' },
+    { cat: 'POLY',  code: 'POLY_001',  sev: 'error',   desc: 'Raumpolygon ist nicht geschlossen' },
+    { cat: 'POLY',  code: 'POLY_002',  sev: 'error',   desc: 'Raumpolygon enth\u00e4lt Bogensegmente' },
+    { cat: 'POLY',  code: 'POLY_003',  sev: 'error',   desc: 'Polygon hat weniger als 3 Eckpunkte' },
+    { cat: 'POLY',  code: 'POLY_004',  sev: 'warning', desc: 'Raumfl\u00e4che sehr klein (< 0.25 m\u00B2)' },
+    { cat: 'POLY',  code: 'POLY_005',  sev: 'warning', desc: 'M\u00f6gliches doppeltes Polygon' },
+    { cat: 'POLY',  code: 'POLY_006',  sev: 'error',   desc: 'Element auf R_RAUMPOLYGON ist keine LWPOLYLINE' },
+    { cat: 'POLY',  code: 'POLY_007',  sev: 'warning', desc: 'Raumpolygon hat Selbst\u00fcberschneidung' },
+    { cat: 'GPOLY', code: 'GPOLY_001', sev: 'error',   desc: 'Geschosspolygon ist nicht geschlossen' },
+    { cat: 'GPOLY', code: 'GPOLY_002', sev: 'error',   desc: 'Geschosspolygon enth\u00e4lt Bogensegmente' },
+    { cat: 'GPOLY', code: 'GPOLY_003', sev: 'error',   desc: 'Element auf R_GESCHOSSPOLYGON ist keine LWPOLYLINE' },
+    { cat: 'GPOLY', code: 'GPOLY_004', sev: 'warning', desc: 'Kein Geschosspolygon vorhanden' },
+    { cat: 'GPOLY', code: 'GPOLY_005', sev: 'warning', desc: 'M\u00f6gliches doppeltes Geschosspolygon' },
+    { cat: 'AOID',  code: 'AOID_001',  sev: 'error',   desc: 'Raumpolygon hat keine AOID' },
+    { cat: 'AOID',  code: 'AOID_002',  sev: 'error',   desc: 'AOID ist nicht eindeutig' },
+    { cat: 'AOID',  code: 'AOID_003',  sev: 'warning', desc: 'AOID-Format ung\u00fcltig' },
+    { cat: 'AOID',  code: 'AOID_004',  sev: 'warning', desc: 'Mehrere Texte auf R_AOID im Polygon' },
+    { cat: 'AOID',  code: 'AOID_005',  sev: 'warning', desc: 'AOID-Text ausserhalb aller Raumpolygone' },
+    { cat: 'AOID',  code: 'AOID_006',  sev: 'warning', desc: 'AOID-Basispunkt ausserhalb Polygon' },
+    { cat: 'GEOM',  code: 'GEOM_001',  sev: 'error',   desc: 'Zeichnungseinheit ist nicht Millimeter' },
+    { cat: 'GEOM',  code: 'GEOM_002',  sev: 'warning', desc: 'Element hat Z-Koordinate \u2260 0' },
+    { cat: 'GEOM',  code: 'GEOM_003',  sev: 'error',   desc: 'Unzul\u00e4ssiger Entit\u00e4tstyp vorhanden' },
+    { cat: 'GEOM',  code: 'GEOM_004',  sev: 'warning', desc: 'Externe Referenz (XREF) vorhanden' },
+    { cat: 'GEOM',  code: 'GEOM_005',  sev: 'warning', desc: 'Element ausserhalb des Schnittrahmens' },
+    { cat: 'TEXT',  code: 'TEXT_001',   sev: 'warning', desc: 'Textelement auf unzul\u00e4ssigem Layer' },
+    { cat: 'TEXT',  code: 'TEXT_002',   sev: 'warning', desc: 'Schriftart ist nicht ARIAL' },
+    { cat: 'STYLE', code: 'STYLE_001', sev: 'warning', desc: 'Polylinienbreite ist nicht 0 mm' },
+    { cat: 'STYLE', code: 'STYLE_002', sev: 'warning', desc: 'Farbe ist nicht VONLAYER' },
+    { cat: 'LAYOUT',code: 'LAYOUT_001',sev: 'warning', desc: 'Layout-Tab (Paper Space) vorhanden' },
+    { cat: 'LAYOUT',code: 'LAYOUT_002',sev: 'warning', desc: 'Kein Planrahmen auf V_PLANLAYOUT erkannt' },
+    { cat: 'DIM',   code: 'DIM_001',   sev: 'warning', desc: 'Keine Masselemente auf V_BEMASSUNG' },
+    { cat: 'DIM',   code: 'DIM_002',   sev: 'warning', desc: 'Masselement ist nicht assoziativ' },
+    { cat: 'HATCH', code: 'HATCH_001', sev: 'warning', desc: 'Schraffur auf A_SCHRAFFUR ist nicht SOLID' },
 ];
 
 const RULE_CAT_LABELS = {
@@ -690,10 +690,10 @@ export function renderValidation() {
     dom.metricsGrid.innerHTML =
         `<div class="info-grid__item"><div class="info-grid__label">R\u00e4ume</div><div class="info-grid__value">${fmtNum(state.roomData.length)}</div></div>` +
         `<div class="info-grid__item"><div class="info-grid__label">NGF</div><div class="info-grid__value">${fmtNum(ngf, 1)} m\u00B2</div></div>` +
-        `<div class="info-grid__item"><div class="info-grid__label">Score (${passedRules}/${totalRules})</div><div class="info-grid__value info-grid__value--${scoreClass}">${score}%</div></div>` +
+        `<div class="info-grid__item"><div class="info-grid__label">Score (${passedRules}/${totalRules})</div><div class="info-grid__value" style="color: var(--color-${scoreClass})">${score}%</div></div>` +
         `<div class="info-grid__download"><div class="info-grid__download-label">Bericht</div><div class="info-grid__download-links">` +
-        `<button class="info-grid__dl-btn" data-dl="pdf" title="6-seitiger PDF-Bericht mit Grundriss, Fehlermeldungen, R\u00e4umen, Fl\u00e4chen und Kennzahlen">${dlIcon} PDF</button>` +
-        `<button class="info-grid__dl-btn" data-dl="excel" title="Excel-Arbeitsmappe mit detaillierten Daten zu Layern, Fehlern, R\u00e4umen und Kennzahlen">${dlIcon} Excel</button>` +
+        `<button class="info-grid__dl-btn" data-dl="pdf">${dlIcon} PDF</button>` +
+        `<button class="info-grid__dl-btn" data-dl="excel">${dlIcon} Excel</button>` +
         `</div></div>`;
     // Wire download buttons in metrics card
     dom.metricsGrid.querySelectorAll('.info-grid__dl-btn').forEach(btn => {
@@ -707,10 +707,11 @@ export function renderValidation() {
     // Show panel
     dom.validationPanel.classList.add('visible');
 
-    // Wire up tab clicks (4.4: buttons instead of anchors)
-    const allTabs = dom.validationPanel.querySelectorAll('[data-vtab]');
-    allTabs.forEach(tab => {
-        tab.onclick = () => {
+    // Wire up tab clicks
+    const tabs = dom.validationPanel.querySelectorAll('[data-vtab]');
+    tabs.forEach(tab => {
+        tab.onclick = (e) => {
+            e.preventDefault();
             switchValidationTab(tab.getAttribute('data-vtab'));
         };
     });
@@ -724,10 +725,10 @@ export function renderValidation() {
 }
 
 function renderAbortUI(abortErrors) {
-    // Show metrics with abort state (3.5: using CSS classes instead of inline styles)
+    // Show metrics with abort state
     dom.metricsGrid.innerHTML =
-        `<div class="info-grid__item info-grid__item--full"><div class="info-grid__label">Pr\u00fcfung abgebrochen</div>` +
-        `<div class="info-grid__value info-grid__value--error">\u26D4 ${abortErrors.map(e => e.ruleCode).join(', ')}</div></div>`;
+        `<div class="info-grid__item" style="grid-column: 1/-1"><div class="info-grid__label">Pr\u00fcfung abgebrochen</div>` +
+        `<div class="info-grid__value" style="color: var(--color-error)">\u26D4 ${abortErrors.map(e => e.ruleCode).join(', ')}</div></div>`;
     dom.metricsPanel.classList.add('visible');
 
     // Show validation panel with abort message
@@ -735,12 +736,13 @@ function renderAbortUI(abortErrors) {
     dom.validationSplit.style.display = 'none';
     dom.validationDashboard.style.display = 'block';
     dom.validationDashboard.innerHTML =
-        `<div class="kz-dashboard-content abort-content">` +
-        `<h2 class="abort-content__title">\u26D4 Pr\u00fcfung abgebrochen</h2>` +
+        `<div class="kz-dashboard-content" style="padding: 2rem; text-align: center;">` +
+        `<h2 style="color: var(--color-error); margin-bottom: 1rem;">\u26D4 Pr\u00fcfung abgebrochen</h2>` +
         abortErrors.map(e =>
-            `<div class="abort-content__error"><strong>${e.ruleCode}</strong>: ${esc(e.message)}</div>`
+            `<div style="margin: 0.5rem 0; padding: 1rem; background: rgba(255,0,0,0.08); border-radius: 8px; border-left: 4px solid var(--color-error);">` +
+            `<strong>${e.ruleCode}</strong>: ${esc(e.message)}</div>`
         ).join('') +
-        `<p class="abort-content__hint">Der Plan erf\u00fcllt nicht die Grundvoraussetzungen der CAD-Richtlinie BBL V1.0.<br>` +
+        `<p style="margin-top: 1.5rem; color: var(--color-text-secondary);">Der Plan erf\u00fcllt nicht die Grundvoraussetzungen der CAD-Richtlinie BBL V1.0.<br>` +
         `Bitte korrigieren Sie die oben genannten Punkte und laden Sie den Plan erneut hoch.</p></div>`;
 }
 
@@ -768,16 +770,11 @@ export function switchValidationTab(tabName) {
     state.validationMode = tabName;
     state.selectedRoom = null;
 
-    // Update active tab styling + ARIA (4.4)
+    // Update active tab styling
     const tabs = dom.validationPanel.querySelectorAll('[data-vtab]');
     tabs.forEach(t => {
-        const isActive = t.getAttribute('data-vtab') === tabName;
-        t.classList.toggle('validation-tabs__tab--active', isActive);
-        t.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        t.classList.toggle('validation-tabs__tab--active', t.getAttribute('data-vtab') === tabName);
     });
-    // Update tabpanel label
-    const tabPanel = dom.validationPanel.querySelector('[role="tabpanel"]');
-    if (tabPanel) tabPanel.setAttribute('aria-labelledby', 'vtab-' + tabName);
 
     // Ensure canvas is back in split view (may have been moved to kz-viewer)
     const splitViewer = document.querySelector('.validation-viewer');
@@ -880,7 +877,6 @@ function renderOverviewTab() {
         cb.type = 'checkbox';
         cb.checked = !state.hiddenLayers.has(l.name);
         cb.className = 'vside-item__toggle';
-        cb.setAttribute('aria-label', `Layer ${l.name} ein-/ausblenden`);
 
         cb.addEventListener('change', () => {
             if (cb.checked) { state.hiddenLayers.delete(l.name); div.classList.remove('hidden'); }
@@ -956,7 +952,7 @@ function renderErrorsTab() {
     dom.vsideSummary.innerHTML = '';
 
     if (state.validationErrors.length === 0) {
-        dom.vsideList.innerHTML = '<div class="val-empty val-empty--success">\u2713 Keine Fehler oder Warnungen \u2014 alle Pr\u00fcfregeln bestanden.</div>';
+        dom.vsideList.innerHTML = '<div class="val-empty">Keine Fehler oder Warnungen.</div>';
         return;
     }
 
@@ -1081,7 +1077,7 @@ function renderRoomsTab() {
     dom.vsideSummary.innerHTML = '';
 
     if (state.roomData.length === 0) {
-        dom.vsideList.innerHTML = '<div class="val-empty">Keine R\u00e4ume erkannt.<br><small>Erwartet: geschlossene LWPOLYLINE-Elemente auf Layer R_RAUMPOLYGON mit AOID-Texten auf R_AOID.</small></div>';
+        dom.vsideList.innerHTML = '<div class="val-empty">Keine R\u00e4ume erkannt.</div>';
         return;
     }
 
@@ -1116,7 +1112,6 @@ function renderRoomsTab() {
         cb.type = 'checkbox';
         cb.checked = !state.hiddenRoomIds.has(room.id);
         cb.className = 'vside-item__toggle';
-        cb.setAttribute('aria-label', `Raum ${room.aoid} ein-/ausblenden`);
         cb.addEventListener('change', (ev) => {
             ev.stopPropagation();
             if (cb.checked) { state.hiddenRoomIds.delete(room.id); div.classList.remove('hidden'); }
@@ -1188,7 +1183,6 @@ function renderAreasTab() {
         cb.type = 'checkbox';
         cb.checked = !state.hiddenAreaIds.has(area.id);
         cb.className = 'vside-item__toggle';
-        cb.setAttribute('aria-label', `Fl\u00e4che ${area.aoid} ein-/ausblenden`);
         cb.addEventListener('change', (ev) => {
             ev.stopPropagation();
             if (cb.checked) { state.hiddenAreaIds.delete(area.id); div.classList.remove('hidden'); }
@@ -1377,84 +1371,72 @@ function renderRulesTab() {
         return rule?.sev === 'error' ? 'fail' : 'warn';
     }
 
-    // 6.1 Progressive disclosure: show failed rules first
-    const failedRules = ALL_RULES.filter(r => violationCounts[r.code] > 0);
-    const passedRules = ALL_RULES.filter(r => !violationCounts[r.code]);
+    // Group rules by category
+    const categories = [];
+    let currentCat = null;
+    for (const r of ALL_RULES) {
+        if (r.cat !== currentCat) {
+            currentCat = r.cat;
+            categories.push({ cat: r.cat, rules: [] });
+        }
+        categories[categories.length - 1].rules.push(r);
+    }
 
-    // --- Failed rules section ---
-    if (failedRules.length > 0) {
-        const failSep = document.createElement('div');
-        failSep.className = 'rules-cat-sep rules-cat-sep--failures';
-        failSep.setAttribute('data-search', 'Fehler Warnungen failures');
-        failSep.innerHTML =
+    let catIndex = 0;
+    for (const { cat, rules: catRules } of categories) {
+        const passCount = catRules.filter(x => getStatus(x.code) === 'pass').length;
+        const collapsed = catIndex >= 3;
+
+        const sep = document.createElement('div');
+        sep.className = 'rules-cat-sep' + (collapsed ? ' rules-cat-sep--collapsed' : '');
+        sep.setAttribute('data-search', cat + ' ' + (RULE_CAT_LABELS[cat] || cat));
+        sep.innerHTML =
             `<span class="rules-cat-sep__chevron"></span>` +
-            `<span class="rules-cat-sep__label">\u26A0 Nicht bestanden</span>` +
-            `<span class="rules-cat-sep__stats">${failedRules.length} Regel${failedRules.length > 1 ? 'n' : ''}</span>`;
-        dom.vsideList.appendChild(failSep);
+            `<span class="rules-cat-sep__label">${esc(RULE_CAT_LABELS[cat] || cat)}</span>` +
+            `<span class="rules-cat-sep__stats">${passCount}/${catRules.length}</span>`;
+        dom.vsideList.appendChild(sep);
 
-        const failRows = [];
-        for (const r of failedRules) {
+        // Create row elements for this category
+        const rows = [];
+        for (const r of catRules) {
             const status = getStatus(r.code);
             const count = violationCounts[r.code] || 0;
-            const icon = status === 'fail' ? '\u2716' : '\u26A0';
+            const icon = status === 'pass' ? '\u2713' : status === 'fail' ? '\u2716' : '\u26A0';
+            const countClass = count > 0 ? ' rules-row__count--active' : '';
+
             const div = document.createElement('div');
             div.className = 'rules-row';
+            if (collapsed) div.style.display = 'none';
             div.setAttribute('data-code', r.code);
-            div.setAttribute('data-cat', r.cat);
-            div.setAttribute('data-search', r.code + ' ' + r.desc + ' ' + r.cat);
+            div.setAttribute('data-cat', cat);
+            div.setAttribute('data-search', r.code + ' ' + r.desc + ' ' + cat);
             div.innerHTML =
                 `<span class="rules-row__sev rules-row__sev--${status}">${icon}</span>` +
                 `<span class="rules-row__code">${r.code}</span>` +
-                `<span class="rules-row__desc" title="${esc(r.fix || r.desc)}">${esc(r.desc)}</span>` +
-                `<span class="rules-row__count rules-row__count--active">${count}</span>`;
+                `<span class="rules-row__desc" title="${esc(r.desc)}">${esc(r.desc)}</span>` +
+                `<span class="rules-row__count${countClass}">${count > 0 ? count : '\u2014'}</span>`;
 
             div.addEventListener('click', () => {
-                switchValidationTab('errors');
-                dom.vsideSearch.value = r.code;
-                dom.vsideSearch.dispatchEvent(new Event('input'));
+                if (count > 0) {
+                    switchValidationTab('errors');
+                    dom.vsideSearch.value = r.code;
+                    dom.vsideSearch.dispatchEvent(new Event('input'));
+                }
             });
-            failRows.push(div);
+
+            rows.push(div);
             dom.vsideList.appendChild(div);
         }
 
-        failSep.addEventListener('click', () => {
-            const isCollapsed = failSep.classList.toggle('rules-cat-sep--collapsed');
-            for (const row of failRows) row.style.display = isCollapsed ? 'none' : '';
+        // Toggle collapse on category click
+        sep.addEventListener('click', () => {
+            const isCollapsed = sep.classList.toggle('rules-cat-sep--collapsed');
+            for (const row of rows) {
+                row.style.display = isCollapsed ? 'none' : '';
+            }
         });
-    }
 
-    // --- Passed rules section (collapsed by default) ---
-    if (passedRules.length > 0) {
-        const passSep = document.createElement('div');
-        passSep.className = 'rules-cat-sep rules-cat-sep--collapsed';
-        passSep.setAttribute('data-search', 'Bestanden passed');
-        passSep.innerHTML =
-            `<span class="rules-cat-sep__chevron"></span>` +
-            `<span class="rules-cat-sep__label">\u2713 Bestanden</span>` +
-            `<span class="rules-cat-sep__stats">${passedRules.length} Regel${passedRules.length > 1 ? 'n' : ''}</span>`;
-        dom.vsideList.appendChild(passSep);
-
-        const passRows = [];
-        for (const r of passedRules) {
-            const div = document.createElement('div');
-            div.className = 'rules-row';
-            div.style.display = 'none'; // collapsed by default
-            div.setAttribute('data-code', r.code);
-            div.setAttribute('data-cat', r.cat);
-            div.setAttribute('data-search', r.code + ' ' + r.desc + ' ' + r.cat);
-            div.innerHTML =
-                `<span class="rules-row__sev rules-row__sev--pass">\u2713</span>` +
-                `<span class="rules-row__code">${r.code}</span>` +
-                `<span class="rules-row__desc" title="${esc(r.desc)}">${esc(r.desc)}</span>` +
-                `<span class="rules-row__count">\u2014</span>`;
-            passRows.push(div);
-            dom.vsideList.appendChild(div);
-        }
-
-        passSep.addEventListener('click', () => {
-            const isCollapsed = passSep.classList.toggle('rules-cat-sep--collapsed');
-            for (const row of passRows) row.style.display = isCollapsed ? 'none' : '';
-        });
+        catIndex++;
     }
 
     wireSearch('data-search');
