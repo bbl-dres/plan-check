@@ -695,7 +695,7 @@ export function renderValidation() {
         scoreClass === 'warning' ? 'warn' : scoreClass);
     const dlIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
     dom.metricsGrid.innerHTML =
-        `<div class="info-grid__item"><div class="info-grid__label">R\u00e4ume</div><div class="info-grid__value">${state.roomData.length}</div></div>` +
+        `<div class="info-grid__item"><div class="info-grid__label">R\u00e4ume</div><div class="info-grid__value">${fmtNum(state.roomData.length)}</div></div>` +
         `<div class="info-grid__item"><div class="info-grid__label">NGF</div><div class="info-grid__value">${fmtNum(ngf, 1)} m\u00B2</div></div>` +
         `<div class="info-grid__item"><div class="info-grid__label">Score (${passedRules}/${totalRules})</div><div class="info-grid__value" style="color: var(--color-${scoreClass})">${score}%</div></div>` +
         `<div class="info-grid__download"><div class="info-grid__download-label">Bericht</div><div class="info-grid__download-links">` +

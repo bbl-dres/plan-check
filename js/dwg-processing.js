@@ -3,7 +3,7 @@
 // =============================================
 
 import { state, dom } from './state.js';
-import { log, showStatus, fmtSize, aciToHex, esc, computePolygonArea } from './utils.js';
+import { log, showStatus, fmtSize, fmtNum, aciToHex, esc, computePolygonArea } from './utils.js';
 
 // ── LibreDWG Init ──
 async function initLibreDwg() {
@@ -698,8 +698,8 @@ export function prepareDrawingData(entities, layers, db) {
 // ── Display Helpers ──
 export function displayInfo(file, db, entities, layers, elapsed) {
     document.getElementById('info-version').textContent = db.header?.version || '-';
-    document.getElementById('info-layers').textContent = layers.length;
-    document.getElementById('info-entities').textContent = entities.length;
+    document.getElementById('info-layers').textContent = fmtNum(layers.length);
+    document.getElementById('info-entities').textContent = fmtNum(entities.length);
     document.getElementById('info-size').textContent = fmtSize(file.size);
     dom.infoPanel.classList.add('visible');
 }
