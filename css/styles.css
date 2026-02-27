@@ -462,6 +462,24 @@ body {
     flex: 1; font-size: var(--font-size-caption);
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
+/* Error tab: grid layout for aligned columns */
+.vside-item--errors {
+    display: grid;
+    grid-template-columns: 18px 90px 110px 1fr;
+    gap: var(--space-3);
+}
+.vside-item__rule-id {
+    font-family: var(--font-family-mono); font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold); white-space: nowrap;
+}
+.vside-item__elem-ref {
+    font-size: var(--font-size-xs); color: var(--color-text-secondary);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.vside-item__desc {
+    font-size: var(--font-size-xs); color: var(--color-text-secondary);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 .vside-item__value {
     color: var(--color-text-secondary); font-size: var(--font-size-xs); font-family: var(--font-family-mono);
     font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right;

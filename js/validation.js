@@ -797,8 +797,8 @@ export function switchValidationTab(tabName) {
     dom.validationSplit.style.display = isDashboard ? 'none' : '';
     dom.validationDashboard.style.display = isDashboard ? 'block' : 'none';
 
-    // Show/hide toggle-all checkbox (not relevant for rules tab)
-    dom.vsideToggleAll.style.display = tabName === 'rules' ? 'none' : '';
+    // Show/hide toggle-all checkbox (not relevant for rules or errors tab)
+    dom.vsideToggleAll.style.display = (tabName === 'rules' || tabName === 'errors') ? 'none' : '';
 
     // Set layer filter per tab
     state.tabFilterLayers = null;
@@ -984,7 +984,7 @@ function renderErrorsTab() {
     for (const err of sorted) {
         const room = state.roomData.find(r => r.id === err.roomId);
         const div = document.createElement('div');
-        div.className = 'vside-item vside-item--' + err.severity;
+        div.className = 'vside-item vside-item--errors vside-item--' + err.severity;
         div.setAttribute('data-search', err.ruleCode + ' ' + err.message);
         // Link to geometry: prefer room handle, then direct handle
         const errHandle = room ? room.handle : err.handle;
@@ -994,38 +994,42 @@ function renderErrorsTab() {
         const canLocate = !!(room || err.handle || (err.handles && err.handles.length > 0));
         if (canLocate) div.classList.add('vside-item--locatable');
 
-        const cb = document.createElement('input');
-        cb.type = 'checkbox';
-        cb.checked = !state.hiddenErrorIds.has(err.id);
-        cb.className = 'vside-item__toggle';
-        cb.addEventListener('change', (ev) => {
-            ev.stopPropagation();
-            if (cb.checked) { state.hiddenErrorIds.delete(err.id); div.classList.remove('hidden'); }
-            else { state.hiddenErrorIds.add(err.id); div.classList.add('hidden'); }
-            updateToggleAll(state.hiddenErrorIds, sorted.map(e => e.id));
-            render();
-        });
-
         const status = document.createElement('span');
         status.className = 'vside-item__status';
         status.textContent = err.severity === 'error' ? '\u2716' : '\u26A0';
 
-        const name = document.createElement('span');
-        name.className = 'vside-item__name';
-        name.textContent = err.ruleCode;
+        // Rule ID
+        const ruleId = document.createElement('span');
+        ruleId.className = 'vside-item__rule-id';
+        ruleId.textContent = err.ruleCode;
 
+        // Element reference: room AOID, layer name, or handle
+        const elemRef = document.createElement('span');
+        elemRef.className = 'vside-item__elem-ref';
+        if (room) {
+            elemRef.textContent = room.aoid || room.label || ('H:' + room.handle);
+        } else if (err.layer) {
+            elemRef.textContent = err.layer;
+        } else if (err.handles && err.handles.length > 0) {
+            elemRef.textContent = 'H:' + err.handles[0];
+        } else if (err.handle) {
+            elemRef.textContent = 'H:' + err.handle;
+        } else {
+            elemRef.textContent = '\u2013';
+        }
+
+        // Description (message)
         const value = document.createElement('span');
-        value.className = 'vside-item__value';
-        value.textContent = err.message.length > 30 ? err.message.slice(0, 30) + '...' : err.message;
+        value.className = 'vside-item__desc';
+        value.textContent = err.message;
         value.title = err.message;
 
-        div.appendChild(cb);
         div.appendChild(status);
-        div.appendChild(name);
+        div.appendChild(ruleId);
+        div.appendChild(elemRef);
         div.appendChild(value);
 
-        div.addEventListener('click', (e) => {
-            if (e.target === cb) return;
+        div.addEventListener('click', () => {
             dom.vsideList.querySelectorAll('.vside-item').forEach(el => el.classList.remove('vside-item--selected'));
             div.classList.add('vside-item--selected');
 
@@ -1065,7 +1069,6 @@ function renderErrorsTab() {
         dom.vsideList.appendChild(div);
     }
 
-    wireToggleAll(state.hiddenErrorIds, sorted.map(e => e.id));
     wireSearch('data-search');
 }
 
