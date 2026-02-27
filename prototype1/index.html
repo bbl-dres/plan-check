@@ -852,6 +852,15 @@
                                 <li><a href="#" class="tabs__tab" data-val-tab="rooms">Räume (<span id="val-tab-rooms-count">0</span>)</a></li>
                                 <li><a href="#" class="tabs__tab" data-val-tab="areas">Flächen (<span id="val-tab-areas-count">0</span>)</a></li>
                             </ul>
+                            <div class="status-filter" id="status-filter" role="group" aria-label="Status Filter">
+                                <button class="status-filter__btn status-filter__btn--active" data-filter="all">Alle</button>
+                                <button class="status-filter__btn" data-filter="warning">
+                                    <i data-lucide="alert-triangle" class="icon icon-sm"></i> Warnung
+                                </button>
+                                <button class="status-filter__btn" data-filter="error">
+                                    <i data-lucide="x-circle" class="icon icon-sm"></i> Fehler
+                                </button>
+                            </div>
                         </div>
 
                         <div class="split-view split-view--viewer">

@@ -15,6 +15,17 @@ var ValidationView = (function () {
     let selectedSiaCategory = null;
     let initialized = false;
     let abortController = null;
+    let statusFilter = new Set(['all']); // 'all' | 'warning' | 'error'
+
+    function matchesStatusFilter(status) {
+        if (statusFilter.has('all')) return true;
+        return statusFilter.has(status);
+    }
+
+    function matchesSeverityFilter(severity) {
+        if (statusFilter.has('all')) return true;
+        return statusFilter.has(severity);
+    }
 
     // Mock layer data for the Overview tab
     var MOCK_LAYERS = [
@@ -90,9 +101,10 @@ var ValidationView = (function () {
         // Wire up tab switching
         setupTabCallbacks();
 
-        // Wire up search inputs and toggle-all checkboxes
+        // Wire up search inputs, toggle-all checkboxes, and status filter
         setupSearchInputs();
         setupToggleAll();
+        setupStatusFilter();
 
         // Render initial tab and fit viewer
         switchTab('rules');
@@ -141,13 +153,43 @@ var ValidationView = (function () {
         var areasCount = document.getElementById('val-tab-areas-count');
         var errorsCount = document.getElementById('val-tab-errors-count');
         var rulesCount = document.getElementById('val-tab-rules-count');
+
+        // Layers: always total (no status)
         if (layersCount) layersCount.textContent = MOCK_LAYERS.length;
-        if (roomsCount) roomsCount.textContent = docRooms.length;
-        if (areasCount) areasCount.textContent = docAreas.length;
-        if (errorsCount) errorsCount.textContent = docErrors.length;
+
+        // Rooms: filtered count
+        if (roomsCount) {
+            var filteredRooms = docRooms.filter(function (r) { return matchesStatusFilter(r.status); });
+            roomsCount.textContent = filteredRooms.length;
+        }
+
+        // Areas: filtered count
+        if (areasCount) {
+            var filteredAreas = docAreas.filter(function (a) { return matchesStatusFilter(a.status); });
+            areasCount.textContent = filteredAreas.length;
+        }
+
+        // Errors: filtered count
+        if (errorsCount) {
+            var filteredErrors = docErrors.filter(function (e) { return matchesSeverityFilter(e.severity); });
+            errorsCount.textContent = filteredErrors.length;
+        }
+
+        // Rules: filtered count
         if (rulesCount) {
             var rules = getProjectRules();
-            rulesCount.textContent = rules.length;
+            var failedRules = {};
+            for (var e = 0; e < docErrors.length; e++) {
+                var code = docErrors[e].ruleCode;
+                if (!failedRules[code] || docErrors[e].severity === 'error') {
+                    failedRules[code] = docErrors[e].severity;
+                }
+            }
+            var filteredRules = rules.filter(function (r) {
+                var severity = failedRules[r.code] || 'ok';
+                return matchesStatusFilter(severity);
+            });
+            rulesCount.textContent = filteredRules.length;
         }
     }
 
@@ -217,7 +259,10 @@ var ValidationView = (function () {
             var query = input.value.toLowerCase().trim();
             var items = document.querySelectorAll(itemSelector);
             items.forEach(function (item) {
-                item.style.display = (!query || matchFn(item, query)) ? '' : 'none';
+                var searchMatch = !query || matchFn(item, query);
+                var filterStatus = item.getAttribute('data-status') || item.getAttribute('data-severity');
+                var statusMatch = !filterStatus || matchesStatusFilter(filterStatus);
+                item.style.display = (searchMatch && statusMatch) ? '' : 'none';
             });
         }, opts);
     }
@@ -243,6 +288,69 @@ var ValidationView = (function () {
         });
     }
 
+    // --- Status filter ---
+
+    function setupStatusFilter() {
+        var signal = abortController ? abortController.signal : undefined;
+        var opts = signal ? { signal: signal } : {};
+        var filterContainer = document.getElementById('status-filter');
+        if (!filterContainer) return;
+
+        var buttons = filterContainer.querySelectorAll('.status-filter__btn');
+        buttons.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var filterValue = btn.getAttribute('data-filter');
+
+                if (filterValue === 'all') {
+                    statusFilter = new Set(['all']);
+                } else {
+                    statusFilter.delete('all');
+                    if (statusFilter.has(filterValue)) {
+                        statusFilter.delete(filterValue);
+                    } else {
+                        statusFilter.add(filterValue);
+                    }
+                    if (statusFilter.size === 0) {
+                        statusFilter = new Set(['all']);
+                    }
+                }
+
+                buttons.forEach(function (b) {
+                    var val = b.getAttribute('data-filter');
+                    b.classList.toggle('status-filter__btn--active', statusFilter.has(val));
+                });
+
+                applyStatusFilter();
+            }, opts);
+        });
+    }
+
+    function applyStatusFilter() {
+        // Re-render current panel (renderers respect the filter)
+        switch (currentTab) {
+            case 'overview': renderOverviewPanel(); break;
+            case 'rooms': renderRoomsPanel(); break;
+            case 'areas': renderAreasPanel(); break;
+            case 'errors': renderErrorsPanel(); break;
+            case 'rules': renderRulesPanel(); break;
+        }
+
+        updateTabCounts();
+        applyViewerFilter();
+
+        if (typeof lucide !== 'undefined') {
+            requestAnimationFrame(function () { lucide.createIcons(); });
+        }
+    }
+
+    function applyViewerFilter() {
+        if (statusFilter.has('all')) {
+            FloorPlanViewer.setStatusFilter(null);
+        } else {
+            FloorPlanViewer.setStatusFilter(Array.from(statusFilter));
+        }
+    }
+
     // --- Tab switching ---
 
     function switchTab(tabName) {
@@ -261,6 +369,7 @@ var ValidationView = (function () {
 
         // Update viewer mode
         FloorPlanViewer.setMode(tabName);
+        applyViewerFilter();
 
         // Re-initialize Lucide icons in the panel
         if (typeof lucide !== 'undefined') {
@@ -303,8 +412,11 @@ var ValidationView = (function () {
                 ? '<i data-lucide="alert-triangle" class="icon icon-sm panel-list__icon panel-list__icon--warning"></i>'
                 : '<i data-lucide="check-circle-2" class="icon icon-sm panel-list__icon panel-list__icon--ok"></i>';
 
+            var visible = matchesStatusFilter(room.status);
             html += '<div class="panel-list__item" data-room-id="' + room.id + '" ' +
-                'data-aoid="' + escapeHtml(room.aoid) + '" data-func="' + escapeHtml(room.aofunction) + '">' +
+                'data-aoid="' + escapeHtml(room.aoid) + '" data-func="' + escapeHtml(room.aofunction) + '" ' +
+                'data-status="' + room.status + '"' +
+                (visible ? '' : ' style="display:none"') + '>' +
                 '<input type="checkbox" checked> ' +
                 icon +
                 '<span class="panel-list__name">' + escapeHtml(room.aoid) + '</span>' +
@@ -343,8 +455,11 @@ var ValidationView = (function () {
                     ? '<i data-lucide="alert-triangle" class="icon icon-sm panel-list__icon panel-list__icon--warning"></i>'
                     : '<i data-lucide="check-circle-2" class="icon icon-sm panel-list__icon panel-list__icon--ok"></i>';
 
+                var visible = matchesStatusFilter(area.status);
                 html += '<div class="panel-list__item" data-area-id="' + area.id + '" ' +
-                    'data-aoid="' + escapeHtml(area.aoid) + '" data-detail="' + escapeHtml(area.aofunction) + '">' +
+                    'data-aoid="' + escapeHtml(area.aoid) + '" data-detail="' + escapeHtml(area.aofunction) + '" ' +
+                    'data-status="' + area.status + '"' +
+                    (visible ? '' : ' style="display:none"') + '>' +
                     '<input type="checkbox" checked> ' +
                     icon +
                     '<span class="panel-list__name">' + escapeHtml(area.aoid) + '</span>' +
@@ -548,8 +663,11 @@ var ValidationView = (function () {
                     if (room) roomId = room.id;
                 }
 
-                html += '<div class="error-list__item" data-code="' + escapeHtml(err.ruleCode) + '" data-msg="' + escapeHtml(err.message) + '"' +
-                    (roomId ? ' data-room-id="' + roomId + '"' : '') + '>' +
+                var errVisible = matchesSeverityFilter(err.severity);
+                html += '<div class="error-list__item" data-code="' + escapeHtml(err.ruleCode) + '" data-msg="' + escapeHtml(err.message) + '" ' +
+                    'data-severity="' + err.severity + '"' +
+                    (roomId ? ' data-room-id="' + roomId + '"' : '') +
+                    (errVisible ? '' : ' style="display:none"') + '>' +
                     icon +
                     '<span class="error-list__code">' + escapeHtml(err.ruleCode) + '</span>' +
                     '<span class="error-list__message">' + escapeHtml(err.message) + '</span>' +
@@ -624,7 +742,10 @@ var ValidationView = (function () {
                     ? '<i data-lucide="alert-triangle" class="icon icon-sm rule-list__icon rule-list__icon--warning"></i>'
                     : '<i data-lucide="check-circle-2" class="icon icon-sm rule-list__icon rule-list__icon--ok"></i>';
 
-                html += '<div class="rule-list__item" data-code="' + escapeHtml(rule.code) + '" data-name="' + escapeHtml(rule.name) + '">' +
+                var ruleVisible = matchesStatusFilter(severity);
+                html += '<div class="rule-list__item" data-code="' + escapeHtml(rule.code) + '" data-name="' + escapeHtml(rule.name) + '" ' +
+                    'data-status="' + severity + '"' +
+                    (ruleVisible ? '' : ' style="display:none"') + '>' +
                     '<span class="rule-list__code">' + escapeHtml(rule.code) + '</span>' +
                     icon +
                     '<span class="rule-list__name">' + escapeHtml(rule.name) + '</span>' +
@@ -697,6 +818,7 @@ var ValidationView = (function () {
             docRooms = [];
             docAreas = [];
             docErrors = [];
+            statusFilter = new Set(['all']);
         }
     };
 })();

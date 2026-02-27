@@ -19,6 +19,7 @@ var FloorPlanViewer = (function () {
     let hoveredRoomId = null;
     let mode = 'overview'; // 'overview' | 'rooms' | 'areas' | 'kennzahlen' | 'errors'
     let highlightMap = {}; // roomId -> { fill, stroke }
+    let statusFilterSet = null; // null = show all; Set of 'warning'|'error'
     let onClickCallback = null;
     let abortController = null;
     let resizeObserver = null;
@@ -152,6 +153,7 @@ var FloorPlanViewer = (function () {
             for (let i = areas.length - 1; i >= 0; i--) {
                 const area = areas[i];
                 if (!area.vertices || area.vertices.length < 3) continue;
+                if (!isVisibleByFilter(area.status)) continue;
                 if (pointInPolygon(wx, wy, area.vertices)) return area;
             }
             return null;
@@ -160,9 +162,17 @@ var FloorPlanViewer = (function () {
         for (let i = rooms.length - 1; i >= 0; i--) {
             const room = rooms[i];
             if (!room.vertices || room.vertices.length < 3) continue;
+            if (!isVisibleByFilter(room.status)) continue;
             if (pointInPolygon(wx, wy, room.vertices)) return room;
         }
         return null;
+    }
+
+    // --- Status filter ---
+
+    function isVisibleByFilter(status) {
+        if (!statusFilterSet) return true;
+        return statusFilterSet.has(status);
     }
 
     // --- Room color logic ---
@@ -213,6 +223,7 @@ var FloorPlanViewer = (function () {
         if (mode !== 'rooms') {
             for (const area of areas) {
                 if (!area.vertices || area.vertices.length < 3) continue;
+                if (!isVisibleByFilter(area.status)) continue;
                 var aColors = (area.id === selectedRoomId)
                     ? SELECTED_COLOR
                     : (area.id === hoveredRoomId)
@@ -259,6 +270,7 @@ var FloorPlanViewer = (function () {
         if (mode !== 'areas') {
             for (const room of rooms) {
                 if (!room.vertices || room.vertices.length < 3) continue;
+                if (!isVisibleByFilter(room.status)) continue;
                 const colors = getRoomColor(room);
 
                 ctx.beginPath();
@@ -542,6 +554,10 @@ var FloorPlanViewer = (function () {
             hidePopup();
             render();
         },
+        setStatusFilter: function (filterArray) {
+            statusFilterSet = filterArray ? new Set(filterArray) : null;
+            render();
+        },
 
         selectRoom: function (id) {
             selectedRoomId = id;
@@ -585,6 +601,7 @@ var FloorPlanViewer = (function () {
             selectedRoomId = null;
             hoveredRoomId = null;
             highlightMap = {};
+            statusFilterSet = null;
         }
     };
 })();
