@@ -746,8 +746,8 @@ var ValidationView = (function () {
                 html += '<div class="rule-list__item" data-code="' + escapeHtml(rule.code) + '" data-name="' + escapeHtml(rule.name) + '" ' +
                     'data-status="' + severity + '"' +
                     (ruleVisible ? '' : ' style="display:none"') + '>' +
-                    '<span class="rule-list__code">' + escapeHtml(rule.code) + '</span>' +
                     icon +
+                    '<span class="rule-list__code">' + escapeHtml(rule.code) + '</span>' +
                     '<span class="rule-list__name">' + escapeHtml(rule.name) + '</span>' +
                     '</div>';
             }

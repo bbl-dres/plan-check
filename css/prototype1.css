@@ -131,26 +131,33 @@
     box-shadow: var(--shadow-focus);
 }
 
-/* Filter toggle — fixed height, expand states */
+/* Filter toggle — matches view-toggle__btn styling */
 .filter-toggle {
     height: var(--control-height-lg);
     padding: 0 var(--space-3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    background: var(--color-bg-primary);
+    border: 1px solid var(--color-border);
+    cursor: pointer;
+    color: var(--color-text-secondary);
     font-family: var(--font-family-primary);
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
-    margin-left: 0;
-    white-space: normal;
+    transition: all var(--duration-normal) ease;
+    white-space: nowrap;
 }
 
 .filter-toggle:hover {
     color: var(--color-text-primary);
-    border-color: var(--color-text-secondary);
 }
 
 .filter-toggle[aria-expanded="true"] {
-    color: var(--color-primary);
-    border-color: var(--color-primary);
-    background: var(--color-primary-light);
+    background: var(--color-night-rider);
+    color: var(--color-white);
+    border-color: var(--color-night-rider);
 }
 
 /* ========================================
@@ -607,7 +614,8 @@ a:hover {
 .status-filter {
     display: flex;
     align-items: center;
-    padding-bottom: var(--space-3);
+    margin-left: auto;
+    padding: var(--space-2) 0;
     gap: 0;
     flex-shrink: 0;
 }
@@ -689,6 +697,11 @@ a:hover {
     background: var(--color-primary);
     border-radius: var(--radius-pill);
     line-height: var(--line-height-none);
+}
+
+.filter-toggle[aria-expanded="true"] .filter-toggle__badge {
+    background: var(--color-white);
+    color: var(--color-night-rider);
 }
 
 /* ========================================
@@ -862,7 +875,7 @@ a:hover {
 }
 
 .kpi-card__value {
-    font-size: var(--font-size-3xl);
+    font-size: var(--font-size-xl);
     font-weight: var(--font-weight-bold);
     color: var(--color-text-primary);
     line-height: var(--line-height-tight);
@@ -1430,6 +1443,7 @@ a:hover {
     flex-wrap: nowrap;
     gap: var(--space-6);
     list-style: none;
+    margin-bottom: -1px;
 }
 
 .tabs__actions {
@@ -1457,8 +1471,8 @@ a:hover {
 }
 
 .tabs__tab--active {
-    color: var(--color-primary);
-    border-bottom-color: var(--color-primary);
+    color: var(--color-text-primary);
+    border-bottom: 3px solid var(--color-primary);
 }
 
 .tab-pane {

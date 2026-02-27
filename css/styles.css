@@ -505,17 +505,17 @@ body {
    ---------------------------------------- */
 .validation-tabs {
     /* bg + border shared via section-bar group above */
-    display: flex; gap: 0; padding: 0 var(--space-4); align-items: center;
-    overflow-x: auto; flex-shrink: 0;
+    display: flex; gap: 0; padding: 0 var(--space-4); align-items: stretch;
+    overflow-x: auto; overflow-y: hidden; flex-shrink: 0;
 }
 .validation-tabs__tab {
     /* shared via nav-link group above */
     padding: var(--space-2) var(--space-3); font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold);
-    border-bottom: 2px solid transparent;
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
     transition: color var(--duration-normal), border-color var(--duration-normal);
 }
 .validation-tabs__tab--active {
-    color: var(--color-primary); border-bottom-color: var(--color-primary);
+    color: var(--color-text-primary); border-bottom: 3px solid var(--color-primary);
 }
 
 .validation-body { position: relative; }
