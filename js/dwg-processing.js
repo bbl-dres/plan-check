@@ -661,17 +661,6 @@ export function prepareDrawingData(entities, layers, db) {
                 }
 
                 if (hasAttribs) {
-                    if (insertCount <= 3) {
-                        console.log(`INSERT "${e.name}" attribs:`, e.attribs.map(a => {
-                            const tb = (typeof a.text === 'object' && a.text !== null) ? a.text : null;
-                            return {
-                                type: a.type, tag: a.tag, flags: a.flags,
-                                textStr: tb ? tb.text : a.text,
-                                textObj: tb ? { startPoint: tb.startPoint, endPoint: tb.endPoint, textHeight: tb.textHeight } : null,
-                                alignmentPoint: a.alignmentPoint
-                            };
-                        }));
-                    }
                     for (const attr of e.attribs) {
                         addEntity(attr, tf, l);
                     }

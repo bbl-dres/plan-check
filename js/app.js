@@ -5,8 +5,17 @@
 import { state, dom, initDom, MAX_FILE_SIZE, BG_DARK, BG_LIGHT } from './state.js';
 import { log, showStatus, pointInPoly } from './utils.js';
 import { processDwgFile, prepareDrawingData, displayInfo, buildLayerInfo, displayEntities } from './dwg-processing.js';
-import { resizeCanvas, render, zoomExtents, screenToWorld, hitTest, showFeaturePopup, hideFeaturePopup, showPopupForItem, syncSideSelection } from './renderer.js';
+import { resizeCanvas, render, scheduleRender, zoomExtents, screenToWorld, hitTest, showFeaturePopup, hideFeaturePopup, showPopupForItem, syncSideSelection } from './renderer.js';
 import { renderValidation, switchValidationTab } from './validation.js';
+
+// =============================================
+// Constants
+// =============================================
+const TAP_THRESHOLD_PX = 8;           // Max movement (px) to still count as a tap
+const ZOOM_IN_FACTOR = 1.4;
+const ZOOM_OUT_FACTOR = 1 / 1.4;
+const WHEEL_ZOOM_IN = 1.18;
+const WHEEL_ZOOM_OUT = 0.85;
 
 // =============================================
 // Initialize DOM references
@@ -66,6 +75,12 @@ async function handleFile(file) {
     state.validationErrors = [];
     state.validationMode = null;
     state.selectedRoom = null;
+    state.selectedItem = null;
+    state.highlightedItems = null;
+    state.nonZeroZEntities = [];
+    state.xrefBlocks = [];
+    state.dimensionInfo = [];
+    state.hiddenLayers.clear();
     state.hiddenRoomIds.clear();
     state.hiddenAreaIds.clear();
     state.hiddenErrorIds.clear();
@@ -194,13 +209,13 @@ dom.canvasWrap.addEventListener('wheel', (e) => {
 
     const [wx, wy] = screenToWorld(mx, my);
 
-    const factor = e.deltaY > 0 ? 0.85 : 1.18;
+    const factor = e.deltaY > 0 ? WHEEL_ZOOM_OUT : WHEEL_ZOOM_IN;
     state.cam.zoom *= factor;
 
     state.cam.x = wx - (mx - rect.width / 2) / state.cam.zoom;
     state.cam.y = wy + (my - rect.height / 2) / state.cam.zoom;
 
-    render();
+    scheduleRender();
 }, { passive: false });
 
 // Pointer down — start pan or pinch
@@ -244,13 +259,13 @@ dom.canvasWrap.addEventListener('pointermove', (e) => {
         state.cam.x = wx - (midX - rect.width / 2) / state.cam.zoom;
         state.cam.y = wy + (midY - rect.height / 2) / state.cam.zoom;
 
-        render();
+        scheduleRender();
     } else if (state.isPanning && activePointers.size === 1) {
         const dx = e.clientX - state.panStart.x;
         const dy = e.clientY - state.panStart.y;
         state.cam.x = state.panStart.camX - dx / state.cam.zoom;
         state.cam.y = state.panStart.camY + dy / state.cam.zoom;
-        render();
+        scheduleRender();
     }
 
     // Coords display
@@ -275,8 +290,8 @@ const handlePointerUp = (e) => {
         const dy = e.clientY - state.panStart.y;
         const moved = Math.hypot(dx, dy);
 
-        // Tap detection (< 8px movement)
-        if (moved < 8 && state.drawingData) {
+        // Tap detection
+        if (moved < TAP_THRESHOLD_PX && state.drawingData) {
             const rect = dom.canvasWrap.getBoundingClientRect();
             const sx = e.clientX - rect.left;
             const sy = e.clientY - rect.top;
@@ -375,8 +390,8 @@ document.getElementById('toggle-bg').addEventListener('click', () => {
     dom.canvasWrap.style.background = state.bgColor;
     render();
 });
-document.getElementById('zoom-in').addEventListener('click', () => { state.cam.zoom *= 1.4; render(); });
-document.getElementById('zoom-out').addEventListener('click', () => { state.cam.zoom /= 1.4; render(); });
+document.getElementById('zoom-in').addEventListener('click', () => { state.cam.zoom *= ZOOM_IN_FACTOR; render(); });
+document.getElementById('zoom-out').addEventListener('click', () => { state.cam.zoom *= ZOOM_OUT_FACTOR; render(); });
 document.getElementById('zoom-fit').addEventListener('click', zoomExtents);
 
 // Fullscreen toggle
@@ -457,7 +472,7 @@ document.getElementById('status-filter').addEventListener('click', (e) => {
 window.addEventListener('resize', () => {
     if (!state.drawingData) return;
     resizeCanvas();
-    render();
+    scheduleRender();
 });
 
 // =============================================

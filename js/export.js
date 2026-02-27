@@ -29,21 +29,22 @@ function captureCanvasForMode(mode) {
     const prevSelectedItem = state.selectedItem;
     const prevCam = { ...state.cam };
 
-    state.validationMode = mode;
-    state.selectedRoom = null;
-    state.selectedItem = null;
-    zoomExtents();
+    try {
+        state.validationMode = mode;
+        state.selectedRoom = null;
+        state.selectedItem = null;
+        zoomExtents();
 
-    const imgData = dom.canvas.toDataURL('image/png');
-
-    state.validationMode = prevMode;
-    state.selectedRoom = prevSelectedRoom;
-    state.selectedItem = prevSelectedItem;
-    state.cam.x = prevCam.x;
-    state.cam.y = prevCam.y;
-    state.cam.zoom = prevCam.zoom;
-    render();
-    return imgData;
+        return dom.canvas.toDataURL('image/png');
+    } finally {
+        state.validationMode = prevMode;
+        state.selectedRoom = prevSelectedRoom;
+        state.selectedItem = prevSelectedItem;
+        state.cam.x = prevCam.x;
+        state.cam.y = prevCam.y;
+        state.cam.zoom = prevCam.zoom;
+        render();
+    }
 }
 
 export async function downloadPdfReport() {

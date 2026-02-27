@@ -673,15 +673,8 @@ export function renderValidation() {
             _errCount > 0 ? 'error' : 'warn');
     }
 
-    // Update tab counts
-    const layerCountEl = document.getElementById('vtab-layer-count');
-    const errorCountEl = document.getElementById('vtab-error-count');
-    const roomCountEl = document.getElementById('vtab-room-count');
-    const areaCountEl = document.getElementById('vtab-area-count');
-    if (layerCountEl) layerCountEl.textContent = state.layerInfo.length;
-    if (errorCountEl) errorCountEl.textContent = state.validationErrors.length;
-    if (roomCountEl) roomCountEl.textContent = state.roomData.length;
-    if (areaCountEl) areaCountEl.textContent = state.areaData.length;
+    // Update tab counts (using cached DOM refs)
+    updateTabCounts();
 
     // Show metrics panel
     const errCount = state.validationErrors.filter(e => e.severity === 'error').length;
@@ -752,29 +745,23 @@ function renderAbortUI(abortErrors) {
 }
 
 function updateTabCounts() {
-    const layerCountEl = document.getElementById('vtab-layer-count');
-    const errorCountEl = document.getElementById('vtab-error-count');
-    const roomCountEl = document.getElementById('vtab-room-count');
-    const areaCountEl = document.getElementById('vtab-area-count');
-    if (layerCountEl) layerCountEl.textContent = state.layerInfo.length;
+    if (dom.vtabLayerCount) dom.vtabLayerCount.textContent = state.layerInfo.length;
     if (state.resultFilter === 'errors') {
-        if (errorCountEl) errorCountEl.textContent = state.validationErrors.filter(e => e.severity === 'error').length;
-        if (roomCountEl) roomCountEl.textContent = state.roomData.filter(r => r.status === 'error').length;
+        if (dom.vtabErrorCount) dom.vtabErrorCount.textContent = state.validationErrors.filter(e => e.severity === 'error').length;
+        if (dom.vtabRoomCount) dom.vtabRoomCount.textContent = state.roomData.filter(r => r.status === 'error').length;
     } else if (state.resultFilter === 'warnings') {
-        if (errorCountEl) errorCountEl.textContent = state.validationErrors.filter(e => e.severity === 'warning').length;
-        if (roomCountEl) roomCountEl.textContent = state.roomData.filter(r => r.status === 'warning').length;
+        if (dom.vtabErrorCount) dom.vtabErrorCount.textContent = state.validationErrors.filter(e => e.severity === 'warning').length;
+        if (dom.vtabRoomCount) dom.vtabRoomCount.textContent = state.roomData.filter(r => r.status === 'warning').length;
     } else {
-        if (errorCountEl) errorCountEl.textContent = state.validationErrors.length;
-        if (roomCountEl) roomCountEl.textContent = state.roomData.length;
+        if (dom.vtabErrorCount) dom.vtabErrorCount.textContent = state.validationErrors.length;
+        if (dom.vtabRoomCount) dom.vtabRoomCount.textContent = state.roomData.length;
     }
-    if (areaCountEl) areaCountEl.textContent = state.areaData.length;
-    const rulesCountEl = document.getElementById('vtab-rules-count');
-    const rulesTotalEl = document.getElementById('vtab-rules-total');
-    if (rulesCountEl) {
+    if (dom.vtabAreaCount) dom.vtabAreaCount.textContent = state.areaData.length;
+    if (dom.vtabRulesCount) {
         const firedCodes = new Set(state.validationErrors.map(e => e.ruleCode));
-        rulesCountEl.textContent = ALL_RULES.length - firedCodes.size;
+        dom.vtabRulesCount.textContent = ALL_RULES.length - firedCodes.size;
     }
-    if (rulesTotalEl) rulesTotalEl.textContent = ALL_RULES.length;
+    if (dom.vtabRulesTotal) dom.vtabRulesTotal.textContent = ALL_RULES.length;
 }
 
 export function switchValidationTab(tabName) {

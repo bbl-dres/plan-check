@@ -28,16 +28,18 @@ export function showStatus(msg, type = 'loading') {
     dom.statusEl.className = `status status--${type}`;
     dom.statusEl.style.display = 'flex';
     if (type === 'loading') {
-        dom.statusEl.innerHTML = `<div class="spinner"></div><span>${msg}</span>`;
+        dom.statusEl.innerHTML = `<div class="spinner"></div><span></span>`;
+        dom.statusEl.querySelector('span').textContent = msg;
     } else if (type === 'success') {
-        dom.statusEl.innerHTML = `<span>${msg}</span><a href="#console-panel" class="status__console-link">Konsole &#x25BE;</a>`;
+        dom.statusEl.innerHTML = `<span></span><a href="#console-panel" class="status__console-link">Konsole &#x25BE;</a>`;
+        dom.statusEl.querySelector('span').textContent = msg;
         dom.statusEl.querySelector('.status__console-link').addEventListener('click', (e) => {
             e.preventDefault();
             const consolePanelEl = document.getElementById('console-panel');
             if (consolePanelEl) consolePanelEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
         });
     } else {
-        dom.statusEl.innerHTML = msg;
+        dom.statusEl.textContent = msg;
     }
 }
 
@@ -58,6 +60,7 @@ export function esc(s) {
 
 // Swiss number formatting: 1234.5 → "1'234.5"
 export function fmtNum(v, decimals = 0) {
+    if (v == null || !isFinite(v)) return '-';
     const fixed = decimals > 0 ? v.toFixed(decimals) : Math.round(v).toString();
     const [intPart, decPart] = fixed.split('.');
     const formatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, "\u2019");
