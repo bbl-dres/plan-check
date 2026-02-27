@@ -48,7 +48,7 @@
                 <a href="https://www.bbl.admin.ch/de/downloads-bauten" target="_blank" rel="noopener" class="header__nav-link">Downloads BBL Bauten</a>
                 <a href="https://www.bbl.admin.ch/de/kontakt" target="_blank" rel="noopener" class="header__nav-link">Kontakt</a>
             </nav>
-            <button class="btn btn--primary btn--sm header__demo" id="demo-btn">Demo starten</button>
+            <button class="btn btn--primary btn--sm header__demo" id="demo-btn" style="display:none">Demo starten</button>
             <button class="header__user" aria-label="User menu" id="user-menu-btn">
                 <i data-lucide="user" class="icon icon-md"></i>
             </button>
@@ -461,6 +461,23 @@
                                         </select>
                                     </div>
                                 </div>
+
+                                <div class="form__field">
+                                    <label class="form__label">Projektbild</label>
+                                    <div class="settings-image">
+                                        <div class="settings-image__preview">
+                                            <img src="" alt="Projektbild" id="settings-project-image-preview">
+                                        </div>
+                                        <div class="settings-image__actions">
+                                            <label class="btn btn--secondary btn--sm" for="settings-project-image-input">
+                                                <i data-lucide="upload" class="icon icon-sm" aria-hidden="true"></i>
+                                                Bild ändern
+                                            </label>
+                                            <input type="file" id="settings-project-image-input" name="image" accept="image/*" class="sr-only">
+                                            <span class="settings-image__hint">Empfohlene Grösse: 800 × 450 px</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </fieldset>
 
                             <fieldset class="settings-section">
@@ -473,24 +490,8 @@
                                 </div>
                                 <p class="settings-section__hint">
                                     <i data-lucide="info" class="icon icon-sm" aria-hidden="true"></i>
-                                    Definiert welche Prüfregeln auf die Grundrisse angewendet werden. Einzelne Regeln können im Tab «Prüfregeln» eingesehen werden.
+                                    Definiert welche Prüfregeln auf die Grundrisse angewendet werden.
                                 </p>
-                            </fieldset>
-
-                            <fieldset class="settings-section">
-                                <legend class="settings-section__title">Projektbild</legend>
-                                <div class="settings-image">
-                                    <div class="settings-image__preview">
-                                        <img src="" alt="Projektbild" id="settings-project-image-preview">
-                                    </div>
-                                    <div class="settings-image__actions">
-                                        <label class="btn btn--secondary btn--sm" for="settings-project-image-input">
-                                            <i data-lucide="upload" class="icon icon-sm" aria-hidden="true"></i>
-                                            Bild ändern
-                                        </label>
-                                        <input type="file" id="settings-project-image-input" name="image" accept="image/*" class="sr-only">
-                                    </div>
-                                </div>
                             </fieldset>
 
                             <fieldset class="settings-section settings-section--danger">

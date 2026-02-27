@@ -181,12 +181,12 @@ function getScoreIconStatus(score) {
  */
 function renderStatusIcon(status) {
     const iconMap = {
-        'ok': { class: 'success', icon: 'check' },
+        'ok': { class: 'ok', icon: 'check-circle-2' },
         'warning': { class: 'warning', icon: 'alert-triangle' },
-        'error': { class: 'error', icon: 'x' }
+        'error': { class: 'error', icon: 'x-circle' }
     };
     const config = iconMap[status] || iconMap['error'];
-    return `<span class="status-pill status-pill--${config.class}"><i data-lucide="${config.icon}" class="icon icon-sm" aria-hidden="true"></i></span>`;
+    return `<i data-lucide="${config.icon}" class="icon icon-sm status-icon status-icon--${config.class}" aria-hidden="true"></i>`;
 }
 
 /**
