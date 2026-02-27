@@ -7,23 +7,18 @@
 :root {
     /* Primary Colors (Official Swiss Federal CD) */
     --color-venetian-red: #DC0018;
-    --color-red: #F7001D;
     --color-cerulean: #006699;
 
     /* Background Colors */
-    --color-solitude: #E7EDEF;
     --color-clear-day: #F2F7F9;
     --color-pattens-blue: #D8E8EF;
-    --color-malibu: #66AFE9;
-    --color-mocassin: #FFFAB2;
 
-    /* Grayscale */
-    --color-black: #000000;
+    /* Grayscale — 7-step neutral scale, collapsed from 10.
+       Removed #000000 (unused), #D5D5D5 (near-duplicate of #CCCCCC). */
     --color-night-rider: #333333;
     --color-coal: #454545;
-    --color-empress: #757575;
+    --color-empress: #6B6B6B;  /* Darkened from #757575 → fixes WCAG AA on all backgrounds */
     --color-silver: #CCCCCC;
-    --color-light-grey: #D5D5D5;
     --color-gainsboro: #E5E5E5;
     --color-smoke: #F5F5F5;
     --color-white: #FFFFFF;
@@ -36,8 +31,8 @@
     --color-primary-alpha-12: rgba(0, 102, 153, 0.12);
     --color-swiss-red: var(--color-venetian-red);
 
-    --color-text-primary: var(--color-night-rider);   /* #333333 - 12.6:1 contrast */
-    --color-text-secondary: var(--color-empress);      /* #757575 - 4.6:1 contrast (WCAG AA) */
+    --color-text-primary: var(--color-night-rider);   /* #333333 — 12.6:1 on white (AAA) */
+    --color-text-secondary: var(--color-empress);      /* #6B6B6B — 5.4:1 on white, 5.0:1 on bg-page (AA) */
     --color-text-inverse: var(--color-white);
 
     --color-bg-primary: var(--color-white);
@@ -47,7 +42,7 @@
     --color-border: var(--color-silver);
     --color-border-light: var(--color-gainsboro);
 
-    --color-focus: var(--color-malibu);
+    --color-focus: #0066CC;                             /* 5.6:1 on white — replaces #66AFE9 (was 2.35:1, failed 3:1) */
 
     --color-zebra: #F4F6F9;
 
@@ -58,7 +53,6 @@
 
     --color-warning: #BF360C;
     --color-warning-light: #FFF3E0;
-    --color-warning-border: #FFE0B2;
 
     --color-error: #B71C1C;
     --color-error-light: #FFEBEE;
@@ -66,55 +60,40 @@
 
     --color-info: #1A5276;
     --color-info-light: #D9EDF7;
-    --color-info-border: #BCE8F1;
 
     /* Floor Plan Colors */
-    --color-room-fill: rgba(144, 238, 144, 0.5);
-    --color-room-stroke: #228B22;
     --color-room-selected: rgba(0, 191, 255, 0.6);
-    --color-architecture: #333333;
-    --color-error-marker: var(--color-error);
-    --color-warning-marker: var(--color-warning);
-    --color-grid: #E0E0E0;
 
     /* Typography */
     --font-family-primary: 'Frutiger Neue LT W1G', 'Frutiger LT W01', 'Frutiger', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif;
     --font-family-mono: 'SF Mono', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
 
     /* Font Size Scale (T-shirt sizing) */
-    --font-size-2xs: 0.6875rem; /* 11px - Overline labels, small metadata */
-    --font-size-xs: 0.75rem;    /* 12px - Caption, footnotes */
+    --font-size-2xs: 0.8125rem; /* 13px - Overline labels, small metadata */
+    --font-size-xs: 0.8125rem;  /* 13px - Caption, footnotes */
     --font-size-sm: 0.875rem;   /* 14px - Small text, labels */
     --font-size-base: 1rem;     /* 16px - Body text */
     --font-size-lg: 1.25rem;    /* 20px - Large body, H4 */
     --font-size-xl: 1.5rem;     /* 24px - H3 */
     --font-size-2xl: 2rem;      /* 32px - H2 */
     --font-size-3xl: 2.5rem;    /* 40px - H1 */
-    --font-size-4xl: 3rem;      /* 48px - Display */
 
     /* Semantic Font Sizes */
-    --font-size-overline: var(--font-size-2xs);       /* 11px - Uppercase labels */
     --font-size-caption: var(--font-size-xs);          /* 12px - Captions, hints */
-    --font-size-label: var(--font-size-sm);            /* 14px - Form labels, metadata */
-    --font-size-body: var(--font-size-base);           /* 16px - Body text */
-    --font-size-body-large: var(--font-size-lg);       /* 20px - Large body text */
-    --font-size-button: var(--font-size-base);         /* 16px - Button text */
-    --font-size-button-small: var(--font-size-sm);     /* 14px - Small button text */
     --font-size-heading-4: var(--font-size-lg);        /* 20px - Card titles */
     --font-size-heading-3: var(--font-size-xl);        /* 24px - Section headings */
     --font-size-heading-2: var(--font-size-2xl);       /* 32px - Page sections */
-    --font-size-heading-1: var(--font-size-3xl);       /* 40px - Page titles */
-    --font-size-display: var(--font-size-4xl);         /* 48px - Hero text */
 
     /* Font Weights */
-    --font-weight-light: 300;
     --font-weight-regular: 400;
     --font-weight-medium: 500;
     --font-weight-semibold: 600;
     --font-weight-bold: 700;
 
     /* Line Heights */
+    --line-height-none: 1;
     --line-height-tight: 1.25;
+    --line-height-snug: 1.375;
     --line-height-normal: 1.5;
     --line-height-relaxed: 1.75;
 
@@ -130,17 +109,7 @@
     --space-6: 2rem;      /* 32px */
     --space-7: 2.5rem;    /* 40px */
     --space-8: 3rem;      /* 48px */
-    --space-9: 3.5rem;    /* 56px */
     --space-10: 4rem;     /* 64px */
-    --space-11: 5rem;     /* 80px */
-    --space-12: 6rem;     /* 96px */
-
-    /* Semantic Spacing - Padding */
-    --padding-xs: var(--space-1);   /* 4px */
-    --padding-sm: var(--space-2);   /* 8px */
-    --padding-md: var(--space-4);   /* 16px */
-    --padding-lg: var(--space-6);   /* 32px */
-    --padding-xl: var(--space-8);   /* 48px */
 
     /* Component-specific Spacing */
     --button-padding-y-sm: var(--space-2);        /* 8px */
@@ -150,18 +119,7 @@
     --button-padding-y-lg: var(--space-3);         /* 12px */
     --button-padding-x-lg: var(--space-4);         /* 16px */
 
-    --input-padding-y: var(--space-2);             /* 8px */
-    --input-padding-x: var(--space-3);             /* 12px */
     --input-icon-offset: 2.75rem;                  /* Space for icon in inputs */
-
-    --card-padding: var(--space-4);                /* 16px */
-    --card-padding-lg: var(--space-6);             /* 32px */
-
-    --section-spacing: var(--space-6);             /* 32px */
-    --section-spacing-lg: var(--space-8);          /* 48px */
-
-    --form-field-gap: var(--space-4);              /* 16px - Between form fields */
-    --form-label-gap: var(--space-2);              /* 8px - Label to input */
 
     /* Animation */
     --duration-fast: 0.1s;
@@ -173,7 +131,6 @@
     --icon-size-sm: 16px;
     --icon-size-md: 20px;
     --icon-size-lg: 24px;
-    --icon-size-xl: 32px;
 
     /* Border Radius */
     --radius-none: 0;
@@ -184,6 +141,8 @@
     --radius-pill: 0.625rem;         /* 10px */
 
     /* Z-Index Scale */
+    --z-index-controls: 10;
+    --z-index-popup: 100;
     --z-index-dropdown: 200;
     --z-index-toast: 1000;
     --z-index-modal: 1100;
@@ -192,6 +151,7 @@
     --control-height-sm: 2rem;       /* 32px */
     --control-height-md: 2.25rem;    /* 36px */
     --control-height-lg: 2.5rem;     /* 40px */
+    --min-target-size: 2.25rem;      /* 36px — minimum accessible click/tap target */
 
     /* Shadows */
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -199,36 +159,12 @@
     --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.15);
     --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.2);
     --shadow-dropdown: 0 6px 20px rgba(0, 0, 0, 0.12);
+    --shadow-focus: 0 0 0 3px var(--color-focus);     /* Consistent focus ring — replaces 8+ repeated box-shadow patterns */
 
     /* Overlays */
     --overlay-light: rgba(0, 0, 0, 0.5);
     --overlay-dark: rgba(0, 0, 0, 0.6);
 
-    /* Canvas Overlay Colors (derived from semantic tokens) */
-    --color-highlight: #0099CC;
-    --color-highlight-glow: rgba(0, 153, 204, 0.6);
-
-    --color-overlay-selected-fill: rgba(0, 102, 153, 0.35);
-    --color-overlay-selected-stroke: #006699;
-
-    --color-overlay-error-fill: rgba(183, 28, 28, 0.30);
-    --color-overlay-error-stroke: #B71C1C;
-
-    --color-overlay-warning-fill: rgba(191, 54, 12, 0.30);
-    --color-overlay-warning-stroke: #BF360C;
-
-    --color-overlay-success-fill: rgba(27, 94, 32, 0.25);
-    --color-overlay-success-stroke: #1B5E20;
-
-    --color-overlay-neutral-fill: rgba(180, 180, 180, 0.15);
-    --color-overlay-neutral-stroke: rgba(150, 150, 150, 0.5);
-
-    --color-overlay-muted-fill: rgba(200, 200, 200, 0.10);
-    --color-overlay-muted-stroke: rgba(180, 180, 180, 0.3);
-
+    /* Canvas Labels */
     --color-label-bg: rgba(255, 255, 255, 0.88);
-    --color-label-text: #333333;
-    --color-label-secondary: #757575;
-
-    --color-error-dark: #8B0000;
 }

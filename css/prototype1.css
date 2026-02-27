@@ -81,7 +81,7 @@
     font-family: var(--font-family-primary);
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-regular);
-    line-height: 1.5;
+    line-height: var(--line-height-normal);
     text-decoration: none;
     border: 1px solid transparent;
     border-radius: var(--radius-none);
@@ -128,7 +128,7 @@
 
 .btn:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px var(--color-focus);
+    box-shadow: var(--shadow-focus);
 }
 
 /* Filter toggle — fixed height, expand states */
@@ -195,7 +195,6 @@ a:hover {
 .text-center { text-align: center; }
 .text-right { text-align: right; }
 .text-muted { color: var(--color-text-secondary); }
-.text-secondary { color: var(--color-text-secondary); }
 
 /* ========================================
    HEADER ADDITIONS
@@ -324,7 +323,7 @@ a:hover {
     height: var(--control-height-sm);
     border: none;
     background: var(--color-primary);
-    color: white;
+    color: var(--color-white);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -390,14 +389,15 @@ a:hover {
     border-color: var(--color-coal);
 }
 
-.form__input:focus {
+.form__input:focus-visible {
     outline: none;
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px var(--color-focus);
+    box-shadow: var(--shadow-focus);
 }
 
 .form__input::placeholder {
     color: var(--color-text-secondary);
+    opacity: 1;
 }
 
 .form__input-group {
@@ -554,10 +554,15 @@ a:hover {
     background: var(--color-bg-primary);
 }
 
-.search__input:focus {
+.search__input:focus-visible {
     outline: none;
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px var(--color-focus);
+    box-shadow: var(--shadow-focus);
+}
+
+.search__input::placeholder {
+    color: var(--color-text-secondary);
+    opacity: 1;
 }
 
 /* ========================================
@@ -643,7 +648,7 @@ a:hover {
 
 .status-filter__btn:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px var(--color-focus);
+    box-shadow: var(--shadow-focus);
     z-index: 2;
 }
 
@@ -668,7 +673,7 @@ a:hover {
    ======================================== */
 
 .filter-toggle__label {
-    line-height: 1;
+    line-height: var(--line-height-none);
 }
 
 .filter-toggle__badge {
@@ -683,7 +688,7 @@ a:hover {
     color: var(--color-white);
     background: var(--color-primary);
     border-radius: var(--radius-pill);
-    line-height: 1;
+    line-height: var(--line-height-none);
 }
 
 /* ========================================
@@ -745,10 +750,10 @@ a:hover {
     background-position: right 10px center;
 }
 
-.filter-select:focus {
+.filter-select:focus-visible {
     outline: none;
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px var(--color-focus);
+    box-shadow: var(--shadow-focus);
 }
 
 /* ========================================
@@ -860,7 +865,7 @@ a:hover {
     font-size: var(--font-size-3xl);
     font-weight: var(--font-weight-bold);
     color: var(--color-text-primary);
-    line-height: 1.1;
+    line-height: var(--line-height-tight);
     margin-bottom: var(--space-1);
 }
 
@@ -1393,7 +1398,7 @@ a:hover {
     font-weight: var(--font-weight-bold);
     font-family: var(--font-family-mono);
     color: var(--color-text-primary);
-    line-height: 1;
+    line-height: var(--line-height-none);
 }
 
 /* ========================================
@@ -1885,7 +1890,7 @@ a:hover {
     font-weight: var(--font-weight-bold);
     font-family: var(--font-family-mono);
     color: var(--color-text-primary);
-    line-height: 1;
+    line-height: var(--line-height-none);
     margin-bottom: var(--space-2);
 }
 
@@ -1950,18 +1955,6 @@ a:hover {
    FLOORPLAN
    ======================================== */
 
-.floorplan {
-    position: relative;
-    width: 100%;
-    height: 600px;
-    background: var(--color-bg-secondary);
-    overflow: hidden;
-}
-
-.floorplan--speckle {
-    border: none;
-}
-
 .floorplan__room {
     transition: all var(--duration-normal) ease;
 }
@@ -1977,47 +1970,6 @@ a:hover {
     stroke: var(--color-primary) !important;
     stroke-width: 3 !important;
     filter: drop-shadow(0 0 8px rgba(0, 102, 153, 0.6));
-}
-
-/* ========================================
-   SPECKLE VIEWER
-   ======================================== */
-
-.speckle-viewer__iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-}
-
-.speckle-viewer__loading {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-3);
-    background: var(--color-bg-secondary);
-    color: var(--color-text-secondary);
-    font-size: var(--font-size-sm);
-    pointer-events: none;
-    transition: opacity var(--duration-normal) ease;
-}
-
-.speckle-viewer__loading.is-hidden {
-    opacity: 0;
-}
-
-.speckle-viewer__spinner {
-    width: var(--control-height-sm);
-    height: var(--control-height-sm);
-    border: 3px solid var(--color-border);
-    border-top-color: var(--color-primary);
-    border-radius: var(--radius-full);
-    animation: spin 1s linear infinite;
 }
 
 /* ========================================
@@ -2051,7 +2003,7 @@ a:hover {
     display: flex;
     flex-direction: column;
     gap: var(--space-1);
-    z-index: 5;
+    z-index: var(--z-index-controls);
 }
 
 .canvas-viewer__btn {
@@ -2082,13 +2034,13 @@ a:hover {
     font-size: var(--font-size-xs);
     color: var(--color-text-secondary);
     pointer-events: none;
-    z-index: 5;
+    z-index: var(--z-index-controls);
 }
 
 .canvas-viewer__popup {
     display: none;
     position: absolute;
-    z-index: 10;
+    z-index: var(--z-index-controls);
     background: var(--color-bg-primary);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
@@ -2119,7 +2071,7 @@ a:hover {
     cursor: pointer;
     font-size: var(--font-size-lg);
     color: var(--color-text-secondary);
-    line-height: 1;
+    line-height: var(--line-height-none);
     padding: 0 2px;
 }
 
@@ -2549,10 +2501,15 @@ a:hover {
     transition: border-color var(--duration-normal) ease;
 }
 
-.validation-panel__search:focus {
+.validation-panel__search:focus-visible {
     outline: none;
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px var(--color-focus);
+    box-shadow: var(--shadow-focus);
+}
+
+.validation-panel__search::placeholder {
+    color: var(--color-text-secondary);
+    opacity: 1;
 }
 
 /* ========================================
@@ -2859,6 +2816,7 @@ a:hover {
     flex-direction: column;
     animation: modalSlideIn 0.3s ease;
 }
+.modal__content--sm { max-width: 400px; }
 
 .modal__header {
     display: flex;
@@ -2932,22 +2890,14 @@ a:hover {
     color: var(--color-white);
     padding: var(--space-2) var(--space-4);
     text-decoration: none;
-    z-index: 100;
+    z-index: var(--z-index-popup);
 }
 
 .skip-to-content:focus {
     top: 0;
 }
 
-/* Focus Indicators */
-*:focus-visible {
-    outline: 3px solid var(--color-focus);
-    outline-offset: 2px;
-}
-
-:focus:not(:focus-visible) {
-    outline: none;
-}
+/* Focus Indicators — global rules now in styles.css */
 
 /* ========================================
    ANIMATIONS
@@ -3220,11 +3170,6 @@ a:hover {
         flex-wrap: wrap;
         gap: var(--space-2);
     }
-    .breadcrumb__actions {
-        width: 100%;
-        justify-content: flex-end;
-    }
-
     /* Validation panel — touch targets */
     .validation-panel__toolbar > input[type="checkbox"],
     .panel-list__item input[type="checkbox"] {
@@ -3248,7 +3193,6 @@ a:hover {
 
     /* Page header — compact */
     .page-header { padding: var(--space-3) 0; }
-    .page-header__title { font-size: var(--font-size-lg); }
 
     /* Tighter container spacing */
     .container { padding-left: var(--space-3); padding-right: var(--space-3); }
@@ -3409,13 +3353,13 @@ a:hover {
 
 .btn--danger {
     background: var(--color-error);
-    color: white;
+    color: var(--color-white);
     border: 1px solid var(--color-error);
 }
 
 .btn--danger:hover {
-    background: var(--color-error-dark);
-    border-color: var(--color-error-dark);
+    background: #8B0000;
+    border-color: #8B0000;
 }
 
 .btn--outline-danger {
@@ -3457,14 +3401,13 @@ a:hover {
 @media print {
     .header,
     .breadcrumb,
-    .btn,
-    .floorplan-controls {
+    .btn {
         display: none;
     }
     .view--active {
         display: block !important;
     }
     body {
-        background: white;
+        background: var(--color-white);
     }
 }

@@ -140,7 +140,7 @@ These tokens map to the base scale but provide semantic meaning:
 }
 
 .form-label {
-    font-size: var(--font-size-label);
+    font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
 }
 ```
@@ -219,7 +219,7 @@ If you have hardcoded font sizes, replace them:
 
 /* After - using semantic token (better) */
 .my-class {
-    font-size: var(--font-size-body);
+    font-size: var(--font-size-base);
 }
 ```
 

@@ -1033,8 +1033,8 @@ function renderErrorsTab() {
         value.textContent = err.message;
         value.title = err.message;
 
-        div.appendChild(status);
         div.appendChild(ruleId);
+        div.appendChild(status);
         div.appendChild(elemRef);
         div.appendChild(value);
 

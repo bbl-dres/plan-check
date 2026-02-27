@@ -7,7 +7,6 @@ import { log, showStatus, pointInPoly } from './utils.js';
 import { processDwgFile, prepareDrawingData, displayInfo, buildLayerInfo, displayEntities } from './dwg-processing.js';
 import { resizeCanvas, render, zoomExtents, screenToWorld, hitTest, showFeaturePopup, hideFeaturePopup, showPopupForItem, syncSideSelection } from './renderer.js';
 import { renderValidation, switchValidationTab } from './validation.js';
-import { downloadPdfReport, downloadExcelReport, downloadGeoJson, downloadBcf } from './export.js';
 
 // =============================================
 // Initialize DOM references
@@ -322,7 +321,6 @@ document.addEventListener('fullscreenchange', () => {
     setTimeout(() => { resizeCanvas(); render(); }, 100);
 });
 
-// ── Kebab menu (options dropdown) ──
 // Language selector (placeholder)
 document.querySelectorAll('.lang-selector__item').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -330,21 +328,6 @@ document.querySelectorAll('.lang-selector__item').forEach(btn => {
         btn.classList.add('lang-selector__item--active');
         log(`Sprache: ${btn.dataset.lang.toUpperCase()} (noch nicht implementiert)`, 'warn');
     });
-});
-
-const kebabBtn = document.getElementById('kebab-btn');
-const kebabDropdown = document.getElementById('kebab-dropdown');
-
-kebabBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    kebabDropdown.classList.toggle('visible');
-});
-
-// Close dropdown on outside click
-document.addEventListener('click', (e) => {
-    if (!kebabDropdown.contains(e.target) && e.target !== kebabBtn) {
-        kebabDropdown.classList.remove('visible');
-    }
 });
 
 // Status filter segmented buttons
@@ -355,28 +338,6 @@ document.getElementById('status-filter').addEventListener('click', (e) => {
     document.querySelectorAll('#status-filter .status-filter__btn').forEach(b =>
         b.classList.toggle('status-filter__btn--active', b === btn));
     if (state.validationMode) switchValidationTab(state.validationMode);
-});
-
-// Download actions
-kebabDropdown.querySelectorAll('[data-action]').forEach(btn => {
-    btn.addEventListener('click', () => {
-        const action = btn.getAttribute('data-action');
-        kebabDropdown.classList.remove('visible');
-        switch (action) {
-            case 'download-pdf':
-                downloadPdfReport();
-                break;
-            case 'download-excel':
-                downloadExcelReport();
-                break;
-            case 'download-geojson':
-                downloadGeoJson();
-                break;
-            case 'download-bcf':
-                downloadBcf();
-                break;
-        }
-    });
 });
 
 // =============================================

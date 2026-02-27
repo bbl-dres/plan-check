@@ -13,12 +13,12 @@
             color: var(--color-text-primary);
             display: flex;
             justify-content: center;
-            padding: 32px;
+            padding: var(--space-6);
         }
         .wireframe-label {
             position: fixed; top: 0; left: 0; right: 0;
             background: var(--color-primary); color: var(--color-text-inverse);
-            padding: 8px 16px; font-size: 13px; font-weight: 600;
+            padding: var(--space-2) var(--space-4); font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold);
             text-align: center; z-index: 100;
         }
         .side-panel {
@@ -29,36 +29,36 @@
             display: flex;
             flex-direction: column;
             max-height: calc(100vh - 100px);
-            margin-top: 32px;
+            margin-top: var(--space-6);
         }
 
         /* Toolbar */
         .toolbar {
-            display: flex; gap: 8px; padding: 12px 16px; align-items: center;
+            display: flex; gap: var(--space-2); padding: var(--space-3) var(--space-4); align-items: center;
             border-bottom: 1px solid var(--color-border); background: var(--color-bg-secondary);
             flex-shrink: 0;
         }
         .toolbar input[type="text"] {
-            flex: 1; padding: 6px 10px; border: 1px solid var(--color-border);
-            font-size: 12px; outline: none; background: var(--color-bg-primary);
+            flex: 1; padding: var(--space-1) var(--space-3); border: 1px solid var(--color-border);
+            font-size: var(--font-size-xs); background: var(--color-bg-primary);
             font-family: inherit;
         }
         .toolbar input[type="text"]:focus {
-            border-color: var(--color-primary); box-shadow: 0 0 0 2px rgba(0,102,153,0.12);
+            border-color: var(--color-primary); outline: none; box-shadow: var(--shadow-focus);
         }
         .toolbar select {
-            padding: 6px 8px; border: 1px solid var(--color-border);
-            font-size: 11px; background: var(--color-bg-primary); cursor: pointer;
+            padding: var(--space-1) var(--space-2); border: 1px solid var(--color-border);
+            font-size: var(--font-size-2xs); background: var(--color-bg-primary); cursor: pointer;
             font-family: inherit;
         }
 
         /* Table header */
         .table-header {
             display: flex; align-items: center;
-            padding: 6px 16px; background: var(--color-bg-secondary);
+            padding: var(--space-1) var(--space-4); background: var(--color-bg-secondary);
             border-bottom: 1px solid var(--color-border);
-            font-size: 10px; font-weight: 600;
-            text-transform: uppercase; letter-spacing: 0.04em;
+            font-size: var(--font-size-2xs); font-weight: var(--font-weight-semibold);
+            text-transform: uppercase; letter-spacing: var(--letter-spacing-caps);
             color: var(--color-text-secondary);
             flex-shrink: 0;
         }
@@ -66,9 +66,9 @@
         .table-header span:hover { color: var(--color-primary); }
         .th-code { width: 80px; }
         .th-sev { width: 24px; text-align: center; }
-        .th-desc { flex: 1; padding: 0 8px; }
+        .th-desc { flex: 1; padding: 0 var(--space-2); }
         .th-count { width: 40px; text-align: right; }
-        .sort-arrow { font-size: 9px; margin-left: 2px; }
+        .sort-arrow { font-size: var(--font-size-2xs); margin-left: 2px; }
 
         /* List */
         .list { flex: 1; overflow-y: auto; }
@@ -76,9 +76,9 @@
         /* Rule row */
         .rule {
             display: flex; align-items: center;
-            padding: 7px 16px;
-            font-size: 12px; cursor: pointer;
-            transition: background 0.1s;
+            padding: var(--space-2) var(--space-4);
+            font-size: var(--font-size-xs); cursor: pointer;
+            transition: background var(--duration-fast);
             border-bottom: 1px solid var(--color-border-light);
         }
         .rule:nth-child(even) { background: var(--color-zebra); }
@@ -87,69 +87,69 @@
         .rule__code {
             width: 80px; flex-shrink: 0;
             font-family: var(--font-family-mono);
-            font-weight: 600; font-size: 11px;
+            font-weight: var(--font-weight-semibold); font-size: var(--font-size-2xs);
             color: var(--color-primary);
         }
         .rule__sev {
             width: 24px; flex-shrink: 0; text-align: center;
-            font-size: 12px; font-weight: 700;
+            font-size: var(--font-size-xs); font-weight: var(--font-weight-bold);
         }
         .rule__sev--pass { color: var(--color-success); }
         .rule__sev--fail { color: var(--color-error); }
         .rule__sev--warn { color: var(--color-warning); }
 
         .rule__desc {
-            flex: 1; padding: 0 8px;
-            font-size: 11px; color: var(--color-text-secondary);
+            flex: 1; padding: 0 var(--space-2);
+            font-size: var(--font-size-2xs); color: var(--color-text-secondary);
             overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
         .rule__count {
             width: 40px; flex-shrink: 0; text-align: right;
-            font-size: 11px; font-family: var(--font-family-mono);
+            font-size: var(--font-size-2xs); font-family: var(--font-family-mono);
             color: var(--color-text-secondary);
             font-variant-numeric: tabular-nums;
         }
-        .rule__count--active { color: var(--color-error); font-weight: 600; }
+        .rule__count--active { color: var(--color-error); font-weight: var(--font-weight-semibold); }
 
         /* Category separator row */
         .cat-sep {
             display: flex; align-items: center;
-            padding: 5px 16px;
+            padding: var(--space-1) var(--space-4);
             background: var(--color-bg-secondary);
             border-bottom: 1px solid var(--color-border);
-            font-size: 10px; font-weight: 600;
-            text-transform: uppercase; letter-spacing: 0.04em;
+            font-size: var(--font-size-2xs); font-weight: var(--font-weight-semibold);
+            text-transform: uppercase; letter-spacing: var(--letter-spacing-caps);
             color: var(--color-text-secondary);
         }
         .cat-sep__label { flex: 1; }
         .cat-sep__stats {
-            font-family: var(--font-family-mono); font-size: 10px;
+            font-family: var(--font-family-mono); font-size: var(--font-size-2xs);
         }
 
         /* Summary */
         .summary {
             border-top: 1px solid var(--color-border);
-            padding: 10px 16px; background: var(--color-bg-secondary);
-            flex-shrink: 0; font-size: 12px;
-            display: flex; gap: 12px; align-items: center;
+            padding: var(--space-3) var(--space-4); background: var(--color-bg-secondary);
+            flex-shrink: 0; font-size: var(--font-size-xs);
+            display: flex; gap: var(--space-3); align-items: center;
         }
         .summary__stat {
-            display: flex; align-items: center; gap: 4px;
+            display: flex; align-items: center; gap: var(--space-1);
         }
         .summary__dot {
-            width: 8px; height: 8px; border-radius: 50%;
+            width: 8px; height: 8px; border-radius: var(--radius-full);
         }
         .summary__dot--pass { background: var(--color-success); }
         .summary__dot--fail { background: var(--color-error); }
         .summary__dot--warn { background: var(--color-warning); }
         .summary__val {
-            font-weight: 600; font-variant-numeric: tabular-nums;
+            font-weight: var(--font-weight-semibold); font-variant-numeric: tabular-nums;
             font-family: var(--font-family-mono);
         }
-        .summary__label { color: var(--color-text-secondary); font-size: 11px; }
+        .summary__label { color: var(--color-text-secondary); font-size: var(--font-size-2xs); }
         .summary__score {
-            margin-left: auto; font-weight: 700;
-            font-size: 14px; color: var(--color-primary);
+            margin-left: auto; font-weight: var(--font-weight-bold);
+            font-size: var(--font-size-sm); color: var(--color-primary);
         }
     </style>
 </head>

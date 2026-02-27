@@ -4,26 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BBL Prüfplattform - Unit Tests</title>
+    <link rel="stylesheet" href="../css/tokens.css">
     <style>
         body {
-            font-family: 'Frutiger Neue LT W1G', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: var(--font-family-primary);
             max-width: 800px;
-            margin: 40px auto;
-            padding: 20px;
-            background: #f5f5f5;
+            margin: var(--space-7) auto;
+            padding: var(--space-5);
+            background: var(--color-smoke);
         }
         h1 {
-            color: #333;
-            border-bottom: 3px solid #DC0018;
-            padding-bottom: 10px;
+            color: var(--color-text-primary);
+            border-bottom: 3px solid var(--color-swiss-red);
+            padding-bottom: var(--space-3);
         }
         #test-output {
             background: #1e1e1e;
             color: #d4d4d4;
-            padding: 20px;
-            border-radius: 8px;
-            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-            font-size: 14px;
+            padding: var(--space-5);
+            border-radius: var(--radius-lg);
+            font-family: var(--font-family-mono);
+            font-size: var(--font-size-sm);
             white-space: pre-wrap;
             overflow-x: auto;
             max-height: 600px;
@@ -33,33 +34,37 @@
         .fail { color: #f14c4c; }
         .header { color: #569cd6; font-weight: bold; }
         #summary {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 8px;
+            margin-top: var(--space-5);
+            padding: var(--space-4);
+            border-radius: var(--radius-lg);
             font-weight: bold;
         }
         #summary.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+            background: var(--color-success-light);
+            color: var(--color-success);
+            border: 1px solid var(--color-success-border);
         }
         #summary.failure {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+            background: var(--color-error-light);
+            color: var(--color-error);
+            border: 1px solid var(--color-error-border);
         }
         button {
-            background: #006699;
-            color: white;
+            background: var(--color-primary);
+            color: var(--color-text-inverse);
             border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
+            padding: var(--space-3) var(--space-5);
+            border-radius: var(--radius-md);
             cursor: pointer;
-            font-size: 16px;
-            margin-bottom: 20px;
+            font-size: var(--font-size-base);
+            margin-bottom: var(--space-5);
         }
         button:hover {
-            background: #005580;
+            background: var(--color-primary-hover);
+        }
+        button:focus-visible {
+            outline: 3px solid var(--color-focus);
+            outline-offset: 2px;
         }
     </style>
 </head>

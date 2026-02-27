@@ -1333,8 +1333,8 @@ Use muted, professional colors for pie/donut charts:
 
 /* Room polygon styling */
 .floorplan-room {
-  fill: var(--color-room-fill);
-  stroke: var(--color-room-stroke);
+  fill: rgba(144, 238, 144, 0.5);
+  stroke: #228B22;
   stroke-width: 1;
   cursor: pointer;
   transition: fill 0.15s ease;
@@ -1359,7 +1359,7 @@ Use muted, professional colors for pie/donut charts:
 /* Architecture lines */
 .floorplan-architecture {
   fill: none;
-  stroke: var(--color-architecture);
+  stroke: #333333;
   stroke-width: 1;
 }
 
@@ -1457,7 +1457,7 @@ Use muted, professional colors for pie/donut charts:
 
 .badge--error {
   background: var(--color-error-light);
-  color: var(--color-error-dark);
+  color: #8B0000;
 }
 
 .badge--info {

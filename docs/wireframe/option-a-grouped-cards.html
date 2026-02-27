@@ -13,12 +13,12 @@
             color: var(--color-text-primary);
             display: flex;
             justify-content: center;
-            padding: 32px;
+            padding: var(--space-6);
         }
         .wireframe-label {
             position: fixed; top: 0; left: 0; right: 0;
             background: var(--color-primary); color: var(--color-text-inverse);
-            padding: 8px 16px; font-size: 13px; font-weight: 600;
+            padding: var(--space-2) var(--space-4); font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold);
             text-align: center; z-index: 100;
         }
         .side-panel {
@@ -29,26 +29,26 @@
             display: flex;
             flex-direction: column;
             max-height: calc(100vh - 100px);
-            margin-top: 32px;
+            margin-top: var(--space-6);
         }
 
         /* Toolbar */
         .toolbar {
-            display: flex; gap: 8px; padding: 12px 16px; align-items: center;
+            display: flex; gap: var(--space-2); padding: var(--space-3) var(--space-4); align-items: center;
             border-bottom: 1px solid var(--color-border); background: var(--color-bg-secondary);
             flex-shrink: 0;
         }
         .toolbar input[type="text"] {
-            flex: 1; padding: 6px 10px; border: 1px solid var(--color-border);
-            font-size: 12px; outline: none; background: var(--color-bg-primary);
+            flex: 1; padding: var(--space-1) var(--space-3); border: 1px solid var(--color-border);
+            font-size: var(--font-size-xs); background: var(--color-bg-primary);
             font-family: inherit;
         }
         .toolbar input[type="text"]:focus {
-            border-color: var(--color-primary); box-shadow: 0 0 0 2px rgba(0,102,153,0.12);
+            border-color: var(--color-primary); outline: none; box-shadow: var(--shadow-focus);
         }
         .toolbar select {
-            padding: 6px 8px; border: 1px solid var(--color-border);
-            font-size: 11px; background: var(--color-bg-primary); cursor: pointer;
+            padding: var(--space-1) var(--space-2); border: 1px solid var(--color-border);
+            font-size: var(--font-size-2xs); background: var(--color-bg-primary); cursor: pointer;
             font-family: inherit;
         }
 
@@ -60,26 +60,26 @@
             border-bottom: 1px solid var(--color-border);
         }
         .category__header {
-            display: flex; align-items: center; gap: 8px;
-            padding: 10px 16px; cursor: pointer;
+            display: flex; align-items: center; gap: var(--space-2);
+            padding: var(--space-3) var(--space-4); cursor: pointer;
             background: var(--color-bg-secondary);
-            font-size: 11px; font-weight: 600;
-            text-transform: uppercase; letter-spacing: 0.04em;
+            font-size: var(--font-size-2xs); font-weight: var(--font-weight-semibold);
+            text-transform: uppercase; letter-spacing: var(--letter-spacing-caps);
             color: var(--color-text-secondary);
             user-select: none;
-            transition: background 0.15s;
+            transition: background var(--duration-normal);
         }
         .category__header:hover { background: var(--color-pattens-blue); }
         .category__chevron {
-            width: 14px; height: 14px; transition: transform 0.2s;
+            width: 14px; height: 14px; transition: transform var(--duration-medium);
             color: var(--color-text-secondary);
         }
         .category.collapsed .category__chevron { transform: rotate(-90deg); }
         .category.collapsed .category__items { display: none; }
         .category__badge {
             margin-left: auto;
-            font-size: 10px; font-weight: 700;
-            padding: 2px 6px; border-radius: 2px;
+            font-size: var(--font-size-2xs); font-weight: var(--font-weight-bold);
+            padding: var(--space-1) var(--space-2); border-radius: var(--radius-sm);
             font-family: var(--font-family-mono);
         }
         .category__badge--pass { background: var(--color-success-light); color: var(--color-success); }
@@ -88,10 +88,10 @@
 
         /* Rule item */
         .rule {
-            display: flex; align-items: flex-start; gap: 10px;
-            padding: 8px 16px 8px 28px;
-            font-size: 12px; cursor: pointer;
-            transition: background 0.1s;
+            display: flex; align-items: flex-start; gap: var(--space-3);
+            padding: var(--space-2) var(--space-4) var(--space-2) var(--space-5);
+            font-size: var(--font-size-xs); cursor: pointer;
+            transition: background var(--duration-fast);
             border-bottom: 1px solid var(--color-border-light);
         }
         .rule:last-child { border-bottom: none; }
@@ -99,8 +99,8 @@
         .rule:hover { background: var(--color-primary-light); }
 
         .rule__icon {
-            flex-shrink: 0; width: 16px; text-align: center;
-            font-size: 12px; font-weight: 700; line-height: 18px;
+            flex-shrink: 0; width: var(--icon-size-sm); text-align: center;
+            font-size: var(--font-size-xs); font-weight: var(--font-weight-bold); line-height: var(--line-height-snug);
         }
         .rule__icon--pass { color: var(--color-success); }
         .rule__icon--fail { color: var(--color-error); }
@@ -108,15 +108,15 @@
 
         .rule__body { flex: 1; min-width: 0; }
         .rule__code {
-            font-size: 11px; font-family: var(--font-family-mono);
-            font-weight: 600; color: var(--color-primary);
+            font-size: var(--font-size-2xs); font-family: var(--font-family-mono);
+            font-weight: var(--font-weight-semibold); color: var(--color-primary);
         }
         .rule__desc {
-            font-size: 11px; color: var(--color-text-secondary);
-            margin-top: 2px; line-height: 1.4;
+            font-size: var(--font-size-2xs); color: var(--color-text-secondary);
+            margin-top: 2px; line-height: var(--line-height-snug);
         }
         .rule__count {
-            flex-shrink: 0; font-size: 11px; font-family: var(--font-family-mono);
+            flex-shrink: 0; font-size: var(--font-size-2xs); font-family: var(--font-family-mono);
             color: var(--color-text-secondary); white-space: nowrap;
             align-self: center;
         }
@@ -124,27 +124,27 @@
         /* Summary */
         .summary {
             border-top: 1px solid var(--color-border);
-            padding: 10px 16px; background: var(--color-bg-secondary);
-            flex-shrink: 0; font-size: 12px;
-            display: flex; gap: 12px; align-items: center;
+            padding: var(--space-3) var(--space-4); background: var(--color-bg-secondary);
+            flex-shrink: 0; font-size: var(--font-size-xs);
+            display: flex; gap: var(--space-3); align-items: center;
         }
         .summary__stat {
-            display: flex; align-items: center; gap: 4px;
+            display: flex; align-items: center; gap: var(--space-1);
         }
         .summary__dot {
-            width: 8px; height: 8px; border-radius: 50%;
+            width: 8px; height: 8px; border-radius: var(--radius-full);
         }
         .summary__dot--pass { background: var(--color-success); }
         .summary__dot--fail { background: var(--color-error); }
         .summary__dot--warn { background: var(--color-warning); }
         .summary__val {
-            font-weight: 600; font-variant-numeric: tabular-nums;
+            font-weight: var(--font-weight-semibold); font-variant-numeric: tabular-nums;
             font-family: var(--font-family-mono);
         }
-        .summary__label { color: var(--color-text-secondary); font-size: 11px; }
+        .summary__label { color: var(--color-text-secondary); font-size: var(--font-size-2xs); }
         .summary__score {
-            margin-left: auto; font-weight: 700;
-            font-size: 14px; color: var(--color-primary);
+            margin-left: auto; font-weight: var(--font-weight-bold);
+            font-size: var(--font-size-sm); color: var(--color-primary);
         }
     </style>
 </head>
