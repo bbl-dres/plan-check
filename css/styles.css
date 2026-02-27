@@ -181,9 +181,9 @@ body {
 }
 .footer__content {
     max-width: 1400px; margin: 0 auto;
-    padding: var(--space-2) var(--space-5);
+    padding: var(--space-1) var(--space-5);
     display: flex; justify-content: space-between; align-items: center;
-    color: var(--color-text-secondary); font-size: var(--font-size-sm);
+    color: var(--color-text-secondary); font-size: var(--font-size-xs);
 }
 .footer__links { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
 .footer__link {
