@@ -181,7 +181,7 @@ body {
 .header__content {
     display: flex; align-items: center;
     max-width: 1400px; margin: 0 auto;
-    padding: var(--space-3) var(--space-5); gap: var(--space-4);
+    padding: var(--space-4) var(--space-5); gap: var(--space-4);
 }
 .header__brand {
     display: flex; align-items: flex-start; gap: 0;
