@@ -514,41 +514,6 @@ body {
 /* ----------------------------------------
    Prüfregeln Tab (Flat Table)
    ---------------------------------------- */
-.rules-panel {
-    display: flex; flex-direction: column;
-    height: 800px; max-height: calc(100vh - 200px);
-}
-.rules-toolbar {
-    display: flex; gap: var(--space-2); padding: var(--space-3) var(--space-4); align-items: center;
-    border-bottom: 1px solid var(--color-border); background: var(--color-bg-secondary); flex-shrink: 0;
-}
-.rules-search {
-    flex: 1; padding: var(--space-2) var(--space-3); border: 1px solid var(--color-border);
-    font-size: var(--font-size-caption); outline: none; background: var(--color-bg-primary);
-    font-family: inherit; min-width: 0;
-    transition: border-color var(--duration-normal), box-shadow var(--duration-normal);
-}
-.rules-search:focus { border-color: var(--color-primary); box-shadow: 0 0 0 2px var(--color-primary-alpha-12); }
-.rules-filter {
-    padding: var(--space-2) var(--space-2); border: 1px solid var(--color-border);
-    font-size: var(--font-size-2xs); background: var(--color-bg-primary); cursor: pointer;
-    font-family: inherit;
-}
-.rules-header {
-    display: flex; align-items: center;
-    padding: var(--space-1) var(--space-4); background: var(--color-bg-secondary);
-    border-bottom: 1px solid var(--color-border);
-    font-size: var(--font-size-2xs); font-weight: var(--font-weight-semibold);
-    text-transform: uppercase; letter-spacing: var(--letter-spacing-caps);
-    color: var(--color-text-secondary); flex-shrink: 0;
-}
-.rules-header > span { cursor: pointer; user-select: none; transition: color var(--duration-normal); }
-.rules-header > span:hover { color: var(--color-primary); }
-.rules-header__code { width: 80px; }
-.rules-header__sev { width: 24px; text-align: center; }
-.rules-header__desc { flex: 1; padding: 0 var(--space-2); }
-.rules-header__count { width: 40px; text-align: right; }
-.rules-list { flex: 1; overflow-y: auto; }
 .rules-row {
     display: flex; align-items: center;
     padding: var(--space-2) var(--space-4);
@@ -588,30 +553,23 @@ body {
     border-bottom: 1px solid var(--color-border);
     font-size: var(--font-size-2xs); font-weight: var(--font-weight-semibold);
     text-transform: uppercase; letter-spacing: var(--letter-spacing-caps);
-    color: var(--color-text-secondary);
+    color: var(--color-text-secondary); cursor: pointer; user-select: none;
 }
+.rules-cat-sep:hover { background: var(--color-primary-light); }
+.rules-cat-sep__chevron {
+    width: 16px; height: 16px; flex-shrink: 0; margin-right: var(--space-1);
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: transform var(--duration-normal);
+}
+.rules-cat-sep__chevron::after {
+    content: ''; display: block;
+    width: 5px; height: 5px;
+    border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg); margin-top: -2px;
+}
+.rules-cat-sep--collapsed .rules-cat-sep__chevron { transform: rotate(-90deg); }
 .rules-cat-sep__label { flex: 1; }
 .rules-cat-sep__stats { font-family: var(--font-family-mono); font-size: var(--font-size-2xs); }
-.rules-summary {
-    border-top: 1px solid var(--color-border);
-    padding: var(--space-3) var(--space-4); background: var(--color-bg-secondary);
-    flex-shrink: 0; font-size: var(--font-size-caption);
-    display: flex; gap: var(--space-3); align-items: center;
-}
-.rules-summary__stat { display: flex; align-items: center; gap: var(--space-1); }
-.rules-summary__dot { width: 8px; height: 8px; border-radius: var(--radius-full); }
-.rules-summary__dot--pass { background: var(--color-success); }
-.rules-summary__dot--fail { background: var(--color-error); }
-.rules-summary__dot--warn { background: var(--color-warning); }
-.rules-summary__val {
-    font-weight: var(--font-weight-semibold); font-variant-numeric: tabular-nums;
-    font-family: var(--font-family-mono);
-}
-.rules-summary__label { color: var(--color-text-secondary); font-size: var(--font-size-2xs); }
-.rules-summary__score {
-    margin-left: auto; font-weight: var(--font-weight-bold);
-    font-size: var(--font-size-sm); color: var(--color-primary);
-}
 
 /* Wirtschaftlichkeit Ratios */
 .val-ratio-list { display: flex; flex-direction: column; gap: var(--space-2); }
@@ -780,12 +738,6 @@ body {
     /* -- Kennzahlen -- */
     .val-kennzahlen { grid-template-columns: 1fr; }
 
-    /* -- Prüfregeln -- */
-    .rules-panel { height: auto; max-height: none; }
-    .rules-list { max-height: 60vh; }
-    .rules-row { min-height: 44px; padding: var(--space-3) var(--space-4); }
-    .rules-row__desc { white-space: normal; }
-    .rules-search { min-height: 40px; font-size: var(--font-size-sm); }
 
     /* -- Entities Table -- */
     .entities-table th,

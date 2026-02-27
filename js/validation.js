@@ -793,9 +793,12 @@ export function switchValidationTab(tabName) {
     }
 
     // Toggle split-view vs dashboard
-    const isDashboard = tabName === 'kennzahlen' || tabName === 'rules';
+    const isDashboard = tabName === 'kennzahlen';
     dom.validationSplit.style.display = isDashboard ? 'none' : '';
     dom.validationDashboard.style.display = isDashboard ? 'block' : 'none';
+
+    // Show/hide toggle-all checkbox (not relevant for rules tab)
+    dom.vsideToggleAll.style.display = tabName === 'rules' ? 'none' : '';
 
     // Set layer filter per tab
     state.tabFilterLayers = null;
@@ -1344,14 +1347,11 @@ function renderKennzahlenTab() {
 // ─────────────────────────────────────────────
 // Tab 6: Prüfregeln (flat rule table)
 // ─────────────────────────────────────────────
-let rulesSortField = 'code';
-let rulesSortDir = 'asc';
-let rulesFilterVal = 'all';
 
 function renderRulesTab() {
-    // Use the dashboard area (full-width, no viewer needed)
-    dom.validationSplit.style.display = 'none';
-    dom.validationDashboard.style.display = 'block';
+    dom.vsideSearch.placeholder = 'Regel suchen...';
+    dom.vsideList.innerHTML = '';
+    dom.vsideSummary.innerHTML = '';
 
     // Count violations per rule code
     const violationCounts = {};
@@ -1366,151 +1366,75 @@ function renderRulesTab() {
         return rule?.sev === 'error' ? 'fail' : 'warn';
     }
 
-    function buildHTML() {
-        const searchEl = dom.validationDashboard.querySelector('.rules-search');
-        const search = searchEl ? searchEl.value.toLowerCase() : '';
-
-        const sevOrder = { error: 0, warning: 1 };
-
-        let filtered = ALL_RULES.filter(r => {
-            const status = getStatus(r.code);
-            if (rulesFilterVal === 'fail' && status !== 'fail') return false;
-            if (rulesFilterVal === 'warn' && status !== 'warn') return false;
-            if (rulesFilterVal === 'pass' && status !== 'pass') return false;
-            if (search && !r.code.toLowerCase().includes(search) && !r.desc.toLowerCase().includes(search)
-                && !r.cat.toLowerCase().includes(search)) return false;
-            return true;
-        });
-
-        // Sort
-        if (rulesSortField !== 'code') {
-            filtered = filtered.slice().sort((a, b) => {
-                let va, vb;
-                if (rulesSortField === 'sev') { va = sevOrder[a.sev] ?? 2; vb = sevOrder[b.sev] ?? 2; }
-                else if (rulesSortField === 'count') { va = violationCounts[a.code] || 0; vb = violationCounts[b.code] || 0; }
-                else if (rulesSortField === 'desc') { va = a.desc; vb = b.desc; }
-                if (va < vb) return rulesSortDir === 'asc' ? -1 : 1;
-                if (va > vb) return rulesSortDir === 'asc' ? 1 : -1;
-                return 0;
-            });
-        } else if (rulesSortDir === 'desc') {
-            filtered = filtered.slice().reverse();
+    // Group rules by category
+    const categories = [];
+    let currentCat = null;
+    for (const r of ALL_RULES) {
+        if (r.cat !== currentCat) {
+            currentCat = r.cat;
+            categories.push({ cat: r.cat, rules: [] });
         }
+        categories[categories.length - 1].rules.push(r);
+    }
 
-        // Sort arrows
-        const arrows = { code: '', sev: '', desc: '', count: '' };
-        arrows[rulesSortField] = rulesSortDir === 'asc' ? ' \u25B2' : ' \u25BC';
+    let catIndex = 0;
+    for (const { cat, rules: catRules } of categories) {
+        const passCount = catRules.filter(x => getStatus(x.code) === 'pass').length;
+        const collapsed = catIndex >= 3;
 
-        let rows = '';
-        let lastCat = '';
-        const showCatSeps = rulesSortField === 'code';
+        const sep = document.createElement('div');
+        sep.className = 'rules-cat-sep' + (collapsed ? ' rules-cat-sep--collapsed' : '');
+        sep.setAttribute('data-search', cat + ' ' + (RULE_CAT_LABELS[cat] || cat));
+        sep.innerHTML =
+            `<span class="rules-cat-sep__chevron"></span>` +
+            `<span class="rules-cat-sep__label">${esc(RULE_CAT_LABELS[cat] || cat)}</span>` +
+            `<span class="rules-cat-sep__stats">${passCount}/${catRules.length}</span>`;
+        dom.vsideList.appendChild(sep);
 
-        for (const r of filtered) {
-            if (showCatSeps && r.cat !== lastCat) {
-                lastCat = r.cat;
-                const catRules = filtered.filter(x => x.cat === r.cat);
-                const passCount = catRules.filter(x => getStatus(x.code) === 'pass').length;
-                rows += `<div class="rules-cat-sep"><span class="rules-cat-sep__label">${esc(RULE_CAT_LABELS[r.cat] || r.cat)}</span><span class="rules-cat-sep__stats">${passCount}/${catRules.length}</span></div>`;
-            }
-
+        // Create row elements for this category
+        const rows = [];
+        for (const r of catRules) {
             const status = getStatus(r.code);
             const count = violationCounts[r.code] || 0;
             const icon = status === 'pass' ? '\u2713' : status === 'fail' ? '\u2716' : '\u26A0';
             const countClass = count > 0 ? ' rules-row__count--active' : '';
 
-            rows += `<div class="rules-row" data-code="${r.code}">` +
+            const div = document.createElement('div');
+            div.className = 'rules-row';
+            if (collapsed) div.style.display = 'none';
+            div.setAttribute('data-code', r.code);
+            div.setAttribute('data-cat', cat);
+            div.setAttribute('data-search', r.code + ' ' + r.desc + ' ' + cat);
+            div.innerHTML =
                 `<span class="rules-row__code">${r.code}</span>` +
                 `<span class="rules-row__sev rules-row__sev--${status}">${icon}</span>` +
                 `<span class="rules-row__desc" title="${esc(r.desc)}">${esc(r.desc)}</span>` +
-                `<span class="rules-row__count${countClass}">${count > 0 ? count : '\u2014'}</span>` +
-                `</div>`;
-        }
+                `<span class="rules-row__count${countClass}">${count > 0 ? count : '\u2014'}</span>`;
 
-        // Summary counts
-        const pass = ALL_RULES.filter(r => getStatus(r.code) === 'pass').length;
-        const fail = ALL_RULES.filter(r => getStatus(r.code) === 'fail').length;
-        const warn = ALL_RULES.filter(r => getStatus(r.code) === 'warn').length;
-        const score = Math.round(pass / ALL_RULES.length * 100);
-
-        return `<div class="rules-panel">` +
-            `<div class="rules-toolbar">` +
-                `<input type="text" class="rules-search" placeholder="Regel suchen..." value="${esc(search)}">` +
-                `<select class="rules-filter">` +
-                    `<option value="all"${rulesFilterVal === 'all' ? ' selected' : ''}>Alle</option>` +
-                    `<option value="fail"${rulesFilterVal === 'fail' ? ' selected' : ''}>Fehler</option>` +
-                    `<option value="warn"${rulesFilterVal === 'warn' ? ' selected' : ''}>Warnungen</option>` +
-                    `<option value="pass"${rulesFilterVal === 'pass' ? ' selected' : ''}>Bestanden</option>` +
-                `</select>` +
-            `</div>` +
-            `<div class="rules-header">` +
-                `<span class="rules-header__code" data-sort="code">Code${arrows.code}</span>` +
-                `<span class="rules-header__sev" data-sort="sev">${arrows.sev}</span>` +
-                `<span class="rules-header__desc" data-sort="desc">Beschreibung${arrows.desc}</span>` +
-                `<span class="rules-header__count" data-sort="count">Anz.${arrows.count}</span>` +
-            `</div>` +
-            `<div class="rules-list">${rows}</div>` +
-            `<div class="rules-summary">` +
-                `<span class="rules-summary__stat"><span class="rules-summary__dot rules-summary__dot--pass"></span><span class="rules-summary__val">${pass}</span><span class="rules-summary__label">OK</span></span>` +
-                `<span class="rules-summary__stat"><span class="rules-summary__dot rules-summary__dot--fail"></span><span class="rules-summary__val">${fail}</span><span class="rules-summary__label">Fehler</span></span>` +
-                `<span class="rules-summary__stat"><span class="rules-summary__dot rules-summary__dot--warn"></span><span class="rules-summary__val">${warn}</span><span class="rules-summary__label">Warn.</span></span>` +
-                `<span class="rules-summary__score">${score}%</span>` +
-            `</div>` +
-        `</div>`;
-    }
-
-    function wireEvents() {
-        const panel = dom.validationDashboard.querySelector('.rules-panel');
-        if (!panel) return;
-
-        // Search
-        const searchEl = panel.querySelector('.rules-search');
-        searchEl.addEventListener('input', () => {
-            dom.validationDashboard.innerHTML = buildHTML();
-            wireEvents();
-            // Restore focus to search
-            const newSearch = dom.validationDashboard.querySelector('.rules-search');
-            if (newSearch) { newSearch.focus(); newSearch.selectionStart = newSearch.selectionEnd = newSearch.value.length; }
-        });
-
-        // Filter
-        panel.querySelector('.rules-filter').addEventListener('change', (e) => {
-            rulesFilterVal = e.target.value;
-            dom.validationDashboard.innerHTML = buildHTML();
-            wireEvents();
-        });
-
-        // Sort headers
-        panel.querySelectorAll('.rules-header > span[data-sort]').forEach(el => {
-            el.addEventListener('click', () => {
-                const field = el.dataset.sort;
-                if (rulesSortField === field) {
-                    rulesSortDir = rulesSortDir === 'asc' ? 'desc' : 'asc';
-                } else {
-                    rulesSortField = field;
-                    rulesSortDir = 'asc';
-                }
-                dom.validationDashboard.innerHTML = buildHTML();
-                wireEvents();
-            });
-        });
-
-        // Row click — highlight matching errors in errors tab
-        panel.querySelectorAll('.rules-row').forEach(row => {
-            row.addEventListener('click', () => {
-                const code = row.dataset.code;
-                const count = violationCounts[code] || 0;
+            div.addEventListener('click', () => {
                 if (count > 0) {
-                    // Switch to errors tab and filter to this rule
                     switchValidationTab('errors');
-                    dom.vsideSearch.value = code;
+                    dom.vsideSearch.value = r.code;
                     dom.vsideSearch.dispatchEvent(new Event('input'));
                 }
             });
+
+            rows.push(div);
+            dom.vsideList.appendChild(div);
+        }
+
+        // Toggle collapse on category click
+        sep.addEventListener('click', () => {
+            const isCollapsed = sep.classList.toggle('rules-cat-sep--collapsed');
+            for (const row of rows) {
+                row.style.display = isCollapsed ? 'none' : '';
+            }
         });
+
+        catIndex++;
     }
 
-    dom.validationDashboard.innerHTML = buildHTML();
-    wireEvents();
+    wireSearch('data-search');
 }
 
 function buildValidationDonut(totals, kf, gf) {
