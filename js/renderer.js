@@ -847,6 +847,7 @@ function renderRoomOverlays() {
         if (state.hiddenLayers.has(room.layer)) continue;
         if (state.hiddenRoomIds.has(room.id)) continue;
         if (state.resultFilter === 'errors' && room.status !== 'error') continue;
+        if (state.resultFilter === 'warnings' && room.status !== 'warning') continue;
 
         const colors = getRoomOverlayColor(room);
         if (!colors) continue;
@@ -868,6 +869,7 @@ function renderRoomOverlays() {
         if (state.hiddenLayers.has(room.layer)) return false;
         if (state.hiddenRoomIds.has(room.id)) return false;
         if (state.resultFilter === 'errors' && room.status !== 'error') return false;
+        if (state.resultFilter === 'warnings' && room.status !== 'warning') return false;
         return true;
     });
     // Sort largest rooms first — they get label priority

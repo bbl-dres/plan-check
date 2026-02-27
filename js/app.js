@@ -125,6 +125,7 @@ function handleCanvasTap(sx, sy) {
         const room = data.find(r => {
             if (hiddenSet.has(r.id)) return false;
             if (state.resultFilter === 'errors' && r.status !== 'error') return false;
+            if (state.resultFilter === 'warnings' && r.status !== 'warning') return false;
             return pointInPoly(wx, wy, r.vertices);
         });
         if (room) {
@@ -346,14 +347,13 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// Filter toggle button
-const filterToggle = document.getElementById('filter-toggle');
-filterToggle.addEventListener('click', () => {
-    state.resultFilter = state.resultFilter === 'all' ? 'errors' : 'all';
-    filterToggle.classList.toggle('filter-toggle--active', state.resultFilter === 'errors');
-    filterToggle.innerHTML = state.resultFilter === 'errors'
-        ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg> Nur Fehler'
-        : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg> Nur Fehler';
+// Status filter segmented buttons
+document.getElementById('status-filter').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-filter]');
+    if (!btn) return;
+    state.resultFilter = btn.getAttribute('data-filter');
+    document.querySelectorAll('#status-filter .status-filter__btn').forEach(b =>
+        b.classList.toggle('status-filter__btn--active', b === btn));
     if (state.validationMode) switchValidationTab(state.validationMode);
 });
 

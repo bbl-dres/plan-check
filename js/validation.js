@@ -762,6 +762,9 @@ function updateTabCounts() {
     if (state.resultFilter === 'errors') {
         if (errorCountEl) errorCountEl.textContent = state.validationErrors.filter(e => e.severity === 'error').length;
         if (roomCountEl) roomCountEl.textContent = state.roomData.filter(r => r.status === 'error').length;
+    } else if (state.resultFilter === 'warnings') {
+        if (errorCountEl) errorCountEl.textContent = state.validationErrors.filter(e => e.severity === 'warning').length;
+        if (roomCountEl) roomCountEl.textContent = state.roomData.filter(r => r.status === 'warning').length;
     } else {
         if (errorCountEl) errorCountEl.textContent = state.validationErrors.length;
         if (roomCountEl) roomCountEl.textContent = state.roomData.length;
@@ -972,11 +975,17 @@ function renderErrorsTab() {
         return (order[a.severity] || 1) - (order[b.severity] || 1);
     });
 
-    // Apply result filter — only errors, no warnings
+    // Apply result filter
     if (state.resultFilter === 'errors') {
         sorted = sorted.filter(e => e.severity === 'error');
         if (sorted.length === 0) {
             dom.vsideList.innerHTML = '<div class="val-empty">Keine Fehler (nur Warnungen vorhanden).</div>';
+            return;
+        }
+    } else if (state.resultFilter === 'warnings') {
+        sorted = sorted.filter(e => e.severity === 'warning');
+        if (sorted.length === 0) {
+            dom.vsideList.innerHTML = '<div class="val-empty">Keine Warnungen vorhanden.</div>';
             return;
         }
     }
@@ -1091,11 +1100,17 @@ function renderRoomsTab() {
         return (order[a.status] || 2) - (order[b.status] || 2);
     });
 
-    // Apply result filter — only errors, no warnings or ok
+    // Apply result filter
     if (state.resultFilter === 'errors') {
         sorted = sorted.filter(r => r.status === 'error');
         if (sorted.length === 0) {
-            dom.vsideList.innerHTML = '<div class="val-empty">Keine Fehler in R\u00e4umen.</div>';
+            dom.vsideList.innerHTML = '<div class="val-empty">Keine Fehler in Räumen.</div>';
+            return;
+        }
+    } else if (state.resultFilter === 'warnings') {
+        sorted = sorted.filter(r => r.status === 'warning');
+        if (sorted.length === 0) {
+            dom.vsideList.innerHTML = '<div class="val-empty">Keine Warnungen in Räumen.</div>';
             return;
         }
     }

@@ -230,24 +230,31 @@ body {
 .kebab-dropdown__item svg { width: var(--icon-size-sm); height: var(--icon-size-sm); color: var(--color-text-secondary); flex-shrink: 0; }
 
 /* ----------------------------------------
-   Filter Toggle
+   Status Filter (Segmented Button Group)
    ---------------------------------------- */
-.filter-toggle {
-    display: inline-flex; align-items: center; gap: var(--space-2);
-    margin-left: auto; padding: var(--space-1) var(--space-3);
-    font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold); cursor: pointer;
-    border: 1px solid var(--color-border); background: var(--color-bg-primary);
-    color: var(--color-text-secondary); transition: all var(--duration-normal); white-space: nowrap;
+.status-filter {
+    display: flex;
+    margin-left: auto;
 }
-.filter-toggle:hover { border-color: var(--color-primary); color: var(--color-primary); }
-.filter-toggle--active {
-    background: var(--color-error); color: var(--color-text-inverse);
-    border-color: var(--color-error); outline: none;
+.status-filter__btn {
+    display: inline-flex; align-items: center; gap: var(--space-1);
+    padding: var(--space-1) var(--space-3);
+    font-family: inherit; font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold);
+    color: var(--color-text-secondary); background: var(--color-bg-primary);
+    border: 1px solid var(--color-border); cursor: pointer;
+    transition: all var(--duration-normal); white-space: nowrap;
 }
-.filter-toggle--active:hover { background: var(--color-error-dark); border-color: var(--color-error-dark); color: var(--color-text-inverse); }
-.filter-toggle:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
-.filter-toggle--active:focus-visible { outline-color: var(--color-error); }
-.filter-toggle svg { width: var(--icon-size-sm); height: var(--icon-size-sm); }
+.status-filter__btn + .status-filter__btn { margin-left: -1px; }
+.status-filter__btn:first-child { border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
+.status-filter__btn:last-child { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+.status-filter__btn:hover { color: var(--color-text-primary); z-index: 1; }
+.status-filter__btn:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--color-focus, rgba(0,0,0,.15)); z-index: 2; }
+.status-filter__btn--active {
+    background: var(--color-night-rider, #333); color: var(--color-text-inverse);
+    border-color: var(--color-night-rider, #333); z-index: 1;
+}
+.status-filter__btn--active:hover { color: var(--color-text-inverse); }
+.status-filter__btn svg { width: var(--icon-size-sm); height: var(--icon-size-sm); }
 
 /* ----------------------------------------
    Canvas Viewer
@@ -724,7 +731,7 @@ body {
     .vside-item__toggle {
         width: 22px; height: 22px;
     }
-    .filter-toggle {
+    .status-filter__btn {
         min-height: 44px;
         padding: var(--space-2) var(--space-3);
     }
