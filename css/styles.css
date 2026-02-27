@@ -185,7 +185,10 @@ body {
    Viewer Controls
    ---------------------------------------- */
 .viewer__controls {
-    display: flex; gap: var(--space-1); align-items: center;
+    position: absolute; top: var(--space-3); right: var(--space-3); z-index: 10;
+    display: flex; flex-direction: column; gap: var(--space-1); align-items: center;
+    background: rgba(255,255,255,0.85); backdrop-filter: blur(4px);
+    padding: var(--space-1); border-radius: var(--radius-sm);
 }
 .viewer__controls > button,
 .viewer__controls .kebab-wrap > button {
@@ -198,14 +201,14 @@ body {
 .viewer__controls .kebab-wrap > button:hover { background: var(--color-primary-light); color: var(--color-primary); border-color: var(--color-primary); }
 .viewer__controls > button > svg,
 .viewer__controls .kebab-wrap > button > svg { width: var(--icon-size-sm); height: var(--icon-size-sm); }
-.viewer__controls .viewer__sep { width: 1px; height: 18px; background: var(--color-border); margin: 0 var(--space-1); }
+.viewer__controls .viewer__sep { width: 100%; height: 1px; background: var(--color-border); margin: var(--space-1) 0; }
 
 /* ----------------------------------------
    Kebab Menu
    ---------------------------------------- */
 .kebab-wrap { position: relative; }
 .kebab-dropdown {
-    display: none; position: absolute; top: calc(100% + var(--space-2)); right: 0;
+    display: none; position: absolute; top: 0; right: calc(100% + var(--space-2));
     background: var(--color-bg-primary); border: 1px solid var(--color-border);
     box-shadow: var(--shadow-dropdown);
     min-width: 180px; z-index: 200; overflow: hidden;
@@ -508,6 +511,108 @@ body {
 
 .val-empty { text-align: center; padding: var(--space-6) var(--space-4); color: var(--color-text-secondary); font-size: var(--font-size-caption); line-height: 1.6; }
 
+/* ----------------------------------------
+   Prüfregeln Tab (Flat Table)
+   ---------------------------------------- */
+.rules-panel {
+    display: flex; flex-direction: column;
+    height: 800px; max-height: calc(100vh - 200px);
+}
+.rules-toolbar {
+    display: flex; gap: var(--space-2); padding: var(--space-3) var(--space-4); align-items: center;
+    border-bottom: 1px solid var(--color-border); background: var(--color-bg-secondary); flex-shrink: 0;
+}
+.rules-search {
+    flex: 1; padding: var(--space-2) var(--space-3); border: 1px solid var(--color-border);
+    font-size: var(--font-size-caption); outline: none; background: var(--color-bg-primary);
+    font-family: inherit; min-width: 0;
+    transition: border-color var(--duration-normal), box-shadow var(--duration-normal);
+}
+.rules-search:focus { border-color: var(--color-primary); box-shadow: 0 0 0 2px var(--color-primary-alpha-12); }
+.rules-filter {
+    padding: var(--space-2) var(--space-2); border: 1px solid var(--color-border);
+    font-size: var(--font-size-2xs); background: var(--color-bg-primary); cursor: pointer;
+    font-family: inherit;
+}
+.rules-header {
+    display: flex; align-items: center;
+    padding: var(--space-1) var(--space-4); background: var(--color-bg-secondary);
+    border-bottom: 1px solid var(--color-border);
+    font-size: var(--font-size-2xs); font-weight: var(--font-weight-semibold);
+    text-transform: uppercase; letter-spacing: var(--letter-spacing-caps);
+    color: var(--color-text-secondary); flex-shrink: 0;
+}
+.rules-header > span { cursor: pointer; user-select: none; transition: color var(--duration-normal); }
+.rules-header > span:hover { color: var(--color-primary); }
+.rules-header__code { width: 80px; }
+.rules-header__sev { width: 24px; text-align: center; }
+.rules-header__desc { flex: 1; padding: 0 var(--space-2); }
+.rules-header__count { width: 40px; text-align: right; }
+.rules-list { flex: 1; overflow-y: auto; }
+.rules-row {
+    display: flex; align-items: center;
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--font-size-caption); cursor: pointer;
+    transition: background var(--duration-fast);
+    border-bottom: 1px solid var(--color-border-light);
+}
+.rules-row:nth-child(even) { background: var(--color-zebra); }
+.rules-row:hover { background: var(--color-primary-light); }
+.rules-row__code {
+    width: 80px; flex-shrink: 0;
+    font-family: var(--font-family-mono); font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-2xs); color: var(--color-primary);
+}
+.rules-row__sev {
+    width: 24px; flex-shrink: 0; text-align: center;
+    font-size: var(--font-size-caption); font-weight: var(--font-weight-bold);
+}
+.rules-row__sev--pass { color: var(--color-success); }
+.rules-row__sev--fail { color: var(--color-error); }
+.rules-row__sev--warn { color: var(--color-warning); }
+.rules-row__desc {
+    flex: 1; padding: 0 var(--space-2);
+    font-size: var(--font-size-2xs); color: var(--color-text-secondary);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.rules-row__count {
+    width: 40px; flex-shrink: 0; text-align: right;
+    font-size: var(--font-size-2xs); font-family: var(--font-family-mono);
+    color: var(--color-text-secondary); font-variant-numeric: tabular-nums;
+}
+.rules-row__count--active { color: var(--color-error); font-weight: var(--font-weight-semibold); }
+.rules-cat-sep {
+    display: flex; align-items: center;
+    padding: var(--space-1) var(--space-4);
+    background: var(--color-bg-secondary);
+    border-bottom: 1px solid var(--color-border);
+    font-size: var(--font-size-2xs); font-weight: var(--font-weight-semibold);
+    text-transform: uppercase; letter-spacing: var(--letter-spacing-caps);
+    color: var(--color-text-secondary);
+}
+.rules-cat-sep__label { flex: 1; }
+.rules-cat-sep__stats { font-family: var(--font-family-mono); font-size: var(--font-size-2xs); }
+.rules-summary {
+    border-top: 1px solid var(--color-border);
+    padding: var(--space-3) var(--space-4); background: var(--color-bg-secondary);
+    flex-shrink: 0; font-size: var(--font-size-caption);
+    display: flex; gap: var(--space-3); align-items: center;
+}
+.rules-summary__stat { display: flex; align-items: center; gap: var(--space-1); }
+.rules-summary__dot { width: 8px; height: 8px; border-radius: var(--radius-full); }
+.rules-summary__dot--pass { background: var(--color-success); }
+.rules-summary__dot--fail { background: var(--color-error); }
+.rules-summary__dot--warn { background: var(--color-warning); }
+.rules-summary__val {
+    font-weight: var(--font-weight-semibold); font-variant-numeric: tabular-nums;
+    font-family: var(--font-family-mono);
+}
+.rules-summary__label { color: var(--color-text-secondary); font-size: var(--font-size-2xs); }
+.rules-summary__score {
+    margin-left: auto; font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-sm); color: var(--color-primary);
+}
+
 /* Wirtschaftlichkeit Ratios */
 .val-ratio-list { display: flex; flex-direction: column; gap: var(--space-2); }
 .val-ratio { display: flex; justify-content: space-between; font-size: var(--font-size-caption); padding: var(--space-1) 0; }
@@ -593,19 +698,11 @@ body {
         display: flex; align-items: center;
     }
 
-    /* -- Panel Header (wrap controls to second row) -- */
-    .panel__header {
-        flex-wrap: wrap;
-    }
+    /* -- Viewer Controls Overlay (compact on mobile) -- */
     .viewer__controls {
-        width: 100%;
-        justify-content: center;
-        margin-top: var(--space-2);
-        padding-top: var(--space-2);
-        border-top: 1px solid var(--color-border);
-        gap: var(--space-2);
+        gap: var(--space-1);
+        padding: var(--space-1);
     }
-    .viewer__controls .viewer__sep { display: none; }
 
     /* -- Validation Split (vertical stack, flex-based) -- */
     .validation-split { flex-direction: column; height: auto; }
@@ -682,6 +779,13 @@ body {
 
     /* -- Kennzahlen -- */
     .val-kennzahlen { grid-template-columns: 1fr; }
+
+    /* -- Prüfregeln -- */
+    .rules-panel { height: auto; max-height: none; }
+    .rules-list { max-height: 60vh; }
+    .rules-row { min-height: 44px; padding: var(--space-3) var(--space-4); }
+    .rules-row__desc { white-space: normal; }
+    .rules-search { min-height: 40px; font-size: var(--font-size-sm); }
 
     /* -- Entities Table -- */
     .entities-table th,

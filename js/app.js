@@ -171,6 +171,7 @@ function handleCanvasTap(sx, sy) {
 
 // Wheel zoom (desktop)
 dom.canvasWrap.addEventListener('wheel', (e) => {
+    if (e.target.closest('.viewer__controls')) return;
     e.preventDefault();
     hideFeaturePopup();
     const rect = dom.canvasWrap.getBoundingClientRect();
@@ -190,6 +191,8 @@ dom.canvasWrap.addEventListener('wheel', (e) => {
 
 // Pointer down — start pan or pinch
 dom.canvasWrap.addEventListener('pointerdown', (e) => {
+    // Don't capture pointer when clicking overlay controls
+    if (e.target.closest('.viewer__controls')) return;
     activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
     if (activePointers.size === 1) {

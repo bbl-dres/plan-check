@@ -8,6 +8,59 @@ import { render, resizeCanvas, zoomToPolygon, zoomToItems, zoomToBounds, getItem
 import { downloadPdfReport, downloadExcelReport } from './export.js';
 
 // =============================================
+// Rule Definitions
+// =============================================
+
+const ALL_RULES = [
+    { cat: 'LAYER', code: 'LAYER_001', sev: 'error',   desc: 'Pflicht-Layer fehlt: R_RAUMPOLYGON' },
+    { cat: 'LAYER', code: 'LAYER_002', sev: 'error',   desc: 'Pflicht-Layer fehlt: R_AOID' },
+    { cat: 'LAYER', code: 'LAYER_003', sev: 'error',   desc: 'Pflicht-Layer fehlt: R_GESCHOSSPOLYGON' },
+    { cat: 'LAYER', code: 'LAYER_004', sev: 'warning', desc: 'Pflicht-Layer fehlt: A_ARCHITEKTUR' },
+    { cat: 'LAYER', code: 'LAYER_005', sev: 'warning', desc: 'Pflicht-Layer fehlt: V_PLANLAYOUT' },
+    { cat: 'LAYER', code: 'LAYER_006', sev: 'warning', desc: 'Pflicht-Layer fehlt: V_BEMASSUNG' },
+    { cat: 'LAYER', code: 'LAYER_007', sev: 'warning', desc: 'Pflicht-Layer fehlt: A_SCHRAFFUR' },
+    { cat: 'LAYER', code: 'LAYER_008', sev: 'warning', desc: 'Unbekannter Layer vorhanden' },
+    { cat: 'POLY',  code: 'POLY_001',  sev: 'error',   desc: 'Raumpolygon ist nicht geschlossen' },
+    { cat: 'POLY',  code: 'POLY_002',  sev: 'error',   desc: 'Raumpolygon enth\u00e4lt Bogensegmente' },
+    { cat: 'POLY',  code: 'POLY_003',  sev: 'error',   desc: 'Polygon hat weniger als 3 Eckpunkte' },
+    { cat: 'POLY',  code: 'POLY_004',  sev: 'warning', desc: 'Raumfl\u00e4che sehr klein (< 0.25 m\u00B2)' },
+    { cat: 'POLY',  code: 'POLY_005',  sev: 'warning', desc: 'M\u00f6gliches doppeltes Polygon' },
+    { cat: 'POLY',  code: 'POLY_006',  sev: 'error',   desc: 'Element auf R_RAUMPOLYGON ist keine LWPOLYLINE' },
+    { cat: 'POLY',  code: 'POLY_007',  sev: 'warning', desc: 'Raumpolygon hat Selbst\u00fcberschneidung' },
+    { cat: 'GPOLY', code: 'GPOLY_001', sev: 'error',   desc: 'Geschosspolygon ist nicht geschlossen' },
+    { cat: 'GPOLY', code: 'GPOLY_002', sev: 'error',   desc: 'Geschosspolygon enth\u00e4lt Bogensegmente' },
+    { cat: 'GPOLY', code: 'GPOLY_003', sev: 'error',   desc: 'Element auf R_GESCHOSSPOLYGON ist keine LWPOLYLINE' },
+    { cat: 'GPOLY', code: 'GPOLY_004', sev: 'warning', desc: 'Kein Geschosspolygon vorhanden' },
+    { cat: 'GPOLY', code: 'GPOLY_005', sev: 'warning', desc: 'M\u00f6gliches doppeltes Geschosspolygon' },
+    { cat: 'AOID',  code: 'AOID_001',  sev: 'error',   desc: 'Raumpolygon hat keine AOID' },
+    { cat: 'AOID',  code: 'AOID_002',  sev: 'error',   desc: 'AOID ist nicht eindeutig' },
+    { cat: 'AOID',  code: 'AOID_003',  sev: 'warning', desc: 'AOID-Format ung\u00fcltig' },
+    { cat: 'AOID',  code: 'AOID_004',  sev: 'warning', desc: 'Mehrere Texte auf R_AOID im Polygon' },
+    { cat: 'AOID',  code: 'AOID_005',  sev: 'warning', desc: 'AOID-Text ausserhalb aller Raumpolygone' },
+    { cat: 'AOID',  code: 'AOID_006',  sev: 'warning', desc: 'AOID-Basispunkt ausserhalb Polygon' },
+    { cat: 'GEOM',  code: 'GEOM_001',  sev: 'error',   desc: 'Zeichnungseinheit ist nicht Millimeter' },
+    { cat: 'GEOM',  code: 'GEOM_002',  sev: 'warning', desc: 'Element hat Z-Koordinate \u2260 0' },
+    { cat: 'GEOM',  code: 'GEOM_003',  sev: 'error',   desc: 'Unzul\u00e4ssiger Entit\u00e4tstyp vorhanden' },
+    { cat: 'GEOM',  code: 'GEOM_004',  sev: 'warning', desc: 'Externe Referenz (XREF) vorhanden' },
+    { cat: 'GEOM',  code: 'GEOM_005',  sev: 'warning', desc: 'Element ausserhalb des Schnittrahmens' },
+    { cat: 'TEXT',  code: 'TEXT_001',   sev: 'warning', desc: 'Textelement auf unzul\u00e4ssigem Layer' },
+    { cat: 'TEXT',  code: 'TEXT_002',   sev: 'warning', desc: 'Schriftart ist nicht ARIAL' },
+    { cat: 'STYLE', code: 'STYLE_001', sev: 'warning', desc: 'Polylinienbreite ist nicht 0 mm' },
+    { cat: 'STYLE', code: 'STYLE_002', sev: 'warning', desc: 'Farbe ist nicht VONLAYER' },
+    { cat: 'LAYOUT',code: 'LAYOUT_001',sev: 'warning', desc: 'Layout-Tab (Paper Space) vorhanden' },
+    { cat: 'LAYOUT',code: 'LAYOUT_002',sev: 'warning', desc: 'Kein Planrahmen auf V_PLANLAYOUT erkannt' },
+    { cat: 'DIM',   code: 'DIM_001',   sev: 'warning', desc: 'Keine Masselemente auf V_BEMASSUNG' },
+    { cat: 'DIM',   code: 'DIM_002',   sev: 'warning', desc: 'Masselement ist nicht assoziativ' },
+    { cat: 'HATCH', code: 'HATCH_001', sev: 'warning', desc: 'Schraffur auf A_SCHRAFFUR ist nicht SOLID' },
+];
+
+const RULE_CAT_LABELS = {
+    LAYER: 'Layerstruktur', POLY: 'Raumpolygone', GPOLY: 'Geschosspolygone',
+    AOID: 'Raumstempel', GEOM: 'Geometrie', TEXT: 'Textelemente',
+    STYLE: 'Linientypen/Farben', LAYOUT: 'Planlayout', DIM: 'Masselemente', HATCH: 'Schraffuren'
+};
+
+// =============================================
 // Room Extraction & Validation
 // =============================================
 
@@ -633,7 +686,7 @@ export function renderValidation() {
     // Show metrics panel
     const errCount = state.validationErrors.filter(e => e.severity === 'error').length;
     const warnCount = state.validationErrors.filter(e => e.severity === 'warning').length;
-    const totalRules = 40;
+    const totalRules = ALL_RULES.length;
     const passedRules = totalRules - new Set(state.validationErrors.map(e => e.ruleCode)).size;
     const score = Math.round((passedRules / totalRules) * 100);
     const scoreClass = score >= 90 ? 'success' : score >= 60 ? 'warning' : 'error';
@@ -671,7 +724,7 @@ export function renderValidation() {
     });
 
     // Render initial tab
-    switchValidationTab('overview');
+    switchValidationTab('rules');
 
     const rulesFired = new Set(state.validationErrors.map(e => e.ruleCode)).size;
     log(`Validierung: ${state.roomData.length} R\u00e4ume, ${state.areaData.length} Fl\u00e4chen, ${rulesFired} Regeln ausgel\u00f6st (${errCount} Fehler, ${warnCount} Warnungen), Score ${score}%`,
@@ -714,6 +767,13 @@ function updateTabCounts() {
         if (roomCountEl) roomCountEl.textContent = state.roomData.length;
     }
     if (areaCountEl) areaCountEl.textContent = state.areaData.length;
+    const rulesCountEl = document.getElementById('vtab-rules-count');
+    const rulesTotalEl = document.getElementById('vtab-rules-total');
+    if (rulesCountEl) {
+        const firedCodes = new Set(state.validationErrors.map(e => e.ruleCode));
+        rulesCountEl.textContent = ALL_RULES.length - firedCodes.size;
+    }
+    if (rulesTotalEl) rulesTotalEl.textContent = ALL_RULES.length;
 }
 
 export function switchValidationTab(tabName) {
@@ -733,7 +793,7 @@ export function switchValidationTab(tabName) {
     }
 
     // Toggle split-view vs dashboard
-    const isDashboard = tabName === 'kennzahlen';
+    const isDashboard = tabName === 'kennzahlen' || tabName === 'rules';
     dom.validationSplit.style.display = isDashboard ? 'none' : '';
     dom.validationDashboard.style.display = isDashboard ? 'block' : 'none';
 
@@ -750,6 +810,7 @@ export function switchValidationTab(tabName) {
         case 'rooms': renderRoomsTab(); break;
         case 'areas': renderAreasTab(); break;
         case 'kennzahlen': renderKennzahlenTab(); break;
+        case 'rules': renderRulesTab(); break;
     }
 
     // Re-render canvas with overlay (resize in case split just appeared)
@@ -1278,6 +1339,178 @@ function renderKennzahlenTab() {
     html += '</div>'; // kz-dashboard-content
 
     dom.validationDashboard.innerHTML = html;
+}
+
+// ─────────────────────────────────────────────
+// Tab 6: Prüfregeln (flat rule table)
+// ─────────────────────────────────────────────
+let rulesSortField = 'code';
+let rulesSortDir = 'asc';
+let rulesFilterVal = 'all';
+
+function renderRulesTab() {
+    // Use the dashboard area (full-width, no viewer needed)
+    dom.validationSplit.style.display = 'none';
+    dom.validationDashboard.style.display = 'block';
+
+    // Count violations per rule code
+    const violationCounts = {};
+    for (const err of state.validationErrors) {
+        violationCounts[err.ruleCode] = (violationCounts[err.ruleCode] || 0) + 1;
+    }
+
+    function getStatus(code) {
+        const count = violationCounts[code] || 0;
+        if (count === 0) return 'pass';
+        const rule = ALL_RULES.find(r => r.code === code);
+        return rule?.sev === 'error' ? 'fail' : 'warn';
+    }
+
+    function buildHTML() {
+        const searchEl = dom.validationDashboard.querySelector('.rules-search');
+        const search = searchEl ? searchEl.value.toLowerCase() : '';
+
+        const sevOrder = { error: 0, warning: 1 };
+
+        let filtered = ALL_RULES.filter(r => {
+            const status = getStatus(r.code);
+            if (rulesFilterVal === 'fail' && status !== 'fail') return false;
+            if (rulesFilterVal === 'warn' && status !== 'warn') return false;
+            if (rulesFilterVal === 'pass' && status !== 'pass') return false;
+            if (search && !r.code.toLowerCase().includes(search) && !r.desc.toLowerCase().includes(search)
+                && !r.cat.toLowerCase().includes(search)) return false;
+            return true;
+        });
+
+        // Sort
+        if (rulesSortField !== 'code') {
+            filtered = filtered.slice().sort((a, b) => {
+                let va, vb;
+                if (rulesSortField === 'sev') { va = sevOrder[a.sev] ?? 2; vb = sevOrder[b.sev] ?? 2; }
+                else if (rulesSortField === 'count') { va = violationCounts[a.code] || 0; vb = violationCounts[b.code] || 0; }
+                else if (rulesSortField === 'desc') { va = a.desc; vb = b.desc; }
+                if (va < vb) return rulesSortDir === 'asc' ? -1 : 1;
+                if (va > vb) return rulesSortDir === 'asc' ? 1 : -1;
+                return 0;
+            });
+        } else if (rulesSortDir === 'desc') {
+            filtered = filtered.slice().reverse();
+        }
+
+        // Sort arrows
+        const arrows = { code: '', sev: '', desc: '', count: '' };
+        arrows[rulesSortField] = rulesSortDir === 'asc' ? ' \u25B2' : ' \u25BC';
+
+        let rows = '';
+        let lastCat = '';
+        const showCatSeps = rulesSortField === 'code';
+
+        for (const r of filtered) {
+            if (showCatSeps && r.cat !== lastCat) {
+                lastCat = r.cat;
+                const catRules = filtered.filter(x => x.cat === r.cat);
+                const passCount = catRules.filter(x => getStatus(x.code) === 'pass').length;
+                rows += `<div class="rules-cat-sep"><span class="rules-cat-sep__label">${esc(RULE_CAT_LABELS[r.cat] || r.cat)}</span><span class="rules-cat-sep__stats">${passCount}/${catRules.length}</span></div>`;
+            }
+
+            const status = getStatus(r.code);
+            const count = violationCounts[r.code] || 0;
+            const icon = status === 'pass' ? '\u2713' : status === 'fail' ? '\u2716' : '\u26A0';
+            const countClass = count > 0 ? ' rules-row__count--active' : '';
+
+            rows += `<div class="rules-row" data-code="${r.code}">` +
+                `<span class="rules-row__code">${r.code}</span>` +
+                `<span class="rules-row__sev rules-row__sev--${status}">${icon}</span>` +
+                `<span class="rules-row__desc" title="${esc(r.desc)}">${esc(r.desc)}</span>` +
+                `<span class="rules-row__count${countClass}">${count > 0 ? count : '\u2014'}</span>` +
+                `</div>`;
+        }
+
+        // Summary counts
+        const pass = ALL_RULES.filter(r => getStatus(r.code) === 'pass').length;
+        const fail = ALL_RULES.filter(r => getStatus(r.code) === 'fail').length;
+        const warn = ALL_RULES.filter(r => getStatus(r.code) === 'warn').length;
+        const score = Math.round(pass / ALL_RULES.length * 100);
+
+        return `<div class="rules-panel">` +
+            `<div class="rules-toolbar">` +
+                `<input type="text" class="rules-search" placeholder="Regel suchen..." value="${esc(search)}">` +
+                `<select class="rules-filter">` +
+                    `<option value="all"${rulesFilterVal === 'all' ? ' selected' : ''}>Alle</option>` +
+                    `<option value="fail"${rulesFilterVal === 'fail' ? ' selected' : ''}>Fehler</option>` +
+                    `<option value="warn"${rulesFilterVal === 'warn' ? ' selected' : ''}>Warnungen</option>` +
+                    `<option value="pass"${rulesFilterVal === 'pass' ? ' selected' : ''}>Bestanden</option>` +
+                `</select>` +
+            `</div>` +
+            `<div class="rules-header">` +
+                `<span class="rules-header__code" data-sort="code">Code${arrows.code}</span>` +
+                `<span class="rules-header__sev" data-sort="sev">${arrows.sev}</span>` +
+                `<span class="rules-header__desc" data-sort="desc">Beschreibung${arrows.desc}</span>` +
+                `<span class="rules-header__count" data-sort="count">Anz.${arrows.count}</span>` +
+            `</div>` +
+            `<div class="rules-list">${rows}</div>` +
+            `<div class="rules-summary">` +
+                `<span class="rules-summary__stat"><span class="rules-summary__dot rules-summary__dot--pass"></span><span class="rules-summary__val">${pass}</span><span class="rules-summary__label">OK</span></span>` +
+                `<span class="rules-summary__stat"><span class="rules-summary__dot rules-summary__dot--fail"></span><span class="rules-summary__val">${fail}</span><span class="rules-summary__label">Fehler</span></span>` +
+                `<span class="rules-summary__stat"><span class="rules-summary__dot rules-summary__dot--warn"></span><span class="rules-summary__val">${warn}</span><span class="rules-summary__label">Warn.</span></span>` +
+                `<span class="rules-summary__score">${score}%</span>` +
+            `</div>` +
+        `</div>`;
+    }
+
+    function wireEvents() {
+        const panel = dom.validationDashboard.querySelector('.rules-panel');
+        if (!panel) return;
+
+        // Search
+        const searchEl = panel.querySelector('.rules-search');
+        searchEl.addEventListener('input', () => {
+            dom.validationDashboard.innerHTML = buildHTML();
+            wireEvents();
+            // Restore focus to search
+            const newSearch = dom.validationDashboard.querySelector('.rules-search');
+            if (newSearch) { newSearch.focus(); newSearch.selectionStart = newSearch.selectionEnd = newSearch.value.length; }
+        });
+
+        // Filter
+        panel.querySelector('.rules-filter').addEventListener('change', (e) => {
+            rulesFilterVal = e.target.value;
+            dom.validationDashboard.innerHTML = buildHTML();
+            wireEvents();
+        });
+
+        // Sort headers
+        panel.querySelectorAll('.rules-header > span[data-sort]').forEach(el => {
+            el.addEventListener('click', () => {
+                const field = el.dataset.sort;
+                if (rulesSortField === field) {
+                    rulesSortDir = rulesSortDir === 'asc' ? 'desc' : 'asc';
+                } else {
+                    rulesSortField = field;
+                    rulesSortDir = 'asc';
+                }
+                dom.validationDashboard.innerHTML = buildHTML();
+                wireEvents();
+            });
+        });
+
+        // Row click — highlight matching errors in errors tab
+        panel.querySelectorAll('.rules-row').forEach(row => {
+            row.addEventListener('click', () => {
+                const code = row.dataset.code;
+                const count = violationCounts[code] || 0;
+                if (count > 0) {
+                    // Switch to errors tab and filter to this rule
+                    switchValidationTab('errors');
+                    dom.vsideSearch.value = code;
+                    dom.vsideSearch.dispatchEvent(new Event('input'));
+                }
+            });
+        });
+    }
+
+    dom.validationDashboard.innerHTML = buildHTML();
+    wireEvents();
 }
 
 function buildValidationDonut(totals, kf, gf) {
