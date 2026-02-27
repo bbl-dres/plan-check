@@ -476,10 +476,8 @@ export function hitTest(wx, wy, tolerance) {
 }
 
 export function showFeaturePopup(item, screenX, screenY) {
-    // 2.6 Close button for pointer-enabled popup
     let html = `<div class="feature-popup__title">
         <span class="feature-popup__badge">${esc(item.et)}</span>
-        <button class="feature-popup__close" aria-label="Schliessen" title="Schliessen">&times;</button>
     </div>`;
 
     const row = (label, value) =>
@@ -539,15 +537,6 @@ export function showFeaturePopup(item, screenX, screenY) {
     }
 
     dom.featurePopup.innerHTML = html;
-
-    // Wire close button
-    const closeBtn = dom.featurePopup.querySelector('.feature-popup__close');
-    if (closeBtn) {
-        closeBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            hideFeaturePopup();
-        });
-    }
 
     const isMobile = window.innerWidth <= 768;
 

@@ -12,16 +12,6 @@ export function log(msg, type = 'info') {
     line.textContent = `[${ts}] ${msg}`;
     dom.consoleLog.appendChild(line);
     dom.consoleLog.scrollTop = dom.consoleLog.scrollHeight;
-
-    // 1.3 Auto-expand console on error
-    if (type === 'error') {
-        const toggle = document.getElementById('console-toggle');
-        if (toggle && toggle.getAttribute('aria-expanded') !== 'true') {
-            toggle.setAttribute('aria-expanded', 'true');
-            dom.consoleLog.classList.remove('console-body--collapsed');
-            dom.consoleLog.classList.add('console-body--expanded');
-        }
-    }
 }
 
 export function showStatus(msg, type = 'loading') {

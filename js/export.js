@@ -50,11 +50,6 @@ function captureCanvasForMode(mode) {
 export async function downloadPdfReport() {
     if (!state.lastFile) { log('Keine Datei geladen.', 'warn'); return; }
     log('PDF-Bericht wird erstellt...');
-    // 7.1 Show progress overlay
-    const overlay = document.createElement('div');
-    overlay.className = 'export-overlay';
-    overlay.innerHTML = '<div class="export-overlay__content"><div class="spinner"></div><span>PDF-Bericht wird erstellt...</span></div>';
-    document.body.appendChild(overlay);
     try {
         const jsPDF = await loadJsPDF();
         const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
@@ -479,8 +474,6 @@ export async function downloadPdfReport() {
     } catch (err) {
         log('PDF-Export fehlgeschlagen: ' + err.message, 'error');
         console.error(err);
-    } finally {
-        overlay.remove();
     }
 }
 
