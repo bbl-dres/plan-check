@@ -626,12 +626,26 @@ export function prepareDrawingData(entities, layers, db) {
                 insertCount++;
                 if (!block || !block.entities) break;
 
+                // Handle OCS extrusion: when normal is (0,0,-1), the X-axis is negated
+                // Normalize into equivalent scale/rotation so downstream mirroring logic works
+                let ipx = e.insertionPoint.x;
+                let ipy = e.insertionPoint.y;
+                let eXScale = e.xScale ?? 1;
+                let eYScale = e.yScale ?? 1;
+                let eRotation = e.rotation || 0;
+                const ez = e.extrusionDirection?.z;
+                if (ez != null && ez < 0) {
+                    ipx = -ipx;
+                    eYScale = -eYScale;
+                    eRotation = 180 - eRotation;
+                }
+
                 const origin = block.origin || block.basePoint;
                 const ins = {
-                    insertionPoint: tf ? transformPoint(e.insertionPoint.x, e.insertionPoint.y, tf) : e.insertionPoint,
-                    xScale: (e.xScale || 1) * (tf ? (tf.xScale || 1) : 1),
-                    yScale: (e.yScale || 1) * (tf ? (tf.yScale || 1) : 1),
-                    rotation: (e.rotation || 0) + (tf ? (tf.rotation || 0) : 0),
+                    insertionPoint: tf ? transformPoint(ipx, ipy, tf) : { x: ipx, y: ipy },
+                    xScale: eXScale * (tf ? (tf.xScale || 1) : 1),
+                    yScale: eYScale * (tf ? (tf.yScale || 1) : 1),
+                    rotation: eRotation + (tf ? (tf.rotation || 0) : 0),
                     baseX: origin?.x || 0,
                     baseY: origin?.y || 0
                 };
