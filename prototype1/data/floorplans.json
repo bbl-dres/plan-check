@@ -2,7 +2,7 @@
   {
     "id": 1,
     "projectId": 1,
-    "name": "Erdgeschoss (EG).dwg",
+    "name": "10802000AA_00.dwg",
     "createdBy": 3,
     "createdAt": "2022-04-10T09:30:00.000Z",
     "lastEditedBy": 3,
@@ -13,7 +13,7 @@
   {
     "id": 2,
     "projectId": 1,
-    "name": "1. Obergeschoss (1.OG).dwg",
+    "name": "10802000AA_01.dwg",
     "createdBy": 3,
     "createdAt": "2022-04-10T10:15:00.000Z",
     "lastEditedBy": 3,
@@ -24,7 +24,7 @@
   {
     "id": 3,
     "projectId": 1,
-    "name": "2. Obergeschoss (2.OG).dwg",
+    "name": "10802000AA_02.dwg",
     "createdBy": 3,
     "createdAt": "2022-04-10T11:00:00.000Z",
     "lastEditedBy": 3,
@@ -35,7 +35,7 @@
   {
     "id": 4,
     "projectId": 1,
-    "name": "3. Obergeschoss (3.OG).dwg",
+    "name": "10802000AA_03.dwg",
     "createdBy": 5,
     "createdAt": "2022-04-11T08:30:00.000Z",
     "lastEditedBy": 5,
@@ -46,7 +46,7 @@
   {
     "id": 5,
     "projectId": 1,
-    "name": "Untergeschoss (UG).dwg",
+    "name": "10802000AA_U1.dwg",
     "createdBy": 3,
     "createdAt": "2022-04-11T14:00:00.000Z",
     "lastEditedBy": 3,
@@ -57,7 +57,7 @@
   {
     "id": 6,
     "projectId": 1,
-    "name": "Dachgeschoss (DG).dwg",
+    "name": "10802000AA_D1.dwg",
     "createdBy": 5,
     "createdAt": "2022-04-12T09:00:00.000Z",
     "lastEditedBy": 5,
@@ -66,20 +66,9 @@
     "score": 96
   },
   {
-    "id": 7,
-    "projectId": 1,
-    "name": "Raumliste_Liebefeld.xlsx",
-    "createdBy": 3,
-    "createdAt": "2022-04-12T15:00:00.000Z",
-    "lastEditedBy": 3,
-    "lastEditedAt": "2022-04-12T15:00:00.000Z",
-    "status": "validated",
-    "score": 100
-  },
-  {
     "id": 8,
     "projectId": 2,
-    "name": "Sous-sol (SS).dwg",
+    "name": "10803100AB_U1.dwg",
     "createdBy": 6,
     "createdAt": "2022-03-15T08:00:00.000Z",
     "lastEditedBy": 6,
@@ -90,7 +79,7 @@
   {
     "id": 9,
     "projectId": 2,
-    "name": "Rez-de-chaussée (RC).dwg",
+    "name": "10803100AB_00.dwg",
     "createdBy": 6,
     "createdAt": "2022-03-15T10:30:00.000Z",
     "lastEditedBy": 6,
@@ -101,7 +90,7 @@
   {
     "id": 10,
     "projectId": 2,
-    "name": "1er étage (1E).dwg",
+    "name": "10803100AB_01.dwg",
     "createdBy": 6,
     "createdAt": "2022-03-16T09:00:00.000Z",
     "lastEditedBy": 6,
@@ -112,7 +101,7 @@
   {
     "id": 11,
     "projectId": 2,
-    "name": "2ème étage (2E).dwg",
+    "name": "10803100AB_02.dwg",
     "createdBy": 7,
     "createdAt": "2022-03-16T14:00:00.000Z",
     "lastEditedBy": 7,
@@ -123,7 +112,7 @@
   {
     "id": 12,
     "projectId": 2,
-    "name": "3ème étage (3E).dwg",
+    "name": "10803100AB_03.dwg",
     "createdBy": 7,
     "createdAt": "2022-03-17T08:30:00.000Z",
     "lastEditedBy": 7,
@@ -134,7 +123,7 @@
   {
     "id": 13,
     "projectId": 2,
-    "name": "4ème étage (4E).dwg",
+    "name": "10803100AB_04.dwg",
     "createdBy": 6,
     "createdAt": "2022-03-17T11:00:00.000Z",
     "lastEditedBy": 6,
@@ -145,7 +134,7 @@
   {
     "id": 14,
     "projectId": 2,
-    "name": "5ème étage (5E).dwg",
+    "name": "10803100AB_05.dwg",
     "createdBy": 7,
     "createdAt": "2022-03-18T09:00:00.000Z",
     "lastEditedBy": 7,
@@ -156,7 +145,7 @@
   {
     "id": 15,
     "projectId": 2,
-    "name": "Toiture (T).dwg",
+    "name": "10803100AB_D1.dwg",
     "createdBy": 6,
     "createdAt": "2022-03-18T14:00:00.000Z",
     "lastEditedBy": 6,
@@ -165,20 +154,9 @@
     "score": 82
   },
   {
-    "id": 16,
-    "projectId": 2,
-    "name": "Liste_Locaux_Montbrillant.xlsx",
-    "createdBy": 6,
-    "createdAt": "2022-03-19T10:00:00.000Z",
-    "lastEditedBy": 6,
-    "lastEditedAt": "2022-03-19T10:00:00.000Z",
-    "status": "validated",
-    "score": 100
-  },
-  {
     "id": 17,
     "projectId": 3,
-    "name": "Erdgeschoss (EG).dwg",
+    "name": "10804200AC_00.dwg",
     "createdBy": 1,
     "createdAt": "2022-06-17T12:30:00.000Z",
     "lastEditedBy": 1,
@@ -189,7 +167,7 @@
   {
     "id": 18,
     "projectId": 3,
-    "name": "1. Obergeschoss (1.OG).dwg",
+    "name": "10804200AC_01.dwg",
     "createdBy": 1,
     "createdAt": "2022-06-17T14:15:00.000Z",
     "lastEditedBy": 1,
@@ -200,7 +178,7 @@
   {
     "id": 19,
     "projectId": 3,
-    "name": "2. Obergeschoss (2.OG).dwg",
+    "name": "10804200AC_02.dwg",
     "createdBy": 1,
     "createdAt": "2022-06-17T15:30:00.000Z",
     "lastEditedBy": 1,
@@ -211,7 +189,7 @@
   {
     "id": 20,
     "projectId": 3,
-    "name": "3. Obergeschoss (3.OG).dwg",
+    "name": "10804200AC_03.dwg",
     "createdBy": 2,
     "createdAt": "2022-06-18T09:00:00.000Z",
     "lastEditedBy": 2,
@@ -222,7 +200,7 @@
   {
     "id": 21,
     "projectId": 3,
-    "name": "Untergeschoss (UG).dwg",
+    "name": "10804200AC_U1.dwg",
     "createdBy": 1,
     "createdAt": "2022-06-16T16:00:00.000Z",
     "lastEditedBy": 1,
@@ -233,7 +211,7 @@
   {
     "id": 22,
     "projectId": 3,
-    "name": "Dachgeschoss (DG).dwg",
+    "name": "10804200AC_D1.dwg",
     "createdBy": 4,
     "createdAt": "2022-06-19T10:30:00.000Z",
     "lastEditedBy": 4,
@@ -242,20 +220,9 @@
     "score": 85
   },
   {
-    "id": 23,
-    "projectId": 3,
-    "name": "Raumliste_BASPO.xlsx",
-    "createdBy": 1,
-    "createdAt": "2022-06-17T15:00:00.000Z",
-    "lastEditedBy": 1,
-    "lastEditedAt": "2022-06-17T15:00:00.000Z",
-    "status": "validated",
-    "score": 100
-  },
-  {
     "id": 24,
     "projectId": 4,
-    "name": "Erdgeschoss (EG).dwg",
+    "name": "10802500AD_00.dwg",
     "createdBy": 8,
     "createdAt": "2022-01-10T09:00:00.000Z",
     "lastEditedBy": 8,
@@ -266,7 +233,7 @@
   {
     "id": 25,
     "projectId": 4,
-    "name": "1. Obergeschoss (1.OG).dwg",
+    "name": "10802500AD_01.dwg",
     "createdBy": 8,
     "createdAt": "2022-01-10T11:30:00.000Z",
     "lastEditedBy": 8,
@@ -277,7 +244,7 @@
   {
     "id": 26,
     "projectId": 4,
-    "name": "2. Obergeschoss (2.OG).dwg",
+    "name": "10802500AD_02.dwg",
     "createdBy": 8,
     "createdAt": "2022-01-11T08:00:00.000Z",
     "lastEditedBy": 8,
@@ -288,7 +255,7 @@
   {
     "id": 27,
     "projectId": 4,
-    "name": "Untergeschoss (UG).dwg",
+    "name": "10802500AD_U1.dwg",
     "createdBy": 9,
     "createdAt": "2022-01-12T10:00:00.000Z",
     "lastEditedBy": 9,
@@ -297,20 +264,9 @@
     "score": 100
   },
   {
-    "id": 28,
-    "projectId": 4,
-    "name": "Raumliste_Forschung3.xlsx",
-    "createdBy": 8,
-    "createdAt": "2022-01-13T14:00:00.000Z",
-    "lastEditedBy": 8,
-    "lastEditedAt": "2022-01-13T14:00:00.000Z",
-    "status": "validated",
-    "score": 100
-  },
-  {
     "id": 29,
     "projectId": 5,
-    "name": "Erdgeschoss (EG).dwg",
+    "name": "10804200AE_00.dwg",
     "createdBy": 10,
     "createdAt": "2021-11-28T09:00:00.000Z",
     "lastEditedBy": 10,
@@ -321,7 +277,7 @@
   {
     "id": 30,
     "projectId": 5,
-    "name": "1. Obergeschoss (1.OG).dwg",
+    "name": "10804200AE_01.dwg",
     "createdBy": 10,
     "createdAt": "2021-11-28T14:00:00.000Z",
     "lastEditedBy": 10,
@@ -332,23 +288,12 @@
   {
     "id": 31,
     "projectId": 5,
-    "name": "Untergeschoss (UG).dwg",
+    "name": "10804200AE_U1.dwg",
     "createdBy": 11,
     "createdAt": "2021-11-29T08:30:00.000Z",
     "lastEditedBy": 11,
     "lastEditedAt": "2021-12-04T16:00:00.000Z",
     "status": "validated",
     "score": 99
-  },
-  {
-    "id": 32,
-    "projectId": 5,
-    "name": "Raumliste_Neubau.xlsx",
-    "createdBy": 10,
-    "createdAt": "2021-11-30T10:00:00.000Z",
-    "lastEditedBy": 10,
-    "lastEditedAt": "2021-11-30T10:00:00.000Z",
-    "status": "validated",
-    "score": 100
   }
 ]

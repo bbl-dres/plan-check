@@ -28,7 +28,7 @@
   "a11y.skipToContent": "Aller au contenu principal",
   "a11y.userMenu": "Menu utilisateur",
 
-  "projects.searchPlaceholder": "Nom du projet, ID, commande",
+  "projects.searchPlaceholder": "Désignation, adresse, ID...",
   "projects.toggleFilters": "Afficher/masquer les filtres",
   "projects.filter": "Filtre",
   "projects.switchView": "Changer de vue",
@@ -36,7 +36,7 @@
   "projects.listView": "Vue en liste",
   "projects.mapView": "Vue carte",
   "projects.dashboard": "Tableau de bord",
-  "projects.newProject": "Nouveau projet",
+  "projects.newProject": "Nouveau bâtiment",
 
   "filter.allRegions": "Toutes les régions",
   "filter.allStatus": "Tous les statuts",
@@ -118,10 +118,10 @@
   "table.description": "Description",
   "table.selected": "{count} sélectionné(s)",
 
-  "modal.createProject": "Créer un nouveau projet",
+  "modal.createProject": "Créer un nouveau bâtiment",
   "modal.projectNumber": "Numéro de projet",
   "modal.projectNumberPlaceholder": "p.ex. 2024-001",
-  "modal.projectName": "Nom du projet",
+  "modal.projectName": "Désignation",
   "modal.projectNamePlaceholder": "p.ex. Rénovation bâtiment fédéral",
   "modal.siaPhase": "Phase SIA",
   "modal.language": "Langue",
@@ -131,7 +131,7 @@
   "modal.imageSizeHint": "Taille recommandée : 800 × 450 px",
   "modal.ruleSet": "Jeu de règles",
   "modal.ruleSetHint": "Définit les règles de vérification appliquées aux plans",
-  "modal.createProjectBtn": "Créer le projet",
+  "modal.createProjectBtn": "Créer le bâtiment",
   "modal.pleaseSelect": "Veuillez sélectionner...",
 
   "modal.inviteUser": "Inviter un utilisateur",
@@ -164,7 +164,7 @@
   "settings.general": "Général",
   "settings.validation": "Validation",
   "settings.projectNumber": "Numéro de projet",
-  "settings.projectName": "Nom du projet",
+  "settings.projectName": "Désignation",
   "settings.siaPhase": "Phase SIA",
   "settings.language": "Langue",
   "settings.status": "Statut",

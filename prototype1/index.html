@@ -130,7 +130,7 @@
                 <div class="page-header">
                     <div class="search">
                         <i data-lucide="search" class="search__icon icon icon-md"></i>
-                        <input type="text" class="search__input" placeholder="Projektname, ID, Auftrag" id="project-search" data-i18n-placeholder="projects.searchPlaceholder">
+                        <input type="text" class="search__input" placeholder="Bezeichnung, Adresse, ID..." id="project-search" data-i18n-placeholder="projects.searchPlaceholder">
                     </div>
                     <div class="page-header__actions">
                         <button class="filter-toggle" id="filter-toggle-btn" aria-expanded="false" aria-controls="filter-panel" aria-label="Filter umschalten" data-i18n-title="projects.toggleFilters" data-i18n-aria-label="projects.toggleFilters">
@@ -154,7 +154,7 @@
                         </div>
                         <button class="btn btn--primary btn--sm" id="new-project-btn">
                             <i data-lucide="plus" class="icon icon-sm"></i>
-                            <span data-i18n="projects.newProject">Neues Projekt</span>
+                            <span data-i18n="projects.newProject">Neues Gebäude</span>
                         </button>
                     </div>
                 </div>
@@ -430,7 +430,7 @@
                                         <input type="text" class="form__input" id="settings-project-number" name="projectNumber">
                                     </div>
                                     <div class="form__field">
-                                        <label for="settings-project-name" class="form__label" data-i18n="settings.projectName">Projektname</label>
+                                        <label for="settings-project-name" class="form__label" data-i18n="settings.projectName">Bezeichnung</label>
                                         <input type="text" class="form__input" id="settings-project-name" name="name">
                                     </div>
                                     <div class="form__field">
@@ -1077,7 +1077,7 @@
         <div class="modal__backdrop" data-modal-close></div>
         <div class="modal__content">
             <div class="modal__header">
-                <h2 class="modal__title" id="modal-title" data-i18n="modal.createProject">Neues Projekt erstellen</h2>
+                <h2 class="modal__title" id="modal-title" data-i18n="modal.createProject">Neues Gebäude erstellen</h2>
                 <button class="modal__close" data-modal-close aria-label="Schliessen">
                     <i data-lucide="x" class="icon icon-md" aria-hidden="true"></i>
                 </button>
@@ -1088,7 +1088,7 @@
                     <input type="text" class="form__input" id="project-number" name="projectNumber" placeholder="z.B. 2024-001" required data-i18n-placeholder="modal.projectNumberPlaceholder">
                 </div>
                 <div class="form__field">
-                    <label for="project-name" class="form__label" data-i18n="modal.projectName">Projektname</label>
+                    <label for="project-name" class="form__label" data-i18n="modal.projectName">Bezeichnung</label>
                     <input type="text" class="form__input" id="project-name" name="name" placeholder="z.B. Bundesgebäude Sanierung" required data-i18n-placeholder="modal.projectNamePlaceholder">
                 </div>
                 <div class="form__field">
@@ -1139,7 +1139,7 @@
             </form>
             <div class="modal__footer">
                 <button type="button" class="btn btn--secondary" data-modal-close data-i18n="action.cancel">Abbrechen</button>
-                <button type="submit" class="btn btn--primary" form="new-project-form" data-i18n="modal.createProjectBtn">Projekt erstellen</button>
+                <button type="submit" class="btn btn--primary" form="new-project-form" data-i18n="modal.createProjectBtn">Gebäude erstellen</button>
             </div>
         </div>
     </div>

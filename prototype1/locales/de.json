@@ -28,7 +28,7 @@
   "a11y.skipToContent": "Zum Hauptinhalt springen",
   "a11y.userMenu": "Benutzermenü",
 
-  "projects.searchPlaceholder": "Projektname, ID, Auftrag",
+  "projects.searchPlaceholder": "Bezeichnung, Adresse, ID...",
   "projects.toggleFilters": "Filter ein-/ausblenden",
   "projects.filter": "Filter",
   "projects.switchView": "Ansicht wechseln",
@@ -36,7 +36,7 @@
   "projects.listView": "Listenansicht",
   "projects.mapView": "Kartenansicht",
   "projects.dashboard": "Dashboard",
-  "projects.newProject": "Neues Projekt",
+  "projects.newProject": "Neues Gebäude",
 
   "filter.allRegions": "Alle Regionen",
   "filter.allStatus": "Alle Status",
@@ -118,10 +118,10 @@
   "table.description": "Beschreibung",
   "table.selected": "{count} ausgewählt",
 
-  "modal.createProject": "Neues Projekt erstellen",
+  "modal.createProject": "Neues Gebäude erstellen",
   "modal.projectNumber": "Projektnummer",
   "modal.projectNumberPlaceholder": "z.B. 2024-001",
-  "modal.projectName": "Projektname",
+  "modal.projectName": "Bezeichnung",
   "modal.projectNamePlaceholder": "z.B. Bundesgebäude Sanierung",
   "modal.siaPhase": "SIA Phase",
   "modal.language": "Sprache",
@@ -131,7 +131,7 @@
   "modal.imageSizeHint": "Empfohlene Grösse: 800 × 450 px",
   "modal.ruleSet": "Regelwerk",
   "modal.ruleSetHint": "Definiert, welche Prüfregeln auf die Grundrisse angewendet werden",
-  "modal.createProjectBtn": "Projekt erstellen",
+  "modal.createProjectBtn": "Gebäude erstellen",
   "modal.pleaseSelect": "Bitte wählen...",
 
   "modal.inviteUser": "Benutzer einladen",
@@ -164,7 +164,7 @@
   "settings.general": "Allgemein",
   "settings.validation": "Validierung",
   "settings.projectNumber": "Projektnummer",
-  "settings.projectName": "Projektname",
+  "settings.projectName": "Bezeichnung",
   "settings.siaPhase": "SIA Phase",
   "settings.language": "Sprache",
   "settings.status": "Status",

@@ -1053,7 +1053,7 @@ function renderProjects() {
                     ${overlayHtml}
                 </div>
                 <div class="card__content">
-                    <h3 class="card__title">${escapeHtml(project.name)}</h3>
+                    <h3 class="card__title">${escapeHtml(project.internalId)} – ${escapeHtml(project.name)}</h3>
                     <dl class="card__meta">
                         <div class="card__meta-left">
                             <dd>${I18n.t('card.siaPhase')}: ${escapeHtml(project.phase)}</dd>
@@ -1130,7 +1130,7 @@ function initProjectMap() {
 
         const popup = new maplibregl.Popup({ offset: 20 })
             .setHTML(
-                '<h4>' + escapeHtml(project.name) + '</h4>' +
+                '<h4>' + escapeHtml(project.internalId) + ' – ' + escapeHtml(project.name) + '</h4>' +
                 '<p>' + I18n.t('card.siaPhase') + ': ' + escapeHtml(project.phase) + ' | Nr. ' + escapeHtml(project.number) + '</p>' +
                 '<a href="#" class="project-map-link" data-project-id="' + project.id + '">' + I18n.t('map.openProject') + ' &rarr;</a>'
             );
@@ -1276,7 +1276,7 @@ function renderDashboard() {
             const scoreClass = p.resultPercentage >= 90 ? 'success' : p.resultPercentage >= 60 ? 'warning' : 'error';
 
             return '<tr data-project-id="' + p.id + '" style="cursor:pointer">' +
-                '<td>' + escapeHtml(p.name) + '</td>' +
+                '<td>' + escapeHtml(p.internalId) + ' – ' + escapeHtml(p.name) + '</td>' +
                 '<td>' + escapeHtml(p.phase) + '</td>' +
                 '<td>' + pDocs.length + '</td>' +
                 '<td>' + pRooms.length + '</td>' +
@@ -1410,7 +1410,7 @@ function openProjectDetail(projectId, skipHashUpdate = false) {
     if (!currentProject) return;
 
     // Update breadcrumb with project name
-    document.getElementById('breadcrumb-building-name').textContent = currentProject.name;
+    document.getElementById('breadcrumb-building-name').textContent = currentProject.internalId + ' – ' + currentProject.name;
 
     // Get documents for this project
     const projectDocuments = mockDocuments.filter(doc => doc.projectId === currentProject.id);
@@ -2057,7 +2057,7 @@ function openValidationView(documentId, skipHashUpdate = false) {
     if (!currentDocument) return;
 
     // Update breadcrumbs
-    document.getElementById('breadcrumb-val-building').textContent = currentProject.name;
+    document.getElementById('breadcrumb-val-building').textContent = currentProject.internalId + ' – ' + currentProject.name;
     document.getElementById('breadcrumb-val-document').textContent = currentDocument.name;
 
     // Update step 1 score KPI with current document's score

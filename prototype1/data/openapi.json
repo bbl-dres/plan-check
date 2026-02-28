@@ -1477,7 +1477,7 @@
           "id": { "type": "integer", "example": 1 },
           "number": { "type": "string", "example": "2022-0145" },
           "name": { "type": "string", "example": "Bern, Verwaltungsgebäude Liebefeld" },
-          "internalId": { "type": "string", "example": "BBL-BE-0145", "description": "BBL-internal reference number" },
+          "internalId": { "type": "string", "example": "1080-2000-AA", "description": "SAP RE-FX reference (Buchungskreis-Wirtschaftseinheit-Gebäude)" },
           "buildingType": { "type": "string", "example": "Verwaltungsgebäude", "description": "Building classification in the building's language" },
           "egid": { "type": "integer", "example": 1234567, "description": "Eidgenössischer Gebäudeidentifikator (federal building ID)" },
           "egrid": { "type": "string", "example": "CH955832730623", "description": "Eidgenössischer Grundstücksidentifikator (federal property ID)" },
@@ -1519,7 +1519,7 @@
         "properties": {
           "id": { "type": "integer", "example": 1 },
           "buildingId": { "type": "integer", "example": 1 },
-          "name": { "type": "string", "example": "Erdgeschoss (EG).dwg" },
+          "name": { "type": "string", "example": "1080-2000-AA_00.dwg" },
           "status": { "type": "string", "enum": ["uploaded", "validating", "validated", "error"], "example": "validated" },
           "score": { "type": "integer", "example": 94, "description": "Validation score (0-100)" },
           "createdBy": { "type": "integer", "example": 3 },

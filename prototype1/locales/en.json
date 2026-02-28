@@ -28,7 +28,7 @@
   "a11y.skipToContent": "Skip to main content",
   "a11y.userMenu": "User menu",
 
-  "projects.searchPlaceholder": "Project name, ID, order",
+  "projects.searchPlaceholder": "Name, address, ID...",
   "projects.toggleFilters": "Toggle filters",
   "projects.filter": "Filter",
   "projects.switchView": "Switch view",
@@ -36,7 +36,7 @@
   "projects.listView": "List view",
   "projects.mapView": "Map view",
   "projects.dashboard": "Dashboard",
-  "projects.newProject": "New Project",
+  "projects.newProject": "New Building",
 
   "filter.allRegions": "All Regions",
   "filter.allStatus": "All Status",
@@ -118,10 +118,10 @@
   "table.description": "Description",
   "table.selected": "{count} selected",
 
-  "modal.createProject": "Create New Project",
+  "modal.createProject": "Create New Building",
   "modal.projectNumber": "Project Number",
   "modal.projectNumberPlaceholder": "e.g. 2024-001",
-  "modal.projectName": "Project Name",
+  "modal.projectName": "Name",
   "modal.projectNamePlaceholder": "e.g. Federal Building Renovation",
   "modal.siaPhase": "SIA Phase",
   "modal.language": "Language",
@@ -131,7 +131,7 @@
   "modal.imageSizeHint": "Recommended size: 800 × 450 px",
   "modal.ruleSet": "Rule Set",
   "modal.ruleSetHint": "Defines which validation rules are applied to the floor plans",
-  "modal.createProjectBtn": "Create Project",
+  "modal.createProjectBtn": "Create Building",
   "modal.pleaseSelect": "Please select...",
 
   "modal.inviteUser": "Invite User",
@@ -164,7 +164,7 @@
   "settings.general": "General",
   "settings.validation": "Validation",
   "settings.projectNumber": "Project Number",
-  "settings.projectName": "Project Name",
+  "settings.projectName": "Name",
   "settings.siaPhase": "SIA Phase",
   "settings.language": "Language",
   "settings.status": "Status",

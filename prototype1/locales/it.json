@@ -28,7 +28,7 @@
   "a11y.skipToContent": "Vai al contenuto principale",
   "a11y.userMenu": "Menu utente",
 
-  "projects.searchPlaceholder": "Nome progetto, ID, ordine",
+  "projects.searchPlaceholder": "Designazione, indirizzo, ID...",
   "projects.toggleFilters": "Mostra/nascondi filtri",
   "projects.filter": "Filtro",
   "projects.switchView": "Cambia vista",
@@ -36,7 +36,7 @@
   "projects.listView": "Vista a elenco",
   "projects.mapView": "Vista mappa",
   "projects.dashboard": "Dashboard",
-  "projects.newProject": "Nuovo progetto",
+  "projects.newProject": "Nuovo edificio",
 
   "filter.allRegions": "Tutte le regioni",
   "filter.allStatus": "Tutti gli stati",
@@ -118,10 +118,10 @@
   "table.description": "Descrizione",
   "table.selected": "{count} selezionato/i",
 
-  "modal.createProject": "Crea nuovo progetto",
+  "modal.createProject": "Crea nuovo edificio",
   "modal.projectNumber": "Numero di progetto",
   "modal.projectNumberPlaceholder": "p.es. 2024-001",
-  "modal.projectName": "Nome del progetto",
+  "modal.projectName": "Designazione",
   "modal.projectNamePlaceholder": "p.es. Risanamento edificio federale",
   "modal.siaPhase": "Fase SIA",
   "modal.language": "Lingua",
@@ -131,7 +131,7 @@
   "modal.imageSizeHint": "Dimensione consigliata: 800 × 450 px",
   "modal.ruleSet": "Set di regole",
   "modal.ruleSetHint": "Definisce quali regole di verifica vengono applicate alle piante",
-  "modal.createProjectBtn": "Crea progetto",
+  "modal.createProjectBtn": "Crea edificio",
   "modal.pleaseSelect": "Selezionare...",
 
   "modal.inviteUser": "Invita utente",
@@ -164,7 +164,7 @@
   "settings.general": "Generale",
   "settings.validation": "Validazione",
   "settings.projectNumber": "Numero di progetto",
-  "settings.projectName": "Nome del progetto",
+  "settings.projectName": "Designazione",
   "settings.siaPhase": "Fase SIA",
   "settings.language": "Lingua",
   "settings.status": "Stato",
