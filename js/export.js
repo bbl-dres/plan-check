@@ -246,6 +246,7 @@ export async function downloadPdfReport() {
             { label: 'Layer', value: String(state.layerInfo.length), color: blue },
         ];
         const kpiCards2 = [
+            { label: 'GF', value: gf !== null ? fmtNum(gf, 1) + ' m\u00B2' : '\u2014', color: blue },
             { label: 'NGF', value: hasRooms ? fmtNum(ngf, 1) + ' m\u00B2' : '\u2014', color: blue },
             { label: 'Fehler', value: String(errCount), color: errCount > 0 ? red : green },
             { label: 'Warnungen', value: String(warnCount), color: warnCount > 0 ? orange : green },
@@ -288,13 +289,15 @@ export async function downloadPdfReport() {
         doc.line(mx, y, mxr, y);
         y += 5;
 
-        // Full-width links (long URLs)
-        const fullLinks = [
+        const links = [
             ['Pr\u00fcfplattform', 'https://bbl-dres.github.io/plan-check/'],
             ['Anleitung und FAQ', 'https://github.com/bbl-dres/plan-check/blob/main/docs/anleitung-de.md'],
             ['Quellencode und Dokumentation', 'https://github.com/bbl-dres/plan-check'],
+            ['Downloads BBL Bauten', 'https://www.bbl.admin.ch/de/downloads-bauten'],
+            ['Kontakt', 'https://www.bbl.admin.ch/de/kontakt'],
+            ['Rechtliches', 'https://www.admin.ch/gov/de/start/rechtliches.html'],
         ];
-        for (const [label, url] of fullLinks) {
+        for (const [label, url] of links) {
             doc.setFontSize(7.5);
             doc.setTextColor(...dark);
             doc.setFont(undefined, 'bold');
@@ -305,75 +308,19 @@ export async function downloadPdfReport() {
             doc.text(url, mx, y + 3.5);
             y += 9;
         }
-        // 3-column row (short URLs)
-        y += 2;
-        const shortLinks = [
-            ['Downloads BBL Bauten', 'https://www.bbl.admin.ch/de/downloads-bauten'],
-            ['Kontakt', 'https://www.bbl.admin.ch/de/kontakt'],
-            ['Rechtliches', 'https://www.admin.ch/gov/de/start/rechtliches.html'],
-        ];
-        const linkColW = (contentW - 6) / 3;
-        shortLinks.forEach(([label, url], i) => {
-            const lx = mx + i * (linkColW + 3);
-            doc.setFontSize(7.5);
-            doc.setTextColor(...dark);
-            doc.setFont(undefined, 'bold');
-            doc.text(label, lx, y);
-            doc.setFont(undefined, 'normal');
-            doc.setTextColor(...muted);
-            doc.setFontSize(6.5);
-            doc.text(url, lx, y + 3.5);
-        });
 
         // ════════════════════════════════════════════
-        // PAGE 2 — Inhaltsverzeichnis
+        // PAGE 2 — Inhaltsverzeichnis (placeholder — filled in after all pages)
         // ════════════════════════════════════════════
         doc.addPage();
-        pageHeader('Inhaltsverzeichnis');
-
-        const tocEntries = [
-            { num: '1', label: 'Pr\u00fcfregeln', desc: ALL_RULES.length + ' Regeln gepr\u00fcft', page: 3 },
-            { num: '2', label: 'Fehlermeldungen', desc: state.validationErrors.length + ' Pr\u00fcfergebnisse', page: 4 },
-            { num: '3', label: 'Layer', desc: state.layerInfo.length + ' Layer erkannt', page: 5 },
-            { num: '4', label: 'R\u00e4ume', desc: state.roomData.length + ' R\u00e4ume mit Fl\u00e4chen', page: 6 },
-            { num: '5', label: 'Fl\u00e4chen', desc: state.areaData.length + ' Fl\u00e4chenpolygone', page: 7 },
-            { num: '6', label: 'Kennzahlen', desc: 'SIA 416 / DIN 277', page: 8 },
-        ];
-        let ty = 34;
-        tocEntries.forEach((entry) => {
-            // Chapter number
-            doc.setFontSize(11);
-            doc.setTextColor(...blue);
-            doc.setFont(undefined, 'bold');
-            doc.text(entry.num, mx + 2, ty);
-            // Chapter title
-            doc.textWithLink(entry.label, mx + 12, ty, { pageNumber: entry.page });
-            doc.setFont(undefined, 'normal');
-            // Description on next line
-            doc.setFontSize(8);
-            doc.setTextColor(...muted);
-            doc.text(entry.desc, mx + 12, ty + 5);
-            // Dot leader + page number on title line
-            doc.setTextColor(...border);
-            doc.setFontSize(8);
-            const dots = '\u00B7'.repeat(40);
-            const dotsW = doc.getTextWidth(dots);
-            doc.text(dots, mxr - 10 - dotsW, ty);
-            doc.setTextColor(...dark);
-            doc.setFontSize(11);
-            doc.setFont(undefined, 'bold');
-            doc.text(String(entry.page), mxr - 2, ty, { align: 'right' });
-            doc.setFont(undefined, 'normal');
-            // Separator line
-            doc.setDrawColor(...zebra);
-            doc.line(mx, ty + 8, mxr, ty + 8);
-            ty += 14;
-        });
+        const tocPageNum = doc.internal.getNumberOfPages();
+        const chapterPages = {}; // filled as chapters are created
 
         // ════════════════════════════════════════════
-        // PAGE 3 — Prüfregeln
+        // Prüfregeln
         // ════════════════════════════════════════════
         doc.addPage();
+        chapterPages['rules'] = doc.internal.getNumberOfPages();
 
         // Compute violation counts per rule code
         const violationCounts = {};
@@ -443,9 +390,10 @@ export async function downloadPdfReport() {
         tableCaption('Pr\u00fcfregeln \u2014 automatisierte Pr\u00fcfung gegen CAFM-Richtlinien');
 
         // ════════════════════════════════════════════
-        // PAGE 4 — Fehlermeldungen
+        // Fehlermeldungen
         // ════════════════════════════════════════════
         doc.addPage();
+        chapterPages['errors'] = doc.internal.getNumberOfPages();
         pageHeader('Fehlermeldungen (' + state.validationErrors.length + ')');
 
         if (state.validationErrors.length === 0) {
@@ -478,9 +426,10 @@ export async function downloadPdfReport() {
         }
 
         // ════════════════════════════════════════════
-        // PAGE 5 — Layer: floor plan + layer table
+        // Layer
         // ════════════════════════════════════════════
         doc.addPage();
+        chapterPages['layers'] = doc.internal.getNumberOfPages();
         pageHeader('Layer (' + state.layerInfo.length + ')');
 
         const overviewImg = captureCanvasForMode('overview');
@@ -510,9 +459,10 @@ export async function downloadPdfReport() {
         tableCaption('Layer \u2014 erkannte CAD-Layer mit Objektanzahl und CAFM-Status');
 
         // ════════════════════════════════════════════
-        // PAGE 6 — Räume
+        // Räume
         // ════════════════════════════════════════════
         doc.addPage();
+        chapterPages['rooms'] = doc.internal.getNumberOfPages();
         pageHeader('R\u00e4ume (' + state.roomData.length + ')');
 
         const roomsImg = captureCanvasForMode('rooms');
@@ -547,9 +497,10 @@ export async function downloadPdfReport() {
         }
 
         // ════════════════════════════════════════════
-        // PAGE 7 — Flächen
+        // Flächen
         // ════════════════════════════════════════════
         doc.addPage();
+        chapterPages['areas'] = doc.internal.getNumberOfPages();
         pageHeader('Fl\u00e4chen (' + state.areaData.length + ')');
 
         const areasImg = captureCanvasForMode('areas');
@@ -582,9 +533,10 @@ export async function downloadPdfReport() {
         }
 
         // ════════════════════════════════════════════
-        // PAGE 8 — Kennzahlen
+        // Kennzahlen
         // ════════════════════════════════════════════
         doc.addPage();
+        chapterPages['kz'] = doc.internal.getNumberOfPages();
         pageHeader('Kennzahlen');
 
         const pct = (v, total) => {
@@ -612,8 +564,14 @@ export async function downloadPdfReport() {
         });
         tableCaption('Geb\u00e4udefl\u00e4chen nach SIA 416');
 
+        // Helper: page break if not enough room (need ~40mm for subtitle+table+caption)
+        function kzBreak(needed) {
+            kzY = doc.lastAutoTable.finalY + 10;
+            if (kzY + needed > ph - 18) { doc.addPage(); pageHeader('Kennzahlen (Forts.)'); kzY = 30; }
+        }
+
         // Gebäudevolumen
-        kzY = doc.lastAutoTable.finalY + 10;
+        kzBreak(25);
         kzY = sectionSubtitle('Geb\u00e4udevolumen', kzY);
         doc.autoTable({
             ...tableBase,
@@ -632,7 +590,7 @@ export async function downloadPdfReport() {
             const sub = r.din277 || null;
             if (sub) din277Sum[sub] = (din277Sum[sub] || 0) + r.area;
         }
-        kzY = doc.lastAutoTable.finalY + 10;
+        kzBreak(80);
         kzY = sectionSubtitle('Fl\u00e4chen DIN 277', kzY);
         doc.autoTable({
             ...tableBase,
@@ -655,7 +613,7 @@ export async function downloadPdfReport() {
         tableCaption('Fl\u00e4chen nach DIN 277 Nutzungsgruppen');
 
         // Wirtschaftlichkeit
-        kzY = doc.lastAutoTable.finalY + 10;
+        kzBreak(45);
         kzY = sectionSubtitle('Wirtschaftlichkeitskennzahlen', kzY);
         doc.autoTable({
             ...tableBase,
@@ -673,7 +631,7 @@ export async function downloadPdfReport() {
 
         // Objektübersicht
         if (state.entitySummary.length > 0) {
-            kzY = doc.lastAutoTable.finalY + 10;
+            kzBreak(50);
             kzY = sectionSubtitle('Objekt\u00fcbersicht', kzY);
             doc.autoTable({
                 ...tableBase,
@@ -688,6 +646,49 @@ export async function downloadPdfReport() {
             });
             tableCaption('Objekt\u00fcbersicht \u2014 CAD-Entit\u00e4ten nach Typ');
         }
+
+        // ── Render TOC on page 2 (now that we know actual page numbers) ──
+        doc.setPage(tocPageNum);
+        pageHeader('Inhaltsverzeichnis');
+
+        const tocEntries = [
+            { num: '1', label: 'Pr\u00fcfregeln', desc: ALL_RULES.length + ' Regeln gepr\u00fcft', page: chapterPages['rules'] },
+            { num: '2', label: 'Fehlermeldungen', desc: state.validationErrors.length + ' Pr\u00fcfergebnisse', page: chapterPages['errors'] },
+            { num: '3', label: 'Layer', desc: state.layerInfo.length + ' Layer erkannt', page: chapterPages['layers'] },
+            { num: '4', label: 'R\u00e4ume', desc: state.roomData.length + ' R\u00e4ume mit Fl\u00e4chen', page: chapterPages['rooms'] },
+            { num: '5', label: 'Fl\u00e4chen', desc: state.areaData.length + ' Fl\u00e4chenpolygone', page: chapterPages['areas'] },
+            { num: '6', label: 'Kennzahlen', desc: 'SIA 416 / DIN 277', page: chapterPages['kz'] },
+        ];
+        // "Seite" column header
+        doc.setFontSize(8);
+        doc.setTextColor(...muted);
+        doc.text('Seite', mxr - 2, 29, { align: 'right' });
+
+        let ty = 34;
+        tocEntries.forEach((entry) => {
+            doc.setFontSize(11);
+            doc.setTextColor(...blue);
+            doc.setFont(undefined, 'bold');
+            doc.text(entry.num, mx + 2, ty);
+            doc.textWithLink(entry.label, mx + 12, ty, { pageNumber: entry.page });
+            doc.setFont(undefined, 'normal');
+            doc.setFontSize(8);
+            doc.setTextColor(...muted);
+            doc.text(entry.desc, mx + 12, ty + 5);
+            doc.setTextColor(...border);
+            doc.setFontSize(8);
+            const dots = '\u00B7'.repeat(40);
+            const dotsW = doc.getTextWidth(dots);
+            doc.text(dots, mxr - 10 - dotsW, ty);
+            doc.setTextColor(...dark);
+            doc.setFontSize(11);
+            doc.setFont(undefined, 'bold');
+            doc.text(String(entry.page), mxr - 2, ty, { align: 'right' });
+            doc.setFont(undefined, 'normal');
+            doc.setDrawColor(...zebra);
+            doc.line(mx, ty + 8, mxr, ty + 8);
+            ty += 14;
+        });
 
         // ── Footers ──
         pageFooter();
