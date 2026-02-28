@@ -697,7 +697,6 @@ export function buildLayerInfo(entities, layers) {
 }
 
 export function displayEntities(entities) {
-    dom.entitiesTbody.innerHTML = '';
     const typeCounts = {};
     const typeLayers = {};
     for (const e of entities) {
@@ -706,16 +705,11 @@ export function displayEntities(entities) {
         if (!typeLayers[t]) typeLayers[t] = new Set();
         if (e.layer) typeLayers[t].add(e.layer);
     }
-    const sorted = Object.entries(typeCounts).sort((a, b) => b[1] - a[1]);
-    for (const [type, count] of sorted) {
-        const ls = typeLayers[type] ? Array.from(typeLayers[type]).slice(0, 3).join(', ') : '-';
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td><span class="entity-type-badge">${esc(type)}</span></td>
-            <td>${count}</td>
-            <td style="font-size:12px; color: var(--color-text-secondary)">${esc(ls)}${typeLayers[type]?.size > 3 ? ' ...' : ''}</td>
-        `;
-        dom.entitiesTbody.appendChild(tr);
-    }
-    dom.entitiesPanel.classList.add('visible');
+    state.entitySummary = Object.entries(typeCounts)
+        .sort((a, b) => b[1] - a[1])
+        .map(([type, count]) => ({
+            type,
+            count,
+            layers: typeLayers[type] ? Array.from(typeLayers[type]) : [],
+        }));
 }

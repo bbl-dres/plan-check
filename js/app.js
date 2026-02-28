@@ -69,7 +69,7 @@ async function handleFile(file) {
 
     // Reset — release previous file data for GC
     state.drawingData = null;
-    dom.entitiesPanel.classList.remove('visible');
+    state.entitySummary = [];
     dom.validationPanel.classList.remove('visible');
     state.roomData = [];
     state.areaData = [];

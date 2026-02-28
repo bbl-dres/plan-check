@@ -77,6 +77,9 @@ export const state = {
     hiddenAreaIds: new Set(),
     hiddenErrorIds: new Set(),
 
+    // Entity summary (for Kennzahlen tab)
+    entitySummary: [],
+
     // File metadata (for export)
     lastFile: null,
     lastDbInfo: null,
@@ -94,8 +97,6 @@ export const dom = {
     canvas: null,
     ctx: null,
     coordsDisplay: null,
-    entitiesPanel: null,
-    entitiesTbody: null,
     consoleLog: null,
     featurePopup: null,
     metricsPanel: null,
@@ -125,8 +126,6 @@ export function initDom() {
     dom.canvas = document.getElementById('dwg-canvas');
     dom.ctx = dom.canvas.getContext('2d');
     dom.coordsDisplay = document.getElementById('coords-display');
-    dom.entitiesPanel = document.getElementById('entities-panel');
-    dom.entitiesTbody = document.getElementById('entities-tbody');
     dom.consoleLog = document.getElementById('console-log');
     dom.featurePopup = document.getElementById('feature-popup');
     dom.metricsPanel = document.getElementById('metrics-panel');

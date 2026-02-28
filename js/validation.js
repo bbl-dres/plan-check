@@ -1277,8 +1277,6 @@ function renderKennzahlenTab() {
     html += '<div class="val-kz-title">Geb\u00e4udevolumen</div>';
     html += '<table class="val-kz-table"><tbody>';
     html += kzRow('GV', 'Geb\u00e4udevolumen', null, null, true);
-    html += kzRow('GV OG', 'Geb\u00e4udevolumen Obergeschosse', null, null, true);
-    html += kzRow('GV UG', 'Geb\u00e4udevolumen Untergeschosse', null, null, true);
     html += '</tbody></table></div>';
 
     // Geb\u00e4udefl\u00e4chen — filled from room + area data
@@ -1340,6 +1338,19 @@ function renderKennzahlenTab() {
     if (kf !== null && kf > 0) donutSegments.KF = kf;
     const donutTotal = gf || ngf || 1;
     html += buildValidationDonut(donutSegments, 0, donutTotal);
+
+    // Objektübersicht
+    if (state.entitySummary.length > 0) {
+        html += '<div class="val-kz-section">';
+        html += '<div class="val-kz-title">Objekt\u00fcbersicht</div>';
+        html += '<table class="val-kz-table"><tbody>';
+        for (const e of state.entitySummary) {
+            const ls = e.layers.slice(0, 3).join(', ');
+            const more = e.layers.length > 3 ? ' ...' : '';
+            html += `<tr><td class="kz-abbr">${esc(e.type)}</td><td>${e.count}</td><td class="kz-layer-cell">${esc(ls + more)}</td></tr>`;
+        }
+        html += '</tbody></table></div>';
+    }
 
     html += '</div>';
 

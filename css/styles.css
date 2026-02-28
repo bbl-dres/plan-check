@@ -32,11 +32,10 @@ body {
 
 /* -- Code badge: monospace identifier text --
    Used for rule IDs, entity types, code refs.
-   Merge of: .rules-row__code, .entity-type-badge,
+   Merge of: .rules-row__code,
    .vside-item__rule-id, .api-docs__type, .api-docs__status,
    .api-docs__method, .api-docs__version, .feature-popup__badge */
 .rules-row__code,
-.entity-type-badge,
 .vside-item__rule-id,
 .api-docs__type,
 .api-docs__status,
@@ -51,9 +50,8 @@ body {
 }
 
 /* -- Filled badge: code badge with background pill --
-   Merge of: .entity-type-badge, .feature-popup__badge,
+   Merge of: .feature-popup__badge,
    .api-docs__method, .api-docs__version, .api-docs__status */
-.entity-type-badge,
 .rules-row__code,
 .vside-item__rule-id,
 .feature-popup__badge,
@@ -71,14 +69,13 @@ body {
 /* -- Uppercase label: section/column headers --
    Merge of: .panel__header, .info-grid__label,
    .info-grid__download-label, .val-kz-title,
-   .api-docs__section-label, .entities-table th,
+   .api-docs__section-label,
    .api-docs__schema th, .rules-cat-sep */
 .panel__header,
 .info-grid__label,
 .info-grid__download-label,
 .val-kz-title,
 .api-docs__section-label,
-.entities-table th,
 .api-docs__schema th,
 .rules-cat-sep {
     font-size: var(--font-size-xs);
@@ -140,10 +137,7 @@ body {
 }
 
 /* -- Table cell: uniform padding across all tables --
-   Merge of: .entities-table th/td, .val-kz-table td,
-   .api-docs__schema th/td */
-.entities-table th,
-.entities-table td,
+   Merge of: .val-kz-table td, .api-docs__schema th/td */
 .val-kz-table td,
 .api-docs__schema th,
 .api-docs__schema td {
@@ -456,23 +450,6 @@ body {
 }
 
 /* ----------------------------------------
-   Entities Table
-   ---------------------------------------- */
-.entities-table { width: 100%; border-collapse: collapse; font-size: var(--font-size-sm); }
-.entities-table th {
-    /* font shared via uppercase-label group; padding via table-cell group */
-    text-align: left; background: transparent;
-    border-bottom: 1px solid var(--color-border);
-}
-.entities-table td { /* padding via table-cell group */ border-bottom: 1px solid var(--color-border-light); }
-.entities-table tr:last-child td { border-bottom: none; }
-.entities-table tr:hover td { background: var(--color-primary-light); }
-.entity-type-badge {
-    /* shared via filled-badge group above */
-    font-weight: var(--font-weight-regular);
-}
-
-/* ----------------------------------------
    Console
    ---------------------------------------- */
 #console-panel { display: block; }
@@ -628,12 +605,9 @@ body {
 /* ----------------------------------------
    Kennzahlen Dashboard
    ---------------------------------------- */
-.val-kennzahlen { display: grid; grid-template-columns: 55fr 45fr; gap: var(--space-4); }
-.val-kz-section { margin-bottom: var(--space-3); }
-.val-kz-title {
-    /* font shared via uppercase-label group above */
-    margin-bottom: var(--space-2);
-}
+.val-kennzahlen { display: grid; grid-template-columns: 55fr 45fr; gap: var(--space-6); }
+.val-kennzahlen > div { display: flex; flex-direction: column; gap: var(--space-5); }
+.val-kz-title { margin-bottom: var(--space-2); }
 .val-kz-table { width: 100%; border-collapse: collapse; font-size: var(--font-size-sm); border: 1px solid var(--color-border); overflow: hidden; }
 .val-kz-table td { /* padding via table-cell group */ border-bottom: 1px solid var(--color-border-light); }
 .val-kz-table tr:last-child td { border-bottom: none; }
@@ -641,6 +615,7 @@ body {
 .val-kz-table .kz-abbr { font-weight: var(--font-weight-semibold); white-space: nowrap; width: 70px; }
 .val-kz-table .kz-value { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--font-family-mono); white-space: nowrap; }
 .val-kz-table .kz-pct { text-align: right; color: var(--color-text-secondary); width: 55px; font-variant-numeric: tabular-nums; }
+.val-kz-table .kz-layer-cell { font-size: var(--font-size-xs); color: var(--color-text-secondary); }
 .val-kz-table .kz-sep td { border-top: 1px solid var(--color-border); font-weight: var(--font-weight-semibold); }
 
 /* Donut Chart */
@@ -876,12 +851,6 @@ body {
 
     /* -- Kennzahlen -- */
     .val-kennzahlen { grid-template-columns: 1fr; }
-
-    /* -- Entities Table -- */
-    .entities-table th,
-    .entities-table td {
-        padding: var(--space-2) var(--space-3);
-    }
 
     /* -- Footer -- */
     .footer__content {
