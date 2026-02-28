@@ -1353,7 +1353,7 @@ a:hover {
 }
 
 .project-kpi__value {
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-xl);
     font-weight: var(--font-weight-bold);
     font-family: var(--font-family-mono);
     color: var(--color-text-primary);
@@ -3105,6 +3105,22 @@ a:hover {
     }
     .project-header__image {
         width: 100%;
+        min-width: 0;
+        min-height: 120px;
+    }
+    .project-header__info {
+        flex-wrap: wrap;
+        padding: var(--space-3) var(--space-4);
+    }
+    .project-kpi {
+        min-width: 0;
+        padding: var(--space-2) var(--space-3);
+    }
+    .project-kpi__value {
+        font-size: var(--font-size-lg);
+    }
+    .project-kpi__label {
+        font-size: var(--font-size-sm);
     }
 
     /* Tabs — horizontal scroll + wrap filter */
@@ -3207,9 +3223,43 @@ a:hover {
 
     /* Page header — compact */
     .page-header { padding: var(--space-3) 0; }
+    .page-header__title { font-size: var(--font-size-lg); }
 
     /* Tighter container spacing */
     .container { padding-left: var(--space-3); padding-right: var(--space-3); }
+
+    /* Project header — compact KPIs */
+    .project-header__info {
+        flex-direction: column;
+        padding: var(--space-2) var(--space-3);
+    }
+    .project-kpi {
+        flex-direction: row;
+        gap: var(--space-2);
+        border-left: none;
+        border-top: 1px solid var(--color-border-light);
+        padding: var(--space-2) 0;
+        width: 100%;
+    }
+    .project-kpi:first-child {
+        border-top: none;
+    }
+    .project-kpi__value {
+        font-size: var(--font-size-base);
+    }
+    .project-kpi__label {
+        font-size: var(--font-size-sm);
+        margin-top: 0;
+    }
+
+    /* Donut chart — smaller on mobile */
+    .donut-chart-wrapper svg {
+        width: 72px;
+        height: 72px;
+    }
+    .donut-chart__percentage {
+        font-size: var(--font-size-lg);
+    }
 
     /* Tabs — smaller text */
     .tabs__tab { font-size: var(--font-size-sm); }
@@ -3247,6 +3297,13 @@ a:hover {
     /* Split-view--viewer — shorter panel */
     .split-view--viewer .split-view__left { max-height: 40vh; }
     .split-view--viewer .split-view__right { min-height: 300px; }
+
+    /* Modal — full width with padding */
+    .modal__content { margin: var(--space-3); }
+    .modal__header { padding: var(--space-3); }
+    .modal__body { padding: var(--space-3); }
+    .modal__footer { padding: var(--space-3); flex-wrap: wrap; }
+    .modal__footer .btn { flex: 1; min-width: 0; }
 }
 
 /* ========================================

@@ -131,11 +131,6 @@ export async function initI18n() {
             if (stored && SUPPORTED.includes(stored)) lang = stored;
         } catch (_) { /* private */ }
 
-        // 3. Check browser language
-        if (lang === DEFAULT) {
-            const browser = (navigator.language || '').split('-')[0].toLowerCase();
-            if (SUPPORTED.includes(browser)) lang = browser;
-        }
     }
 
     // Always pre-cache German as fallback

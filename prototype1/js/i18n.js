@@ -188,11 +188,6 @@ var I18n = (function () {
                 if (stored && SUPPORTED.indexOf(stored) !== -1) lang = stored;
             } catch (_) { /* private */ }
 
-            // 3. Check browser language
-            if (lang === DEFAULT) {
-                var browser = (navigator.language || '').split('-')[0].toLowerCase();
-                if (SUPPORTED.indexOf(browser) !== -1) lang = browser;
-            }
         }
 
         // Always pre-cache German as fallback
