@@ -1,5 +1,5 @@
 // ========================================
-// BBL Prüfplattform Flächenmanagement
+// BBL Plan-Check Area Management
 // Main JavaScript
 // ========================================
 
@@ -70,7 +70,7 @@ function withErrorHandling(fn, context) {
             return fn.apply(this, args);
         } catch (error) {
             console.error(`[${context}] Error:`, error);
-            showToast(`Ein Fehler ist aufgetreten: ${context}`, 'error');
+            showToast(I18n.t('toast.errorOccurred', { context: context }), 'error');
         }
     };
 }
@@ -413,7 +413,7 @@ function populateRuleSetDropdown() {
     if (!ruleSetSelect) return;
 
     // Keep the placeholder option
-    ruleSetSelect.innerHTML = '<option value="">Bitte wählen...</option>';
+    ruleSetSelect.innerHTML = '<option value="">' + I18n.t('modal.pleaseSelect') + '</option>';
 
     // Add options from mockRuleSets
     mockRuleSets.forEach(ruleSet => {
@@ -446,7 +446,7 @@ function setupNewProjectForm() {
             if (file && file.type.startsWith('image/')) {
                 // Validate file size
                 if (file.size > CONFIG.MAX_IMAGE_SIZE) {
-                    showToast(`Bild zu gross. Maximale Grösse: ${formatFileSize(CONFIG.MAX_IMAGE_SIZE)}`, 'error');
+                    showToast(I18n.t('toast.imageTooLarge', { size: formatFileSize(CONFIG.MAX_IMAGE_SIZE) }), 'error');
                     e.target.value = '';
                     return;
                 }
@@ -563,7 +563,7 @@ function setupNewProjectForm() {
 
             // Re-render projects and show success message
             renderProjects();
-            showToast(`Projekt "${name}" wurde erstellt`, 'success');
+            showToast(I18n.t('toast.projectCreated', { name: name }), 'success');
         });
     }
 }
@@ -754,7 +754,7 @@ async function loadData() {
 
         if (failures.length > 0) {
             console.error('[Data] Failed to load:', failures.join(', '));
-            showToast(`Fehler beim Laden: ${failures.join(', ')}`, 'error');
+            showToast(I18n.t('toast.loadingError', { failures: failures.join(', ') }), 'error');
             return false;
         }
 
@@ -779,7 +779,7 @@ async function loadData() {
         return true;
     } catch (error) {
         console.error('[Data] Unexpected error loading data:', error);
-        showToast('Unerwarteter Fehler beim Laden der Daten', 'error');
+        showToast(I18n.t('toast.unexpectedError'), 'error');
         return false;
     }
 }
@@ -1020,8 +1020,8 @@ function renderProjects() {
         grid.innerHTML = `
             <div class="empty-state">
                 <i data-lucide="folder-open" class="empty-state__icon"></i>
-                <h3 class="empty-state__title">Keine Projekte gefunden</h3>
-                <p class="empty-state__message">Es sind noch keine Projekte vorhanden. Erstellen Sie ein neues Projekt, um zu beginnen.</p>
+                <h3 class="empty-state__title" data-i18n="empty.noProjects">${I18n.t('empty.noProjects')}</h3>
+                <p class="empty-state__message" data-i18n="empty.noProjectsHint">${I18n.t('empty.noProjectsHint')}</p>
             </div>
         `;
         initLucideIcons(grid);
@@ -1043,7 +1043,7 @@ function renderProjects() {
         const scoreClass = getScoreStatus(averageScore);
 
         const overlayHtml = project.status === 'completed'
-            ? '<div class="card__overlay">Auftrag Abgeschlossen<br>(Wird in 30 Tagen gelöscht)</div>'
+            ? '<div class="card__overlay">' + I18n.t('card.orderCompleted') + '<br>' + I18n.t('card.deletedIn30Days') + '</div>'
             : '';
 
         return `
@@ -1056,9 +1056,9 @@ function renderProjects() {
                     <h3 class="card__title">${escapeHtml(project.name)}</h3>
                     <dl class="card__meta">
                         <div class="card__meta-left">
-                            <dd>SIA Phase: ${escapeHtml(project.phase)}</dd>
+                            <dd>${I18n.t('card.siaPhase')}: ${escapeHtml(project.phase)}</dd>
                             <dd>${escapeHtml(formatDateDisplay(project.createdDate))}</dd>
-                            <dd>${projectDocuments.length} Grundrisse</dd>
+                            <dd>${projectDocuments.length} ${I18n.t('card.floorPlans')}</dd>
                         </div>
                         <div class="card__meta-right">
                             <span class="card__percentage card__percentage--${scoreClass}">${averageScore}%</span>
@@ -1132,7 +1132,7 @@ function initProjectMap() {
             .setHTML(
                 '<h4>' + escapeHtml(project.name) + '</h4>' +
                 '<p>SIA Phase: ' + escapeHtml(project.phase) + ' | Nr. ' + escapeHtml(project.number) + '</p>' +
-                '<a href="#" class="project-map-link" data-project-id="' + project.id + '">Projekt &ouml;ffnen &rarr;</a>'
+                '<a href="#" class="project-map-link" data-project-id="' + project.id + '">' + I18n.t('map.openProject') + ' &rarr;</a>'
             );
 
         new maplibregl.Marker({ element: markerEl })
@@ -1178,7 +1178,7 @@ function renderDashboard() {
     // --- KPI Cards ---
     const dwgDocs = mockDocuments.filter(d => d.name.endsWith('.dwg'));
     const rooms = mockGeometry.filter(g => g.type === 'room');
-    const gfAreas = mockGeometry.filter(g => g.type === 'area' && g.aofunction === 'Geschossfläche');
+    const gfAreas = mockGeometry.filter(g => g.type === 'area' && g.aofunction === 'Gross Floor Area');
     const totalGF = gfAreas.reduce((sum, a) => sum + (a.area || 0), 0);
     const avgQuality = mockProjects.length > 0
         ? Math.round(mockProjects.reduce((s, p) => s + p.resultPercentage, 0) / mockProjects.length)
@@ -1200,12 +1200,12 @@ function renderDashboard() {
     if (statusBarsEl) {
         statusBarsEl.innerHTML =
             '<div class="status-bar">' +
-                '<span class="status-bar__label">Aktiv</span>' +
+                '<span class="status-bar__label">' + I18n.t('dashboard.active') + '</span>' +
                 '<div class="status-bar__track"><div class="status-bar__fill status-bar__fill--active" style="width:' + (statusCounts.active / total * 100) + '%"></div></div>' +
                 '<span class="status-bar__count">' + statusCounts.active + '</span>' +
             '</div>' +
             '<div class="status-bar">' +
-                '<span class="status-bar__label">Abgeschlossen</span>' +
+                '<span class="status-bar__label">' + I18n.t('dashboard.completed') + '</span>' +
                 '<div class="status-bar__track"><div class="status-bar__fill status-bar__fill--completed" style="width:' + (statusCounts.completed / total * 100) + '%"></div></div>' +
                 '<span class="status-bar__count">' + statusCounts.completed + '</span>' +
             '</div>';
@@ -1220,17 +1220,17 @@ function renderDashboard() {
         validationEl.innerHTML =
             '<div class="validation-row">' +
                 '<span class="validation-row__dot validation-row__dot--error"></span>' +
-                '<span class="validation-row__label">Fehler</span>' +
+                '<span class="validation-row__label">' + I18n.t('dashboard.errors') + '</span>' +
                 '<span class="validation-row__count">' + sevCounts.error + '</span>' +
             '</div>' +
             '<div class="validation-row">' +
                 '<span class="validation-row__dot validation-row__dot--warning"></span>' +
-                '<span class="validation-row__label">Warnungen</span>' +
+                '<span class="validation-row__label">' + I18n.t('dashboard.warnings') + '</span>' +
                 '<span class="validation-row__count">' + sevCounts.warning + '</span>' +
             '</div>' +
             '<div class="validation-row">' +
                 '<span class="validation-row__dot validation-row__dot--info"></span>' +
-                '<span class="validation-row__label">Hinweise</span>' +
+                '<span class="validation-row__label">' + I18n.t('dashboard.info') + '</span>' +
                 '<span class="validation-row__count">' + sevCounts.info + '</span>' +
             '</div>';
     }
@@ -1270,7 +1270,7 @@ function renderDashboard() {
             const pDocs = mockDocuments.filter(d => d.projectId === p.id && d.name.endsWith('.dwg'));
             const pDocIds = mockDocuments.filter(d => d.projectId === p.id).map(d => d.id);
             const pRooms = mockGeometry.filter(g => g.type === 'room' && pDocIds.includes(g.documentId));
-            const pGF = mockGeometry.filter(g => g.type === 'area' && g.aofunction === 'Geschossfläche' && pDocIds.includes(g.documentId));
+            const pGF = mockGeometry.filter(g => g.type === 'area' && g.aofunction === 'Gross Floor Area' && pDocIds.includes(g.documentId));
             const pGFTotal = pGF.reduce((s, a) => s + (a.area || 0), 0);
             const pErrors = mockCheckingResults.filter(r => pDocIds.includes(r.documentId) && r.severity === 'error');
             const scoreClass = p.resultPercentage >= 90 ? 'success' : p.resultPercentage >= 60 ? 'warning' : 'error';
@@ -1451,9 +1451,9 @@ function openProjectDetail(projectId, skipHashUpdate = false) {
     const roomCount = mockGeometry.filter(g => g.type === 'room' && projectDocumentIds.includes(g.documentId)).length;
     document.getElementById('project-room-count').textContent = roomCount;
 
-    // Calculate total GF (Geschossfläche) from geometry for this project
+    // Calculate total GF (Gross Floor Area) from geometry for this project
     const totalGF = mockGeometry
-        .filter(g => g.type === 'area' && g.aofunction === 'Geschossfläche' && projectDocumentIds.includes(g.documentId))
+        .filter(g => g.type === 'area' && g.aofunction === 'Gross Floor Area' && projectDocumentIds.includes(g.documentId))
         .reduce((sum, g) => sum + g.area, 0);
     const formattedGF = totalGF > 0 ? `${totalGF.toLocaleString('de-CH')} m²` : '0 m²';
     document.getElementById('project-gf').textContent = formattedGF;
@@ -1529,7 +1529,7 @@ const DocumentSelection = {
         // Update selected count text
         const countEl = safeGetElementById('documents-selected-count');
         if (countEl) {
-            countEl.textContent = `${count} ausgewählt`;
+            countEl.textContent = I18n.t('table.selected', { count: count });
         }
 
         // Update select all checkbox state
@@ -1587,7 +1587,7 @@ function renderDocuments() {
             <tr data-document-id="${safeParseInt(doc.id)}">
                 <td class="table__checkbox-col">
                     <label class="checkbox">
-                        <input type="checkbox" class="document-checkbox" data-doc-id="${safeParseInt(doc.id)}" aria-label="Grundriss ${escapeHtml(doc.name)} auswählen">
+                        <input type="checkbox" class="document-checkbox" data-doc-id="${safeParseInt(doc.id)}" aria-label="Select floor plan ${escapeHtml(doc.name)}">
                         <span class="checkbox__mark"></span>
                     </label>
                 </td>
@@ -1676,7 +1676,7 @@ function setupDocumentActions() {
             e.preventDefault();
             const formData = new FormData(newDocForm);
             const name = formData.get('name');
-            showToast(`Grundriss "${name}" erstellt`, 'success');
+            showToast(I18n.t('toast.floorPlanCreated', { name: name }), 'success');
             closeModal('new-document-modal');
             newDocForm.reset();
         });
@@ -1688,7 +1688,7 @@ function setupDocumentActions() {
             if (selectedIds.length === 1) {
                 const doc = mockDocuments.find(d => d.id === selectedIds[0]);
                 if (doc) {
-                    showToast(`Grundriss "${doc.name}" bearbeiten - Funktion kommt bald`, 'info');
+                    showToast(I18n.t('toast.editComingSoon', { name: doc.name }), 'info');
                 }
             }
         });
@@ -1698,7 +1698,7 @@ function setupDocumentActions() {
         deleteBtn.addEventListener('click', () => {
             const count = DocumentSelection.getSelectedCount();
             if (count > 0) {
-                const confirmed = confirm(`Möchten Sie ${count} Grundriss(e) wirklich löschen?`);
+                const confirmed = confirm(I18n.t('toast.deleteFloorPlansConfirm', { count: count }));
                 if (confirmed) {
                     // Remove selected documents from mockDocuments
                     const selectedIds = Array.from(DocumentSelection.selectedIds);
@@ -1720,7 +1720,7 @@ function setupDocumentActions() {
 
                     // Re-render and show toast
                     renderDocuments();
-                    showToast(`${count} Grundriss(e) gelöscht`, 'success');
+                    showToast(I18n.t('toast.floorPlansDeleted', { count: count }), 'success');
                 }
             }
         });
@@ -1765,7 +1765,7 @@ const UserSelection = {
         // Update selected count text
         const countEl = safeGetElementById('users-selected-count');
         if (countEl) {
-            countEl.textContent = `${count} ausgewählt`;
+            countEl.textContent = I18n.t('table.selected', { count: count });
         }
 
         // Update select all checkbox state
@@ -1816,7 +1816,7 @@ function renderUsers() {
             <tr data-user-id="${safeParseInt(user.id)}">
                 <td class="table__checkbox-col">
                     <label class="checkbox">
-                        <input type="checkbox" class="user-checkbox" data-user-id="${safeParseInt(user.id)}" aria-label="Benutzer ${escapeHtml(user.name)} auswählen">
+                        <input type="checkbox" class="user-checkbox" data-user-id="${safeParseInt(user.id)}" aria-label="${I18n.t('table.selectAll')}">
                         <span class="checkbox__mark"></span>
                     </label>
                 </td>
@@ -1893,8 +1893,8 @@ function setupUserActions() {
             const formData = new FormData(inviteForm);
             const email = formData.get('email');
             const role = formData.get('role');
-            const roleLabels = { viewer: 'Betrachter', editor: 'Bearbeiter', admin: 'Administrator' };
-            showToast(`Einladung an ${email} als ${roleLabels[role]} gesendet`, 'success');
+            const roleLabels = { viewer: I18n.t('role.viewer'), editor: I18n.t('role.editor'), admin: I18n.t('role.admin') };
+            showToast(I18n.t('toast.invitationSent', { email: email, role: roleLabels[role] }), 'success');
             closeModal('invite-user-modal');
             inviteForm.reset();
         });
@@ -1906,7 +1906,7 @@ function setupUserActions() {
             if (selectedIds.length === 1) {
                 const user = mockUsers.find(u => u.id === selectedIds[0]);
                 if (user) {
-                    showToast(`Benutzer "${user.name}" bearbeiten - Funktion kommt bald`, 'info');
+                    showToast(I18n.t('toast.userEditComingSoon', { name: user.name }), 'info');
                 }
             }
         });
@@ -1916,7 +1916,7 @@ function setupUserActions() {
         deleteBtn.addEventListener('click', () => {
             const count = UserSelection.getSelectedCount();
             if (count > 0) {
-                const confirmed = confirm(`Möchten Sie ${count} Benutzer wirklich entfernen?`);
+                const confirmed = confirm(I18n.t('toast.deleteUsersConfirm', { count: count }));
                 if (confirmed) {
                     // Remove selected users from mockUsers
                     const selectedIds = Array.from(UserSelection.selectedIds);
@@ -1929,7 +1929,7 @@ function setupUserActions() {
 
                     // Re-render and show toast
                     renderUsers();
-                    showToast(`${count} Benutzer entfernt`, 'success');
+                    showToast(I18n.t('toast.usersRemoved', { count: count }), 'success');
                 }
             }
         });
@@ -2010,13 +2010,13 @@ function setupSettingsHandlers() {
         // Refresh the detail view with updated data
         openProjectDetail(currentProject.id, true);
 
-        showToast('Einstellungen gespeichert', 'success');
+        showToast(I18n.t('toast.settingsSaved'), 'success');
     }, { signal });
 
     // Cancel — reset form to current project values
     document.getElementById('settings-cancel-btn')?.addEventListener('click', () => {
         populateSettings();
-        showToast('Änderungen verworfen', 'info');
+        showToast(I18n.t('toast.changesDiscarded'), 'info');
     }, { signal });
 
     // Archive
@@ -2024,7 +2024,7 @@ function setupSettingsHandlers() {
         if (!currentProject) return;
         currentProject.status = 'completed';
         openProjectDetail(currentProject.id, true);
-        showToast('Projekt archiviert', 'success');
+        showToast(I18n.t('toast.projectArchived'), 'success');
     }, { signal });
 
     // Delete
@@ -2036,7 +2036,7 @@ function setupSettingsHandlers() {
             currentProject = null;
             switchView('projects');
             renderProjects();
-            showToast('Projekt gelöscht', 'success');
+            showToast(I18n.t('toast.projectDeleted'), 'success');
         }
     }, { signal });
 
@@ -2078,7 +2078,7 @@ function openValidationView(documentId, skipHashUpdate = false) {
     // Room count
     document.getElementById('step1-room-count').textContent = docRooms.length;
 
-    // Calculate NGF (Nettogeschossfläche) - sum of all room areas as approximation
+    // Calculate NGF (Net Floor Area) - sum of all room areas as approximation
     const totalNGF = docRooms.reduce((sum, r) => sum + r.area, 0);
     document.getElementById('step1-ngf').textContent = totalNGF > 0
         ? `${totalNGF.toLocaleString('de-CH')} m²`
@@ -2213,9 +2213,9 @@ function updateStepButtons() {
     if (nextBtn) {
         // Update button text based on current step
         if (currentStep === 4) {
-            nextBtn.textContent = 'Auftrag abschliessen';
+            nextBtn.textContent = I18n.t('nav.completeOrder');
         } else {
-            nextBtn.textContent = 'Nächster Schritt';
+            nextBtn.textContent = I18n.t('nav.nextStep');
         }
     }
 }
@@ -2228,13 +2228,13 @@ function navigateToStep(stepNumber) {
 
     // Show toast notification
     const stepNames = [
-        'DWG hochladen',
-        'Raumliste hochladen',
-        'Ergebnisse bestätigen',
-        'Auftrag abschliessen'
+        I18n.t('stepper.step1'),
+        I18n.t('stepper.step2'),
+        I18n.t('stepper.step3'),
+        I18n.t('stepper.step4')
     ];
 
-    showToast(`Schritt ${stepNumber}: ${stepNames[stepNumber - 1]}`, 'info');
+    showToast(I18n.t('toast.stepInfo', { step: stepNumber, name: stepNames[stepNumber - 1] }), 'info');
 }
 
 function previousStep() {
@@ -2250,7 +2250,7 @@ function nextStep() {
         // On final step, go to results view
         switchView('results');
         renderPieChart();
-        showToast('Validierung abgeschlossen!', 'success');
+        showToast(I18n.t('toast.validationDone'), 'success');
     }
 }
 
@@ -2473,7 +2473,7 @@ function initSpeckleViewer() {
 
         // Handle iframe load errors
         iframe.addEventListener('error', () => {
-            loading.innerHTML = '<span>Fehler beim Laden des 3D-Grundrisses</span>';
+            loading.innerHTML = '<span>Error loading 3D floor plan</span>';
         });
     }
 }
@@ -2495,11 +2495,11 @@ function renderPieChart() {
     if (!slicesGroup || !legend) return;
 
     const data = [
-        { label: 'HNF (Hauptnutzfläche)', value: 3200, color: '#2E7D32' },
-        { label: 'NNF (Nebennutzfläche)', value: 400, color: '#558B2F' },
-        { label: 'VF (Verkehrsfläche)', value: 300, color: '#7CB342' },
-        { label: 'FF (Funktionsfläche)', value: 100, color: '#AED581' },
-        { label: 'KF (Konstruktionsfläche)', value: 500, color: '#C5E1A5' }
+        { label: 'HNF (Primary use area)', value: 3200, color: '#2E7D32' },
+        { label: 'NNF (Secondary use area)', value: 400, color: '#558B2F' },
+        { label: 'VF (Circulation area)', value: 300, color: '#7CB342' },
+        { label: 'FF (Functional area)', value: 100, color: '#AED581' },
+        { label: 'KF (Construction area)', value: 500, color: '#C5E1A5' }
     ];
 
     const total = data.reduce((sum, d) => sum + d.value, 0);
@@ -2557,8 +2557,8 @@ function setupTabs() {
     // Step 2 tabs (rooms, errors)
     setupTabGroup('data-step2-tab', 'step2-tab-', ['step2-tab-rooms', 'step2-tab-errors'], signal);
 
-    // Step 3 tabs (kennzahlen, viewer)
-    setupTabGroup('data-step3-tab', 'step3-tab-', ['step3-tab-kennzahlen', 'step3-tab-viewer'], signal);
+    // Step 3 tabs (kpi, viewer)
+    setupTabGroup('data-step3-tab', 'step3-tab-', ['step3-tab-kpi', 'step3-tab-viewer'], signal);
 }
 
 // === PROJECT SEARCH ===
@@ -2791,8 +2791,7 @@ function handleFileSelect(event, type) {
     // Validate file size based on type
     const maxSize = type === 'dwg' ? CONFIG.MAX_DWG_SIZE : CONFIG.MAX_EXCEL_SIZE;
     if (file.size > maxSize) {
-        const typeName = type === 'dwg' ? 'DWG' : 'Excel';
-        showToast(`${typeName}-Datei zu gross. Maximale Grösse: ${formatFileSize(maxSize)}`, 'error');
+        showToast(I18n.t(type === 'dwg' ? 'toast.dwgTooLarge' : 'toast.excelTooLarge', { size: formatFileSize(maxSize) }), 'error');
         event.target.value = '';
         return;
     }
@@ -2807,7 +2806,7 @@ function handleFileSelect(event, type) {
         if (nameEl) nameEl.textContent = sanitizedName;
         if (sizeEl) sizeEl.textContent = fileSize;
         if (uploadedEl) uploadedEl.style.display = 'block';
-        showToast(`DWG-Datei "${sanitizedName}" ausgewählt`, 'success');
+        showToast(I18n.t('toast.dwgSelected', { name: sanitizedName }), 'success');
     } else if (type === 'excel') {
         const nameEl = document.getElementById('excel-file-name');
         const sizeEl = document.getElementById('excel-file-size');
@@ -2815,7 +2814,7 @@ function handleFileSelect(event, type) {
         if (nameEl) nameEl.textContent = sanitizedName;
         if (sizeEl) sizeEl.textContent = fileSize;
         if (uploadedEl) uploadedEl.style.display = 'block';
-        showToast(`Excel-Datei "${sanitizedName}" ausgewählt`, 'success');
+        showToast(I18n.t('toast.excelSelected', { name: sanitizedName }), 'success');
     }
 }
 
@@ -2910,7 +2909,7 @@ function enhanceInteractions() {
     document.addEventListener('click', (e) => {
         const errorItem = e.target.closest('.error-item');
         if (errorItem) {
-            showToast('Error location highlighted on floor plan', 'info');
+            showToast(I18n.t('toast.errorHighlighted'), 'info');
         }
     });
 }
@@ -2942,6 +2941,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Load data from JSON files first
     await loadData();
 
+    // Initialize i18n
+    await I18n.init();
+
     setupEventListeners();
     setupTabs();
     setupSearch();
@@ -2966,8 +2968,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Navigation for other hashes is handled by setupRouting() to avoid race conditions
 
     // Add welcome message
-    console.log('%c BBL Prüfplattform Flächenmanagement ', 'background: #DC0018; color: white; font-size: 14px; padding: 4px 8px;');
+    console.log('%c BBL Plan-Check Area Management ', 'background: #DC0018; color: white; font-size: 14px; padding: 4px 8px;');
     console.log('%c Prototype v1.0 - Swiss Federal Design System ', 'background: #006699; color: white; font-size: 12px; padding: 4px 8px;');
+
+    // Language selector
+    document.querySelectorAll('.lang-selector__item').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            I18n.setLocale(btn.getAttribute('data-lang'));
+        });
+    });
 
     // Enhance interactions - now uses event delegation so no delay needed
     enhanceInteractions();

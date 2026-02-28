@@ -24,6 +24,12 @@ const ZOOM_IN_FACTOR = 1.4;
 const ZOOM_OUT_FACTOR = 1 / 1.4;
 const WHEEL_ZOOM_IN = 1.18;
 const WHEEL_ZOOM_OUT = 0.85;
+const MIN_ZOOM = 0.001;
+const MAX_ZOOM = 10000;
+
+function clampZoom() {
+    state.cam.zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, state.cam.zoom));
+}
 
 // =============================================
 // Initialize DOM references
@@ -162,7 +168,7 @@ function handleCanvasTap(sx, sy) {
             state.highlightedItems = null;
             showPopupForItem(room.handle, room.centroid);
             dom.vsideList.querySelectorAll('.vside-item').forEach(el => el.classList.remove('vside-item--selected'));
-            const match = dom.vsideList.querySelector(`[data-handle="${room.handle}"]`);
+            const match = dom.vsideList.querySelector(`[data-handle="${CSS.escape(room.handle)}"]`);
             if (match) {
                 match.classList.add('vside-item--selected');
                 match.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
@@ -211,6 +217,7 @@ dom.canvasWrap.addEventListener('wheel', (e) => {
 
     const factor = e.deltaY > 0 ? WHEEL_ZOOM_OUT : WHEEL_ZOOM_IN;
     state.cam.zoom *= factor;
+    clampZoom();
 
     state.cam.x = wx - (mx - rect.width / 2) / state.cam.zoom;
     state.cam.y = wy + (my - rect.height / 2) / state.cam.zoom;
@@ -250,6 +257,7 @@ dom.canvasWrap.addEventListener('pointermove', (e) => {
         const dist = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
         const scale = dist / state.pinchStart.dist;
         state.cam.zoom = state.pinchStart.zoom * scale;
+        clampZoom();
 
         // Keep midpoint stable
         const rect = dom.canvasWrap.getBoundingClientRect();
@@ -323,8 +331,8 @@ document.getElementById('toggle-bg').addEventListener('click', () => {
     dom.canvasWrap.style.background = state.bgColor;
     render();
 });
-document.getElementById('zoom-in').addEventListener('click', () => { state.cam.zoom *= ZOOM_IN_FACTOR; render(); });
-document.getElementById('zoom-out').addEventListener('click', () => { state.cam.zoom *= ZOOM_OUT_FACTOR; render(); });
+document.getElementById('zoom-in').addEventListener('click', () => { state.cam.zoom *= ZOOM_IN_FACTOR; clampZoom(); render(); });
+document.getElementById('zoom-out').addEventListener('click', () => { state.cam.zoom *= ZOOM_OUT_FACTOR; clampZoom(); render(); });
 document.getElementById('zoom-fit').addEventListener('click', zoomExtents);
 
 // Fullscreen toggle

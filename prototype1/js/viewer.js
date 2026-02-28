@@ -17,7 +17,7 @@ var FloorPlanViewer = (function () {
     let bounds = { minX: 0, minY: 0, maxX: 1, maxY: 1, width: 1, height: 1 };
     let selectedRoomId = null;
     let hoveredRoomId = null;
-    let mode = 'overview'; // 'overview' | 'rooms' | 'areas' | 'kennzahlen' | 'errors'
+    let mode = 'overview'; // 'overview' | 'rooms' | 'areas' | 'kpi' | 'errors'
     let highlightMap = {}; // roomId -> { fill, stroke }
     let statusFilterSet = null; // null = show all; Set of 'warning'|'error'
     let onClickCallback = null;
@@ -190,8 +190,8 @@ var FloorPlanViewer = (function () {
             case 'areas':
                 // Areas mode: rooms are dimmed, area polygons drawn separately
                 return DIMMED_COLOR;
-            case 'kennzahlen':
-                // Kennzahlen mode: rooms colored by SIA category
+            case 'kpi':
+                // KPI mode: rooms colored by SIA category
                 return SIA_COLORS[room.siaCategory] || DEFAULT_COLOR;
             default: // overview, errors, rules
                 return DEFAULT_COLOR;
@@ -337,7 +337,7 @@ var FloorPlanViewer = (function () {
 
         var html = '<div class="canvas-viewer__popup-header">' +
             '<strong>' + escapeHtml(room.aoid) + '</strong>' +
-            '<button class="canvas-viewer__popup-close" aria-label="Schliessen">&times;</button>' +
+            '<button class="canvas-viewer__popup-close" aria-label="Close">&times;</button>' +
             '</div>' +
             '<div class="canvas-viewer__popup-body">' +
             '<span class="canvas-viewer__popup-func">' + escapeHtml(room.aofunction) + '</span>' +

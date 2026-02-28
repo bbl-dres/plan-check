@@ -3,7 +3,7 @@
 // =============================================
 
 import { state, dom, CAFM_LAYERS } from './state.js';
-import { fmtSize, fmtNum, log } from './utils.js';
+import { fmtSize, fmtNum, log, computeKpis } from './utils.js';
 import { render, zoomExtents } from './renderer.js';
 import { ALL_RULES, getRuleCatLabel } from './validation.js';
 import { t, getLocale } from './i18n.js';
@@ -71,20 +71,8 @@ export async function downloadPdfReport() {
         const successLight = [232, 245, 233]; // --color-success-light: #E8F5E9
 
 
-        // Derived KPI data — SIA 416 category breakdown (matches frontend)
-        const hasRooms = state.roomData.length > 0;
-        const hasAreaPolys = state.areaData.length > 0;
-        const catSum = { HNF: 0, NNF: 0, VF: 0, FF: 0 };
-        for (const r of state.roomData) {
-            const cat = r.siaCategory || 'HNF';
-            if (cat in catSum) catSum[cat] += r.area;
-            else catSum.HNF += r.area;
-        }
-        const hnf = catSum.HNF, nnf = catSum.NNF, vf = catSum.VF, ff = catSum.FF;
-        const nf = hnf + nnf;
-        const ngf = nf + vf + ff;
-        const gf = hasAreaPolys ? state.areaData.reduce((s, a) => s + a.area, 0) : null;
-        const kf = (gf !== null && hasRooms) ? gf - ngf : null;
+        // Derived KPI data — SIA 416 category breakdown
+        const { hnf, nnf, vf, ff, nf, ngf, gf, kf, hasRooms, hasAreaPolys } = computeKpis(state.roomData, state.areaData);
 
         // Canvas dimensions for images
         const cw = dom.canvas.width, ch = dom.canvas.height;
@@ -98,7 +86,7 @@ export async function downloadPdfReport() {
             alternateRowStyles: { fillColor: zebra },
             margin: { left: mx, right: mx },
         };
-        const kzColStyles = { 0: { fontStyle: 'bold', cellWidth: 18 }, 2: { halign: 'right', cellWidth: 30 }, 3: { halign: 'right', cellWidth: 16 } };
+        const kpiColStyles = { 0: { fontStyle: 'bold', cellWidth: 18 }, 2: { halign: 'right', cellWidth: 30 }, 3: { halign: 'right', cellWidth: 16 } };
 
         // ── Reusable layout helpers ──
         function pageHeader(title) {
@@ -209,7 +197,7 @@ export async function downloadPdfReport() {
         doc.setLineWidth(0.5);
         doc.line(mx, 40, mx + 30, 40);
 
-        // Dateiinformationen
+        // File information
         doc.autoTable({
             ...tableBase,
             startY: 47,
@@ -228,7 +216,7 @@ export async function downloadPdfReport() {
             columnStyles: { 0: { fontStyle: 'bold', cellWidth: 48 } },
         });
 
-        // Zusammenfassung — KPI cards
+        // Summary — KPI cards
         let y = doc.lastAutoTable.finalY + 10;
         doc.setFontSize(11);
         doc.setTextColor(...dark);
@@ -312,14 +300,14 @@ export async function downloadPdfReport() {
         }
 
         // ════════════════════════════════════════════
-        // PAGE 2 — Inhaltsverzeichnis (placeholder — filled in after all pages)
+        // PAGE 2 — Table of Contents (placeholder — filled in after all pages)
         // ════════════════════════════════════════════
         doc.addPage();
         const tocPageNum = doc.internal.getNumberOfPages();
         const chapterPages = {}; // filled as chapters are created
 
         // ════════════════════════════════════════════
-        // Prüfregeln
+        // Validation Rules
         // ════════════════════════════════════════════
         doc.addPage();
         chapterPages['rules'] = doc.internal.getNumberOfPages();
@@ -370,7 +358,7 @@ export async function downloadPdfReport() {
 
         let pY = 28;
 
-        // Nicht bestanden
+        // Failed rules
         if (pdfFailed.length > 0) {
             pY = sectionSubtitle(`${t('tab.notPassed')} (${pdfFailed.length})`, pY);
             doc.autoTable({
@@ -384,7 +372,7 @@ export async function downloadPdfReport() {
             pY = doc.lastAutoTable.finalY + 8;
         }
 
-        // Bestanden
+        // Passed rules
         if (pY > ph - 30) { doc.addPage(); pageHeader(t('tab.rules') + ' (...)'); pY = 28; }
         pY = sectionSubtitle(`${t('tab.passed')} (${pdfPassed.length})`, pY);
         doc.autoTable({
@@ -398,7 +386,7 @@ export async function downloadPdfReport() {
         tableCaption(t('export.rulesCaption'));
 
         // ════════════════════════════════════════════
-        // Fehlermeldungen
+        // Error Messages
         // ════════════════════════════════════════════
         doc.addPage();
         chapterPages['errors'] = doc.internal.getNumberOfPages();
@@ -467,7 +455,7 @@ export async function downloadPdfReport() {
         tableCaption(t('export.layersCaption'));
 
         // ════════════════════════════════════════════
-        // Räume
+        // Rooms
         // ════════════════════════════════════════════
         doc.addPage();
         chapterPages['rooms'] = doc.internal.getNumberOfPages();
@@ -505,7 +493,7 @@ export async function downloadPdfReport() {
         }
 
         // ════════════════════════════════════════════
-        // Flächen
+        // Areas
         // ════════════════════════════════════════════
         doc.addPage();
         chapterPages['areas'] = doc.internal.getNumberOfPages();
@@ -541,10 +529,10 @@ export async function downloadPdfReport() {
         }
 
         // ════════════════════════════════════════════
-        // Kennzahlen
+        // KPI
         // ════════════════════════════════════════════
         doc.addPage();
-        chapterPages['kz'] = doc.internal.getNumberOfPages();
+        chapterPages['kpi'] = doc.internal.getNumberOfPages();
         pageHeader(t('tab.kpi'));
 
         const pct = (v, total) => {
@@ -552,11 +540,11 @@ export async function downloadPdfReport() {
             return Math.round((v / total) * 100) + '%';
         };
 
-        // Gebäudeflächen
-        let kzY = sectionSubtitle(t('kpiSection.areas'), 30);
+        // Building areas
+        let kpiY = sectionSubtitle(t('kpiSection.areas'), 30);
         doc.autoTable({
             ...tableBase,
-            startY: kzY,
+            startY: kpiY,
             head: [[t('export.colAbbreviation'), t('export.colDesignation'), t('export.colArea'), t('export.colProportion')]],
             body: [
                 ['GF', t('kpi.GF'), fmtA(gf), pct(gf, gf)],
@@ -568,41 +556,41 @@ export async function downloadPdfReport() {
                 ['VF', t('kpi.VF'), hasRooms ? fmtA(vf) : DASH, pct(hasRooms ? vf : null, gf)],
                 ['FF', t('kpi.FF'), hasRooms ? fmtA(ff) : DASH, pct(hasRooms ? ff : null, gf)],
             ],
-            columnStyles: kzColStyles,
+            columnStyles: kpiColStyles,
         });
         tableCaption(t('export.buildingAreasCaption'));
 
         // Helper: page break if not enough room (need ~40mm for subtitle+table+caption)
-        function kzBreak(needed) {
-            kzY = doc.lastAutoTable.finalY + 10;
-            if (kzY + needed > ph - 18) { doc.addPage(); pageHeader(t('kpiSection.continued')); kzY = 30; }
+        function kpiBreak(needed) {
+            kpiY = doc.lastAutoTable.finalY + 10;
+            if (kpiY + needed > ph - 18) { doc.addPage(); pageHeader(t('kpiSection.continued')); kpiY = 30; }
         }
 
-        // Gebäudevolumen
-        kzBreak(25);
-        kzY = sectionSubtitle(t('kpiSection.volume'), kzY);
+        // Building volume
+        kpiBreak(25);
+        kpiY = sectionSubtitle(t('kpiSection.volume'), kpiY);
         doc.autoTable({
             ...tableBase,
-            startY: kzY,
+            startY: kpiY,
             head: [[t('export.colAbbreviation'), t('export.colDesignation'), t('export.colVolume'), t('export.colProportion')]],
             body: [
                 ['GV', t('kpi.GV'), DASH, DASH],
             ],
-            columnStyles: kzColStyles,
+            columnStyles: kpiColStyles,
         });
         tableCaption(t('export.volumeCaption'));
 
-        // Flächen DIN 277 — sub-category sums (matches frontend)
+        // DIN 277 area sub-category sums (matches frontend)
         const din277Sum = {};
         for (const r of state.roomData) {
             const sub = r.din277 || null;
             if (sub) din277Sum[sub] = (din277Sum[sub] || 0) + r.area;
         }
-        kzBreak(80);
-        kzY = sectionSubtitle(t('kpiSection.din277'), kzY);
+        kpiBreak(80);
+        kpiY = sectionSubtitle(t('kpiSection.din277'), kpiY);
         doc.autoTable({
             ...tableBase,
-            startY: kzY,
+            startY: kpiY,
             head: [[t('export.colAbbreviation'), t('export.colDesignation'), t('export.colArea'), t('export.colProportion')]],
             body: [
                 ['HNF 1', t('din277.1'), fmtA(din277Sum['1'] || null), pct(din277Sum['1'] || null, gf)],
@@ -616,16 +604,16 @@ export async function downloadPdfReport() {
                 ['VF 9', t('din277.9'), fmtA(din277Sum['9'] || null), pct(din277Sum['9'] || null, gf)],
                 ['BUF 10', t('din277.10'), fmtA(din277Sum['10'] || null), pct(din277Sum['10'] || null, gf)],
             ],
-            columnStyles: kzColStyles,
+            columnStyles: kpiColStyles,
         });
         tableCaption(t('export.din277Caption'));
 
-        // Wirtschaftlichkeit
-        kzBreak(45);
-        kzY = sectionSubtitle(t('kpiSection.economy'), kzY);
+        // Economy ratios
+        kpiBreak(45);
+        kpiY = sectionSubtitle(t('kpiSection.economy'), kpiY);
         doc.autoTable({
             ...tableBase,
-            startY: kzY,
+            startY: kpiY,
             head: [[t('export.colKpiName'), t('export.colDesignation'), t('export.value')]],
             body: [
                 ['NGF / GF', t('kpi.NGF_GF'), (gf && hasRooms) ? (ngf / gf).toFixed(2) : DASH],
@@ -637,13 +625,13 @@ export async function downloadPdfReport() {
         });
         tableCaption(t('export.economyCaption'));
 
-        // Objektübersicht
+        // Entity overview
         if (state.entitySummary.length > 0) {
-            kzBreak(50);
-            kzY = sectionSubtitle(t('kpiSection.entitySummary'), kzY);
+            kpiBreak(50);
+            kpiY = sectionSubtitle(t('kpiSection.entitySummary'), kpiY);
             doc.autoTable({
                 ...tableBase,
-                startY: kzY,
+                startY: kpiY,
                 head: [[t('export.colType'), t('export.colCount'), t('export.colTopLayer')]],
                 body: state.entitySummary.map(e => {
                     const ls = e.layers.slice(0, 3).join(', ');
@@ -665,9 +653,9 @@ export async function downloadPdfReport() {
             { num: '3', label: t('tab.layers'), desc: t('export.layersFound', { count: state.layerInfo.length }), page: chapterPages['layers'] },
             { num: '4', label: t('tab.rooms'), desc: t('export.roomsWithAreas', { count: state.roomData.length }), page: chapterPages['rooms'] },
             { num: '5', label: t('tab.areas'), desc: t('export.areaPolygons', { count: state.areaData.length }), page: chapterPages['areas'] },
-            { num: '6', label: t('tab.kpi'), desc: t('export.tocKpiDesc'), page: chapterPages['kz'] },
+            { num: '6', label: t('tab.kpi'), desc: t('export.tocKpiDesc'), page: chapterPages['kpi'] },
         ];
-        // "Seite" column header
+        // "Page" column header
         doc.setFontSize(8);
         doc.setTextColor(...muted);
         doc.text(t('export.tocPage'), mxr - 2, 29, { align: 'right' });
@@ -748,7 +736,7 @@ export async function downloadExcelReport() {
         wsInfo['!cols'] = [{ wch: 30 }, { wch: 65 }];
         XLSX.utils.book_append_sheet(wb, wsInfo, 'Info');
 
-        // ── Sheet 2: Prüfregeln ──
+        // ── Sheet 2: Validation Rules ──
         const xlViolationCounts = {};
         for (const err of state.validationErrors) {
             xlViolationCounts[err.ruleCode] = (xlViolationCounts[err.ruleCode] || 0) + 1;
@@ -778,7 +766,7 @@ export async function downloadExcelReport() {
         wsRules['!cols'] = [{ wch: 12 }, { wch: 14 }, { wch: 50 }, { wch: 10 }];
         XLSX.utils.book_append_sheet(wb, wsRules, t('tab.rules'));
 
-        // ── Sheet 3: Fehlermeldungen ──
+        // ── Sheet 3: Error Messages ──
         const errorRows = state.validationErrors.map((e, i) => {
             return [i + 1, e.severity === 'error' ? xlStErr : xlStWarn, e.ruleCode, e.message];
         });
@@ -805,7 +793,7 @@ export async function downloadExcelReport() {
         wsLayers['!cols'] = [{ wch: 5 }, { wch: 12 }, { wch: 30 }, { wch: 18 }, { wch: 10 }];
         XLSX.utils.book_append_sheet(wb, wsLayers, t('tab.layers'));
 
-        // ── Sheet 5: Räume ──
+        // ── Sheet 5: Rooms ──
         const statusMap = { error: t('status.error'), warning: t('status.warning'), ok: t('status.ok') };
         const roomRows = state.roomData.map((r, i) => [
             i + 1, statusMap[r.status] || r.status, r.id, r.aoid, r.area, r.layer,
@@ -818,7 +806,7 @@ export async function downloadExcelReport() {
         wsRooms['!cols'] = [{ wch: 5 }, { wch: 10 }, { wch: 10 }, { wch: 20 }, { wch: 14 }, { wch: 22 }, { wch: 10 }, { wch: 10 }];
         XLSX.utils.book_append_sheet(wb, wsRooms, t('tab.rooms'));
 
-        // ── Sheet 6: Flächen ──
+        // ── Sheet 6: Areas ──
         const xlAreaSt = { error: t('status.error'), warning: t('status.warning'), ok: t('status.ok') };
         const areaRows = state.areaData.map((a, i) => [
             i + 1, xlAreaSt[a.status] || a.status, a.id, a.aoid, a.area, a.layer, a.handle || '-'
@@ -830,21 +818,8 @@ export async function downloadExcelReport() {
         wsAreas['!cols'] = [{ wch: 5 }, { wch: 10 }, { wch: 10 }, { wch: 20 }, { wch: 14 }, { wch: 22 }, { wch: 10 }];
         XLSX.utils.book_append_sheet(wb, wsAreas, t('tab.areas'));
 
-        // ── Sheet 7: Kennzahlen ──
-        // SIA 416 category breakdown (matches frontend)
-        const xlHasRooms = state.roomData.length > 0;
-        const xlHasAreaPolys = state.areaData.length > 0;
-        const xlCatSum = { HNF: 0, NNF: 0, VF: 0, FF: 0 };
-        for (const r of state.roomData) {
-            const cat = r.siaCategory || 'HNF';
-            if (cat in xlCatSum) xlCatSum[cat] += r.area;
-            else xlCatSum.HNF += r.area;
-        }
-        const xlHnf = xlCatSum.HNF, xlNnf = xlCatSum.NNF, xlVf = xlCatSum.VF, xlFf = xlCatSum.FF;
-        const xlNf = xlHnf + xlNnf;
-        const xlNgf = xlNf + xlVf + xlFf;
-        const xlGf = xlHasAreaPolys ? state.areaData.reduce((s, a) => s + a.area, 0) : null;
-        const xlKf = (xlGf !== null && xlHasRooms) ? xlGf - xlNgf : null;
+        // ── Sheet 7: KPI ──
+        const { hnf: xlHnf, nnf: xlNnf, vf: xlVf, ff: xlFf, nf: xlNf, ngf: xlNgf, gf: xlGf, kf: xlKf, hasRooms: xlHasRooms } = computeKpis(state.roomData, state.areaData);
         const xlPct = (v, total) => (v === null || v === undefined || total === null || total === undefined || total <= 0) ? DASH : Math.round((v / total) * 100) + '%';
 
         // DIN 277 sub-category sums
@@ -854,7 +829,7 @@ export async function downloadExcelReport() {
             if (sub) xlDin[sub] = (xlDin[sub] || 0) + r.area;
         }
 
-        const kzRows = [
+        const kpiRows = [
             ['', '', '', ''],
             [t('kpiSection.areas'), '', t('export.colArea'), t('export.colProportion')],
             ['GF', t('kpi.GF'), fmtA(xlGf), xlPct(xlGf, xlGf)],
@@ -888,23 +863,23 @@ export async function downloadExcelReport() {
             ['HNF / NGF', t('kpi.HNF_NGF'), (xlHasRooms && xlNgf > 0) ? (xlHnf / xlNgf).toFixed(2) : DASH, ''],
         ];
 
-        // Objektübersicht rows
+        // Entity overview rows
         if (state.entitySummary.length > 0) {
-            kzRows.push(['', '', '', '']);
-            kzRows.push([t('kpiSection.entitySummary'), '', t('export.colCount'), t('export.colTopLayer')]);
+            kpiRows.push(['', '', '', '']);
+            kpiRows.push([t('kpiSection.entitySummary'), '', t('export.colCount'), t('export.colTopLayer')]);
             for (const e of state.entitySummary) {
                 const ls = e.layers.slice(0, 3).join(', ');
                 const more = e.layers.length > 3 ? ' ...' : '';
-                kzRows.push([e.type, '', e.count, ls + more]);
+                kpiRows.push([e.type, '', e.count, ls + more]);
             }
         }
 
-        const wsKz = XLSX.utils.aoa_to_sheet([
+        const wsKpi = XLSX.utils.aoa_to_sheet([
             [t('export.colAbbreviation'), t('export.colDesignation'), t('export.value'), t('export.colProportion')],
-            ...kzRows
+            ...kpiRows
         ]);
-        wsKz['!cols'] = [{ wch: 18 }, { wch: 40 }, { wch: 16 }, { wch: 10 }];
-        XLSX.utils.book_append_sheet(wb, wsKz, t('tab.kpi'));
+        wsKpi['!cols'] = [{ wch: 18 }, { wch: 40 }, { wch: 16 }, { wch: 10 }];
+        XLSX.utils.book_append_sheet(wb, wsKpi, t('tab.kpi'));
 
         // ── Download ──
         const baseName = state.lastFile.name.replace(/\.[^.]+$/, '');

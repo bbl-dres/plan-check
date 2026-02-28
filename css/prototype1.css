@@ -1,5 +1,5 @@
 /* ========================================
-   BBL Prüfplattform Flächenmanagement
+   BBL Plan-Check — Area Management Platform
    Prototype1 Overrides + Application Styles
    Loaded after tokens.css + styles.css
    ======================================== */
@@ -2723,24 +2723,24 @@ a:hover {
 }
 
 /* ========================================
-   KENNZAHLEN CONTENT
+   KPI CONTENT
    ======================================== */
 
-.kennzahlen-content {
+.kpi-content {
     padding: var(--space-3);
     overflow-y: auto;
 }
 
-.kennzahlen-content .results__layout {
+.kpi-content .results__layout {
     gap: var(--space-4);
 }
 
-.kennzahlen-content .results__section {
+.kpi-content .results__section {
     padding: var(--space-3);
     border-radius: var(--radius-sm);
 }
 
-.kennzahlen-content .results__section-title {
+.kpi-content .results__section-title {
     margin-bottom: var(--space-2);
 }
 

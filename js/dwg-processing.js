@@ -677,7 +677,7 @@ export function prepareDrawingData(entities, layers, db) {
     if (!isFinite(minX)) { minX = 0; minY = 0; maxX = 1000; maxY = 1000; }
 
     if (insertCount > 0) log(t('log.insertRefs', { count: insertCount }));
-    log(`Render-Liste: ${renderList.length} Primitiven, Bounds: (${minX.toFixed(0)}, ${minY.toFixed(0)}) - (${maxX.toFixed(0)}, ${maxY.toFixed(0)})`);
+    log(`Render list: ${renderList.length} primitives, bounds: (${minX.toFixed(0)}, ${minY.toFixed(0)}) - (${maxX.toFixed(0)}, ${maxY.toFixed(0)})`);
 
     return {
         renderList,

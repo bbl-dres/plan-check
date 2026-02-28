@@ -1,5 +1,5 @@
 /* ========================================
-   BBL Prüfplattform Flächenmanagement
+   BBL Plan-Check — Area Management Platform
    Component Styles
    ======================================== */
 
@@ -68,13 +68,13 @@ body {
 
 /* -- Uppercase label: section/column headers --
    Merge of: .panel__header, .info-grid__label,
-   .info-grid__download-label, .val-kz-title,
+   .info-grid__download-label, .val-kpi-title,
    .api-docs__section-label,
    .api-docs__schema th, .rules-cat-sep */
 .panel__header,
 .info-grid__label,
 .info-grid__download-label,
-.val-kz-title,
+.val-kpi-title,
 .api-docs__section-label,
 .api-docs__schema th,
 .rules-cat-sep {
@@ -114,7 +114,7 @@ body {
 /* -- Mono numeric value --
    Merge of: .vside-item__value, .rules-row__count,
    .val-donut-legend__pct, .rules-cat-sep__stats,
-   .val-kz-table .kz-value, .val-kz-table .kz-pct */
+   .val-kpi-table .kpi-value, .val-kpi-table .kpi-pct */
 .vside-item__value,
 .rules-row__count,
 .val-donut-legend__pct,
@@ -137,8 +137,8 @@ body {
 }
 
 /* -- Table cell: uniform padding across all tables --
-   Merge of: .val-kz-table td, .api-docs__schema th/td */
-.val-kz-table td,
+   Merge of: .val-kpi-table td, .api-docs__schema th/td */
+.val-kpi-table td,
 .api-docs__schema th,
 .api-docs__schema td {
     padding: var(--space-2) var(--space-3);
@@ -539,11 +539,11 @@ body {
 .validation-side__summary:empty { display: none; }
 .validation-viewer { flex: 1; min-width: 0; position: relative; overflow: hidden; }
 
-/* Dashboard (Kennzahlen) – full width, no viewer */
+/* Dashboard (KPI) – full width, no viewer */
 .validation-dashboard {
     display: none;
 }
-.kz-dashboard-content { padding: var(--space-4); }
+.kpi-dashboard-content { padding: var(--space-4); }
 
 /* ----------------------------------------
    Side Panel List Items
@@ -603,20 +603,20 @@ body {
 }
 
 /* ----------------------------------------
-   Kennzahlen Dashboard
+   KPI Dashboard
    ---------------------------------------- */
-.val-kennzahlen { display: grid; grid-template-columns: 55fr 45fr; gap: var(--space-6); }
-.val-kennzahlen > div { display: flex; flex-direction: column; gap: var(--space-5); }
-.val-kz-title { margin-bottom: var(--space-2); }
-.val-kz-table { width: 100%; border-collapse: collapse; font-size: var(--font-size-sm); border: 1px solid var(--color-border); overflow: hidden; }
-.val-kz-table td { /* padding via table-cell group */ border-bottom: 1px solid var(--color-border-light); }
-.val-kz-table tr:last-child td { border-bottom: none; }
-.val-kz-table tr:hover { background: var(--color-primary-light); }
-.val-kz-table .kz-abbr { font-weight: var(--font-weight-semibold); white-space: nowrap; width: 70px; }
-.val-kz-table .kz-value { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--font-family-mono); white-space: nowrap; }
-.val-kz-table .kz-pct { text-align: right; color: var(--color-text-secondary); width: 55px; font-variant-numeric: tabular-nums; }
-.val-kz-table .kz-layer-cell { font-size: var(--font-size-xs); color: var(--color-text-secondary); }
-.val-kz-table .kz-sep td { border-top: 1px solid var(--color-border); font-weight: var(--font-weight-semibold); }
+.val-kpi { display: grid; grid-template-columns: 55fr 45fr; gap: var(--space-6); }
+.val-kpi > div { display: flex; flex-direction: column; gap: var(--space-5); }
+.val-kpi-title { margin-bottom: var(--space-2); }
+.val-kpi-table { width: 100%; border-collapse: collapse; font-size: var(--font-size-sm); border: 1px solid var(--color-border); overflow: hidden; }
+.val-kpi-table td { /* padding via table-cell group */ border-bottom: 1px solid var(--color-border-light); }
+.val-kpi-table tr:last-child td { border-bottom: none; }
+.val-kpi-table tr:hover { background: var(--color-primary-light); }
+.val-kpi-table .kpi-abbr { font-weight: var(--font-weight-semibold); white-space: nowrap; width: 70px; }
+.val-kpi-table .kpi-value { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--font-family-mono); white-space: nowrap; }
+.val-kpi-table .kpi-pct { text-align: right; color: var(--color-text-secondary); width: 55px; font-variant-numeric: tabular-nums; }
+.val-kpi-table .kpi-layer-cell { font-size: var(--font-size-xs); color: var(--color-text-secondary); }
+.val-kpi-table .kpi-sep td { border-top: 1px solid var(--color-border); font-weight: var(--font-weight-semibold); }
 
 /* Donut Chart */
 .val-donut { display: flex; align-items: center; gap: var(--space-4); margin-top: var(--space-3); }
@@ -635,7 +635,7 @@ body {
 .val-empty { text-align: center; padding: var(--space-5) var(--space-4); color: var(--color-text-secondary); font-size: var(--font-size-sm); line-height: var(--line-height-normal); }
 
 /* ----------------------------------------
-   Prüfregeln Tab (Flat Table)
+   Validation Rules Tab (Flat Table)
    ---------------------------------------- */
 .rules-row {
     display: flex; align-items: center; gap: var(--space-3);
@@ -849,8 +849,8 @@ body {
     .info-grid { grid-template-columns: repeat(2, 1fr); }
     .info-grid__value { font-size: var(--font-size-base); }
 
-    /* -- Kennzahlen -- */
-    .val-kennzahlen { grid-template-columns: 1fr; }
+    /* -- KPI -- */
+    .val-kpi { grid-template-columns: 1fr; }
 
     /* -- Footer -- */
     .footer__content {

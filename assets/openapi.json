@@ -1,11 +1,11 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "BBL Prüfplattform Flächenmanagement API",
+    "title": "BBL Plan-Check Area Management API",
     "version": "1.0.0",
-    "description": "REST API für die automatisierte Validierung von DWG/DXF-Grundrissplänen gemäss den Flächenmanagement-Richtlinien des BBL. Unterstützt Einzeldatei- und Batch-Verarbeitung mit asynchroner Job-Verwaltung sowie Export in PDF, Excel, GeoJSON und BCF.",
+    "description": "REST API for the automated validation of DWG/DXF floor plans according to the BBL area management guidelines. Supports single-file and batch processing with asynchronous job management as well as export to PDF, Excel, GeoJSON, and BCF.",
     "contact": {
-      "name": "BBL DRES – Direktion Ressourcen",
+      "name": "BBL DRES – Directorate of Resources",
       "url": "https://www.bbl.admin.ch/de/kontakt"
     },
     "license": {
@@ -16,7 +16,7 @@
   "servers": [
     {
       "url": "https://api.pruefplattform.admin.ch/v1",
-      "description": "Produktion"
+      "description": "Production"
     },
     {
       "url": "https://api-staging.pruefplattform.admin.ch/v1",
@@ -24,22 +24,22 @@
     }
   ],
   "tags": [
-    { "name": "System", "description": "Health-Check und API-Informationen" },
-    { "name": "Regeln", "description": "Validierungsregeln und deren Dokumentation" },
-    { "name": "Validierung", "description": "Einzeldatei-Prüfung (asynchron)" },
-    { "name": "Export", "description": "PDF-, Excel-, GeoJSON- und BCF-Export" },
-    { "name": "Batch", "description": "Mehrfachdatei-Verarbeitung" }
+    { "name": "System", "description": "Health check and API information" },
+    { "name": "Rules", "description": "Validation rules and their documentation" },
+    { "name": "Validation", "description": "Single-file validation (asynchronous)" },
+    { "name": "Export", "description": "PDF, Excel, GeoJSON, and BCF export" },
+    { "name": "Batch", "description": "Multi-file processing" }
   ],
   "paths": {
     "/health": {
       "get": {
         "tags": ["System"],
-        "summary": "Health-Check",
-        "description": "Gibt den aktuellen Status der API zurück. Nützlich für Monitoring und Load-Balancer.",
+        "summary": "Health check",
+        "description": "Returns the current status of the API. Useful for monitoring and load balancers.",
         "operationId": "getHealth",
         "responses": {
           "200": {
-            "description": "API ist betriebsbereit",
+            "description": "API is operational",
             "content": {
               "application/json": {
                 "schema": {
@@ -47,7 +47,7 @@
                   "properties": {
                     "status": { "type": "string", "example": "ok" },
                     "version": { "type": "string", "example": "1.0.0" },
-                    "uptime": { "type": "number", "example": 86400, "description": "Betriebszeit in Sekunden" }
+                    "uptime": { "type": "number", "example": 86400, "description": "Uptime in seconds" }
                   }
                 }
               }
@@ -59,12 +59,12 @@
     "/info": {
       "get": {
         "tags": ["System"],
-        "summary": "API-Informationen",
-        "description": "Gibt Versionsinformationen, unterstützte Dateiformate und Grenzwerte der API zurück.",
+        "summary": "API information",
+        "description": "Returns version information, supported file formats, and API limits.",
         "operationId": "getInfo",
         "responses": {
           "200": {
-            "description": "API-Metadaten",
+            "description": "API metadata",
             "content": {
               "application/json": {
                 "schema": {
@@ -93,13 +93,13 @@
     },
     "/rules": {
       "get": {
-        "tags": ["Regeln"],
-        "summary": "Alle Validierungsregeln",
-        "description": "Gibt die Liste aller aktiven Prüfregeln mit Code, Beschreibung und Schweregrad zurück.",
+        "tags": ["Rules"],
+        "summary": "All validation rules",
+        "description": "Returns the list of all active validation rules with code, description, and severity.",
         "operationId": "getRules",
         "responses": {
           "200": {
-            "description": "Liste der Validierungsregeln",
+            "description": "List of validation rules",
             "content": {
               "application/json": {
                 "schema": {
@@ -119,9 +119,9 @@
     },
     "/rules/{code}": {
       "get": {
-        "tags": ["Regeln"],
-        "summary": "Einzelne Regel",
-        "description": "Gibt die Details einer spezifischen Validierungsregel zurück.",
+        "tags": ["Rules"],
+        "summary": "Single rule",
+        "description": "Returns the details of a specific validation rule.",
         "operationId": "getRuleByCode",
         "parameters": [
           {
@@ -130,12 +130,12 @@
             "required": true,
             "schema": { "type": "string" },
             "example": "ROOM_NO_LABEL",
-            "description": "Eindeutiger Regel-Code"
+            "description": "Unique rule code"
           }
         ],
         "responses": {
           "200": {
-            "description": "Regeldetails",
+            "description": "Rule details",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/Rule" }
@@ -143,7 +143,7 @@
             }
           },
           "404": {
-            "description": "Regel nicht gefunden",
+            "description": "Rule not found",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/Error" }
@@ -155,9 +155,9 @@
     },
     "/validate": {
       "post": {
-        "tags": ["Validierung"],
-        "summary": "Datei validieren",
-        "description": "Lädt eine DWG- oder DXF-Datei hoch und startet die asynchrone Validierung. Gibt eine Job-ID zurück, mit der der Status abgefragt werden kann.",
+        "tags": ["Validation"],
+        "summary": "Validate file",
+        "description": "Uploads a DWG or DXF file and starts asynchronous validation. Returns a job ID that can be used to query the status.",
         "operationId": "createValidation",
         "requestBody": {
           "required": true,
@@ -170,17 +170,17 @@
                   "file": {
                     "type": "string",
                     "format": "binary",
-                    "description": "DWG- oder DXF-Datei (max. 50 MB)"
+                    "description": "DWG or DXF file (max. 50 MB)"
                   },
                   "roomLayer": {
                     "type": "string",
-                    "description": "Optionaler Layer-Name für Räume (Standard: A1Z21---E-)",
+                    "description": "Optional layer name for rooms (default: A1Z21---E-)",
                     "example": "A1Z21---E-"
                   },
                   "rules": {
                     "type": "array",
                     "items": { "type": "string" },
-                    "description": "Optionale Einschränkung auf bestimmte Regeln (Standard: alle)"
+                    "description": "Optional restriction to specific rules (default: all)"
                   }
                 }
               }
@@ -189,7 +189,7 @@
         },
         "responses": {
           "202": {
-            "description": "Validierung gestartet",
+            "description": "Validation started",
             "content": {
               "application/json": {
                 "schema": {
@@ -204,7 +204,7 @@
             }
           },
           "400": {
-            "description": "Ungültige Datei oder Parameter",
+            "description": "Invalid file or parameters",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/Error" }
@@ -212,7 +212,7 @@
             }
           },
           "413": {
-            "description": "Datei zu gross",
+            "description": "File too large",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/Error" }
@@ -224,9 +224,9 @@
     },
     "/jobs/{jobId}": {
       "get": {
-        "tags": ["Validierung"],
-        "summary": "Job-Status abfragen",
-        "description": "Gibt den aktuellen Status eines Validierungs-Jobs zurück. Mögliche Status: `queued`, `processing`, `done`, `failed`.",
+        "tags": ["Validation"],
+        "summary": "Query job status",
+        "description": "Returns the current status of a validation job. Possible statuses: `queued`, `processing`, `done`, `failed`.",
         "operationId": "getJob",
         "parameters": [
           {
@@ -234,12 +234,12 @@
             "in": "path",
             "required": true,
             "schema": { "type": "string", "format": "uuid" },
-            "description": "Job-ID aus der Validierungsanfrage"
+            "description": "Job ID from the validation request"
           }
         ],
         "responses": {
           "200": {
-            "description": "Job-Status",
+            "description": "Job status",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/Job" }
@@ -247,7 +247,7 @@
             }
           },
           "404": {
-            "description": "Job nicht gefunden",
+            "description": "Job not found",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/Error" }
@@ -259,9 +259,9 @@
     },
     "/jobs/{jobId}/result": {
       "get": {
-        "tags": ["Validierung"],
-        "summary": "Validierungsergebnis",
-        "description": "Gibt das vollständige Validierungsergebnis zurück, einschliesslich erkannter Räume, Fehler, Flächen und Kennzahlen. Nur verfügbar wenn Job-Status `done` ist.",
+        "tags": ["Validation"],
+        "summary": "Validation result",
+        "description": "Returns the complete validation result, including detected rooms, errors, areas, and KPIs. Only available when job status is `done`.",
         "operationId": "getJobResult",
         "parameters": [
           {
@@ -273,7 +273,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Validierungsergebnis",
+            "description": "Validation result",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ValidationResult" }
@@ -281,7 +281,7 @@
             }
           },
           "404": {
-            "description": "Job nicht gefunden",
+            "description": "Job not found",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/Error" }
@@ -289,7 +289,7 @@
             }
           },
           "409": {
-            "description": "Job noch nicht abgeschlossen",
+            "description": "Job not yet completed",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/Error" }
@@ -302,8 +302,8 @@
     "/jobs/{jobId}/export": {
       "post": {
         "tags": ["Export"],
-        "summary": "Export erstellen",
-        "description": "Erstellt einen Export aus einem abgeschlossenen Validierungs-Job. Unterstützte Formate: `pdf` (Prüfbericht), `excel` (Raumliste), `geojson` (Grundriss-Geometrien), `bcf` (BIM Collaboration Format für Fehler).",
+        "summary": "Create export",
+        "description": "Creates an export from a completed validation job. Supported formats: `pdf` (validation report), `excel` (room list), `geojson` (floor plan geometries), `bcf` (BIM Collaboration Format for errors).",
         "operationId": "createExport",
         "parameters": [
           {
@@ -324,13 +324,13 @@
                   "format": {
                     "type": "string",
                     "enum": ["pdf", "excel", "geojson", "bcf"],
-                    "description": "Gewünschtes Export-Format"
+                    "description": "Desired export format"
                   },
                   "language": {
                     "type": "string",
                     "enum": ["de", "fr", "it", "en"],
                     "default": "de",
-                    "description": "Sprache des Berichts"
+                    "description": "Report language"
                   }
                 }
               }
@@ -339,7 +339,7 @@
         },
         "responses": {
           "202": {
-            "description": "Export gestartet",
+            "description": "Export started",
             "content": {
               "application/json": {
                 "schema": {
@@ -355,7 +355,7 @@
             }
           },
           "400": {
-            "description": "Ungültiges Format",
+            "description": "Invalid format",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/Error" }
@@ -363,7 +363,7 @@
             }
           },
           "409": {
-            "description": "Job noch nicht abgeschlossen",
+            "description": "Job not yet completed",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/Error" }
@@ -376,8 +376,8 @@
     "/exports/{exportId}": {
       "get": {
         "tags": ["Export"],
-        "summary": "Export-Status",
-        "description": "Gibt den Status eines laufenden oder abgeschlossenen Exports zurück.",
+        "summary": "Export status",
+        "description": "Returns the status of an in-progress or completed export.",
         "operationId": "getExport",
         "parameters": [
           {
@@ -389,7 +389,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Export-Status",
+            "description": "Export status",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/Export" }
@@ -397,7 +397,7 @@
             }
           },
           "404": {
-            "description": "Export nicht gefunden",
+            "description": "Export not found",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/Error" }
@@ -410,8 +410,8 @@
     "/exports/{exportId}/download": {
       "get": {
         "tags": ["Export"],
-        "summary": "Export herunterladen",
-        "description": "Lädt die generierte Export-Datei herunter. Nur verfügbar wenn Export-Status `ready` ist. Der Download-Link ist 24 Stunden gültig.",
+        "summary": "Download export",
+        "description": "Downloads the generated export file. Only available when export status is `ready`. The download link is valid for 24 hours.",
         "operationId": "downloadExport",
         "parameters": [
           {
@@ -423,7 +423,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Export-Datei",
+            "description": "Export file",
             "content": {
               "application/pdf": { "schema": { "type": "string", "format": "binary" } },
               "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": { "schema": { "type": "string", "format": "binary" } },
@@ -432,7 +432,7 @@
             }
           },
           "404": {
-            "description": "Export nicht gefunden",
+            "description": "Export not found",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/Error" }
@@ -440,7 +440,7 @@
             }
           },
           "409": {
-            "description": "Export noch nicht bereit",
+            "description": "Export not yet ready",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/Error" }
@@ -453,8 +453,8 @@
     "/batch": {
       "post": {
         "tags": ["Batch"],
-        "summary": "Batch-Validierung starten",
-        "description": "Lädt mehrere DWG/DXF-Dateien hoch und startet die parallele Validierung. Maximal 20 Dateien pro Batch.",
+        "summary": "Start batch validation",
+        "description": "Uploads multiple DWG/DXF files and starts parallel validation. Maximum 20 files per batch.",
         "operationId": "createBatch",
         "requestBody": {
           "required": true,
@@ -467,11 +467,11 @@
                   "files": {
                     "type": "array",
                     "items": { "type": "string", "format": "binary" },
-                    "description": "DWG/DXF-Dateien (max. 20, je max. 50 MB)"
+                    "description": "DWG/DXF files (max. 20, each max. 50 MB)"
                   },
                   "roomLayer": {
                     "type": "string",
-                    "description": "Optionaler Layer-Name für Räume",
+                    "description": "Optional layer name for rooms",
                     "example": "A1Z21---E-"
                   }
                 }
@@ -481,7 +481,7 @@
         },
         "responses": {
           "202": {
-            "description": "Batch gestartet",
+            "description": "Batch started",
             "content": {
               "application/json": {
                 "schema": {
@@ -496,7 +496,7 @@
                         "type": "object",
                         "properties": {
                           "jobId": { "type": "string", "format": "uuid" },
-                          "filename": { "type": "string", "example": "EG_Grundriss.dwg" },
+                          "filename": { "type": "string", "example": "GF_FloorPlan.dwg" },
                           "status": { "type": "string", "example": "queued" }
                         }
                       }
@@ -507,7 +507,7 @@
             }
           },
           "400": {
-            "description": "Ungültige Dateien oder zu viele Dateien",
+            "description": "Invalid files or too many files",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/Error" }
@@ -520,8 +520,8 @@
     "/batch/{batchId}": {
       "get": {
         "tags": ["Batch"],
-        "summary": "Batch-Status",
-        "description": "Gibt den Status eines Batch-Jobs zurück, einschliesslich Fortschritt der einzelnen Dateien.",
+        "summary": "Batch status",
+        "description": "Returns the status of a batch job, including progress of individual files.",
         "operationId": "getBatch",
         "parameters": [
           {
@@ -533,7 +533,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Batch-Status",
+            "description": "Batch status",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/BatchJob" }
@@ -541,7 +541,7 @@
             }
           },
           "404": {
-            "description": "Batch nicht gefunden",
+            "description": "Batch not found",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/Error" }
@@ -554,8 +554,8 @@
     "/batch/{batchId}/summary": {
       "get": {
         "tags": ["Batch"],
-        "summary": "Batch-Zusammenfassung",
-        "description": "Gibt eine aggregierte Zusammenfassung aller Validierungsergebnisse eines Batches zurück. Nur verfügbar wenn alle Jobs abgeschlossen sind.",
+        "summary": "Batch summary",
+        "description": "Returns an aggregated summary of all validation results for a batch. Only available when all jobs are completed.",
         "operationId": "getBatchSummary",
         "parameters": [
           {
@@ -567,7 +567,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Aggregierte Ergebnisse",
+            "description": "Aggregated results",
             "content": {
               "application/json": {
                 "schema": {
@@ -601,7 +601,7 @@
             }
           },
           "409": {
-            "description": "Batch noch nicht abgeschlossen",
+            "description": "Batch not yet completed",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/Error" }
@@ -619,11 +619,11 @@
         "properties": {
           "jobId": { "type": "string", "format": "uuid" },
           "status": { "type": "string", "enum": ["queued", "processing", "done", "failed"] },
-          "filename": { "type": "string", "example": "EG_Grundriss.dwg" },
+          "filename": { "type": "string", "example": "GF_FloorPlan.dwg" },
           "progress": { "type": "number", "minimum": 0, "maximum": 100, "example": 75 },
           "createdAt": { "type": "string", "format": "date-time" },
           "completedAt": { "type": "string", "format": "date-time", "nullable": true },
-          "error": { "type": "string", "nullable": true, "description": "Fehlermeldung bei Status 'failed'" }
+          "error": { "type": "string", "nullable": true, "description": "Error message when status is 'failed'" }
         }
       },
       "ValidationResult": {
@@ -644,7 +644,7 @@
             "type": "object",
             "properties": {
               "totalRooms": { "type": "integer" },
-              "totalArea": { "type": "number", "description": "Gesamtfläche in m²" },
+              "totalArea": { "type": "number", "description": "Total area in m²" },
               "errorCount": { "type": "integer" },
               "warningCount": { "type": "integer" }
             }
@@ -664,10 +664,10 @@
         "type": "object",
         "properties": {
           "id": { "type": "string" },
-          "name": { "type": "string", "example": "Büro 201" },
+          "name": { "type": "string", "example": "Office 201" },
           "layer": { "type": "string", "example": "A1Z21---E-" },
-          "area": { "type": "number", "description": "Fläche in m²", "example": 24.5 },
-          "perimeter": { "type": "number", "description": "Umfang in m", "example": 20.8 },
+          "area": { "type": "number", "description": "Area in m²", "example": 24.5 },
+          "perimeter": { "type": "number", "description": "Perimeter in m", "example": 20.8 },
           "status": { "type": "string", "enum": ["ok", "warning", "error"] },
           "polygon": {
             "type": "array",
@@ -686,7 +686,7 @@
         "properties": {
           "code": { "type": "string", "example": "ROOM_NO_LABEL" },
           "severity": { "type": "string", "enum": ["error", "warning"] },
-          "message": { "type": "string", "example": "Raum hat kein Beschriftungsattribut" },
+          "message": { "type": "string", "example": "Room has no label attribute" },
           "layer": { "type": "string", "nullable": true },
           "roomId": { "type": "string", "nullable": true },
           "location": {
@@ -708,7 +708,7 @@
           "status": { "type": "string", "enum": ["generating", "ready", "failed"] },
           "createdAt": { "type": "string", "format": "date-time" },
           "readyAt": { "type": "string", "format": "date-time", "nullable": true },
-          "expiresAt": { "type": "string", "format": "date-time", "nullable": true, "description": "Download verfügbar bis (24h)" },
+          "expiresAt": { "type": "string", "format": "date-time", "nullable": true, "description": "Download available until (24h)" },
           "downloadUrl": { "type": "string", "nullable": true }
         }
       },
@@ -739,17 +739,17 @@
         "properties": {
           "code": { "type": "string", "example": "ROOM_NO_LABEL" },
           "severity": { "type": "string", "enum": ["error", "warning"] },
-          "category": { "type": "string", "example": "Räume" },
-          "title": { "type": "string", "example": "Fehlende Raumbeschriftung" },
-          "description": { "type": "string", "example": "Jeder geschlossene Raum muss ein TEXT- oder MTEXT-Attribut mit Raumbezeichnung enthalten." },
-          "reference": { "type": "string", "nullable": true, "example": "BBL-FM-Richtlinie §4.2" }
+          "category": { "type": "string", "example": "Rooms" },
+          "title": { "type": "string", "example": "Missing room label" },
+          "description": { "type": "string", "example": "Every closed room must contain a TEXT or MTEXT attribute with a room designation." },
+          "reference": { "type": "string", "nullable": true, "example": "BBL FM Guideline §4.2" }
         }
       },
       "Error": {
         "type": "object",
         "properties": {
           "error": { "type": "string", "example": "not_found" },
-          "message": { "type": "string", "example": "Die angeforderte Ressource wurde nicht gefunden." }
+          "message": { "type": "string", "example": "The requested resource was not found." }
         }
       }
     },
@@ -758,7 +758,7 @@
         "type": "apiKey",
         "in": "header",
         "name": "X-API-Key",
-        "description": "API-Schlüssel für die Authentifizierung. Beantragung über das BBL-Portal."
+        "description": "API key for authentication. Request via the BBL portal."
       }
     }
   },

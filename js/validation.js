@@ -3,7 +3,7 @@
 // =============================================
 
 import { state, dom, CAFM_LAYERS, AOID_TEXT_LAYERS } from './state.js';
-import { fmtNum, esc, computePolygonArea, pointInPoly, log, hasSelfIntersection, hashVertices, visualCenter } from './utils.js';
+import { fmtNum, esc, computePolygonArea, pointInPoly, log, hasSelfIntersection, hashVertices, visualCenter, computeKpis } from './utils.js';
 import { t } from './i18n.js';
 import { render, resizeCanvas, zoomToPolygon, zoomToItems, zoomToBounds, getItemBounds, showPopupForItem } from './renderer.js';
 import { downloadPdfReport, downloadExcelReport } from './export.js';
@@ -13,54 +13,49 @@ import { downloadPdfReport, downloadExcelReport } from './export.js';
 // =============================================
 
 export const ALL_RULES = [
-    { cat: 'LAYER', code: 'LAYER_001', sev: 'error',   desc: 'Pflicht-Layer fehlt: R_RAUMPOLYGON' },
-    { cat: 'LAYER', code: 'LAYER_002', sev: 'error',   desc: 'Pflicht-Layer fehlt: R_AOID' },
-    { cat: 'LAYER', code: 'LAYER_003', sev: 'error',   desc: 'Pflicht-Layer fehlt: R_GESCHOSSPOLYGON' },
-    { cat: 'LAYER', code: 'LAYER_004', sev: 'warning', desc: 'Pflicht-Layer fehlt: A_ARCHITEKTUR' },
-    { cat: 'LAYER', code: 'LAYER_005', sev: 'warning', desc: 'Pflicht-Layer fehlt: V_PLANLAYOUT' },
-    { cat: 'LAYER', code: 'LAYER_006', sev: 'warning', desc: 'Pflicht-Layer fehlt: V_BEMASSUNG' },
-    { cat: 'LAYER', code: 'LAYER_007', sev: 'warning', desc: 'Pflicht-Layer fehlt: A_SCHRAFFUR' },
-    { cat: 'LAYER', code: 'LAYER_008', sev: 'warning', desc: 'Unbekannter Layer vorhanden' },
-    { cat: 'POLY',  code: 'POLY_001',  sev: 'error',   desc: 'Raumpolygon ist nicht geschlossen' },
-    { cat: 'POLY',  code: 'POLY_002',  sev: 'error',   desc: 'Raumpolygon enth\u00e4lt Bogensegmente' },
-    { cat: 'POLY',  code: 'POLY_003',  sev: 'error',   desc: 'Polygon hat weniger als 3 Eckpunkte' },
-    { cat: 'POLY',  code: 'POLY_004',  sev: 'warning', desc: 'Raumfl\u00e4che sehr klein (< 0.25 m\u00B2)' },
-    { cat: 'POLY',  code: 'POLY_005',  sev: 'warning', desc: 'M\u00f6gliches doppeltes Polygon' },
-    { cat: 'POLY',  code: 'POLY_006',  sev: 'error',   desc: 'Element auf R_RAUMPOLYGON ist keine LWPOLYLINE' },
-    { cat: 'POLY',  code: 'POLY_007',  sev: 'warning', desc: 'Raumpolygon hat Selbst\u00fcberschneidung' },
-    { cat: 'GPOLY', code: 'GPOLY_001', sev: 'error',   desc: 'Geschosspolygon ist nicht geschlossen' },
-    { cat: 'GPOLY', code: 'GPOLY_002', sev: 'error',   desc: 'Geschosspolygon enth\u00e4lt Bogensegmente' },
-    { cat: 'GPOLY', code: 'GPOLY_003', sev: 'error',   desc: 'Element auf R_GESCHOSSPOLYGON ist keine LWPOLYLINE' },
-    { cat: 'GPOLY', code: 'GPOLY_004', sev: 'warning', desc: 'Kein Geschosspolygon vorhanden' },
-    { cat: 'GPOLY', code: 'GPOLY_005', sev: 'warning', desc: 'M\u00f6gliches doppeltes Geschosspolygon' },
-    { cat: 'AOID',  code: 'AOID_001',  sev: 'error',   desc: 'Raumpolygon hat keine AOID' },
-    { cat: 'AOID',  code: 'AOID_002',  sev: 'error',   desc: 'AOID ist nicht eindeutig' },
-    { cat: 'AOID',  code: 'AOID_003',  sev: 'warning', desc: 'AOID-Format ung\u00fcltig' },
-    { cat: 'AOID',  code: 'AOID_004',  sev: 'warning', desc: 'Mehrere Texte auf R_AOID im Polygon' },
-    { cat: 'AOID',  code: 'AOID_005',  sev: 'warning', desc: 'AOID-Text ausserhalb aller Raumpolygone' },
-    { cat: 'AOID',  code: 'AOID_006',  sev: 'warning', desc: 'AOID-Basispunkt ausserhalb Polygon' },
-    { cat: 'GEOM',  code: 'GEOM_001',  sev: 'error',   desc: 'Zeichnungseinheit ist nicht Millimeter' },
-    { cat: 'GEOM',  code: 'GEOM_002',  sev: 'warning', desc: 'Element hat Z-Koordinate != 0' },
-    { cat: 'GEOM',  code: 'GEOM_003',  sev: 'error',   desc: 'Unzul\u00e4ssiger Entit\u00e4tstyp vorhanden' },
-    { cat: 'GEOM',  code: 'GEOM_004',  sev: 'warning', desc: 'Externe Referenz (XREF) vorhanden' },
-    { cat: 'GEOM',  code: 'GEOM_005',  sev: 'warning', desc: 'Element ausserhalb des Schnittrahmens' },
-    { cat: 'TEXT',  code: 'TEXT_001',   sev: 'warning', desc: 'Textelement auf unzul\u00e4ssigem Layer' },
-    { cat: 'TEXT',  code: 'TEXT_002',   sev: 'warning', desc: 'Schriftart ist nicht ARIAL' },
-    { cat: 'STYLE', code: 'STYLE_001', sev: 'warning', desc: 'Polylinienbreite ist nicht 0 mm' },
-    { cat: 'STYLE', code: 'STYLE_002', sev: 'warning', desc: 'Farbe ist nicht VONLAYER' },
-    { cat: 'LAYOUT',code: 'LAYOUT_001',sev: 'warning', desc: 'Layout-Tab (Paper Space) vorhanden' },
-    { cat: 'LAYOUT',code: 'LAYOUT_002',sev: 'warning', desc: 'Kein Planrahmen auf V_PLANLAYOUT erkannt' },
-    { cat: 'DIM',   code: 'DIM_001',   sev: 'warning', desc: 'Keine Masselemente auf V_BEMASSUNG' },
-    { cat: 'DIM',   code: 'DIM_002',   sev: 'warning', desc: 'Masselement ist nicht assoziativ' },
-    { cat: 'HATCH', code: 'HATCH_001', sev: 'warning', desc: 'Schraffur auf A_SCHRAFFUR ist nicht SOLID' },
+    { cat: 'LAYER', code: 'LAYER_001', sev: 'error' },
+    { cat: 'LAYER', code: 'LAYER_002', sev: 'error' },
+    { cat: 'LAYER', code: 'LAYER_003', sev: 'error' },
+    { cat: 'LAYER', code: 'LAYER_004', sev: 'warning' },
+    { cat: 'LAYER', code: 'LAYER_005', sev: 'warning' },
+    { cat: 'LAYER', code: 'LAYER_006', sev: 'warning' },
+    { cat: 'LAYER', code: 'LAYER_007', sev: 'warning' },
+    { cat: 'LAYER', code: 'LAYER_008', sev: 'warning' },
+    { cat: 'POLY',  code: 'POLY_001',  sev: 'error' },
+    { cat: 'POLY',  code: 'POLY_002',  sev: 'error' },
+    { cat: 'POLY',  code: 'POLY_003',  sev: 'error' },
+    { cat: 'POLY',  code: 'POLY_004',  sev: 'warning' },
+    { cat: 'POLY',  code: 'POLY_005',  sev: 'warning' },
+    { cat: 'POLY',  code: 'POLY_006',  sev: 'error' },
+    { cat: 'POLY',  code: 'POLY_007',  sev: 'warning' },
+    { cat: 'GPOLY', code: 'GPOLY_001', sev: 'error' },
+    { cat: 'GPOLY', code: 'GPOLY_002', sev: 'error' },
+    { cat: 'GPOLY', code: 'GPOLY_003', sev: 'error' },
+    { cat: 'GPOLY', code: 'GPOLY_004', sev: 'warning' },
+    { cat: 'GPOLY', code: 'GPOLY_005', sev: 'warning' },
+    { cat: 'AOID',  code: 'AOID_001',  sev: 'error' },
+    { cat: 'AOID',  code: 'AOID_002',  sev: 'error' },
+    { cat: 'AOID',  code: 'AOID_003',  sev: 'warning' },
+    { cat: 'AOID',  code: 'AOID_004',  sev: 'warning' },
+    { cat: 'AOID',  code: 'AOID_005',  sev: 'warning' },
+    { cat: 'AOID',  code: 'AOID_006',  sev: 'warning' },
+    { cat: 'GEOM',  code: 'GEOM_001',  sev: 'error' },
+    { cat: 'GEOM',  code: 'GEOM_002',  sev: 'warning' },
+    { cat: 'GEOM',  code: 'GEOM_003',  sev: 'error' },
+    { cat: 'GEOM',  code: 'GEOM_004',  sev: 'warning' },
+    { cat: 'GEOM',  code: 'GEOM_005',  sev: 'warning' },
+    { cat: 'TEXT',  code: 'TEXT_001',   sev: 'warning' },
+    { cat: 'TEXT',  code: 'TEXT_002',   sev: 'warning' },
+    { cat: 'STYLE', code: 'STYLE_001', sev: 'warning' },
+    { cat: 'STYLE', code: 'STYLE_002', sev: 'warning' },
+    { cat: 'LAYOUT',code: 'LAYOUT_001',sev: 'warning' },
+    { cat: 'LAYOUT',code: 'LAYOUT_002',sev: 'warning' },
+    { cat: 'DIM',   code: 'DIM_001',   sev: 'warning' },
+    { cat: 'DIM',   code: 'DIM_002',   sev: 'warning' },
+    { cat: 'HATCH', code: 'HATCH_001', sev: 'warning' },
 ];
 
 export function getRuleCatLabel(cat) { return t('ruleCat.' + cat); }
-export const RULE_CAT_LABELS = {
-    LAYER: 'Layerstruktur', POLY: 'Raumpolygone', GPOLY: 'Geschosspolygone',
-    AOID: 'Raumstempel', GEOM: 'Geometrie', TEXT: 'Textelemente',
-    STYLE: 'Linientypen/Farben', LAYOUT: 'Planlayout', DIM: 'Masselemente', HATCH: 'Schraffuren'
-};
 
 // =============================================
 // Room Extraction & Validation
@@ -95,11 +90,11 @@ function extractRooms(renderList) {
         // Find AOID text(s) inside polygon
         let label = '';
         const aoidMatches = [];
-        for (const t of aoidTexts) {
-            if (pointInPoly(t.x, t.y, poly.verts)) {
-                aoidMatches.push(t.text.trim());
-                if (!label || t.text.length < label.length) {
-                    label = t.text.trim();
+        for (const txt of aoidTexts) {
+            if (pointInPoly(txt.x, txt.y, poly.verts)) {
+                aoidMatches.push(txt.text.trim());
+                if (!label || txt.text.length < label.length) {
+                    label = txt.text.trim();
                 }
             }
         }
@@ -125,9 +120,9 @@ function extractRooms(renderList) {
         const center = visualCenter(poly.verts);
 
         let label = '';
-        for (const t of textItems) {
-            if (pointInPoly(t.x, t.y, poly.verts)) {
-                if (!label || t.text.length < label.length) label = t.text.trim();
+        for (const txt of textItems) {
+            if (pointInPoly(txt.x, txt.y, poly.verts)) {
+                if (!label || txt.text.length < label.length) label = txt.text.trim();
             }
         }
 
@@ -383,6 +378,21 @@ function runAoidRules(renderList, rooms) {
         }
     }
 
+    // AOID_006: AOID base point outside its matched polygon
+    for (const room of rooms) {
+        if (room.aoidMatches.length === 0) continue;
+        const matchedTexts = aoidTexts.filter(txt =>
+            room.aoidMatches.includes(txt.text.trim())
+        );
+        for (const txt of matchedTexts) {
+            if (!pointInPoly(txt.x, txt.y, room.vertices)) {
+                errors.push(mkErr('warning', 'AOID_006',
+                    t('msg.aoidBaseOutside', { aoid: txt.text.trim() }), 'AOID',
+                    { roomId: room.id, handle: room.handle }));
+            }
+        }
+    }
+
     return errors;
 }
 
@@ -477,10 +487,10 @@ function runTextRules(renderList) {
 
     // TEXT_001: Text on wrong layer
     const wrongLayerMap = {};
-    for (const t of texts) {
-        if (!allowedLayers.has(t.l)) {
-            if (!wrongLayerMap[t.l]) wrongLayerMap[t.l] = [];
-            wrongLayerMap[t.l].push(t.handle);
+    for (const txt of texts) {
+        if (!allowedLayers.has(txt.l)) {
+            if (!wrongLayerMap[txt.l]) wrongLayerMap[txt.l] = [];
+            wrongLayerMap[txt.l].push(txt.handle);
         }
     }
     for (const [layer, handles] of Object.entries(wrongLayerMap)) {
@@ -739,7 +749,7 @@ function renderAbortUI(abortErrors) {
     dom.validationSplit.style.display = 'none';
     dom.validationDashboard.style.display = 'block';
     dom.validationDashboard.innerHTML =
-        `<div class="kz-dashboard-content" style="padding: 2rem; text-align: center;">` +
+        `<div class="kpi-dashboard-content" style="padding: 2rem; text-align: center;">` +
         `<h2 style="color: var(--color-error); margin-bottom: 1rem;">\u26D4 ${esc(t('abort.title'))}</h2>` +
         abortErrors.map(e =>
             `<div style="margin: 0.5rem 0; padding: 1rem; background: rgba(255,0,0,0.08); border-radius: 8px; border-left: 4px solid var(--color-error);">` +
@@ -817,7 +827,7 @@ export function switchValidationTab(tabName) {
     }
 
     // Toggle split-view vs dashboard
-    const isDashboard = tabName === 'kennzahlen';
+    const isDashboard = tabName === 'kpi';
     dom.validationSplit.style.display = isDashboard ? 'none' : '';
     dom.validationDashboard.style.display = isDashboard ? 'block' : 'none';
 
@@ -836,7 +846,7 @@ export function switchValidationTab(tabName) {
         case 'errors': renderErrorsTab(); break;
         case 'rooms': renderRoomsTab(); break;
         case 'areas': renderAreasTab(); break;
-        case 'kennzahlen': renderKennzahlenTab(); break;
+        case 'kpi': renderKpiTab(); break;
         case 'rules': renderRulesTab(); break;
     }
 
@@ -883,7 +893,7 @@ function updateToggleAll(hiddenSet, allIds) {
 }
 
 // ─────────────────────────────────────────────
-// Tab 1: Übersicht (Layers)
+// Tab 1: Overview (Layers)
 // ─────────────────────────────────────────────
 function renderOverviewTab() {
     dom.vsideSearch.placeholder = t('search.layers');
@@ -987,7 +997,7 @@ function renderOverviewTab() {
 }
 
 // ─────────────────────────────────────────────
-// Tab 2: Fehlermeldungen (flat error list)
+// Tab 2: Error messages (flat error list)
 // ─────────────────────────────────────────────
 function renderErrorsTab() {
     dom.vsideSearch.placeholder = t('search.errors');
@@ -1112,7 +1122,7 @@ function renderErrorsTab() {
 }
 
 // ─────────────────────────────────────────────
-// Tab 3: Räume (flat room list)
+// Tab 3: Rooms (flat room list)
 // ─────────────────────────────────────────────
 function renderRoomsTab() {
     dom.vsideSearch.placeholder = t('search.rooms');
@@ -1198,7 +1208,7 @@ function renderRoomsTab() {
 }
 
 // ─────────────────────────────────────────────
-// Tab 4: Flächen (flat area list)
+// Tab 4: Areas (flat area list)
 // ─────────────────────────────────────────────
 function renderAreasTab() {
     dom.vsideSearch.placeholder = t('search.areas');
@@ -1276,28 +1286,10 @@ function renderAreasTab() {
 }
 
 // ─────────────────────────────────────────────
-// Tab 5: Kennzahlen (full-width dashboard)
+// Tab 5: KPI / Metrics (full-width dashboard)
 // ─────────────────────────────────────────────
-function renderKennzahlenTab() {
-    // ── Derive values only from actual floor plan data ──
-    const hasRooms = state.roomData.length > 0;
-    const hasAreaPolys = state.areaData.length > 0;
-
-    // SIA 416 category sums from room data
-    const catSum = { HNF: 0, NNF: 0, VF: 0, FF: 0 };
-    for (const r of state.roomData) {
-        const cat = r.siaCategory || 'HNF';
-        if (cat in catSum) catSum[cat] += r.area;
-        else catSum.HNF += r.area; // unknown → HNF
-    }
-    const hnf = catSum.HNF;
-    const nnf = catSum.NNF;
-    const vf = catSum.VF;
-    const ff = catSum.FF;
-    const nf = hnf + nnf;           // NF = HNF + NNF
-    const ngf = nf + vf + ff;       // NGF = NF + VF + FF
-    const gf = hasAreaPolys ? state.areaData.reduce((s, a) => s + a.area, 0) : null;
-    const kf = (gf !== null && hasRooms) ? gf - ngf : null;
+function renderKpiTab() {
+    const { hnf, nnf, vf, ff, nf, ngf, gf, kf, hasRooms, hasAreaPolys } = computeKpis(state.roomData, state.areaData);
 
     // Format helpers
     const DASH = '\u2014';
@@ -1314,25 +1306,25 @@ function renderKennzahlenTab() {
         return Math.round((v / total) * 100) + '%';
     };
     const kzRow = (abbr, label, value, total, volFmt) =>
-        `<tr><td class="kz-abbr">${esc(abbr)}</td><td>${esc(label)}</td><td class="kz-value">${volFmt ? fmtVol(value) : fmtArea(value)}</td><td class="kz-pct">${pct(value, total)}</td></tr>`;
+        `<tr><td class="kpi-abbr">${esc(abbr)}</td><td>${esc(label)}</td><td class="kpi-value">${volFmt ? fmtVol(value) : fmtArea(value)}</td><td class="kpi-pct">${pct(value, total)}</td></tr>`;
 
-    let html = '<div class="kz-dashboard-content">';
-    html += '<div class="val-kennzahlen">';
+    let html = '<div class="kpi-dashboard-content">';
+    html += '<div class="val-kpi">';
 
     // ── Left column ──
     html += '<div>';
 
-    // Gebäudevolumen
-    html += '<div class="val-kz-section">';
-    html += `<div class="val-kz-title">${esc(t('kpiSection.volume'))}</div>`;
-    html += '<table class="val-kz-table"><tbody>';
+    // Building volume
+    html += '<div class="val-kpi-section">';
+    html += `<div class="val-kpi-title">${esc(t('kpiSection.volume'))}</div>`;
+    html += '<table class="val-kpi-table"><tbody>';
     html += kzRow('GV', t('kpi.GV'), null, null, true);
     html += '</tbody></table></div>';
 
-    // Gebäudeflächen — filled from room + area data
-    html += '<div class="val-kz-section">';
-    html += `<div class="val-kz-title">${esc(t('kpiSection.areas'))}</div>`;
-    html += '<table class="val-kz-table"><tbody>';
+    // Building areas — filled from room + area data
+    html += '<div class="val-kpi-section">';
+    html += `<div class="val-kpi-title">${esc(t('kpiSection.areas'))}</div>`;
+    html += '<table class="val-kpi-table"><tbody>';
     html += kzRow('GF', t('kpi.GF'), gf, gf);
     html += kzRow('KF', t('kpi.KF'), kf, gf);
     html += kzRow('NGF', t('kpi.NGF'), hasRooms ? ngf : null, gf);
@@ -1343,15 +1335,15 @@ function renderKennzahlenTab() {
     html += kzRow('FF', t('kpi.FF'), hasRooms ? ff : null, gf);
     html += '</tbody></table></div>';
 
-    // Flächen DIN 277 — sub-category sums
+    // DIN 277 areas — sub-category sums
     const din277Sum = {};
     for (const r of state.roomData) {
         const sub = r.din277 || null;
         if (sub) din277Sum[sub] = (din277Sum[sub] || 0) + r.area;
     }
-    html += '<div class="val-kz-section">';
-    html += `<div class="val-kz-title">${esc(t('kpiSection.din277'))}</div>`;
-    html += '<table class="val-kz-table"><tbody>';
+    html += '<div class="val-kpi-section">';
+    html += `<div class="val-kpi-title">${esc(t('kpiSection.din277'))}</div>`;
+    html += '<table class="val-kpi-table"><tbody>';
     html += kzRow('HNF 1', t('din277.1'), din277Sum['1'] || null, gf);
     html += kzRow('HNF 2', t('din277.2'), din277Sum['2'] || null, gf);
     html += kzRow('HNF 3', t('din277.3'), din277Sum['3'] || null, gf);
@@ -1369,14 +1361,14 @@ function renderKennzahlenTab() {
     // ── Right column ──
     html += '<div>';
 
-    // Wirtschaftlichkeitskennzahlen
-    html += '<div class="val-kz-section">';
-    html += `<div class="val-kz-title">${esc(t('kpiSection.economy'))}</div>`;
-    html += '<table class="val-kz-table"><tbody>';
-    html += `<tr><td class="kz-abbr">NGF / GF</td><td>${esc(t('kpi.NGF_GF'))}</td><td class="kz-value">${(gf && hasRooms) ? (ngf / gf).toFixed(2) : DASH}</td></tr>`;
-    html += `<tr><td class="kz-abbr">KF / GF</td><td>${esc(t('kpi.KF_GF'))}</td><td class="kz-value">${(gf && kf !== null) ? (kf / gf).toFixed(2) : DASH}</td></tr>`;
-    html += `<tr><td class="kz-abbr">NF / NGF</td><td>${esc(t('kpi.NF_NGF'))}</td><td class="kz-value">${(hasRooms && ngf > 0) ? (nf / ngf).toFixed(2) : DASH}</td></tr>`;
-    html += `<tr><td class="kz-abbr">HNF / NGF</td><td>${esc(t('kpi.HNF_NGF'))}</td><td class="kz-value">${(hasRooms && ngf > 0) ? (hnf / ngf).toFixed(2) : DASH}</td></tr>`;
+    // Economic efficiency indicators
+    html += '<div class="val-kpi-section">';
+    html += `<div class="val-kpi-title">${esc(t('kpiSection.economy'))}</div>`;
+    html += '<table class="val-kpi-table"><tbody>';
+    html += `<tr><td class="kpi-abbr">NGF / GF</td><td>${esc(t('kpi.NGF_GF'))}</td><td class="kpi-value">${(gf && hasRooms) ? (ngf / gf).toFixed(2) : DASH}</td></tr>`;
+    html += `<tr><td class="kpi-abbr">KF / GF</td><td>${esc(t('kpi.KF_GF'))}</td><td class="kpi-value">${(gf && kf !== null) ? (kf / gf).toFixed(2) : DASH}</td></tr>`;
+    html += `<tr><td class="kpi-abbr">NF / NGF</td><td>${esc(t('kpi.NF_NGF'))}</td><td class="kpi-value">${(hasRooms && ngf > 0) ? (nf / ngf).toFixed(2) : DASH}</td></tr>`;
+    html += `<tr><td class="kpi-abbr">HNF / NGF</td><td>${esc(t('kpi.HNF_NGF'))}</td><td class="kpi-value">${(hasRooms && ngf > 0) ? (hnf / ngf).toFixed(2) : DASH}</td></tr>`;
     html += '</tbody></table></div>';
 
     // Donut chart — SIA 416 breakdown: HNF, NNF, VF, FF, KF
@@ -1389,29 +1381,29 @@ function renderKennzahlenTab() {
     const donutTotal = gf || ngf || 1;
     html += buildValidationDonut(donutSegments, 0, donutTotal);
 
-    // Objektübersicht
+    // Entity overview
     if (state.entitySummary.length > 0) {
-        html += '<div class="val-kz-section">';
-        html += `<div class="val-kz-title">${esc(t('kpiSection.entitySummary'))}</div>`;
-        html += '<table class="val-kz-table"><tbody>';
+        html += '<div class="val-kpi-section">';
+        html += `<div class="val-kpi-title">${esc(t('kpiSection.entitySummary'))}</div>`;
+        html += '<table class="val-kpi-table"><tbody>';
         for (const e of state.entitySummary) {
             const ls = e.layers.slice(0, 3).join(', ');
             const more = e.layers.length > 3 ? ' ...' : '';
-            html += `<tr><td class="kz-abbr">${esc(e.type)}</td><td>${e.count}</td><td class="kz-layer-cell">${esc(ls + more)}</td></tr>`;
+            html += `<tr><td class="kpi-abbr">${esc(e.type)}</td><td>${e.count}</td><td class="kpi-layer-cell">${esc(ls + more)}</td></tr>`;
         }
         html += '</tbody></table></div>';
     }
 
     html += '</div>';
 
-    html += '</div>'; // val-kennzahlen
-    html += '</div>'; // kz-dashboard-content
+    html += '</div>'; // val-kpi
+    html += '</div>'; // kpi-dashboard-content
 
     dom.validationDashboard.innerHTML = html;
 }
 
 // ─────────────────────────────────────────────
-// Tab 6: Prüfregeln (flat rule table)
+// Tab 6: Validation rules (flat rule table)
 // ─────────────────────────────────────────────
 
 function renderRulesTab() {
@@ -1502,7 +1494,7 @@ function renderRulesTab() {
         filteredPassed = [];
     }
 
-    // Nicht bestanden first, then Bestanden — both expanded
+    // Failed first, then Passed — both expanded
     if (filteredFailed.length > 0) {
         renderGroup(t('tab.notPassed'), filteredFailed, false);
     }

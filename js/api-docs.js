@@ -3,6 +3,8 @@
  * Reads an OpenAPI 3.0 JSON spec and renders Swagger-style documentation.
  */
 
+import { esc } from './utils.js';
+
 const METHOD_COLORS = {
     get: 'success',
     post: 'primary',
@@ -65,12 +67,12 @@ function renderSchemaProps(spec, schema) {
         const required = schema.required?.includes(name) ? '<span class="api-docs__required">required</span>' : '';
         const desc = resolved.description || '';
         rows += `<tr>
-            <td><code>${escapeHtml(name)}</code> ${required}</td>
-            <td class="api-docs__type">${escapeHtml(type)}</td>
-            <td>${escapeHtml(desc)}</td>
+            <td><code>${esc(name)}</code> ${required}</td>
+            <td class="api-docs__type">${esc(type)}</td>
+            <td>${esc(desc)}</td>
         </tr>`;
     }
-    return `<table class="api-docs__schema"><thead><tr><th>Name</th><th>Typ</th><th>Beschreibung</th></tr></thead><tbody>${rows}</tbody></table>`;
+    return `<table class="api-docs__schema"><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 
 function renderEndpoint(spec, method, path, op) {
@@ -84,14 +86,14 @@ function renderEndpoint(spec, method, path, op) {
         for (const p of op.parameters) {
             const s = p.schema || {};
             paramRows += `<tr>
-                <td><code>${escapeHtml(p.name)}</code>${p.required ? ' <span class="api-docs__required">required</span>' : ''}</td>
-                <td class="api-docs__type">${escapeHtml(s.type || 'string')}${s.format ? ` (${escapeHtml(s.format)})` : ''}</td>
-                <td>${escapeHtml(p.in)}</td>
-                <td>${escapeHtml(p.description || '')}</td>
+                <td><code>${esc(p.name)}</code>${p.required ? ' <span class="api-docs__required">required</span>' : ''}</td>
+                <td class="api-docs__type">${esc(s.type || 'string')}${s.format ? ` (${esc(s.format)})` : ''}</td>
+                <td>${esc(p.in)}</td>
+                <td>${esc(p.description || '')}</td>
             </tr>`;
         }
         paramsHtml = `<div class="api-docs__section-label">Parameter</div>
-            <table class="api-docs__schema"><thead><tr><th>Name</th><th>Typ</th><th>In</th><th>Beschreibung</th></tr></thead><tbody>${paramRows}</tbody></table>`;
+            <table class="api-docs__schema"><thead><tr><th>Name</th><th>Type</th><th>In</th><th>Description</th></tr></thead><tbody>${paramRows}</tbody></table>`;
     }
 
     // Request body
@@ -112,7 +114,7 @@ function renderEndpoint(spec, method, path, op) {
         const statusClass = code.startsWith('2') ? 'success' : code.startsWith('4') ? 'error' : 'warning';
         responsesHtml += `<div class="api-docs__response">
             <span class="api-docs__status api-docs__status--${statusClass}">${code}</span>
-            <span>${escapeHtml(resp.description)}</span>
+            <span>${esc(resp.description)}</span>
         </div>`;
 
         const content = resp.content;
@@ -152,23 +154,19 @@ function renderEndpoint(spec, method, path, op) {
         <div class="api-docs__endpoint-header" data-toggle="${id}-detail">
             <span class="api-docs__method api-docs__method--${colorClass}">${method.toUpperCase()}</span>
             <span class="api-docs__path">${path.replace(/\{(\w+)\}/g, '<span class="api-docs__param">{$1}</span>')}</span>
-            <span class="api-docs__summary">${escapeHtml(op.summary || '')}</span>
+            <span class="api-docs__summary">${esc(op.summary || '')}</span>
             <svg class="api-docs__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
         <div class="api-docs__detail" id="${id}-detail">
-            ${op.description ? `<p class="api-docs__desc">${escapeHtml(op.description)}</p>` : ''}
+            ${op.description ? `<p class="api-docs__desc">${esc(op.description)}</p>` : ''}
             ${paramsHtml}
             ${bodyHtml}
-            <div class="api-docs__section-label">Antworten</div>
+            <div class="api-docs__section-label">Responses</div>
             ${responsesHtml}
-            <div class="api-docs__section-label">Beispiel</div>
-            <pre class="api-docs__example">${escapeHtml(curl)}</pre>
+            <div class="api-docs__section-label">Example</div>
+            <pre class="api-docs__example">${esc(curl)}</pre>
         </div>
     </div>`;
-}
-
-function escapeHtml(str) {
-    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 export async function initApiDocs() {
@@ -186,7 +184,7 @@ export async function initApiDocs() {
 
     for (const [path, methods] of Object.entries(spec.paths)) {
         for (const [method, op] of Object.entries(methods)) {
-            const tag = op.tags?.[0] || 'Allgemein';
+            const tag = op.tags?.[0] || 'General';
             if (!tagGroups[tag]) tagGroups[tag] = { description: '', endpoints: [] };
             tagGroups[tag].endpoints.push({ method, path, op });
         }
@@ -207,8 +205,8 @@ export async function initApiDocs() {
 
     // Auth section
     contentHtml += `<div class="api-docs__auth" id="auth">
-        <h2 class="api-docs__group-title">Authentifizierung</h2>
-        <p>Alle Anfragen erfordern einen API-Schlüssel im Header <code>X-API-Key</code>. Schlüssel können über das BBL-Portal beantragt werden.</p>
+        <h2 class="api-docs__group-title">Authentication</h2>
+        <p>All requests require an API key in the <code>X-API-Key</code> header. Keys can be requested through the BBL portal.</p>
         <pre class="api-docs__example">curl -H "X-API-Key: YOUR_API_KEY" ${spec.servers?.[0]?.url || ''}/health</pre>
     </div>`;
 
@@ -217,7 +215,7 @@ export async function initApiDocs() {
 
         contentHtml += `<div class="api-docs__group" id="tag-${tagId}">
             <h2 class="api-docs__group-title">${tagName}</h2>
-            ${group.description ? `<p class="api-docs__group-desc">${escapeHtml(group.description)}</p>` : ''}
+            ${group.description ? `<p class="api-docs__group-desc">${esc(group.description)}</p>` : ''}
             ${group.endpoints.map(e => renderEndpoint(spec, e.method, e.path, e.op)).join('')}
         </div>`;
     }

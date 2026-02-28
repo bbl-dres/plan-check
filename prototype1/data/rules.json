@@ -1,23 +1,23 @@
 [
   {
     "id": 1,
-    "name": "BBL CAD-Richtlinie Standard",
-    "description": "Standard-Prüfregeln für BBL CAD-Zeichnungen",
+    "name": "BBL CAD Guideline Standard",
+    "description": "Standard validation rules for BBL CAD drawings",
     "rules": [
-      { "code": "LAYER_001", "name": "Pflichtlayer vorhanden", "category": "Layer", "description": "Prüft, ob alle 14 vorgeschriebenen Layer gemäss BBL CAD-Richtlinie vorhanden sind" },
-      { "code": "LAYER_002", "name": "Layer-Farben korrekt", "category": "Layer", "description": "Prüft, ob die Layer-Farben den Vorgaben entsprechen (z.B. Layer 7 = weiss)" },
-      { "code": "LAYER_003", "name": "Keine fremden Layer", "category": "Layer", "description": "Prüft, ob keine nicht definierten Layer in der Zeichnung vorhanden sind" },
-      { "code": "GEOM_001", "name": "Polylinien geschlossen", "category": "Geometrie", "description": "Prüft, ob alle Raumpolygone geschlossen sind (Start- und Endpunkt identisch)" },
-      { "code": "GEOM_002", "name": "Polylinien planar", "category": "Geometrie", "description": "Prüft, ob alle Polylinien auf Z=0 liegen (2D-Konformität)" },
-      { "code": "GEOM_003", "name": "Keine Selbstüberschneidungen", "category": "Geometrie", "description": "Prüft, ob Raumpolygone sich nicht selbst überschneiden" },
-      { "code": "GEOM_004", "name": "Minimale Raumgrösse", "category": "Geometrie", "description": "Prüft, ob alle Räume eine Mindestfläche von 1 m² haben" },
-      { "code": "ENTITY_001", "name": "Erlaubte Entitätstypen", "category": "Entität", "description": "Prüft, ob nur erlaubte Entitätstypen verwendet werden (LINE, POLYLINE, TEXT, etc.)" },
-      { "code": "ENTITY_002", "name": "Keine OLE-Objekte", "category": "Entität", "description": "Prüft, ob keine eingebetteten OLE-Objekte vorhanden sind" },
-      { "code": "TEXT_001", "name": "Schriftart korrekt", "category": "Text", "description": "Prüft, ob nur die vorgeschriebene Schriftart \"Arial\" verwendet wird" },
-      { "code": "TEXT_002", "name": "Textgrösse korrekt", "category": "Text", "description": "Prüft, ob die Texthöhe den Vorgaben entspricht (min. 2.5mm)" },
-      { "code": "AOID_001", "name": "AOID-Format gültig", "category": "AOID", "description": "Prüft, ob alle AOIDs dem BBL-Format entsprechen (z.B. \"2011.DM.04.015\")" },
-      { "code": "AOID_002", "name": "AOID eindeutig", "category": "AOID", "description": "Prüft, ob jede AOID nur einmal in der Zeichnung vorkommt" },
-      { "code": "AOID_003", "name": "AOID in Raumliste", "category": "AOID", "description": "Prüft, ob alle AOIDs in der hochgeladenen Excel-Raumliste vorhanden sind" }
+      { "code": "LAYER_001", "name": "Required layers present", "category": "Layer", "description": "Checks whether all 14 required layers per BBL CAD guideline are present" },
+      { "code": "LAYER_002", "name": "Layer colors valid", "category": "Layer", "description": "Checks whether the layer colors match the specifications (e.g. Layer 7 = white)" },
+      { "code": "LAYER_003", "name": "No undefined layers", "category": "Layer", "description": "Checks whether there are no undefined layers in the drawing" },
+      { "code": "GEOM_001", "name": "Polylines closed", "category": "Geometry", "description": "Checks whether all room polygons are closed (start and end point identical)" },
+      { "code": "GEOM_002", "name": "Polylines planar", "category": "Geometry", "description": "Checks whether all polylines lie on Z=0 (2D conformity)" },
+      { "code": "GEOM_003", "name": "No self-intersections", "category": "Geometry", "description": "Checks whether room polygons do not self-intersect" },
+      { "code": "GEOM_004", "name": "Minimum room size", "category": "Geometry", "description": "Checks whether all rooms have a minimum area of 1 m²" },
+      { "code": "ENTITY_001", "name": "Allowed entity types", "category": "Entity", "description": "Checks whether only allowed entity types are used (LINE, POLYLINE, TEXT, etc.)" },
+      { "code": "ENTITY_002", "name": "No OLE objects", "category": "Entity", "description": "Checks whether no embedded OLE objects are present" },
+      { "code": "TEXT_001", "name": "Font valid", "category": "Text", "description": "Checks whether only the prescribed font \"Arial\" is used" },
+      { "code": "TEXT_002", "name": "Text height valid", "category": "Text", "description": "Checks whether the text height matches the specifications (min. 2.5mm)" },
+      { "code": "AOID_001", "name": "AOID format valid", "category": "AOID", "description": "Checks whether all AOIDs conform to the BBL format (e.g. \"2011.DM.04.015\")" },
+      { "code": "AOID_002", "name": "AOID unique", "category": "AOID", "description": "Checks whether each AOID occurs only once in the drawing" },
+      { "code": "AOID_003", "name": "AOID in room list", "category": "AOID", "description": "Checks whether all AOIDs are present in the uploaded Excel room list" }
     ]
   }
 ]

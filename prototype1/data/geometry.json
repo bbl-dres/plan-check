@@ -453,7 +453,7 @@
     "type": "area",
     "aoid": "GF-EG-001",
     "area": 450,
-    "aofunction": "Geschossfläche",
+    "aofunction": "Gross Floor Area",
     "status": "ok",
     "vertices": [
       [
@@ -481,7 +481,7 @@
     "type": "area",
     "aoid": "EBF-EG-001",
     "area": 280,
-    "aofunction": "Energiebezugsfläche",
+    "aofunction": "Energy Reference Area",
     "status": "ok",
     "vertices": [
       [
@@ -929,7 +929,7 @@
     "type": "area",
     "aoid": "GF-1OG-001",
     "area": 435,
-    "aofunction": "Geschossfläche",
+    "aofunction": "Gross Floor Area",
     "status": "ok",
     "vertices": [
       [
@@ -957,7 +957,7 @@
     "type": "area",
     "aoid": "EBF-1OG-001",
     "area": 265,
-    "aofunction": "Energiebezugsfläche",
+    "aofunction": "Energy Reference Area",
     "status": "ok",
     "vertices": [
       [
@@ -1405,7 +1405,7 @@
     "type": "area",
     "aoid": "GF-2OG-001",
     "area": 428,
-    "aofunction": "Geschossfläche",
+    "aofunction": "Gross Floor Area",
     "status": "ok",
     "vertices": [
       [
@@ -1433,7 +1433,7 @@
     "type": "area",
     "aoid": "EBF-2OG-001",
     "area": 310,
-    "aofunction": "Energiebezugsfläche",
+    "aofunction": "Energy Reference Area",
     "status": "ok",
     "vertices": [
       [
@@ -1853,7 +1853,7 @@
     "type": "area",
     "aoid": "GF-3OG-001",
     "area": 415,
-    "aofunction": "Geschossfläche",
+    "aofunction": "Gross Floor Area",
     "status": "ok",
     "vertices": [
       [
@@ -1881,7 +1881,7 @@
     "type": "area",
     "aoid": "EBF-3OG-001",
     "area": 285,
-    "aofunction": "Energiebezugsfläche",
+    "aofunction": "Energy Reference Area",
     "status": "ok",
     "vertices": [
       [
@@ -2105,7 +2105,7 @@
     "type": "area",
     "aoid": "GF-UG-001",
     "area": 320,
-    "aofunction": "Geschossfläche",
+    "aofunction": "Gross Floor Area",
     "status": "error",
     "vertices": [
       [
@@ -2133,7 +2133,7 @@
     "type": "area",
     "aoid": "EBF-UG-001",
     "area": 180,
-    "aofunction": "Energiebezugsfläche",
+    "aofunction": "Energy Reference Area",
     "status": "ok",
     "vertices": [
       [
@@ -2301,7 +2301,7 @@
     "type": "area",
     "aoid": "GF-DG-001",
     "area": 210,
-    "aofunction": "Geschossfläche",
+    "aofunction": "Gross Floor Area",
     "status": "ok",
     "vertices": [
       [
@@ -2525,7 +2525,7 @@
     "type": "area",
     "aoid": "GF-SS-001",
     "area": 520,
-    "aofunction": "Geschossfläche",
+    "aofunction": "Gross Floor Area",
     "status": "ok",
     "vertices": [
       [
@@ -2917,7 +2917,7 @@
     "type": "area",
     "aoid": "GF-RC-001",
     "area": 550,
-    "aofunction": "Geschossfläche",
+    "aofunction": "Gross Floor Area",
     "status": "ok",
     "vertices": [
       [
@@ -3281,7 +3281,7 @@
     "type": "area",
     "aoid": "GF-1E-001",
     "area": 540,
-    "aofunction": "Geschossfläche",
+    "aofunction": "Gross Floor Area",
     "status": "ok",
     "vertices": [
       [
@@ -3645,7 +3645,7 @@
     "type": "area",
     "aoid": "GF-2E-001",
     "area": 540,
-    "aofunction": "Geschossfläche",
+    "aofunction": "Gross Floor Area",
     "status": "warning",
     "vertices": [
       [
@@ -4009,7 +4009,7 @@
     "type": "area",
     "aoid": "GF-3E-001",
     "area": 535,
-    "aofunction": "Geschossfläche",
+    "aofunction": "Gross Floor Area",
     "status": "ok",
     "vertices": [
       [
@@ -4373,7 +4373,7 @@
     "type": "area",
     "aoid": "GF-4E-001",
     "area": 530,
-    "aofunction": "Geschossfläche",
+    "aofunction": "Gross Floor Area",
     "status": "ok",
     "vertices": [
       [
@@ -4485,7 +4485,7 @@
     "type": "area",
     "aoid": "GF-T-001",
     "area": 120,
-    "aofunction": "Geschossfläche",
+    "aofunction": "Gross Floor Area",
     "status": "ok",
     "vertices": [
       [
@@ -4877,7 +4877,7 @@
     "type": "area",
     "aoid": "GF-EG-001",
     "area": 380,
-    "aofunction": "Geschossfläche",
+    "aofunction": "Gross Floor Area",
     "status": "ok",
     "vertices": [
       [
@@ -4905,7 +4905,7 @@
     "type": "area",
     "aoid": "EBF-EG-001",
     "area": 240,
-    "aofunction": "Energiebezugsfläche",
+    "aofunction": "Energy Reference Area",
     "status": "ok",
     "vertices": [
       [
@@ -5269,7 +5269,7 @@
     "type": "area",
     "aoid": "GF-1OG-001",
     "area": 375,
-    "aofunction": "Geschossfläche",
+    "aofunction": "Gross Floor Area",
     "status": "ok",
     "vertices": [
       [
@@ -5633,7 +5633,7 @@
     "type": "area",
     "aoid": "GF-2OG-001",
     "area": 370,
-    "aofunction": "Geschossfläche",
+    "aofunction": "Gross Floor Area",
     "status": "ok",
     "vertices": [
       [
@@ -5969,7 +5969,7 @@
     "type": "area",
     "aoid": "GF-3OG-001",
     "area": 365,
-    "aofunction": "Geschossfläche",
+    "aofunction": "Gross Floor Area",
     "status": "ok",
     "vertices": [
       [
@@ -6165,7 +6165,7 @@
     "type": "area",
     "aoid": "GF-UG-001",
     "area": 280,
-    "aofunction": "Geschossfläche",
+    "aofunction": "Gross Floor Area",
     "status": "warning",
     "vertices": [
       [
@@ -6389,7 +6389,7 @@
     "type": "area",
     "aoid": "GF-EG-001",
     "area": 220,
-    "aofunction": "Geschossfläche",
+    "aofunction": "Gross Floor Area",
     "status": "ok",
     "vertices": [
       [
@@ -6585,7 +6585,7 @@
     "type": "area",
     "aoid": "GF-1OG-001",
     "area": 215,
-    "aofunction": "Geschossfläche",
+    "aofunction": "Gross Floor Area",
     "status": "ok",
     "vertices": [
       [
@@ -6781,7 +6781,7 @@
     "type": "area",
     "aoid": "GF-2OG-001",
     "area": 210,
-    "aofunction": "Geschossfläche",
+    "aofunction": "Gross Floor Area",
     "status": "ok",
     "vertices": [
       [
@@ -6893,7 +6893,7 @@
     "type": "area",
     "aoid": "GF-UG-001",
     "area": 180,
-    "aofunction": "Geschossfläche",
+    "aofunction": "Gross Floor Area",
     "status": "ok",
     "vertices": [
       [
@@ -7145,7 +7145,7 @@
     "type": "area",
     "aoid": "GF-EG-001",
     "area": 260,
-    "aofunction": "Geschossfläche",
+    "aofunction": "Gross Floor Area",
     "status": "ok",
     "vertices": [
       [
@@ -7397,7 +7397,7 @@
     "type": "area",
     "aoid": "GF-1OG-001",
     "area": 255,
-    "aofunction": "Geschossfläche",
+    "aofunction": "Gross Floor Area",
     "status": "ok",
     "vertices": [
       [
@@ -7537,7 +7537,7 @@
     "type": "area",
     "aoid": "GF-UG-001",
     "area": 210,
-    "aofunction": "Geschossfläche",
+    "aofunction": "Gross Floor Area",
     "status": "ok",
     "vertices": [
       [
@@ -7901,7 +7901,7 @@
     "type": "area",
     "aoid": "GF-5E-001",
     "area": 525,
-    "aofunction": "Geschossfläche",
+    "aofunction": "Gross Floor Area",
     "status": "ok",
     "vertices": [
       [
@@ -8069,7 +8069,7 @@
     "type": "area",
     "aoid": "GF-DG-001",
     "area": 240,
-    "aofunction": "Geschossfläche",
+    "aofunction": "Gross Floor Area",
     "status": "ok",
     "vertices": [
       [

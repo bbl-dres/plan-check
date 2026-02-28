@@ -121,6 +121,27 @@ export function hasSelfIntersection(verts) {
     return false;
 }
 
+// Compute SIA 416 KPI breakdown from room and area data (shared by UI, PDF, Excel)
+export function computeKpis(roomData, areaData) {
+    const hasRooms = roomData.length > 0;
+    const hasAreaPolys = areaData.length > 0;
+    const catSum = { HNF: 0, NNF: 0, VF: 0, FF: 0 };
+    for (const r of roomData) {
+        const cat = r.siaCategory || 'HNF';
+        if (cat in catSum) catSum[cat] += r.area;
+        else catSum.HNF += r.area;
+    }
+    const hnf = catSum.HNF;
+    const nnf = catSum.NNF;
+    const vf = catSum.VF;
+    const ff = catSum.FF;
+    const nf = hnf + nnf;
+    const ngf = nf + vf + ff;
+    const gf = hasAreaPolys ? areaData.reduce((s, a) => s + a.area, 0) : null;
+    const kf = (gf !== null && hasRooms) ? gf - ngf : null;
+    return { hnf, nnf, vf, ff, nf, ngf, gf, kf, hasRooms, hasAreaPolys, catSum };
+}
+
 // Hash vertex array for duplicate polygon detection
 export function hashVertices(verts) {
     return verts.map(v => `${Math.round(v.x * 10)},${Math.round(v.y * 10)}`).join('|');

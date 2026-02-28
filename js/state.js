@@ -17,11 +17,11 @@ export const CAFM_LAYERS = {
 export const AOID_TEXT_LAYERS = ['V_PLANLAYOUT', 'V_ACHSEN', 'V_TEXT', 'R_AOID'];
 
 export const SIA_COLORS = {
-    HNF: { fill: 'rgba(229,115,115,0.35)', stroke: '#E57373', hex: '#E57373', label: 'Hauptnutzfläche' },
-    NNF: { fill: 'rgba(255,183,77,0.35)',  stroke: '#FFB74D', hex: '#FFB74D', label: 'Nebennutzfläche' },
-    VF:  { fill: 'rgba(255,241,118,0.35)', stroke: '#FFF176', hex: '#FFF176', label: 'Verkehrsfläche' },
-    FF:  { fill: 'rgba(100,181,246,0.35)', stroke: '#64B5F6', hex: '#64B5F6', label: 'Funktionsfläche' },
-    KF:  { fill: 'rgba(204,204,204,0.35)', stroke: '#CCCCCC', hex: '#CCCCCC', label: 'Konstruktionsfläche' },
+    HNF: { fill: 'rgba(229,115,115,0.35)', stroke: '#E57373', hex: '#E57373', label: 'Primary use area' },
+    NNF: { fill: 'rgba(255,183,77,0.35)',  stroke: '#FFB74D', hex: '#FFB74D', label: 'Secondary use area' },
+    VF:  { fill: 'rgba(255,241,118,0.35)', stroke: '#FFF176', hex: '#FFF176', label: 'Circulation area' },
+    FF:  { fill: 'rgba(100,181,246,0.35)', stroke: '#64B5F6', hex: '#64B5F6', label: 'Functional area' },
+    KF:  { fill: 'rgba(204,204,204,0.35)', stroke: '#CCCCCC', hex: '#CCCCCC', label: 'Construction area' },
 };
 
 export const ACI = {
@@ -77,7 +77,7 @@ export const state = {
     hiddenAreaIds: new Set(),
     hiddenErrorIds: new Set(),
 
-    // Entity summary (for Kennzahlen tab)
+    // Entity summary (for KPI tab)
     entitySummary: [],
 
     // File metadata (for export)

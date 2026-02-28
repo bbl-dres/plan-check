@@ -29,15 +29,15 @@ var ValidationView = (function () {
 
     // Mock layer data for the Overview tab
     var MOCK_LAYERS = [
-        { name: 'A1Z21---E-', color: '#FF0000', count: 0, description: 'Raumpolygone' },
-        { name: 'A-WALL', color: '#FFFFFF', count: 42, description: 'Wände' },
-        { name: 'A-DOOR', color: '#00FF00', count: 12, description: 'Türen' },
-        { name: 'A-WINDOW', color: '#00FFFF', count: 8, description: 'Fenster' },
-        { name: 'A-DIM', color: '#FFFF00', count: 35, description: 'Bemaßung' },
+        { name: 'A1Z21---E-', color: '#FF0000', count: 0, description: 'Room polygons' },
+        { name: 'A-WALL', color: '#FFFFFF', count: 42, description: 'Walls' },
+        { name: 'A-DOOR', color: '#00FF00', count: 12, description: 'Doors' },
+        { name: 'A-WINDOW', color: '#00FFFF', count: 8, description: 'Windows' },
+        { name: 'A-DIM', color: '#FFFF00', count: 35, description: 'Dimensions' },
         { name: 'A-TEXT', color: '#CCCCCC', count: 22, description: 'Text' },
-        { name: 'A-HATCH', color: '#808080', count: 18, description: 'Schraffur' },
-        { name: 'A-STAIR', color: '#FF00FF', count: 3, description: 'Treppen' },
-        { name: 'A-FURNITURE', color: '#FFB74D', count: 28, description: 'Möbel' },
+        { name: 'A-HATCH', color: '#808080', count: 18, description: 'Hatching' },
+        { name: 'A-STAIR', color: '#FF00FF', count: 3, description: 'Stairs' },
+        { name: 'A-FURNITURE', color: '#FFB74D', count: 28, description: 'Furniture' },
     ];
 
     var SIA_COLORS = {
@@ -48,13 +48,16 @@ var ValidationView = (function () {
         KF:  '#CCCCCC',
     };
 
-    var SIA_LABELS = {
-        HNF: 'Hauptnutzfläche',
-        NNF: 'Nebennutzfläche',
-        VF:  'Verkehrsfläche',
-        FF:  'Funktionsfläche',
-        KF:  'Konstruktionsfläche',
-    };
+    // These are computed dynamically for i18n support
+    function getSiaLabels() {
+        return {
+            HNF: I18n.t('sia.hnf'),
+            NNF: I18n.t('sia.nnf'),
+            VF:  I18n.t('sia.vf'),
+            FF:  I18n.t('sia.ff'),
+            KF:  I18n.t('sia.kf'),
+        };
+    }
 
     function escapeHtml(str) {
         if (!str) return '';
@@ -362,7 +365,7 @@ var ValidationView = (function () {
             case 'overview': renderOverviewPanel(); break;
             case 'rooms': renderRoomsPanel(); break;
             case 'areas': renderAreasPanel(); break;
-            case 'kennzahlen': renderKennzahlenPanel(); break;
+            case 'kpi': renderKpiPanel(); break;
             case 'errors': renderErrorsPanel(); break;
             case 'rules': renderRulesPanel(); break;
         }
@@ -393,7 +396,7 @@ var ValidationView = (function () {
                 '<i data-lucide="check-circle-2" class="icon icon-sm panel-list__icon panel-list__icon--ok"></i>' +
                 '<span class="panel-list__color" style="background:' + l.color + '"></span>' +
                 '<span class="panel-list__name">' + escapeHtml(l.name) + '</span>' +
-                '<span class="panel-list__value">' + l.count + ' Objekte</span>' +
+                '<span class="panel-list__value">' + l.count + ' ' + I18n.t('val.objects') + '</span>' +
                 '</label>';
         }
         layerList.innerHTML = html;
@@ -445,7 +448,7 @@ var ValidationView = (function () {
         var html = '';
 
         if (docAreas.length === 0) {
-            html = '<div class="panel-list__empty">Keine Flächenpolygone vorhanden.</div>';
+            html = '<div class="panel-list__empty">' + I18n.t('val.noAreas') + '</div>';
         } else {
             for (var i = 0; i < docAreas.length; i++) {
                 var area = docAreas[i];
@@ -483,8 +486,8 @@ var ValidationView = (function () {
         });
     }
 
-    function renderKennzahlenPanel() {
-        var contentEl = document.getElementById('kennzahlen-content');
+    function renderKpiPanel() {
+        var contentEl = document.getElementById('kpi-content');
         if (!contentEl) return;
 
         // Compute SIA 416 breakdown from room categories
@@ -506,7 +509,7 @@ var ValidationView = (function () {
         var gvOg = gv * 0.75;
         var gvUg = gv * 0.25;
 
-        // Wirtschaftlichkeit ratios
+        // Economy ratios
         var hnfGf = gf > 0 ? (totals.HNF / gf).toFixed(2) : '0.00';
         var vmfGf = gf > 0 ? ((totals.HNF + totals.NNF) / gf).toFixed(2) : '0.00';
 
@@ -515,55 +518,55 @@ var ValidationView = (function () {
         // Left Column: Tables
         html += '<div class="results__tables">';
 
-        // Gebäudevolumen
+        // Building volume
         html += '<div class="results__section">' +
-            '<h3 class="results__section-title">Gebäudevolumen</h3>' +
+            '<h3 class="results__section-title">' + I18n.t('step3.buildingVolume') + '</h3>' +
             '<table class="table table--compact table--no-borders"><tbody>' +
-            kennzahlenRow('GV', 'Gebäudevolumen', gv, gv, gf) +
-            kennzahlenRow('GV OG', 'Gebäudevolumen Obergeschosse', gvOg, gv, gf) +
-            kennzahlenRow('GV UG', 'Gebäudevolumen Untergeschosse', gvUg, gv, gf) +
+            kpiRow('GV', I18n.t('step3.gvDesc'), gv, gv, gf) +
+            kpiRow('GV OG', I18n.t('step3.gvOgDesc'), gvOg, gv, gf) +
+            kpiRow('GV UG', I18n.t('step3.gvUgDesc'), gvUg, gv, gf) +
             '</tbody></table></div>';
 
-        // Gebäudeflächen
+        // Building areas
         html += '<div class="results__section">' +
-            '<h3 class="results__section-title">Gebäudeflächen</h3>' +
+            '<h3 class="results__section-title">' + I18n.t('step3.buildingAreas') + '</h3>' +
             '<table class="table table--compact table--no-borders"><tbody>' +
-            kennzahlenRow('GF', 'Geschossfläche', gf, gf, gf) +
-            kennzahlenRow('KF', 'Konstruktionsfläche', kf, gf, gf) +
-            kennzahlenRow('NGF', 'Nettogeschossfläche', ngf, gf, gf) +
-            kennzahlenRow('NF', 'Nutzfläche', nf, gf, gf) +
-            kennzahlenRow('HNF', SIA_LABELS.HNF, totals.HNF, gf, gf) +
-            kennzahlenRow('NNF', SIA_LABELS.NNF, totals.NNF, gf, gf) +
-            kennzahlenRow('VF', SIA_LABELS.VF, totals.VF, gf, gf) +
-            kennzahlenRow('FF', SIA_LABELS.FF, totals.FF, gf, gf) +
+            kpiRow('GF', I18n.t('step3.gfDesc'), gf, gf, gf) +
+            kpiRow('KF', I18n.t('step3.kfDesc'), kf, gf, gf) +
+            kpiRow('NGF', I18n.t('step3.ngfDesc'), ngf, gf, gf) +
+            kpiRow('NF', I18n.t('step3.nfDesc'), nf, gf, gf) +
+            kpiRow('HNF', getSiaLabels().HNF, totals.HNF, gf, gf) +
+            kpiRow('NNF', getSiaLabels().NNF, totals.NNF, gf, gf) +
+            kpiRow('VF', getSiaLabels().VF, totals.VF, gf, gf) +
+            kpiRow('FF', getSiaLabels().FF, totals.FF, gf, gf) +
             '</tbody></table></div>';
 
-        // Flächen DIN 277 (mock data, simplified)
+        // Areas DIN 277 (mock data, simplified)
         html += '<div class="results__section">' +
-            '<h3 class="results__section-title">Flächen DIN 277</h3>' +
+            '<h3 class="results__section-title">' + I18n.t('step3.din277') + '</h3>' +
             '<table class="table table--compact table--no-borders"><tbody>' +
-            kennzahlenRow('HNF 1', 'Wohnen und Aufenthalt', totals.HNF * 0.1, gf, gf) +
-            kennzahlenRow('HNF 2', 'Büroarbeit', totals.HNF * 0.6, gf, gf) +
-            kennzahlenRow('HNF 3', 'Produktion', 0, gf, gf) +
-            kennzahlenRow('HNF 4', 'Lagern, Verteilen', totals.HNF * 0.1, gf, gf) +
-            kennzahlenRow('HNF 5', 'Bildung, Unterricht, Kultur', totals.HNF * 0.15, gf, gf) +
-            kennzahlenRow('HNF 6', 'Heilen, Pflegen', totals.HNF * 0.05, gf, gf) +
-            kennzahlenRow('NNF 7', 'Nebennutzfläche', totals.NNF, gf, gf) +
-            kennzahlenRow('FF 8', 'Betriebstechnische Anlagen', totals.FF, gf, gf) +
-            kennzahlenRow('VF 9', 'Verkehrserschliessung', totals.VF, gf, gf) +
+            kpiRow('HNF 1', I18n.t('step3.hnf1').replace(/^[^–]+–\s*/, ''), totals.HNF * 0.1, gf, gf) +
+            kpiRow('HNF 2', I18n.t('step3.hnf2').replace(/^[^–]+–\s*/, ''), totals.HNF * 0.6, gf, gf) +
+            kpiRow('HNF 3', I18n.t('step3.hnf3').replace(/^[^–]+–\s*/, ''), 0, gf, gf) +
+            kpiRow('HNF 4', I18n.t('step3.hnf4').replace(/^[^–]+–\s*/, ''), totals.HNF * 0.1, gf, gf) +
+            kpiRow('HNF 5', I18n.t('step3.hnf5').replace(/^[^–]+–\s*/, ''), totals.HNF * 0.15, gf, gf) +
+            kpiRow('HNF 6', I18n.t('step3.hnf6').replace(/^[^–]+–\s*/, ''), totals.HNF * 0.05, gf, gf) +
+            kpiRow('NNF 7', I18n.t('step3.nnf7').replace(/^[^–]+–\s*/, ''), totals.NNF, gf, gf) +
+            kpiRow('FF 8', I18n.t('step3.ff8').replace(/^[^–]+–\s*/, ''), totals.FF, gf, gf) +
+            kpiRow('VF 9', I18n.t('step3.vf9').replace(/^[^–]+–\s*/, ''), totals.VF, gf, gf) +
             '</tbody></table></div>';
 
         html += '</div>'; // end tables
 
-        // Right Column: Wirtschaftlichkeit + Donut
+        // Right Column: Economy Ratios + Donut
         html += '<div class="results__sidebar">';
 
-        // Wirtschaftlichkeit
+        // Economy ratios
         html += '<div class="results__section">' +
-            '<h3 class="results__section-title">Kennzahlen Wirtschaftlichkeit</h3>' +
+            '<h3 class="results__section-title">' + I18n.t('step3.economyRatios') + '</h3>' +
             '<table class="table table--compact table--no-borders"><tbody>' +
-            '<tr><td class="table__abbr">HNF / GF</td><td>Hauptnutzfläche / Geschossfläche</td><td class="text-right">' + hnfGf + '</td></tr>' +
-            '<tr><td class="table__abbr">VMF / GF</td><td>Vermietbare Fläche / Geschossfläche</td><td class="text-right">' + vmfGf + '</td></tr>' +
+            '<tr><td class="table__abbr">HNF / GF</td><td>' + I18n.t('step3.hnfGfDesc') + '</td><td class="text-right">' + hnfGf + '</td></tr>' +
+            '<tr><td class="table__abbr">VMF / GF</td><td>' + I18n.t('step3.vmfGfDesc') + '</td><td class="text-right">' + vmfGf + '</td></tr>' +
             '</tbody></table></div>';
 
         // Donut chart
@@ -577,7 +580,7 @@ var ValidationView = (function () {
         contentEl.innerHTML = html;
     }
 
-    function kennzahlenRow(abbr, label, value, total, gf) {
+    function kpiRow(abbr, label, value, total, gf) {
         var fmtValue = value >= 1000 ?
             Math.round(value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "'") :
             value.toFixed(1);
@@ -647,7 +650,7 @@ var ValidationView = (function () {
         var html = '';
 
         if (docErrors.length === 0) {
-            html = '<div class="error-list__empty">Keine Fehler oder Warnungen gefunden.</div>';
+            html = '<div class="error-list__empty">' + I18n.t('val.noErrors') + '</div>';
         } else {
             for (var i = 0; i < docErrors.length; i++) {
                 var err = docErrors[i];
@@ -731,7 +734,7 @@ var ValidationView = (function () {
         }
 
         if (rules.length === 0) {
-            html = '<div class="rule-list__empty">Keine Prüfregeln vorhanden.</div>';
+            html = '<div class="rule-list__empty">' + I18n.t('val.noRules') + '</div>';
         } else {
             for (var i = 0; i < rules.length; i++) {
                 var rule = rules[i];

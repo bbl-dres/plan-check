@@ -738,7 +738,7 @@ function getRoomOverlayColor(room) {
             }
             return { fill: OV.mutedFill, stroke: OV.mutedStroke };
         }
-        case 'kennzahlen':
+        case 'kpi':
             return SIA_COLORS[room.siaCategory] || { fill: OV.neutralFill, stroke: OV.neutralStroke };
         case 'areas':
             return { fill: OV.mutedFill, stroke: OV.mutedStroke };

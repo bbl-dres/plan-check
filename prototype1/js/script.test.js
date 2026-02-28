@@ -1,5 +1,5 @@
 // ========================================
-// BBL Prüfplattform Flächenmanagement
+// BBL Plan-Check Area Management
 // Unit Tests for Critical Functions
 // ========================================
 
@@ -331,7 +331,7 @@ const EventListenerTests = {
 // === RUN ALL TESTS ===
 function runAllTests() {
     console.log('========================================');
-    console.log('BBL Prüfplattform - Unit Test Suite');
+    console.log('BBL Plan-Check - Unit Test Suite');
     console.log('========================================');
 
     TestRunner.run(SecurityTests);

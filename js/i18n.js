@@ -73,6 +73,11 @@ export async function setLocale(lang) {
     try { localStorage.setItem(STORE_KEY, lang); } catch (_) { /* private mode */ }
     document.documentElement.lang = lang;
     translatePage();
+
+    // Update URL parameter
+    const url = new URL(window.location);
+    url.searchParams.set('lang', lang);
+    history.replaceState(null, '', url);
 }
 
 /**
@@ -109,19 +114,28 @@ export function translatePage() {
 }
 
 /**
- * Detect initial locale from localStorage → navigator.language → default.
+ * Detect initial locale from URL param → localStorage → navigator.language → default.
  */
 export async function initI18n() {
     let lang = DEFAULT;
 
-    try {
-        const stored = localStorage.getItem(STORE_KEY);
-        if (stored && SUPPORTED.includes(stored)) lang = stored;
-    } catch (_) { /* private */ }
+    // 1. Check URL parameter (?lang=de)
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlLang = urlParams.get('lang');
+    if (urlLang && SUPPORTED.includes(urlLang)) {
+        lang = urlLang;
+    } else {
+        // 2. Check localStorage
+        try {
+            const stored = localStorage.getItem(STORE_KEY);
+            if (stored && SUPPORTED.includes(stored)) lang = stored;
+        } catch (_) { /* private */ }
 
-    if (lang === DEFAULT) {
-        const browser = (navigator.language || '').split('-')[0].toLowerCase();
-        if (SUPPORTED.includes(browser)) lang = browser;
+        // 3. Check browser language
+        if (lang === DEFAULT) {
+            const browser = (navigator.language || '').split('-')[0].toLowerCase();
+            if (SUPPORTED.includes(browser)) lang = browser;
+        }
     }
 
     // Always pre-cache German as fallback

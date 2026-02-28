@@ -14,7 +14,7 @@
         base-uri 'self';
         form-action 'self';
     ">
-    <title>BBL Prüfplattform Flächenmanagement</title>
+    <title data-i18n="app.pageTitle">BBL Plan-Check Flächenmanagement</title>
     <link rel="stylesheet" href="../css/tokens.css">
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="stylesheet" href="../css/prototype1.css">
@@ -24,7 +24,7 @@
 </head>
 <body>
     <!-- Skip to Main Content (Accessibility) -->
-    <a href="#main-content" class="skip-to-content">Skip to main content</a>
+    <a href="#main-content" class="skip-to-content" data-i18n="a11y.skipToContent">Zum Hauptinhalt springen</a>
 
     <!-- Swiss Federal Header -->
     <header class="header" role="banner">
@@ -34,8 +34,8 @@
                 <img src="../assets/swiss-logo-name.svg" alt="Schweizerische Eidgenossenschaft" class="header__name">
                 <div class="header__sep"></div>
                 <div class="header__titles">
-                    <span class="header__org">Bundesamt für Bauten und Logistik BBL</span>
-                    <span class="header__app">Prüfplattform Flächenmanagement</span>
+                    <span class="header__org" data-i18n="app.orgName">Bundesamt für Bauten und Logistik BBL</span>
+                    <span class="header__app" data-i18n="app.title">Prüfplattform Flächenmanagement</span>
                 </div>
             </a>
             <div class="lang-selector">
@@ -45,11 +45,11 @@
                 <button class="lang-selector__item" data-lang="en">EN</button>
             </div>
             <nav class="header__nav">
-                <a href="https://www.bbl.admin.ch/de/downloads-bauten" target="_blank" rel="noopener" class="header__nav-link">Downloads BBL Bauten</a>
-                <a href="https://www.bbl.admin.ch/de/kontakt" target="_blank" rel="noopener" class="header__nav-link">Kontakt</a>
+                <a href="https://www.bbl.admin.ch/de/downloads-bauten" target="_blank" rel="noopener" class="header__nav-link" data-i18n="nav.downloads">Downloads BBL Bauten</a>
+                <a href="https://www.bbl.admin.ch/de/kontakt" target="_blank" rel="noopener" class="header__nav-link" data-i18n="nav.contact">Kontakt</a>
             </nav>
-            <button class="btn btn--primary btn--sm header__demo" id="demo-btn" style="display:none">Demo starten</button>
-            <button class="header__user" aria-label="User menu" id="user-menu-btn">
+            <button class="btn btn--primary btn--sm header__demo" id="demo-btn" style="display:none" data-i18n="nav.startDemo">Demo starten</button>
+            <button class="header__user" aria-label="User menu" id="user-menu-btn" data-i18n-aria-label="a11y.userMenu">
                 <i data-lucide="user" class="icon icon-md"></i>
             </button>
         </div>
@@ -63,39 +63,39 @@
             <div class="login">
                 <div class="login__form-wrapper">
                     <div class="login__icon">
-                        <img src="../assets/logo.png" alt="BBL CAD Prüfplattform Logo" class="login__logo">
+                        <img src="../assets/logo.png" alt="BBL CAD Plan-Check Logo" class="login__logo">
                     </div>
 
-                    <h2 class="text-h2 text-center">Anmelden</h2>
+                    <h2 class="text-h2 text-center" data-i18n="login.title">Anmelden</h2>
 
                     <form class="login__form">
                         <div class="form__field">
-                            <label for="username" class="sr-only">Benutzername oder E-Mail</label>
+                            <label for="username" class="sr-only" data-i18n="login.username">Benutzername oder E-Mail</label>
                             <div class="form__input-group">
                                 <i data-lucide="user" class="form__input-icon icon icon-sm"></i>
-                                <input type="text" class="form__input" placeholder="Benutzername oder E-Mail" id="username" autocomplete="username" aria-label="Benutzername oder E-Mail">
+                                <input type="text" class="form__input" placeholder="Benutzername oder E-Mail" id="username" autocomplete="username" aria-label="Username or email" data-i18n-placeholder="login.username">
                             </div>
                         </div>
 
                         <div class="form__field">
-                            <label for="password" class="sr-only">Passwort</label>
+                            <label for="password" class="sr-only" data-i18n="login.password">Passwort</label>
                             <div class="form__input-group">
                                 <i data-lucide="lock" class="form__input-icon icon icon-sm"></i>
-                                <input type="password" class="form__input" placeholder="Passwort" id="password" autocomplete="current-password" aria-label="Passwort">
+                                <input type="password" class="form__input" placeholder="Passwort" id="password" autocomplete="current-password" aria-label="Password" data-i18n-placeholder="login.password">
                             </div>
                         </div>
 
-                        <button type="submit" class="btn btn--primary" id="login-btn">Anmelden / Demo</button>
+                        <button type="submit" class="btn btn--primary" id="login-btn" data-i18n="login.submit">Anmelden / Demo</button>
 
                         <div class="login__links">
-                            <a href="#" class="login__link">Zugang anfordern</a>
-                            <a href="#" class="login__link">Passwort vergessen?</a>
+                            <a href="#" class="login__link" data-i18n="login.requestAccess">Zugang anfordern</a>
+                            <a href="#" class="login__link" data-i18n="login.forgotPassword">Passwort vergessen?</a>
                         </div>
                     </form>
                 </div>
 
                 <div>
-                    <h2 class="text-h3">Erklärvideo</h2>
+                    <h2 class="text-h3" data-i18n="login.tutorial">Tutorial Video</h2>
                     <div class="video-player">
                         <div class="video-player__placeholder">
                             <svg width="80" height="80" viewBox="0 0 80 80">
@@ -112,13 +112,13 @@
                 </div>
 
                 <div class="login__downloads">
-                    <h2 class="text-h3">Downloads</h2>
+                    <h2 class="text-h3" data-i18n="login.downloads">Downloads</h2>
                     <ul class="download-list">
-                        <li><a href="#" class="download-list__link">BBL CAD Weisung.pdf</a></li>
-                        <li><a href="#" class="download-list__link">BBL CAD Prüfungskatalog.pdf</a></li>
-                        <li><a href="#" class="download-list__link">BBL CAD BPMN Prozess.pdf</a></li>
-                        <li><a href="#" class="download-list__link">BBL CAD Vorlage Raumliste.xlsx</a></li>
-                        <li><a href="#" class="download-list__link">BBL CAD Beispiel Dateien.zip</a></li>
+                        <li><a href="#" class="download-list__link" data-i18n="login.cadDirective">BBL CAD-Richtlinie.pdf</a></li>
+                        <li><a href="#" class="download-list__link" data-i18n="login.cadCatalog">BBL CAD-Prüfkatalog.pdf</a></li>
+                        <li><a href="#" class="download-list__link" data-i18n="login.cadProcess">BBL CAD-BPMN-Prozess.pdf</a></li>
+                        <li><a href="#" class="download-list__link" data-i18n="login.cadRoomList">BBL CAD-Raumliste-Vorlage.xlsx</a></li>
+                        <li><a href="#" class="download-list__link" data-i18n="login.cadExamples">BBL CAD-Beispieldateien.zip</a></li>
                     </ul>
                 </div>
             </div>
@@ -130,31 +130,31 @@
                 <div class="page-header">
                     <div class="search">
                         <i data-lucide="search" class="search__icon icon icon-md"></i>
-                        <input type="text" class="search__input" placeholder="Projektname, ID, Auftrag" id="project-search">
+                        <input type="text" class="search__input" placeholder="Projektname, ID, Auftrag" id="project-search" data-i18n-placeholder="projects.searchPlaceholder">
                     </div>
                     <div class="page-header__actions">
-                        <button class="filter-toggle" id="filter-toggle-btn" aria-expanded="false" aria-controls="filter-panel" aria-label="Filter ein-/ausblenden">
+                        <button class="filter-toggle" id="filter-toggle-btn" aria-expanded="false" aria-controls="filter-panel" aria-label="Filter umschalten" data-i18n-title="projects.toggleFilters" data-i18n-aria-label="projects.toggleFilters">
                             <i data-lucide="filter" class="icon icon-md" aria-hidden="true"></i>
-                            <span class="filter-toggle__label">Filter</span>
+                            <span class="filter-toggle__label" data-i18n="projects.filter">Filter</span>
                             <span class="filter-toggle__badge" id="filter-badge" style="display: none;">0</span>
                         </button>
-                        <div class="view-toggle" role="group" aria-label="Ansicht wechseln">
-                            <button class="view-toggle__btn view-toggle__btn--active" data-view="grid" aria-label="Kachelansicht" aria-pressed="true">
+                        <div class="view-toggle" role="group" aria-label="Ansicht wechseln" data-i18n-aria-label="projects.switchView">
+                            <button class="view-toggle__btn view-toggle__btn--active" data-view="grid" aria-label="Rasteransicht" aria-pressed="true" title="Rasteransicht" data-i18n-title="projects.gridView" data-i18n-aria-label="projects.gridView">
                                 <i data-lucide="grid-2x2" class="icon icon-md" aria-hidden="true"></i>
                             </button>
-                            <button class="view-toggle__btn" data-view="list" aria-label="Listenansicht" aria-pressed="false">
+                            <button class="view-toggle__btn" data-view="list" aria-label="Listenansicht" aria-pressed="false" title="Listenansicht" data-i18n-title="projects.listView" data-i18n-aria-label="projects.listView">
                                 <i data-lucide="list" class="icon icon-md" aria-hidden="true"></i>
                             </button>
-                            <button class="view-toggle__btn" data-view="map" aria-label="Kartenansicht" aria-pressed="false">
+                            <button class="view-toggle__btn" data-view="map" aria-label="Kartenansicht" aria-pressed="false" title="Kartenansicht" data-i18n-title="projects.mapView" data-i18n-aria-label="projects.mapView">
                                 <i data-lucide="map" class="icon icon-md" aria-hidden="true"></i>
                             </button>
-                            <button class="view-toggle__btn" data-view="dashboard" aria-label="Dashboard" aria-pressed="false">
+                            <button class="view-toggle__btn" data-view="dashboard" aria-label="Dashboard" aria-pressed="false" title="Dashboard" data-i18n-title="projects.dashboard" data-i18n-aria-label="projects.dashboard">
                                 <i data-lucide="bar-chart-3" class="icon icon-md" aria-hidden="true"></i>
                             </button>
                         </div>
                         <button class="btn btn--primary btn--sm" id="new-project-btn">
                             <i data-lucide="plus" class="icon icon-sm"></i>
-                            Neues Projekt
+                            <span data-i18n="projects.newProject">Neues Projekt</span>
                         </button>
                     </div>
                 </div>
@@ -162,23 +162,23 @@
                 <!-- Collapsible Filter Panel -->
                 <div class="filter-panel" id="filter-panel" hidden>
                     <div class="filter-panel__inner">
-                        <select class="filter-select" id="filter-region" aria-label="Region filtern">
-                            <option value="">Alle Regionen</option>
+                        <select class="filter-select" id="filter-region" aria-label="Nach Region filtern" data-i18n-aria-label="filter.region">
+                            <option value="" data-i18n="filter.allRegions">Alle Regionen</option>
                         </select>
-                        <select class="filter-select" id="filter-status" aria-label="Status filtern">
-                            <option value="">Alle Status</option>
-                            <option value="active">Aktiv</option>
-                            <option value="completed">Abgeschlossen</option>
+                        <select class="filter-select" id="filter-status" aria-label="Nach Status filtern" data-i18n-aria-label="filter.status">
+                            <option value="" data-i18n="filter.allStatus">Alle Status</option>
+                            <option value="active" data-i18n="filter.active">Aktiv</option>
+                            <option value="completed" data-i18n="filter.completed">Abgeschlossen</option>
                         </select>
-                        <select class="filter-select" id="filter-quality" aria-label="Qualität filtern">
-                            <option value="">Alle Qualitäten</option>
-                            <option value="high">Hoch (&ge; 90%)</option>
-                            <option value="medium">Mittel (60–89%)</option>
-                            <option value="low">Tief (&lt; 60%)</option>
+                        <select class="filter-select" id="filter-quality" aria-label="Nach Qualität filtern" data-i18n-aria-label="filter.quality">
+                            <option value="" data-i18n="filter.allQuality">Alle Qualitätsstufen</option>
+                            <option value="high" data-i18n="filter.high">Hoch (&ge; 90%)</option>
+                            <option value="medium" data-i18n="filter.medium">Mittel (60–89%)</option>
+                            <option value="low" data-i18n="filter.low">Tief (&lt; 60%)</option>
                         </select>
                         <button class="btn btn--secondary btn--sm filter-panel__reset" id="filter-reset-btn">
                             <i data-lucide="x" class="icon icon-sm" aria-hidden="true"></i>
-                            Zurücksetzen
+                            <span data-i18n="filter.reset">Zurücksetzen</span>
                         </button>
                     </div>
                 </div>
@@ -188,7 +188,7 @@
                 </div>
 
                 <!-- Map View Container -->
-                <div id="project-map" class="project-map" role="application" aria-label="Projekt-Standorte auf der Karte" style="display: none;"></div>
+                <div id="project-map" class="project-map" role="application" aria-label="Projektstandorte auf der Karte" style="display: none;" data-i18n-aria-label="map.projectLocations"></div>
 
                 <!-- Dashboard View Container -->
                 <div id="project-dashboard" class="project-dashboard" style="display: none;">
@@ -197,42 +197,42 @@
                     <div class="dashboard-kpis">
                         <div class="kpi-card">
                             <div class="kpi-card__value" id="kpi-projects">0</div>
-                            <div class="kpi-card__label">Projekte</div>
+                            <div class="kpi-card__label" data-i18n="kpi.projects">Projekte</div>
                         </div>
                         <div class="kpi-card">
                             <div class="kpi-card__value" id="kpi-documents">0</div>
-                            <div class="kpi-card__label">Grundrisse</div>
+                            <div class="kpi-card__label" data-i18n="kpi.floorPlans">Grundrisse</div>
                         </div>
                         <div class="kpi-card">
                             <div class="kpi-card__value" id="kpi-rooms">0</div>
-                            <div class="kpi-card__label">Räume</div>
+                            <div class="kpi-card__label" data-i18n="kpi.rooms">Räume</div>
                         </div>
                         <div class="kpi-card">
                             <div class="kpi-card__value" id="kpi-total-gf">0</div>
-                            <div class="kpi-card__label">Total GF (m²)</div>
+                            <div class="kpi-card__label" data-i18n="kpi.totalGF">GF gesamt (m²)</div>
                         </div>
                         <div class="kpi-card">
                             <div class="kpi-card__value" id="kpi-quality">0%</div>
-                            <div class="kpi-card__label">Ø Qualität</div>
+                            <div class="kpi-card__label" data-i18n="kpi.avgQuality">Ø Qualität</div>
                         </div>
                     </div>
 
                     <!-- Status + Validation Row -->
                     <div class="dashboard-row">
                         <div class="dashboard-panel">
-                            <h3 class="dashboard-panel__title">Projektstatus</h3>
+                            <h3 class="dashboard-panel__title" data-i18n="dashboard.projectStatus">Projektstatus</h3>
                             <div class="dashboard-status-bars" id="dashboard-status-bars">
                                 <!-- Rendered by JS -->
                             </div>
                         </div>
                         <div class="dashboard-panel">
-                            <h3 class="dashboard-panel__title">Validierung</h3>
+                            <h3 class="dashboard-panel__title" data-i18n="dashboard.validation">Validierung</h3>
                             <div class="dashboard-validation" id="dashboard-validation">
                                 <!-- Rendered by JS -->
                             </div>
                         </div>
                         <div class="dashboard-panel">
-                            <h3 class="dashboard-panel__title">Team</h3>
+                            <h3 class="dashboard-panel__title" data-i18n="dashboard.team">Team</h3>
                             <div class="dashboard-team" id="dashboard-team">
                                 <!-- Rendered by JS -->
                             </div>
@@ -241,18 +241,18 @@
 
                     <!-- Project Summary Table -->
                     <div class="dashboard-panel dashboard-panel--wide">
-                        <h3 class="dashboard-panel__title">Projektübersicht</h3>
+                        <h3 class="dashboard-panel__title" data-i18n="dashboard.projectOverview">Projektübersicht</h3>
                         <div class="dashboard-table-wrapper">
                             <table class="dashboard-table">
                                 <thead>
                                     <tr>
-                                        <th>Projekt</th>
-                                        <th>Phase</th>
-                                        <th>Grundrisse</th>
-                                        <th>Räume</th>
-                                        <th>GF (m²)</th>
-                                        <th>Fehler</th>
-                                        <th>Qualität</th>
+                                        <th data-i18n="dashboard.project">Projekt</th>
+                                        <th data-i18n="dashboard.phase">Phase</th>
+                                        <th data-i18n="dashboard.floorPlans">Grundrisse</th>
+                                        <th data-i18n="dashboard.rooms">Räume</th>
+                                        <th data-i18n="dashboard.gf">GF (m²)</th>
+                                        <th data-i18n="dashboard.errors">Fehler</th>
+                                        <th data-i18n="dashboard.quality">Qualität</th>
                                     </tr>
                                 </thead>
                                 <tbody id="dashboard-project-table">
@@ -271,13 +271,13 @@
             <div class="container">
                 <nav class="breadcrumb">
                     <div class="breadcrumb__nav">
-                        <a href="#" class="breadcrumb__link" id="breadcrumb-projects">Projekte</a>
+                        <a href="#" class="breadcrumb__link" id="breadcrumb-projects" data-i18n="breadcrumb.projects">Projekte</a>
                         <span class="breadcrumb__separator">/</span>
-                        <span class="breadcrumb__current" id="breadcrumb-project-name">Projekt Name</span>
+                        <span class="breadcrumb__current" id="breadcrumb-project-name">Project Name</span>
                     </div>
                     <button class="btn btn--secondary btn--sm" id="back-to-overview">
                         <i data-lucide="arrow-left" class="icon icon-sm"></i>
-                        Zurück Übersicht
+                        <span data-i18n="breadcrumb.backToOverview">Zurück zur Übersicht</span>
                     </button>
                 </nav>
 
@@ -299,23 +299,23 @@
                                     <span class="donut-chart__percentage" id="project-completion">95%</span>
                                 </div>
                             </div>
-                            <span class="project-kpi__label">Ø Score</span>
+                            <span class="project-kpi__label" data-i18n="detail.avgScore">Ø Score</span>
                         </div>
                         <div class="project-kpi">
                             <span class="project-kpi__value" id="project-sia-phase">53</span>
-                            <span class="project-kpi__label">SIA Phase</span>
+                            <span class="project-kpi__label" data-i18n="detail.siaPhase">SIA Phase</span>
                         </div>
                         <div class="project-kpi">
                             <span class="project-kpi__value" id="project-document-count">7</span>
-                            <span class="project-kpi__label">Grundrisse</span>
+                            <span class="project-kpi__label" data-i18n="detail.floorPlans">Grundrisse</span>
                         </div>
                         <div class="project-kpi">
                             <span class="project-kpi__value" id="project-room-count">0</span>
-                            <span class="project-kpi__label">Räume</span>
+                            <span class="project-kpi__label" data-i18n="detail.rooms">Räume</span>
                         </div>
                         <div class="project-kpi">
                             <span class="project-kpi__value" id="project-gf">0 m²</span>
-                            <span class="project-kpi__label">GF</span>
+                            <span class="project-kpi__label" data-i18n="detail.gf">GF</span>
                         </div>
                     </div>
                 </div>
@@ -323,37 +323,37 @@
                 <div class="tabs-card">
                     <div class="tabs tabs--with-actions">
                         <ul class="tabs__list">
-                            <li><a href="#" class="tabs__tab tabs__tab--active" data-tab="documents">Grundrisse (<span id="tab-documents-count">0</span>)</a></li>
-                            <li><a href="#" class="tabs__tab" data-tab="users">Benutzer (<span id="tab-users-count">0</span>)</a></li>
-                            <li><a href="#" class="tabs__tab" data-tab="rules">Prüfregeln (<span id="tab-rules-count">0</span>)</a></li>
-                            <li><a href="#" class="tabs__tab" data-tab="settings">Projekt Einstellungen</a></li>
+                            <li><a href="#" class="tabs__tab tabs__tab--active" data-tab="documents"><span data-i18n="tab.documents">Grundrisse</span> (<span id="tab-documents-count">0</span>)</a></li>
+                            <li><a href="#" class="tabs__tab" data-tab="users"><span data-i18n="tab.users">Benutzer</span> (<span id="tab-users-count">0</span>)</a></li>
+                            <li><a href="#" class="tabs__tab" data-tab="rules"><span data-i18n="tab.rules">Prüfregeln</span> (<span id="tab-rules-count">0</span>)</a></li>
+                            <li><a href="#" class="tabs__tab" data-tab="settings" data-i18n="tab.settings">Projekteinstellungen</a></li>
                         </ul>
                         <div class="tabs__actions" id="tabs-actions-documents">
                             <button class="btn btn--secondary btn--sm" id="edit-document-btn" disabled>
                                 <i data-lucide="pencil" class="icon icon-sm" aria-hidden="true"></i>
-                                Bearbeiten
+                                <span data-i18n="action.edit">Bearbeiten</span>
                             </button>
                             <button class="btn btn--secondary btn--sm" id="delete-documents-btn" disabled>
                                 <i data-lucide="trash-2" class="icon icon-sm" aria-hidden="true"></i>
-                                Löschen
+                                <span data-i18n="action.delete">Löschen</span>
                             </button>
                             <button class="btn btn--primary btn--sm" id="new-document-btn">
                                 <i data-lucide="plus" class="icon icon-sm" aria-hidden="true"></i>
-                                Neuer Grundriss
+                                <span data-i18n="action.newFloorPlan">Neuer Grundriss</span>
                             </button>
                         </div>
                         <div class="tabs__actions" id="tabs-actions-users" style="display: none;">
                             <button class="btn btn--secondary btn--sm" id="edit-user-btn" disabled>
                                 <i data-lucide="pencil" class="icon icon-sm" aria-hidden="true"></i>
-                                Bearbeiten
+                                <span data-i18n="action.edit">Bearbeiten</span>
                             </button>
                             <button class="btn btn--secondary btn--sm" id="delete-users-btn" disabled>
                                 <i data-lucide="trash-2" class="icon icon-sm" aria-hidden="true"></i>
-                                Löschen
+                                <span data-i18n="action.delete">Löschen</span>
                             </button>
                             <button class="btn btn--primary btn--sm" id="invite-user-btn">
                                 <i data-lucide="user-plus" class="icon icon-sm" aria-hidden="true"></i>
-                                Benutzer einladen
+                                <span data-i18n="action.inviteUser">Benutzer einladen</span>
                             </button>
                         </div>
                         <div class="tabs__actions" id="tabs-actions-rules" style="display: none;"></div>
@@ -367,14 +367,14 @@
                                 <tr>
                                     <th scope="col" class="table__checkbox-col">
                                         <label class="checkbox">
-                                            <input type="checkbox" id="select-all-documents" aria-label="Alle Grundrisse auswählen">
+                                            <input type="checkbox" id="select-all-documents" aria-label="Alle Grundrisse auswählen" data-i18n-aria-label="table.selectAll">
                                             <span class="checkbox__mark"></span>
                                         </label>
                                     </th>
-                                    <th scope="col">Name</th>
-                                    <th scope="col">Ersteller</th>
-                                    <th scope="col">Letzte Änderung</th>
-                                    <th scope="col" class="text-right">Score</th>
+                                    <th scope="col" data-i18n="table.name">Name</th>
+                                    <th scope="col" data-i18n="table.creator">Ersteller</th>
+                                    <th scope="col" data-i18n="table.lastModified">Letzte Änderung</th>
+                                    <th scope="col" class="text-right" data-i18n="table.score">Score</th>
                                     <th scope="col" class="table__status-col"></th>
                                 </tr>
                             </thead>
@@ -390,13 +390,13 @@
                                 <tr>
                                     <th scope="col" class="table__checkbox-col">
                                         <label class="checkbox">
-                                            <input type="checkbox" id="select-all-users" aria-label="Alle Benutzer auswählen">
+                                            <input type="checkbox" id="select-all-users" aria-label="Alle Benutzer auswählen" data-i18n-aria-label="table.selectAll">
                                             <span class="checkbox__mark"></span>
                                         </label>
                                     </th>
-                                    <th scope="col">Name</th>
-                                    <th scope="col">Email</th>
-                                    <th scope="col">Last Activity</th>
+                                    <th scope="col" data-i18n="table.name">Name</th>
+                                    <th scope="col" data-i18n="table.email">E-Mail</th>
+                                    <th scope="col" data-i18n="table.lastActivity">Letzte Aktivität</th>
                                 </tr>
                             </thead>
                             <tbody id="user-table-body">
@@ -409,10 +409,10 @@
                         <table class="table table--compact">
                             <thead>
                                 <tr>
-                                    <th scope="col">Code</th>
-                                    <th scope="col">Name</th>
-                                    <th scope="col">Kategorie</th>
-                                    <th scope="col">Beschreibung</th>
+                                    <th scope="col" data-i18n="table.code">Code</th>
+                                    <th scope="col" data-i18n="table.name">Name</th>
+                                    <th scope="col" data-i18n="table.category">Kategorie</th>
+                                    <th scope="col" data-i18n="table.description">Beschreibung</th>
                                 </tr>
                             </thead>
                             <tbody id="rules-table-body">
@@ -423,47 +423,47 @@
                     <div class="tab-pane" id="tab-settings">
                         <form class="settings-form" id="project-settings-form">
                             <fieldset class="settings-section">
-                                <legend class="settings-section__title">Allgemein</legend>
+                                <legend class="settings-section__title" data-i18n="settings.general">Allgemein</legend>
                                 <div class="settings-form__grid">
                                     <div class="form__field">
-                                        <label for="settings-project-number" class="form__label">Projektnummer</label>
+                                        <label for="settings-project-number" class="form__label" data-i18n="settings.projectNumber">Projektnummer</label>
                                         <input type="text" class="form__input" id="settings-project-number" name="projectNumber">
                                     </div>
                                     <div class="form__field">
-                                        <label for="settings-project-name" class="form__label">Projektname</label>
+                                        <label for="settings-project-name" class="form__label" data-i18n="settings.projectName">Projektname</label>
                                         <input type="text" class="form__input" id="settings-project-name" name="name">
                                     </div>
                                     <div class="form__field">
-                                        <label for="settings-project-phase" class="form__label">SIA Phase</label>
+                                        <label for="settings-project-phase" class="form__label" data-i18n="settings.siaPhase">SIA Phase</label>
                                         <select class="form__input form__select" id="settings-project-phase" name="phase">
-                                            <option value="31">31 - Vorprojekt</option>
-                                            <option value="32">32 - Bauprojekt</option>
-                                            <option value="33">33 - Bewilligungsverfahren</option>
-                                            <option value="41">41 - Ausschreibung</option>
-                                            <option value="51">51 - Ausführungsprojekt</option>
-                                            <option value="52">52 - Ausführung</option>
-                                            <option value="53">53 - Inbetriebnahme</option>
+                                            <option value="31" data-i18n="siaPhase.31">31 - Vorprojekt</option>
+                                            <option value="32" data-i18n="siaPhase.32">32 - Bauprojekt</option>
+                                            <option value="33" data-i18n="siaPhase.33">33 - Bewilligungsverfahren</option>
+                                            <option value="41" data-i18n="siaPhase.41">41 - Ausschreibung</option>
+                                            <option value="51" data-i18n="siaPhase.51">51 - Ausführungsplanung</option>
+                                            <option value="52" data-i18n="siaPhase.52">52 - Ausführung</option>
+                                            <option value="53" data-i18n="siaPhase.53">53 - Inbetriebnahme</option>
                                         </select>
                                     </div>
                                     <div class="form__field">
-                                        <label for="settings-project-language" class="form__label">Sprache</label>
+                                        <label for="settings-project-language" class="form__label" data-i18n="settings.language">Sprache</label>
                                         <select class="form__input form__select" id="settings-project-language" name="language">
-                                            <option value="de">Deutsch</option>
-                                            <option value="fr">Français</option>
-                                            <option value="it">Italiano</option>
+                                            <option value="de" data-i18n="projectLang.de">Deutsch</option>
+                                            <option value="fr" data-i18n="projectLang.fr">Französisch</option>
+                                            <option value="it" data-i18n="projectLang.it">Italienisch</option>
                                         </select>
                                     </div>
                                     <div class="form__field">
-                                        <label for="settings-project-status" class="form__label">Status</label>
+                                        <label for="settings-project-status" class="form__label" data-i18n="settings.status">Status</label>
                                         <select class="form__input form__select" id="settings-project-status" name="status">
-                                            <option value="active">Aktiv</option>
-                                            <option value="completed">Abgeschlossen</option>
+                                            <option value="active" data-i18n="filter.active">Aktiv</option>
+                                            <option value="completed" data-i18n="filter.completed">Abgeschlossen</option>
                                         </select>
                                     </div>
                                 </div>
 
                                 <div class="form__field">
-                                    <label class="form__label">Projektbild</label>
+                                    <label class="form__label" data-i18n="settings.projectImage">Projektbild</label>
                                     <div class="settings-image">
                                         <div class="settings-image__preview">
                                             <img src="" alt="Projektbild" id="settings-project-image-preview">
@@ -471,51 +471,51 @@
                                         <div class="settings-image__actions">
                                             <label class="btn btn--secondary btn--sm" for="settings-project-image-input">
                                                 <i data-lucide="upload" class="icon icon-sm" aria-hidden="true"></i>
-                                                Bild ändern
+                                                <span data-i18n="settings.changeImage">Bild ändern</span>
                                             </label>
                                             <input type="file" id="settings-project-image-input" name="image" accept="image/*" class="sr-only">
-                                            <span class="settings-image__hint">Empfohlene Grösse: 800 × 450 px</span>
+                                            <span class="settings-image__hint" data-i18n="settings.imageHint">Empfohlene Grösse: 800 × 450 px</span>
                                         </div>
                                     </div>
                                 </div>
                             </fieldset>
 
                             <fieldset class="settings-section">
-                                <legend class="settings-section__title">Prüfung</legend>
+                                <legend class="settings-section__title" data-i18n="settings.validation">Validierung</legend>
                                 <div class="form__field">
-                                    <label for="settings-project-ruleset" class="form__label">Regelsatz</label>
+                                    <label for="settings-project-ruleset" class="form__label" data-i18n="settings.ruleSet">Regelwerk</label>
                                     <select class="form__input form__select" id="settings-project-ruleset" name="ruleSetId">
                                         <!-- Options populated dynamically from rules.json -->
                                     </select>
                                 </div>
                                 <p class="settings-section__hint">
                                     <i data-lucide="info" class="icon icon-sm" aria-hidden="true"></i>
-                                    Definiert welche Prüfregeln auf die Grundrisse angewendet werden.
+                                    <span data-i18n="settings.ruleSetHint">Definiert, welche Prüfregeln auf die Grundrisse angewendet werden.</span>
                                 </p>
                             </fieldset>
 
                             <fieldset class="settings-section settings-section--danger">
-                                <legend class="settings-section__title">Gefahrenzone</legend>
+                                <legend class="settings-section__title" data-i18n="settings.dangerZone">Gefahrenzone</legend>
                                 <div class="settings-danger__item">
                                     <div class="settings-danger__text">
-                                        <p class="settings-danger__label">Projekt archivieren</p>
-                                        <p class="settings-danger__description">Setzt den Status auf «Abgeschlossen». Keine weiteren Prüfungen möglich.</p>
+                                        <p class="settings-danger__label" data-i18n="settings.archiveProject">Projekt archivieren</p>
+                                        <p class="settings-danger__description" data-i18n="settings.archiveDescription">Setzt den Status auf «Abgeschlossen». Keine weiteren Validierungen möglich.</p>
                                     </div>
-                                    <button type="button" class="btn btn--outline-danger btn--sm" id="settings-archive-btn">Archivieren</button>
+                                    <button type="button" class="btn btn--outline-danger btn--sm" id="settings-archive-btn" data-i18n="settings.archive">Archivieren</button>
                                 </div>
                                 <hr class="settings-danger__divider">
                                 <div class="settings-danger__item">
                                     <div class="settings-danger__text">
-                                        <p class="settings-danger__label">Projekt löschen</p>
-                                        <p class="settings-danger__description">Löscht das Projekt und alle zugehörigen Daten unwiderruflich.</p>
+                                        <p class="settings-danger__label" data-i18n="settings.deleteProject">Projekt löschen</p>
+                                        <p class="settings-danger__description" data-i18n="settings.deleteDescription">Löscht das Projekt und alle zugehörigen Daten unwiderruflich.</p>
                                     </div>
-                                    <button type="button" class="btn btn--danger btn--sm" id="settings-delete-btn">Löschen</button>
+                                    <button type="button" class="btn btn--danger btn--sm" id="settings-delete-btn" data-i18n="action.delete">Löschen</button>
                                 </div>
                             </fieldset>
 
                             <div class="settings-form__actions">
-                                <button type="button" class="btn btn--secondary" id="settings-cancel-btn">Abbrechen</button>
-                                <button type="submit" class="btn btn--primary">Speichern</button>
+                                <button type="button" class="btn btn--secondary" id="settings-cancel-btn" data-i18n="action.cancel">Abbrechen</button>
+                                <button type="submit" class="btn btn--primary" data-i18n="action.save">Speichern</button>
                             </div>
                         </form>
                     </div>
@@ -529,85 +529,85 @@
             <div class="container">
                 <nav class="breadcrumb">
                     <div class="breadcrumb__nav">
-                        <a href="#" class="breadcrumb__link" id="breadcrumb-val-projects">Projekte</a>
+                        <a href="#" class="breadcrumb__link" id="breadcrumb-val-projects" data-i18n="breadcrumb.projects">Projekte</a>
                         <span class="breadcrumb__separator">/</span>
-                        <a href="#" class="breadcrumb__link" id="breadcrumb-val-project">Projekt</a>
+                        <a href="#" class="breadcrumb__link" id="breadcrumb-val-project">Project</a>
                         <span class="breadcrumb__separator">/</span>
-                        <span class="breadcrumb__current" id="breadcrumb-val-document">Grundriss</span>
+                        <span class="breadcrumb__current" id="breadcrumb-val-document">Floor Plan</span>
                     </div>
                     <button class="btn btn--secondary btn--sm" id="back-to-project">
                         <i data-lucide="arrow-left" class="icon icon-sm"></i>
-                        Zurück Übersicht
+                        <span data-i18n="breadcrumb.backToOverview">Zurück zur Übersicht</span>
                     </button>
                 </nav>
 
-                <nav class="stepper" aria-label="Validierungs-Workflow">
+                <nav class="stepper" aria-label="Validation Workflow">
                     <ol class="stepper__list">
                         <li class="stepper__item stepper__item--complete" data-step="1">
                             <span class="stepper__indicator">
                                 <i data-lucide="upload" class="icon icon-sm"></i>
                             </span>
-                            <span class="stepper__label">1. DWG hochladen</span>
+                            <span class="stepper__label" data-i18n="stepper.step1">1. DWG hochladen</span>
                         </li>
                         <li class="stepper__item stepper__item--current" data-step="2">
                             <span class="stepper__indicator">
                                 <i data-lucide="upload" class="icon icon-sm"></i>
                             </span>
-                            <span class="stepper__label">2. Raumliste hochladen</span>
+                            <span class="stepper__label" data-i18n="stepper.step2">2. Raumliste hochladen</span>
                         </li>
                         <li class="stepper__item" data-step="3">
                             <span class="stepper__indicator">
                                 <i data-lucide="eye" class="icon icon-sm"></i>
                             </span>
-                            <span class="stepper__label">3. Ergebnisse bestätigen</span>
+                            <span class="stepper__label" data-i18n="stepper.step3">3. Ergebnisse bestätigen</span>
                         </li>
                         <li class="stepper__item" data-step="4">
                             <span class="stepper__indicator">
                                 <i data-lucide="check-circle" class="icon icon-sm"></i>
                             </span>
-                            <span class="stepper__label">4. Auftrag abschliessen</span>
+                            <span class="stepper__label" data-i18n="stepper.step4">4. Auftrag abschliessen</span>
                         </li>
                     </ol>
                 </nav>
 
-                <!-- STEP 1: DWG Hochladen -->
+                <!-- STEP 1: Upload DWG -->
                 <div id="step-content-1" class="step__content" style="display: none;">
                     <div class="upload">
-                        <h2 class="text-h2">DWG-Datei hochladen</h2>
+                        <h2 class="text-h2" data-i18n="upload.dwgTitle">DWG-Datei hochladen</h2>
                         <div class="upload__zone" id="dwg-upload-zone">
                             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                                 <polyline points="17 8 12 3 7 8"/>
                                 <line x1="12" y1="3" x2="12" y2="15"/>
                             </svg>
-                            <p>Dateien hier ablegen oder klicken zum Auswählen</p>
-                            <p class="text-muted">Unterstützte Formate: DWG, DXF (max. 50 MB)</p>
+                            <p data-i18n="upload.dropHint">Dateien hier ablegen oder klicken zum Auswählen</p>
+                            <p class="text-muted" data-i18n="upload.dwgFormats">Unterstützte Formate: DWG, DXF (max. 50 MB)</p>
                             <input type="file" id="dwg-file-input" accept=".dwg,.dxf" hidden>
-                            <button class="btn btn--primary" id="dwg-select-btn">Datei auswählen</button>
+                            <button class="btn btn--primary" id="dwg-select-btn" data-i18n="upload.selectFile">Datei auswählen</button>
                         </div>
                         <div class="upload__file" id="dwg-uploaded-file" style="display: none;">
-                            <p><strong>Hochgeladen:</strong> <span id="dwg-file-name"></span> (<span id="dwg-file-size"></span>)</p>
+                            <p><strong data-i18n="upload.uploaded">Hochgeladen:</strong> <span id="dwg-file-name"></span> (<span id="dwg-file-size"></span>)</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- STEP 2: Raumliste Hochladen -->
+                <!-- STEP 2: Upload Room List -->
                 <div id="step-content-2" class="step__content" style="display: none;">
                     <div class="upload">
-                        <h2 class="text-h2">Excel-Raumliste hochladen</h2>
+                        <h2 class="text-h2" data-i18n="upload.excelTitle">Excel-Raumliste hochladen</h2>
                         <div class="upload__zone" id="excel-upload-zone">
                             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                                 <polyline points="17 8 12 3 7 8"/>
                                 <line x1="12" y1="3" x2="12" y2="15"/>
                             </svg>
-                            <p>Excel-Datei hier ablegen oder klicken zum Auswählen</p>
-                            <p class="text-muted">Unterstützte Formate: XLSX, XLS (max. 10 MB)</p>
+                            <p data-i18n="upload.dropExcelHint">Excel-Datei hier ablegen oder klicken zum Auswählen</p>
+                            <p class="text-muted" data-i18n="upload.excelFormats">Unterstützte Formate: XLSX, XLS (max. 10 MB)</p>
                             <input type="file" id="excel-file-input" accept=".xlsx,.xls" hidden>
-                            <button class="btn btn--primary" id="excel-select-btn">Datei auswählen</button>
+                            <button class="btn btn--primary" id="excel-select-btn" data-i18n="upload.selectFile">Datei auswählen</button>
                         </div>
                         <div class="upload__file" id="excel-uploaded-file" style="display: none;">
-                            <p><strong>Hochgeladen:</strong> <span id="excel-file-name"></span> (<span id="excel-file-size"></span>)</p>
+                            <p><strong data-i18n="upload.uploaded">Hochgeladen:</strong> <span id="excel-file-name"></span> (<span id="excel-file-size"></span>)</p>
                         </div>
                     </div>
                 </div>
@@ -617,27 +617,27 @@
                     <div class="metrics">
                         <div class="metric-card">
                             <span class="metric-card__value" id="step2-dwg-rooms">0</span>
-                            <span class="metric-card__label">Räume aus DWG</span>
+                            <span class="metric-card__label" data-i18n="step2.roomsDwg">Räume aus DWG</span>
                         </div>
                         <div class="metric-card">
                             <span class="metric-card__value" id="step2-excel-rooms">0</span>
-                            <span class="metric-card__label">Räume aus Excel</span>
+                            <span class="metric-card__label" data-i18n="step2.roomsExcel">Räume aus Excel</span>
                         </div>
                         <div class="metric-card">
                             <span class="metric-card__value" id="step2-ngf">0 m²</span>
-                            <span class="metric-card__label">SIA 416 Nettogeschossfläche NGF</span>
+                            <span class="metric-card__label" data-i18n="step2.ngf">SIA 416 Nettogeschossfläche NGF</span>
                         </div>
                         <div class="metric-card metric-card--error" id="step2-error-card">
                             <span class="metric-card__value" id="step2-error-count">0</span>
-                            <span class="metric-card__label">Fehler</span>
+                            <span class="metric-card__label" data-i18n="step2.errors">Fehler</span>
                         </div>
                     </div>
 
                     <div class="tabs-card">
                         <div class="tabs">
                             <ul class="tabs__list">
-                                <li><a href="#" class="tabs__tab tabs__tab--active" data-step2-tab="rooms">Räume (<span id="step2-tab-rooms-count">0</span>)</a></li>
-                                <li><a href="#" class="tabs__tab" data-step2-tab="errors">Fehlermeldungen (<span id="step2-tab-errors-count">0</span>)</a></li>
+                                <li><a href="#" class="tabs__tab tabs__tab--active" data-step2-tab="rooms" data-i18n="step2.rooms">Räume (<span id="step2-tab-rooms-count">0</span>)</a></li>
+                                <li><a href="#" class="tabs__tab" data-step2-tab="errors" data-i18n="step2.errorMessages">Fehlermeldungen (<span id="step2-tab-errors-count">0</span>)</a></li>
                             </ul>
                         </div>
 
@@ -670,80 +670,80 @@
                     </div>
                 </div>
 
-                <!-- STEP 3: Ergebnisse Bestätigen -->
+                <!-- STEP 3: Confirm Results -->
                 <div id="step-content-3" class="step__content" style="display: none;">
-                    <h2 class="text-h2">Zusammenfassung Ergebnisse</h2>
+                    <h2 class="text-h2" data-i18n="step3.resultsTitle">Ergebniszusammenfassung</h2>
 
                     <div class="tabs-card">
                         <div class="tabs">
                             <ul class="tabs__list">
-                                <li><a href="#" class="tabs__tab tabs__tab--active" data-step3-tab="kennzahlen">Kennzahlen</a></li>
-                                <li><a href="#" class="tabs__tab" data-step3-tab="viewer">Viewer</a></li>
+                                <li><a href="#" class="tabs__tab tabs__tab--active" data-step3-tab="kpi" data-i18n="step3.kpi">KPI</a></li>
+                                <li><a href="#" class="tabs__tab" data-step3-tab="viewer" data-i18n="step3.viewer">Viewer</a></li>
                             </ul>
                         </div>
 
-                        <!-- Kennzahlen Tab -->
-                        <div class="tab-pane tab-pane--active" id="step3-tab-kennzahlen">
+                        <!-- KPI Tab -->
+                        <div class="tab-pane tab-pane--active" id="step3-tab-kpi">
                             <div class="results__layout">
                                 <!-- Left Column: Tables -->
                                 <div class="results__tables">
-                                    <!-- Gebäudevolumen -->
+                                    <!-- Building Volume -->
                                     <div class="results__section">
-                                        <h3 class="results__section-title">Gebäudevolumen</h3>
+                                        <h3 class="results__section-title" data-i18n="step3.buildingVolume">Gebäudevolumen</h3>
                                         <table class="table table--compact table--no-borders">
                                             <tbody>
-                                                <tr><td class="table__abbr">GV</td><td>Gebäudevolumen</td><td class="text-right table__value">74'786 m³</td><td class="text-right table__percent">100%</td></tr>
-                                                <tr><td class="table__abbr">GV OG</td><td>Gebäudevolumen Obergeschosse</td><td class="text-right table__value">74'786 m³</td><td class="text-right table__percent">100%</td></tr>
-                                                <tr><td class="table__abbr">GV UG</td><td>Gebäudevolumen Untergeschosse</td><td class="text-right table__value">74'786 m³</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">GV</td><td data-i18n="step3.gv">Gebäudevolumen</td><td class="text-right table__value">74'786 m³</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">GV OG</td><td data-i18n="step3.gvOg">Gebäudevolumen oberirdisch</td><td class="text-right table__value">74'786 m³</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">GV UG</td><td data-i18n="step3.gvUg">Gebäudevolumen unterirdisch</td><td class="text-right table__value">74'786 m³</td><td class="text-right table__percent">100%</td></tr>
                                             </tbody>
                                         </table>
                                     </div>
 
-                                    <!-- Gebäudeflächen -->
+                                    <!-- Building Areas -->
                                     <div class="results__section">
-                                        <h3 class="results__section-title">Gebäudeflächen</h3>
+                                        <h3 class="results__section-title" data-i18n="step3.buildingAreas">Gebäudeflächen</h3>
                                         <table class="table table--compact table--no-borders">
                                             <tbody>
-                                                <tr><td class="table__abbr">GF</td><td>Geschossfläche</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
-                                                <tr><td class="table__abbr">KF</td><td>Konstruktionsfläche</td><td class="text-right table__value">2'895 m²</td><td class="text-right table__percent">16%</td></tr>
-                                                <tr><td class="table__abbr">NGF</td><td>Nettogeschossfläche</td><td class="text-right table__value">15'637 m²</td><td class="text-right table__percent">100%</td></tr>
-                                                <tr><td class="table__abbr">NF</td><td>Nutzfläche</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
-                                                <tr><td class="table__abbr">HNF</td><td>Hauptnutzfläche</td><td class="text-right table__value">10'198 m²</td><td class="text-right table__percent">100%</td></tr>
-                                                <tr><td class="table__abbr">NNF</td><td>Nebennutzfläche</td><td class="text-right table__value">3'524 m²</td><td class="text-right table__percent">100%</td></tr>
-                                                <tr><td class="table__abbr">VF</td><td>Verkehrsfläche</td><td class="text-right table__value">1'566 m²</td><td class="text-right table__percent">100%</td></tr>
-                                                <tr><td class="table__abbr">FF</td><td>Funktionsfläche</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">GF</td><td data-i18n="step3.gf">Geschossfläche</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">KF</td><td data-i18n="step3.kf">Konstruktionsfläche</td><td class="text-right table__value">2'895 m²</td><td class="text-right table__percent">16%</td></tr>
+                                                <tr><td class="table__abbr">NGF</td><td data-i18n="step3.ngf">Nettogeschossfläche</td><td class="text-right table__value">15'637 m²</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">NF</td><td data-i18n="step3.nf">Nutzfläche</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">HNF</td><td data-i18n="step3.hnf">Hauptnutzfläche</td><td class="text-right table__value">10'198 m²</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">NNF</td><td data-i18n="step3.nnf">Nebennutzfläche</td><td class="text-right table__value">3'524 m²</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">VF</td><td data-i18n="step3.vf">Verkehrsfläche</td><td class="text-right table__value">1'566 m²</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">FF</td><td data-i18n="step3.ff">Funktionsfläche</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
                                             </tbody>
                                         </table>
                                     </div>
 
-                                    <!-- Flächen DIN 277 -->
+                                    <!-- Areas DIN 277 -->
                                     <div class="results__section">
-                                        <h3 class="results__section-title">Flächen DIN 277</h3>
+                                        <h3 class="results__section-title" data-i18n="step3.areasDin277">Flächen DIN 277</h3>
                                         <table class="table table--compact table--no-borders">
                                             <tbody>
-                                                <tr><td class="table__abbr">HNF 1</td><td>Wohnen und Aufenthalt</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
-                                                <tr><td class="table__abbr">HNF 2</td><td>Büroarbeit</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
-                                                <tr><td class="table__abbr">HNF 3</td><td>Produktion</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
-                                                <tr><td class="table__abbr">HNF 4</td><td>Lagern, Verteilen, Verkaufen</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
-                                                <tr><td class="table__abbr">HNF 5</td><td>Bildung, Unterricht, Kultur</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
-                                                <tr><td class="table__abbr">HNF 6</td><td>Heilen, Pflegen</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
-                                                <tr><td class="table__abbr">NNF 7</td><td>Nebennutzfläche</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
-                                                <tr><td class="table__abbr">FF 8</td><td>Betriebstechnische Anlagen</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
-                                                <tr><td class="table__abbr">VF 9</td><td>Verkehrserschliessung und -sicherung</td><td class="text-right table__value">1'566 m²</td><td class="text-right table__percent">100%</td></tr>
-                                                <tr><td class="table__abbr">BUF 10</td><td>Verschiedene Nutzungen</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">HNF 1</td><td data-i18n="step3.hnf1">Wohnen und Aufenthalt</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">HNF 2</td><td data-i18n="step3.hnf2">Büroarbeit</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">HNF 3</td><td data-i18n="step3.hnf3">Produktion</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">HNF 4</td><td data-i18n="step3.hnf4">Lagern und Verteilen</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">HNF 5</td><td data-i18n="step3.hnf5">Bildung, Unterricht, Kultur</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">HNF 6</td><td data-i18n="step3.hnf6">Heilen, Pflegen</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">NNF 7</td><td data-i18n="step3.nnf7">Nebennutzfläche</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">FF 8</td><td data-i18n="step3.ff8">Betriebstechnik</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">VF 9</td><td data-i18n="step3.vf9">Verkehrsfläche</td><td class="text-right table__value">1'566 m²</td><td class="text-right table__percent">100%</td></tr>
+                                                <tr><td class="table__abbr">BUF 10</td><td data-i18n="step3.buf10">Verschiedene Nutzungen</td><td class="text-right table__value">18'535 m²</td><td class="text-right table__percent">100%</td></tr>
                                             </tbody>
                                         </table>
                                     </div>
                                 </div>
 
-                                <!-- Right Column: Kennzahlen + Donut Chart -->
+                                <!-- Right Column: KPI + Donut Chart -->
                                 <div class="results__sidebar">
                                     <div class="results__section">
-                                        <h3 class="results__section-title">Kennzahlen Wirtschaftlichkeit von Grundris</h3>
+                                        <h3 class="results__section-title" data-i18n="step3.economyRatios">Wirtschaftlichkeitskennwerte</h3>
                                         <table class="table table--compact table--no-borders">
                                             <tbody>
-                                                <tr><td class="table__abbr">HNF SIA 416 / GF</td><td>Hauptnutzfläche / Geschossfläche</td><td class="text-right">0.40</td></tr>
-                                                <tr><td class="table__abbr">VMF SIA 165 / GF</td><td>Vermietbare Fläche / Geschossfläche</td><td class="text-right">0.75</td></tr>
+                                                <tr><td class="table__abbr">HNF SIA 416 / GF</td><td data-i18n="step3.hnfGf">Hauptnutzfläche / Geschossfläche</td><td class="text-right">0.40</td></tr>
+                                                <tr><td class="table__abbr">VMF SIA 165 / GF</td><td data-i18n="step3.vmfGf">Vermietbare Fläche / Geschossfläche</td><td class="text-right">0.75</td></tr>
                                             </tbody>
                                         </table>
                                     </div>
@@ -798,14 +798,14 @@
                         <div class="tab-pane" id="step3-tab-viewer">
                             <div class="empty-state">
                                 <i data-lucide="construction" class="empty-state__icon"></i>
-                                <h3 class="empty-state__title">Zukünftige Entwicklung</h3>
-                                <p class="empty-state__message">Der 3D-Viewer wird in einer zukünftigen Version implementiert.</p>
+                                <h3 class="empty-state__title" data-i18n="step3.futureDev">Zukünftige Entwicklung</h3>
+                                <p class="empty-state__message" data-i18n="step3.futureDevHint">Der 3D-Viewer wird in einer zukünftigen Version implementiert.</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- STEP 4: Auftrag Abschliessen -->
+                <!-- STEP 4: Complete Order -->
                 <div id="step-content-4" class="step__content" style="display: none;">
                     <div class="empty-state">
                         <div class="firework">
@@ -813,10 +813,10 @@
                             <div class="firework__spark firework__spark--delay-1"></div>
                             <div class="firework__spark firework__spark--delay-2"></div>
                         </div>
-                        <h2 class="text-h1">Auftrag Abschluss</h2>
-                        <p class="empty-state__message">
-                            Die Validierung wurde erfolgreich abgeschlossen.<br>
-                            Klicken Sie auf "Auftrag abschliessen", um die Ergebnisse zu speichern.
+                        <h2 class="text-h1" data-i18n="step4.title">Auftragsabschluss</h2>
+                        <p class="empty-state__message" data-i18n-html="step4.message">
+                            Validierung erfolgreich abgeschlossen.<br>
+                            Klicken Sie auf «Auftrag abschliessen», um die Ergebnisse zu speichern.
                         </p>
                     </div>
                 </div>
@@ -826,20 +826,20 @@
                     <div class="metrics">
                         <div class="metric-card">
                             <span class="metric-card__value" id="step1-room-count">0</span>
-                            <span class="metric-card__label">Räume</span>
+                            <span class="metric-card__label" data-i18n="val.rooms">Räume</span>
                         </div>
                         <div class="metric-card">
                             <span class="metric-card__value" id="step1-ngf">0 m²</span>
-                            <span class="metric-card__label">SIA 416 Nettogeschossfläche NGF</span>
+                            <span class="metric-card__label" data-i18n="val.ngf">SIA 416 Nettogeschossfläche NGF</span>
                         </div>
                         <div class="metric-card" id="step1-score-card">
                             <span class="metric-card__value" id="step1-score-value">0%</span>
-                            <span class="metric-card__label">Score (<span id="step1-score-detail">0/0</span>)</span>
+                            <span class="metric-card__label" data-i18n="val.score">Score (<span id="step1-score-detail">0/0</span>)</span>
                         </div>
                         <div class="metric-card metric-card--action" id="step1-download-card">
                             <button class="btn btn--secondary btn--sm" id="download-report-btn" disabled>
                                 <i data-lucide="download" class="icon icon-sm" aria-hidden="true"></i>
-                                Bericht herunterladen
+                                <span data-i18n="val.downloadReport">Bericht herunterladen</span>
                             </button>
                         </div>
                     </div>
@@ -847,19 +847,19 @@
                     <div class="tabs-card">
                         <div class="tabs">
                             <ul class="tabs__list">
-                                <li><a href="#" class="tabs__tab tabs__tab--active" data-val-tab="rules">Prüfregeln (<span id="val-tab-rules-count">0</span>)</a></li>
-                                <li><a href="#" class="tabs__tab" data-val-tab="errors">Fehlermeldungen (<span id="val-tab-errors-count">0</span>)</a></li>
-                                <li><a href="#" class="tabs__tab" data-val-tab="overview">Layers (<span id="val-tab-layers-count">0</span>)</a></li>
-                                <li><a href="#" class="tabs__tab" data-val-tab="rooms">Räume (<span id="val-tab-rooms-count">0</span>)</a></li>
-                                <li><a href="#" class="tabs__tab" data-val-tab="areas">Flächen (<span id="val-tab-areas-count">0</span>)</a></li>
+                                <li><a href="#" class="tabs__tab tabs__tab--active" data-val-tab="rules"><span data-i18n="val.tabRules">Prüfregeln</span> (<span id="val-tab-rules-count">0</span>)</a></li>
+                                <li><a href="#" class="tabs__tab" data-val-tab="errors"><span data-i18n="val.tabErrors">Fehlermeldungen</span> (<span id="val-tab-errors-count">0</span>)</a></li>
+                                <li><a href="#" class="tabs__tab" data-val-tab="overview"><span data-i18n="val.tabLayers">Layer</span> (<span id="val-tab-layers-count">0</span>)</a></li>
+                                <li><a href="#" class="tabs__tab" data-val-tab="rooms"><span data-i18n="val.tabRooms">Räume</span> (<span id="val-tab-rooms-count">0</span>)</a></li>
+                                <li><a href="#" class="tabs__tab" data-val-tab="areas"><span data-i18n="val.tabAreas">Flächen</span> (<span id="val-tab-areas-count">0</span>)</a></li>
                             </ul>
-                            <div class="status-filter" id="status-filter" role="group" aria-label="Status Filter">
-                                <button class="status-filter__btn status-filter__btn--active" data-filter="all">Alle</button>
+                            <div class="status-filter" id="status-filter" role="group" aria-label="Statusfilter" data-i18n-aria-label="val.statusFilter">
+                                <button class="status-filter__btn status-filter__btn--active" data-filter="all" data-i18n="val.all">Alle</button>
                                 <button class="status-filter__btn" data-filter="warning">
-                                    <i data-lucide="alert-triangle" class="icon icon-sm"></i> Warnung
+                                    <i data-lucide="alert-triangle" class="icon icon-sm"></i> <span data-i18n="val.warning">Warnung</span>
                                 </button>
                                 <button class="status-filter__btn" data-filter="error">
-                                    <i data-lucide="x-circle" class="icon icon-sm"></i> Fehler
+                                    <i data-lucide="x-circle" class="icon icon-sm"></i> <span data-i18n="val.errors">Fehler</span>
                                 </button>
                             </div>
                         </div>
@@ -870,10 +870,10 @@
                                 <!-- Layers -->
                                 <div class="tab-pane" id="val-tab-overview">
                                     <div class="validation-panel__toolbar">
-                                        <input type="checkbox" id="layer-toggle-all" checked title="Alle ein-/ausblenden">
+                                        <input type="checkbox" id="layer-toggle-all" checked title="Alle ein-/ausblenden" data-i18n-title="val.showHideAll">
                                         <div class="validation-panel__search-wrapper">
                                             <i data-lucide="search" class="icon icon-sm validation-panel__search-icon"></i>
-                                            <input type="text" class="validation-panel__search" id="layer-search" placeholder="Layer suchen...">
+                                            <input type="text" class="validation-panel__search" id="layer-search" placeholder="Layer suchen..." data-i18n-placeholder="val.searchLayers">
                                         </div>
                                     </div>
                                     <div id="layer-list" class="layer-list">
@@ -881,13 +881,13 @@
                                     </div>
                                 </div>
 
-                                <!-- Räume -->
+                                <!-- Rooms -->
                                 <div class="tab-pane" id="val-tab-rooms">
                                     <div class="validation-panel__toolbar">
-                                        <input type="checkbox" id="room-toggle-all" checked title="Alle ein-/ausblenden">
+                                        <input type="checkbox" id="room-toggle-all" checked title="Alle ein-/ausblenden" data-i18n-title="val.showHideAll">
                                         <div class="validation-panel__search-wrapper">
                                             <i data-lucide="search" class="icon icon-sm validation-panel__search-icon"></i>
-                                            <input type="text" class="validation-panel__search" id="room-search" placeholder="Raum suchen...">
+                                            <input type="text" class="validation-panel__search" id="room-search" placeholder="Räume suchen..." data-i18n-placeholder="val.searchRooms">
                                         </div>
                                     </div>
                                     <div id="room-list" class="room-list">
@@ -895,13 +895,13 @@
                                     </div>
                                 </div>
 
-                                <!-- Flächen -->
+                                <!-- Areas -->
                                 <div class="tab-pane" id="val-tab-areas">
                                     <div class="validation-panel__toolbar">
-                                        <input type="checkbox" id="area-toggle-all" checked title="Alle ein-/ausblenden">
+                                        <input type="checkbox" id="area-toggle-all" checked title="Alle ein-/ausblenden" data-i18n-title="val.showHideAll">
                                         <div class="validation-panel__search-wrapper">
                                             <i data-lucide="search" class="icon icon-sm validation-panel__search-icon"></i>
-                                            <input type="text" class="validation-panel__search" id="area-search" placeholder="Fläche suchen...">
+                                            <input type="text" class="validation-panel__search" id="area-search" placeholder="Flächen suchen..." data-i18n-placeholder="val.searchAreas">
                                         </div>
                                     </div>
                                     <div id="area-list" class="area-list">
@@ -909,22 +909,22 @@
                                     </div>
                                 </div>
 
-                                <!-- Fehlermeldungen -->
+                                <!-- Errors -->
                                 <div class="tab-pane" id="val-tab-errors">
                                     <div class="validation-panel__search-wrapper">
                                         <i data-lucide="search" class="icon icon-sm validation-panel__search-icon"></i>
-                                        <input type="text" class="validation-panel__search" id="error-search" placeholder="Fehler suchen...">
+                                        <input type="text" class="validation-panel__search" id="error-search" placeholder="Fehler suchen..." data-i18n-placeholder="val.searchErrors">
                                     </div>
                                     <div id="error-groups" class="error-groups">
                                         <!-- Rendered by JS -->
                                     </div>
                                 </div>
 
-                                <!-- Prüfregeln -->
+                                <!-- Validation Rules -->
                                 <div class="tab-pane tab-pane--active" id="val-tab-rules">
                                     <div class="validation-panel__search-wrapper">
                                         <i data-lucide="search" class="icon icon-sm validation-panel__search-icon"></i>
-                                        <input type="text" class="validation-panel__search" id="val-rule-search" placeholder="Regel suchen...">
+                                        <input type="text" class="validation-panel__search" id="val-rule-search" placeholder="Regeln suchen..." data-i18n-placeholder="val.searchRules">
                                     </div>
                                     <div id="val-rule-list" class="rule-list">
                                         <!-- Rendered by JS -->
@@ -937,13 +937,13 @@
                                 <div class="canvas-viewer" id="validation-canvas-wrap">
                                     <canvas id="validation-canvas"></canvas>
                                     <div class="canvas-viewer__controls">
-                                        <button class="canvas-viewer__btn" id="viewer-zoom-in" title="Vergrössern">
+                                        <button class="canvas-viewer__btn" id="viewer-zoom-in" title="Vergrössern" data-i18n-title="viewer.zoomIn">
                                             <i data-lucide="zoom-in" class="icon icon-sm"></i>
                                         </button>
-                                        <button class="canvas-viewer__btn" id="viewer-zoom-out" title="Verkleinern">
+                                        <button class="canvas-viewer__btn" id="viewer-zoom-out" title="Verkleinern" data-i18n-title="viewer.zoomOut">
                                             <i data-lucide="zoom-out" class="icon icon-sm"></i>
                                         </button>
-                                        <button class="canvas-viewer__btn" id="viewer-zoom-fit" title="Alles anzeigen">
+                                        <button class="canvas-viewer__btn" id="viewer-zoom-fit" title="Einpassen" data-i18n-title="viewer.zoomFit">
                                             <i data-lucide="maximize-2" class="icon icon-sm"></i>
                                         </button>
                                     </div>
@@ -957,8 +957,8 @@
                 <!-- END STEP 1 CONTENT -->
 
                 <div class="workflow-actions">
-                    <button class="btn btn--secondary" id="prev-step-btn">Vorheriger Schritt</button>
-                    <button class="btn btn--primary" id="next-step-btn">Nächster Schritt</button>
+                    <button class="btn btn--secondary" id="prev-step-btn" data-i18n="nav.prevStep">Vorheriger Schritt</button>
+                    <button class="btn btn--primary" id="next-step-btn" data-i18n="nav.nextStep">Nächster Schritt</button>
                 </div>
             </div>
         </section>
@@ -968,67 +968,67 @@
             <div class="container">
                 <nav class="breadcrumb">
                     <div class="breadcrumb__nav">
-                        <a href="#" class="breadcrumb__link" id="breadcrumb-results-projects">Projekte</a>
+                        <a href="#" class="breadcrumb__link" id="breadcrumb-results-projects" data-i18n="breadcrumb.projects">Projekte</a>
                         <span class="breadcrumb__separator">/</span>
-                        <a href="#" class="breadcrumb__link" id="breadcrumb-results-project">Projekt</a>
+                        <a href="#" class="breadcrumb__link" id="breadcrumb-results-project">Project</a>
                         <span class="breadcrumb__separator">/</span>
-                        <span class="breadcrumb__current">Zusammenfassung Ergebnis</span>
+                        <span class="breadcrumb__current" data-i18n="results.title">Ergebniszusammenfassung</span>
                     </div>
                     <button class="btn btn--secondary btn--sm" id="back-to-project-results">
                         <i data-lucide="arrow-left" class="icon icon-sm"></i>
-                        Zurück Übersicht
+                        <span data-i18n="breadcrumb.backToOverview">Zurück zur Übersicht</span>
                     </button>
                 </nav>
 
-                <h1 class="text-h1">Zusammenfassung Ergebnis</h1>
+                <h1 class="text-h1" data-i18n="results.title">Ergebniszusammenfassung</h1>
 
                 <div class="results__grid">
                     <div class="results__section">
-                        <h2 class="text-h3">Gebäudevolumen</h2>
+                        <h2 class="text-h3" data-i18n="results.buildingVolume">Gebäudevolumen</h2>
                         <table class="table table--compact table--no-borders">
                             <tbody>
-                                <tr><td>GV (Gebäudevolumen)</td><td class="text-right">16'848 m³</td><td class="text-right">100%</td></tr>
-                                <tr><td>GV OG (oberirdisch)</td><td class="text-right">14'500 m³</td><td class="text-right">86%</td></tr>
-                                <tr><td>GV UG (unterirdisch)</td><td class="text-right">2'348 m³</td><td class="text-right">14%</td></tr>
+                                <tr><td data-i18n="results.gv">GV (Gebäudevolumen)</td><td class="text-right">16'848 m³</td><td class="text-right">100%</td></tr>
+                                <tr><td data-i18n="results.gvOg">GV OG (oberirdisch)</td><td class="text-right">14'500 m³</td><td class="text-right">86%</td></tr>
+                                <tr><td data-i18n="results.gvUg">GV UG (unterirdisch)</td><td class="text-right">2'348 m³</td><td class="text-right">14%</td></tr>
                             </tbody>
                         </table>
                     </div>
 
                     <div class="results__section">
-                        <h2 class="text-h3">Gebäudeflächen SIA 416</h2>
+                        <h2 class="text-h3" data-i18n="results.buildingAreas">Gebäudeflächen SIA 416</h2>
                         <table class="table table--compact table--no-borders">
                             <tbody>
-                                <tr><td>GF (Geschossfläche)</td><td class="text-right">4'500 m²</td><td class="text-right">100%</td></tr>
-                                <tr><td>KF (Konstruktionsfläche)</td><td class="text-right">500 m²</td><td class="text-right">11%</td></tr>
-                                <tr><td>NGF (Nettogeschossfläche)</td><td class="text-right">4'000 m²</td><td class="text-right">89%</td></tr>
-                                <tr><td>NF (Nutzfläche)</td><td class="text-right">3'900 m²</td><td class="text-right">87%</td></tr>
-                                <tr><td>HNF (Hauptnutzfläche)</td><td class="text-right">3'200 m²</td><td class="text-right">71%</td></tr>
-                                <tr><td>NNF (Nebennutzfläche)</td><td class="text-right">400 m²</td><td class="text-right">9%</td></tr>
-                                <tr><td>VF (Verkehrsfläche)</td><td class="text-right">300 m²</td><td class="text-right">7%</td></tr>
-                                <tr><td>FF (Funktionsfläche)</td><td class="text-right">100 m²</td><td class="text-right">2%</td></tr>
+                                <tr><td data-i18n="results.gf">GF (Geschossfläche)</td><td class="text-right">4'500 m²</td><td class="text-right">100%</td></tr>
+                                <tr><td data-i18n="results.kf">KF (Konstruktionsfläche)</td><td class="text-right">500 m²</td><td class="text-right">11%</td></tr>
+                                <tr><td data-i18n="results.ngf">NGF (Nettogeschossfläche)</td><td class="text-right">4'000 m²</td><td class="text-right">89%</td></tr>
+                                <tr><td data-i18n="results.nf">NF (Nutzfläche)</td><td class="text-right">3'900 m²</td><td class="text-right">87%</td></tr>
+                                <tr><td data-i18n="results.hnf">HNF (Hauptnutzfläche)</td><td class="text-right">3'200 m²</td><td class="text-right">71%</td></tr>
+                                <tr><td data-i18n="results.nnf">NNF (Nebennutzfläche)</td><td class="text-right">400 m²</td><td class="text-right">9%</td></tr>
+                                <tr><td data-i18n="results.vf">VF (Verkehrsfläche)</td><td class="text-right">300 m²</td><td class="text-right">7%</td></tr>
+                                <tr><td data-i18n="results.ff">FF (Funktionsfläche)</td><td class="text-right">100 m²</td><td class="text-right">2%</td></tr>
                             </tbody>
                         </table>
                     </div>
 
                     <div class="results__section">
-                        <h2 class="text-h3">Flächen DIN 277</h2>
+                        <h2 class="text-h3" data-i18n="results.areasDin277">Flächen DIN 277</h2>
                         <table class="table table--compact table--no-borders">
                             <tbody>
-                                <tr><td>HNF 1 - Wohnen und Aufenthalt</td><td class="text-right">850 m²</td><td class="text-right">27%</td></tr>
-                                <tr><td>HNF 2 - Büroarbeit</td><td class="text-right">1'200 m²</td><td class="text-right">38%</td></tr>
-                                <tr><td>HNF 3 - Produktion</td><td class="text-right">0 m²</td><td class="text-right">0%</td></tr>
-                                <tr><td>HNF 4 - Lagern</td><td class="text-right">150 m²</td><td class="text-right">5%</td></tr>
-                                <tr><td>HNF 5 - Verteilen</td><td class="text-right">500 m²</td><td class="text-right">16%</td></tr>
-                                <tr><td>HNF 6 - Unterricht</td><td class="text-right">300 m²</td><td class="text-right">9%</td></tr>
-                                <tr><td>HNF 7 - Heilen/Pflegen</td><td class="text-right">200 m²</td><td class="text-right">6%</td></tr>
-                                <tr><td>FF 8 - Technik</td><td class="text-right">100 m²</td><td class="text-right">3%</td></tr>
-                                <tr><td>VF 9 - Verkehr</td><td class="text-right">300 m²</td><td class="text-right">9%</td></tr>
+                                <tr><td data-i18n="results.hnf1">HNF 1 - Wohnen und Aufenthalt</td><td class="text-right">850 m²</td><td class="text-right">27%</td></tr>
+                                <tr><td data-i18n="results.hnf2">HNF 2 - Büroarbeit</td><td class="text-right">1'200 m²</td><td class="text-right">38%</td></tr>
+                                <tr><td data-i18n="results.hnf3">HNF 3 - Produktion</td><td class="text-right">0 m²</td><td class="text-right">0%</td></tr>
+                                <tr><td data-i18n="results.hnf4">HNF 4 - Lagern</td><td class="text-right">150 m²</td><td class="text-right">5%</td></tr>
+                                <tr><td data-i18n="results.hnf5">HNF 5 - Verteilen</td><td class="text-right">500 m²</td><td class="text-right">16%</td></tr>
+                                <tr><td data-i18n="results.hnf6">HNF 6 - Bildung</td><td class="text-right">300 m²</td><td class="text-right">9%</td></tr>
+                                <tr><td data-i18n="results.hnf7">HNF 7 - Heilen/Pflegen</td><td class="text-right">200 m²</td><td class="text-right">6%</td></tr>
+                                <tr><td data-i18n="results.ff8">FF 8 - Betriebstechnik</td><td class="text-right">100 m²</td><td class="text-right">3%</td></tr>
+                                <tr><td data-i18n="results.vf9">VF 9 - Verkehrsfläche</td><td class="text-right">300 m²</td><td class="text-right">9%</td></tr>
                             </tbody>
                         </table>
                     </div>
 
                     <div class="results__section">
-                        <h2 class="text-h3">Kennzahlen Wirtschaftlichkeit</h2>
+                        <h2 class="text-h3" data-i18n="results.economyRatios">Wirtschaftlichkeitskennwerte</h2>
                         <div class="pie-chart">
                             <svg class="pie-chart__svg" width="300" height="300" viewBox="0 0 300 300">
                                 <!-- Pie chart rendered by JS -->
@@ -1050,8 +1050,8 @@
                 </div>
 
                 <div class="workflow-actions">
-                    <button class="btn btn--secondary">Vorheriger Schritt</button>
-                    <button class="btn btn--primary">Auftrag abschliessen</button>
+                    <button class="btn btn--secondary" data-i18n="nav.prevStep">Vorheriger Schritt</button>
+                    <button class="btn btn--primary" data-i18n="step4.completeOrder">Auftrag abschliessen</button>
                 </div>
             </div>
         </section>
@@ -1060,14 +1060,14 @@
 
     <footer class="footer">
         <div class="footer__content">
-            <span class="footer__version">v1.0.0</span>
-            <span class="footer__prototype">Prototyp – nur zur Demonstration</span>
+            <span class="footer__version" data-i18n="footer.version">v1.0.0</span>
+            <span class="footer__prototype" data-i18n="footer.prototype">Prototyp – nur zur Demonstration</span>
             <div class="footer__links">
-                <a href="https://github.com/bbl-dres/plan-check" target="_blank" rel="noopener noreferrer" class="footer__link">Quellencode</a>
+                <a href="https://github.com/bbl-dres/plan-check" target="_blank" rel="noopener noreferrer" class="footer__link" data-i18n="footer.sourceCode">Quellcode</a>
                 <span class="footer__sep">|</span>
-                <a href="#" class="footer__link" id="nav-api">API</a>
+                <a href="#" class="footer__link" id="nav-api" data-i18n="footer.api">API</a>
                 <span class="footer__sep">|</span>
-                <a href="https://www.admin.ch/gov/de/start/rechtliches.html" target="_blank" rel="noopener noreferrer" class="footer__link">Rechtliches</a>
+                <a href="https://www.admin.ch/gov/de/start/rechtliches.html" target="_blank" rel="noopener noreferrer" class="footer__link" data-i18n="footer.legal">Rechtliches</a>
             </div>
         </div>
     </footer>
@@ -1077,56 +1077,56 @@
         <div class="modal__backdrop" data-modal-close></div>
         <div class="modal__content">
             <div class="modal__header">
-                <h2 class="modal__title" id="modal-title">Neues Projekt erstellen</h2>
+                <h2 class="modal__title" id="modal-title" data-i18n="modal.createProject">Neues Projekt erstellen</h2>
                 <button class="modal__close" data-modal-close aria-label="Schliessen">
                     <i data-lucide="x" class="icon icon-md" aria-hidden="true"></i>
                 </button>
             </div>
             <form class="modal__body" id="new-project-form">
                 <div class="form__field">
-                    <label for="project-number" class="form__label">Projektnummer</label>
-                    <input type="text" class="form__input" id="project-number" name="projectNumber" placeholder="z.B. 2024-001" required>
+                    <label for="project-number" class="form__label" data-i18n="modal.projectNumber">Projektnummer</label>
+                    <input type="text" class="form__input" id="project-number" name="projectNumber" placeholder="z.B. 2024-001" required data-i18n-placeholder="modal.projectNumberPlaceholder">
                 </div>
                 <div class="form__field">
-                    <label for="project-name" class="form__label">Projektname</label>
-                    <input type="text" class="form__input" id="project-name" name="name" placeholder="z.B. Bundeshaus Renovation" required>
+                    <label for="project-name" class="form__label" data-i18n="modal.projectName">Projektname</label>
+                    <input type="text" class="form__input" id="project-name" name="name" placeholder="z.B. Bundesgebäude Sanierung" required data-i18n-placeholder="modal.projectNamePlaceholder">
                 </div>
                 <div class="form__field">
-                    <label for="project-phase" class="form__label">SIA Phase</label>
+                    <label for="project-phase" class="form__label" data-i18n="modal.siaPhase">SIA Phase</label>
                     <select class="form__input form__select" id="project-phase" name="phase" required>
-                        <option value="">Bitte wählen...</option>
-                        <option value="31">31 - Vorprojekt</option>
-                        <option value="32">32 - Bauprojekt</option>
-                        <option value="33">33 - Bewilligungsverfahren</option>
-                        <option value="41">41 - Ausschreibung</option>
-                        <option value="51">51 - Ausführungsprojekt</option>
-                        <option value="52">52 - Ausführung</option>
-                        <option value="53">53 - Inbetriebnahme</option>
+                        <option value="" data-i18n="modal.pleaseSelect">Bitte auswählen...</option>
+                        <option value="31" data-i18n="siaPhase.31">31 - Vorprojekt</option>
+                        <option value="32" data-i18n="siaPhase.32">32 - Bauprojekt</option>
+                        <option value="33" data-i18n="siaPhase.33">33 - Bewilligungsverfahren</option>
+                        <option value="41" data-i18n="siaPhase.41">41 - Ausschreibung</option>
+                        <option value="51" data-i18n="siaPhase.51">51 - Ausführungsplanung</option>
+                        <option value="52" data-i18n="siaPhase.52">52 - Ausführung</option>
+                        <option value="53" data-i18n="siaPhase.53">53 - Inbetriebnahme</option>
                     </select>
                 </div>
                 <div class="form__field">
-                    <label for="project-language" class="form__label">Sprache</label>
+                    <label for="project-language" class="form__label" data-i18n="modal.language">Sprache</label>
                     <select class="form__input form__select" id="project-language" name="language" required>
-                        <option value="">Bitte wählen...</option>
-                        <option value="de">Deutsch</option>
-                        <option value="fr">Français</option>
-                        <option value="it">Italiano</option>
+                        <option value="" data-i18n="modal.pleaseSelect">Bitte auswählen...</option>
+                        <option value="de" data-i18n="projectLang.de">Deutsch</option>
+                        <option value="fr" data-i18n="projectLang.fr">Französisch</option>
+                        <option value="it" data-i18n="projectLang.it">Italienisch</option>
                     </select>
                 </div>
                 <div class="form__field">
-                    <label for="project-ruleset" class="form__label">Regelsatz</label>
+                    <label for="project-ruleset" class="form__label" data-i18n="modal.ruleSet">Regelwerk</label>
                     <select class="form__input form__select" id="project-ruleset" name="ruleSetId" required>
-                        <option value="">Bitte wählen...</option>
+                        <option value="" data-i18n="modal.pleaseSelect">Bitte auswählen...</option>
                         <!-- Options populated dynamically from rules.json -->
                     </select>
                 </div>
                 <div class="form__field">
-                    <label for="project-image" class="form__label">Projektbild</label>
+                    <label for="project-image" class="form__label" data-i18n="modal.projectImage">Projektbild</label>
                     <div class="form__file-upload" id="project-image-upload">
                         <input type="file" class="form__file-input" id="project-image" name="image" accept="image/*">
                         <div class="form__file-placeholder">
                             <i data-lucide="image" class="icon icon-md" aria-hidden="true"></i>
-                            <span>Bild auswählen oder hierher ziehen</span>
+                            <span data-i18n="modal.selectImage">Bild auswählen oder hierher ziehen</span>
                         </div>
                         <div class="form__file-preview" id="project-image-preview" hidden>
                             <img src="" alt="Projektbild Vorschau" id="project-image-preview-img">
@@ -1138,8 +1138,8 @@
                 </div>
             </form>
             <div class="modal__footer">
-                <button type="button" class="btn btn--secondary" data-modal-close>Abbrechen</button>
-                <button type="submit" class="btn btn--primary" form="new-project-form">Projekt erstellen</button>
+                <button type="button" class="btn btn--secondary" data-modal-close data-i18n="action.cancel">Abbrechen</button>
+                <button type="submit" class="btn btn--primary" form="new-project-form" data-i18n="modal.createProjectBtn">Projekt erstellen</button>
             </div>
         </div>
     </div>
@@ -1149,29 +1149,29 @@
         <div class="modal__backdrop" data-modal-close></div>
         <div class="modal__content modal__content--sm">
             <div class="modal__header">
-                <h2 class="modal__title" id="invite-user-modal-title">Benutzer einladen</h2>
+                <h2 class="modal__title" id="invite-user-modal-title" data-i18n="modal.inviteUser">Benutzer einladen</h2>
                 <button class="modal__close" data-modal-close aria-label="Schliessen">
                     <i data-lucide="x" class="icon icon-md" aria-hidden="true"></i>
                 </button>
             </div>
             <form class="modal__body" id="invite-user-form">
                 <div class="form__field">
-                    <label for="invite-email" class="form__label">E-Mail-Adresse</label>
-                    <input type="email" class="form__input" id="invite-email" name="email" placeholder="beispiel@domain.ch" required>
+                    <label for="invite-email" class="form__label" data-i18n="modal.emailAddress">E-Mail-Adresse</label>
+                    <input type="email" class="form__input" id="invite-email" name="email" placeholder="beispiel@domain.ch" required data-i18n-placeholder="modal.emailPlaceholder">
                 </div>
                 <div class="form__field">
-                    <label for="invite-role" class="form__label">Rolle</label>
+                    <label for="invite-role" class="form__label" data-i18n="modal.role">Rolle</label>
                     <select class="form__input form__select" id="invite-role" name="role" required>
-                        <option value="">Bitte wählen...</option>
-                        <option value="viewer">Betrachter</option>
-                        <option value="editor">Bearbeiter</option>
-                        <option value="admin">Administrator</option>
+                        <option value="" data-i18n="modal.pleaseSelect">Bitte auswählen...</option>
+                        <option value="viewer" data-i18n="modal.roleViewer">Betrachter</option>
+                        <option value="editor" data-i18n="modal.roleEditor">Bearbeiter</option>
+                        <option value="admin" data-i18n="modal.roleAdmin">Administrator</option>
                     </select>
                 </div>
             </form>
             <div class="modal__footer">
-                <button type="button" class="btn btn--secondary" data-modal-close>Abbrechen</button>
-                <button type="submit" class="btn btn--primary" form="invite-user-form">Einladung senden</button>
+                <button type="button" class="btn btn--secondary" data-modal-close data-i18n="action.cancel">Abbrechen</button>
+                <button type="submit" class="btn btn--primary" form="invite-user-form" data-i18n="modal.sendInvitation">Einladung senden</button>
             </div>
         </div>
     </div>
@@ -1181,24 +1181,25 @@
         <div class="modal__backdrop" data-modal-close></div>
         <div class="modal__content modal__content--sm">
             <div class="modal__header">
-                <h2 class="modal__title" id="new-document-modal-title">Neuer Grundriss</h2>
+                <h2 class="modal__title" id="new-document-modal-title" data-i18n="modal.newFloorPlan">Neuer Grundriss</h2>
                 <button class="modal__close" data-modal-close aria-label="Schliessen">
                     <i data-lucide="x" class="icon icon-md" aria-hidden="true"></i>
                 </button>
             </div>
             <form class="modal__body" id="new-document-form">
                 <div class="form__field">
-                    <label for="document-name" class="form__label">Grundrissname</label>
-                    <input type="text" class="form__input" id="document-name" name="name" placeholder="z.B. EG_Grundriss.dwg" required>
+                    <label for="document-name" class="form__label" data-i18n="modal.floorPlanName">Grundrissname</label>
+                    <input type="text" class="form__input" id="document-name" name="name" placeholder="z.B. EG_Grundriss.dwg" required data-i18n-placeholder="modal.floorPlanPlaceholder">
                 </div>
             </form>
             <div class="modal__footer">
-                <button type="button" class="btn btn--secondary" data-modal-close>Abbrechen</button>
-                <button type="submit" class="btn btn--primary" form="new-document-form">Grundriss erstellen</button>
+                <button type="button" class="btn btn--secondary" data-modal-close data-i18n="action.cancel">Abbrechen</button>
+                <button type="submit" class="btn btn--primary" form="new-document-form" data-i18n="modal.createFloorPlan">Grundriss erstellen</button>
             </div>
         </div>
     </div>
 
+    <script src="js/i18n.js"></script>
     <script src="js/viewer.js"></script>
     <script src="js/script.js"></script>
     <script src="js/validation-view.js"></script>

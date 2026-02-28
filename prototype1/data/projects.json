@@ -2,7 +2,7 @@
   {
     "id": 1,
     "number": "2022-0145",
-    "name": "Bern, Verwaltungsgebäude Liebefeld",
+    "name": "Bern, Administrative Building Liebefeld",
     "phase": "53",
     "language": "de",
     "createdBy": 3,
@@ -42,7 +42,7 @@
   {
     "id": 2,
     "number": "2022-0089",
-    "name": "Genf, Dienstleistungszentrum Montbrillant",
+    "name": "Geneva, Service Center Montbrillant",
     "phase": "52",
     "language": "fr",
     "createdBy": 6,
@@ -74,7 +74,7 @@
   {
     "id": 3,
     "number": "2022-0056",
-    "name": "Magglingen, BAZG, Hochschule Hauptgebäude",
+    "name": "Magglingen, BAZG, University Main Building",
     "phase": "51",
     "language": "de",
     "createdBy": 10,
@@ -106,7 +106,7 @@
   {
     "id": 4,
     "number": "2022-0023",
-    "name": "Zollikofen, Forschung 3",
+    "name": "Zollikofen, Research 3",
     "phase": "53",
     "language": "de",
     "createdBy": 8,
@@ -138,7 +138,7 @@
   {
     "id": 5,
     "number": "2021-0312",
-    "name": "Magglingen, BAZG, Hochschule Neubau",
+    "name": "Magglingen, BAZG, University New Building",
     "phase": "52",
     "language": "de",
     "createdBy": 10,
