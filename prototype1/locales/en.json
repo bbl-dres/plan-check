@@ -93,10 +93,20 @@
   "detail.rooms": "Rooms",
   "detail.gf": "GF",
 
+  "tab.overview": "Overview",
   "tab.documents": "Floor Plans",
   "tab.users": "Users",
   "tab.rules": "Validation Rules",
   "tab.settings": "Settings",
+
+  "overview.projectDetails": "Project Details",
+  "overview.buildingData": "Building Data",
+  "overview.designation": "Name",
+  "overview.internalId": "Internal ID",
+  "overview.buildingType": "Building Type",
+  "overview.address": "Address",
+  "overview.created": "Created",
+  "overview.createdBy": "Created by",
 
   "action.edit": "Edit",
   "action.delete": "Delete",

@@ -295,6 +295,18 @@ function setupTabGroup(tabAttribute, paneIdPrefix, paneIds = null, signal = null
             if (targetPane) {
                 targetPane.classList.add('tab-pane--active');
             }
+
+            // Show/hide KPI strip and resize map for overview tab
+            if (tabAttribute === 'data-tab') {
+                const kpiStrip = safeGetElementById('overview-kpi-strip');
+                if (kpiStrip) kpiStrip.style.display = tabName === 'overview' ? '' : 'none';
+            }
+            if (tabName === 'overview') {
+                const mapContainer = safeGetElementById('overview-map');
+                if (mapContainer && mapContainer._mapInstance) {
+                    setTimeout(() => mapContainer._mapInstance.resize(), 0);
+                }
+            }
         }, options);
     });
 }
@@ -543,7 +555,7 @@ function setupNewProjectForm() {
                 resultPercentage: 0,
                 status: 'active',
                 ruleSetId: 1,  // Default rule set
-                imageUrl: selectedImageUrl || 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&auto=format&fit=crop',
+                imageUrls: [selectedImageUrl || 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&auto=format&fit=crop'],
                 users: [{ userId: 1, role: 'Admin' }]  // TODO: Use actual logged-in user ID
             };
 
@@ -1049,7 +1061,7 @@ function renderProjects() {
         return `
             <article class="card" data-project-id="${safeParseInt(project.id)}">
                 <div class="card__image">
-                    <img src="${escapeHtml(project.imageUrl)}" alt="${escapeHtml(project.name)}">
+                    <img src="${escapeHtml((project.imageUrls && project.imageUrls[0]) || project.imageUrl || '')}" alt="${escapeHtml(project.name)}">
                     ${overlayHtml}
                 </div>
                 <div class="card__content">
@@ -1409,6 +1421,28 @@ function openProjectDetail(projectId, skipHashUpdate = false) {
     currentProject = mockProjects.find(p => p.id === projectId);
     if (!currentProject) return;
 
+    // Reset to overview tab
+    const tabList = document.querySelector('#view-building-detail .tabs__list');
+    if (tabList) {
+        tabList.querySelectorAll('.tabs__tab').forEach(t => t.classList.remove('tabs__tab--active'));
+        const overviewTab = tabList.querySelector('[data-tab="overview"]');
+        if (overviewTab) overviewTab.classList.add('tabs__tab--active');
+    }
+    // Reset tab panes
+    ['tab-overview', 'tab-documents', 'tab-rules'].forEach(id => {
+        const pane = document.getElementById(id);
+        if (pane) pane.classList.remove('tab-pane--active');
+    });
+    const overviewPane = document.getElementById('tab-overview');
+    if (overviewPane) overviewPane.classList.add('tab-pane--active');
+    // Reset tab actions visibility
+    const tabsContainer = document.querySelector('#view-building-detail .tabs');
+    if (tabsContainer) {
+        tabsContainer.querySelectorAll('.tabs__actions').forEach(a => a.style.display = 'none');
+        const overviewActions = tabsContainer.querySelector('#tabs-actions-overview');
+        if (overviewActions) overviewActions.style.display = 'flex';
+    }
+
     // Update breadcrumb with project name
     document.getElementById('breadcrumb-building-name').textContent = currentProject.internalId + ' – ' + currentProject.name;
 
@@ -1423,21 +1457,10 @@ function openProjectDetail(projectId, skipHashUpdate = false) {
         ? Math.round(validatedFloorPlans.reduce((sum, doc) => sum + doc.score, 0) / validatedFloorPlans.length)
         : 0;
 
-    document.getElementById('project-completion').textContent = `${averageScore}%`;
-
-    // Update image
-    const imageElement = document.getElementById('project-detail-image');
-    imageElement.style.backgroundImage = `url(${currentProject.imageUrl})`;
-
-    // Update donut chart using CONFIG.DONUT_CHART_RADIUS
-    const circumference = 2 * Math.PI * CONFIG.DONUT_CHART_RADIUS;
-    const offset = circumference - (averageScore / 100) * circumference;
-    const donutProgress = document.getElementById('project-donut-progress');
-    donutProgress.setAttribute('stroke-dasharray', circumference);
-    donutProgress.setAttribute('stroke-dashoffset', offset);
-
-    const scoreClass = getScoreStatus(averageScore);
-    donutProgress.setAttribute('class', `donut-chart__progress donut-chart__progress--${scoreClass}`);
+    // Update KPI strip score with color
+    const scoreEl = document.getElementById('project-completion');
+    scoreEl.textContent = `${averageScore}%`;
+    scoreEl.className = `overview-kpi__value overview-kpi__value--${getScoreStatus(averageScore)}`;
 
     // Update KPIs
     document.getElementById('project-sia-phase').textContent = currentProject.phase;
@@ -1455,7 +1478,8 @@ function openProjectDetail(projectId, skipHashUpdate = false) {
     const formattedGF = totalGF > 0 ? `${totalGF.toLocaleString('de-CH')} m²` : '0 m²';
     document.getElementById('project-gf').textContent = formattedGF;
 
-    // Render documents, users, rules, and settings
+    // Render overview, documents, rules, and settings
+    renderOverview();
     renderDocuments();
     renderUsers();
     renderRules();
@@ -1467,7 +1491,6 @@ function openProjectDetail(projectId, skipHashUpdate = false) {
     const rulesCount = ruleSet ? ruleSet.rules.length : 0;
 
     document.getElementById('tab-documents-count').textContent = projectDocuments.length;
-    document.getElementById('tab-users-count').textContent = mockUsers.length;
     document.getElementById('tab-rules-count').textContent = rulesCount;
 
     if (skipHashUpdate) {
@@ -1480,6 +1503,287 @@ function openProjectDetail(projectId, skipHashUpdate = false) {
     } else {
         switchView('building-detail');
     }
+}
+
+// === OVERVIEW TAB ===
+
+/**
+ * Renders the overview tab content: building data, project details, team, photo, and map
+ */
+function renderOverview() {
+    if (!currentProject) return;
+
+    // Photo carousel
+    const images = currentProject.imageUrls || (currentProject.imageUrl ? [currentProject.imageUrl] : []);
+    initOverviewCarousel(images, currentProject.name || '');
+
+    // Gebäude Stammdaten
+    const buildingDataEl = document.getElementById('overview-building-data');
+    if (buildingDataEl) {
+        const address = [
+            currentProject.street + ' ' + currentProject.streetNumber,
+            currentProject.zip + ' ' + currentProject.city,
+            currentProject.canton,
+            currentProject.country
+        ].filter(Boolean).join(', ');
+
+        buildingDataEl.innerHTML = [
+            { label: I18n.t('overview.designation'), value: currentProject.name },
+            { label: I18n.t('overview.internalId'), value: currentProject.internalId },
+            { label: I18n.t('overview.buildingType'), value: currentProject.buildingType },
+            { label: I18n.t('overview.address'), value: address },
+            { label: 'EGID', value: currentProject.egid },
+            { label: 'EGRID', value: currentProject.egrid }
+        ].map(f => `
+            <div class="overview-detail-field">
+                <span class="overview-detail-field__label">${escapeHtml(f.label)}</span>
+                <span class="overview-detail-field__value">${escapeHtml(String(f.value || '–'))}</span>
+            </div>
+        `).join('');
+    }
+
+    // Projektdetails
+    const projectDetailsEl = document.getElementById('overview-project-details');
+    if (projectDetailsEl) {
+        const siaPhaseText = I18n.t(`siaPhase.${currentProject.phase}`);
+        const statusText = I18n.t(currentProject.status === 'active' ? 'filter.active' : 'filter.completed');
+        const langText = I18n.t(`projectLang.${currentProject.language}`);
+
+        const ruleSet = mockRuleSets.find(rs => rs.id === currentProject.ruleSetId);
+        const ruleSetName = ruleSet ? ruleSet.name : '–';
+
+        const createdDate = new Date(currentProject.createdDate).toLocaleDateString('de-CH');
+        const creator = getUserById(currentProject.createdBy);
+        const creatorName = creator ? creator.name : '–';
+
+        projectDetailsEl.innerHTML = [
+            { label: I18n.t('detail.siaPhase'), value: siaPhaseText },
+            { label: I18n.t('settings.status'), value: statusText },
+            { label: I18n.t('settings.language'), value: langText },
+            { label: I18n.t('settings.ruleSet'), value: ruleSetName },
+            { label: I18n.t('overview.created'), value: createdDate },
+            { label: I18n.t('overview.createdBy'), value: creatorName }
+        ].map(f => `
+            <div class="overview-detail-field">
+                <span class="overview-detail-field__label">${escapeHtml(f.label)}</span>
+                <span class="overview-detail-field__value">${escapeHtml(String(f.value || '–'))}</span>
+            </div>
+        `).join('');
+    }
+
+    // Team
+    const teamListEl = document.getElementById('overview-team-list');
+    const teamTitleEl = document.getElementById('overview-team-title');
+    if (teamListEl && currentProject.users) {
+        const teamMembers = currentProject.users.map(u => {
+            const user = getUserById(u.userId);
+            return user ? { ...user, role: u.role } : null;
+        }).filter(Boolean);
+
+        if (teamTitleEl) {
+            teamTitleEl.textContent = `Team (${teamMembers.length})`;
+        }
+
+        teamListEl.innerHTML = teamMembers.map(member => {
+            const initials = member.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            const roleKey = `role.${member.role.toLowerCase()}`;
+            const roleText = I18n.t(roleKey);
+            return `
+                <div class="overview-team-row">
+                    <span class="overview-team-row__avatar">${escapeHtml(initials)}</span>
+                    <span class="overview-team-row__name">${escapeHtml(member.name)}</span>
+                    <span class="overview-team-row__role">${escapeHtml(roleText)}</span>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Initialize overview map
+    initOverviewMap();
+
+    // Initialize Lucide icons for new content
+    initLucideIcons(document.getElementById('tab-overview'));
+}
+
+/**
+ * Initializes the image carousel on the overview tab
+ */
+function initOverviewCarousel(images, altText) {
+    const track = document.getElementById('overview-carousel-track');
+    const dots = document.getElementById('carousel-dots');
+    const prevBtn = document.getElementById('carousel-prev');
+    const nextBtn = document.getElementById('carousel-next');
+    if (!track) return;
+
+    let currentIndex = 0;
+
+    // Render slides
+    track.innerHTML = images.map(url =>
+        `<img class="overview-carousel__slide" src="${escapeHtml(url)}" alt="${escapeHtml(altText)}">`
+    ).join('');
+
+    // Render dots
+    if (dots) {
+        dots.innerHTML = images.length > 1
+            ? images.map((_, i) =>
+                `<button class="overview-carousel__dot${i === 0 ? ' overview-carousel__dot--active' : ''}" data-index="${i}"></button>`
+            ).join('')
+            : '';
+    }
+
+    function goTo(index) {
+        currentIndex = Math.max(0, Math.min(index, images.length - 1));
+        track.style.transform = `translateX(-${currentIndex * 100}%)`;
+        if (prevBtn) prevBtn.disabled = currentIndex === 0;
+        if (nextBtn) nextBtn.disabled = currentIndex === images.length - 1;
+        if (dots) {
+            dots.querySelector('.overview-carousel__dot--active')?.classList.remove('overview-carousel__dot--active');
+            dots.children[currentIndex]?.classList.add('overview-carousel__dot--active');
+        }
+    }
+
+    if (prevBtn) prevBtn.addEventListener('click', () => goTo(currentIndex - 1));
+    if (nextBtn) nextBtn.addEventListener('click', () => goTo(currentIndex + 1));
+    if (dots) {
+        dots.addEventListener('click', (e) => {
+            const dot = e.target.closest('.overview-carousel__dot');
+            if (dot) goTo(parseInt(dot.dataset.index, 10));
+        });
+    }
+
+    // Hide arrows if only one image
+    if (images.length <= 1) {
+        if (prevBtn) prevBtn.style.display = 'none';
+        if (nextBtn) nextBtn.style.display = 'none';
+    } else {
+        if (prevBtn) prevBtn.style.display = '';
+        if (nextBtn) nextBtn.style.display = '';
+    }
+
+    // Click slide to open lightbox
+    track.addEventListener('click', (e) => {
+        const slide = e.target.closest('.overview-carousel__slide');
+        if (slide) openLightbox(images, currentIndex);
+    });
+
+    goTo(0);
+}
+
+/**
+ * Opens a fullscreen lightbox for image viewing
+ */
+function openLightbox(images, startIndex) {
+    const lightbox = document.getElementById('image-lightbox');
+    const img = document.getElementById('lightbox-img');
+    const counter = document.getElementById('lightbox-counter');
+    const prevBtn = lightbox?.querySelector('.lightbox__btn--prev');
+    const nextBtn = lightbox?.querySelector('.lightbox__btn--next');
+    const closeBtn = lightbox?.querySelector('.lightbox__close');
+    const backdrop = lightbox?.querySelector('.lightbox__backdrop');
+    if (!lightbox || !img) return;
+
+    let current = startIndex || 0;
+
+    function show(index) {
+        current = Math.max(0, Math.min(index, images.length - 1));
+        img.src = images[current];
+        if (counter) counter.textContent = `${current + 1} / ${images.length}`;
+        if (prevBtn) prevBtn.disabled = current === 0;
+        if (nextBtn) nextBtn.disabled = current === images.length - 1;
+    }
+
+    function close() {
+        lightbox.hidden = true;
+        document.removeEventListener('keydown', onKey);
+    }
+
+    function onKey(e) {
+        if (e.key === 'Escape') close();
+        else if (e.key === 'ArrowLeft') show(current - 1);
+        else if (e.key === 'ArrowRight') show(current + 1);
+    }
+
+    lightbox.hidden = false;
+    show(current);
+    initLucideIcons(lightbox);
+    document.addEventListener('keydown', onKey);
+
+    // Single-use click handlers (cleaned up on close)
+    const onPrev = () => show(current - 1);
+    const onNext = () => show(current + 1);
+    prevBtn?.addEventListener('click', onPrev);
+    nextBtn?.addEventListener('click', onNext);
+    closeBtn?.addEventListener('click', close);
+    backdrop?.addEventListener('click', close);
+
+    // Override close to also clean up listeners
+    const origClose = close;
+    function closeAndClean() {
+        origClose();
+        prevBtn?.removeEventListener('click', onPrev);
+        nextBtn?.removeEventListener('click', onNext);
+        closeBtn?.removeEventListener('click', closeAndClean);
+        backdrop?.removeEventListener('click', closeAndClean);
+    }
+    closeBtn?.removeEventListener('click', close);
+    backdrop?.removeEventListener('click', close);
+    closeBtn?.addEventListener('click', closeAndClean);
+    backdrop?.addEventListener('click', closeAndClean);
+}
+
+/**
+ * Initializes the MapLibre map on the overview tab showing the building location
+ */
+function initOverviewMap() {
+    if (!currentProject || !currentProject.coordinates) return;
+
+    const mapContainer = document.getElementById('overview-map');
+    if (!mapContainer) return;
+
+    // Clean up existing map instance
+    if (mapContainer._mapInstance) {
+        mapContainer._mapInstance.remove();
+        mapContainer._mapInstance = null;
+    }
+
+    const [lng, lat] = currentProject.coordinates;
+
+    const map = new maplibregl.Map({
+        container: 'overview-map',
+        style: {
+            version: 8,
+            sources: {
+                'carto-light': {
+                    type: 'raster',
+                    tiles: ['https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png'],
+                    tileSize: 256,
+                    attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+                }
+            },
+            layers: [{
+                id: 'carto-light-layer',
+                type: 'raster',
+                source: 'carto-light',
+                minzoom: 0,
+                maxzoom: 20
+            }]
+        },
+        center: [lng, lat],
+        zoom: 15,
+        attributionControl: false
+    });
+
+    map.addControl(new maplibregl.NavigationControl(), 'top-right');
+
+    new maplibregl.Marker({ color: '#dc0018' })
+        .setLngLat([lng, lat])
+        .addTo(map);
+
+    // Resize after layout settles so the map fills its container
+    map.on('load', () => map.resize());
+    requestAnimationFrame(() => map.resize());
+
+    mapContainer._mapInstance = map;
 }
 
 // === DOCUMENT SELECTION STATE ===
@@ -1874,12 +2178,48 @@ function setupSelectAllUsers() {
  */
 function setupUserActions() {
     const inviteBtn = safeGetElementById('invite-user-btn');
+    const overviewInviteBtn = safeGetElementById('overview-invite-btn');
     const editBtn = safeGetElementById('edit-user-btn');
     const deleteBtn = safeGetElementById('delete-users-btn');
 
     if (inviteBtn) {
         inviteBtn.addEventListener('click', () => {
             openModal('invite-user-modal');
+        });
+    }
+
+    if (overviewInviteBtn) {
+        overviewInviteBtn.addEventListener('click', () => {
+            openModal('invite-user-modal');
+        });
+    }
+
+    // Overview edit button — show settings pane inline
+    const overviewEditBtn = safeGetElementById('overview-edit-btn');
+    if (overviewEditBtn) {
+        overviewEditBtn.addEventListener('click', () => {
+            const overviewPane = document.getElementById('tab-overview');
+            const settingsPane = document.getElementById('tab-settings');
+            if (!overviewPane || !settingsPane) return;
+
+            const isEditing = settingsPane.classList.contains('tab-pane--active');
+            if (isEditing) {
+                // Switch back to overview
+                settingsPane.classList.remove('tab-pane--active');
+                overviewPane.classList.add('tab-pane--active');
+                overviewEditBtn.querySelector('span').textContent = I18n.t('action.edit');
+                overviewEditBtn.querySelector('[data-lucide]')?.setAttribute('data-lucide', 'pencil');
+                initLucideIcons(overviewEditBtn);
+                renderOverview();
+            } else {
+                // Switch to settings (edit mode)
+                overviewPane.classList.remove('tab-pane--active');
+                settingsPane.classList.add('tab-pane--active');
+                populateSettings();
+                overviewEditBtn.querySelector('span').textContent = I18n.t('action.cancel');
+                overviewEditBtn.querySelector('[data-lucide]')?.setAttribute('data-lucide', 'x');
+                initLucideIcons(overviewEditBtn);
+            }
         });
     }
 
@@ -1981,7 +2321,7 @@ function populateSettings() {
     // Project image preview
     const imgPreview = document.getElementById('settings-project-image-preview');
     if (imgPreview) {
-        imgPreview.src = currentProject.imageUrl || '';
+        imgPreview.src = (currentProject.imageUrls && currentProject.imageUrls[0]) || currentProject.imageUrl || '';
     }
 }
 
@@ -2045,7 +2385,10 @@ function setupSettingsHandlers() {
         reader.onload = (ev) => {
             const imgPreview = document.getElementById('settings-project-image-preview');
             if (imgPreview) imgPreview.src = ev.target.result;
-            if (currentProject) currentProject.imageUrl = ev.target.result;
+            if (currentProject) {
+                if (!currentProject.imageUrls) currentProject.imageUrls = [];
+                currentProject.imageUrls[0] = ev.target.result;
+            }
         };
         reader.readAsDataURL(file);
     }, { signal });
@@ -2545,8 +2888,8 @@ function setupTabs() {
     const controller = getListenerController('tabs');
     const signal = controller.signal;
 
-    // Project detail tabs (documents, users, rules, settings)
-    setupTabGroup('data-tab', 'tab-', ['tab-documents', 'tab-users', 'tab-rules', 'tab-settings'], signal);
+    // Project detail tabs (overview, documents, rules)
+    setupTabGroup('data-tab', 'tab-', ['tab-overview', 'tab-documents', 'tab-rules'], signal);
 
     // Validation view tabs - Step 1 (overview, rooms, areas, errors, rules)
     setupTabGroup('data-val-tab', 'val-tab-', ['val-tab-overview', 'val-tab-rooms', 'val-tab-areas', 'val-tab-errors', 'val-tab-rules'], signal);

@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Building Detail — Mockup Comparison</title>
+    <style>
+        /* === DESIGN TOKENS === */
+        :root {
+            --color-venetian-red: #DC0018;
+            --color-cerulean: #006699;
+            --color-clear-day: #F2F7F9;
+            --color-night-rider: #333333;
+            --color-coal: #454545;
+            --color-empress: #6B6B6B;
+            --color-silver: #CCCCCC;
+            --color-gainsboro: #E5E5E5;
+            --color-smoke: #F5F5F5;
+            --color-white: #FFFFFF;
+            --color-primary: var(--color-cerulean);
+            --color-primary-hover: #004D73;
+            --color-primary-light: var(--color-clear-day);
+            --color-text-primary: var(--color-night-rider);
+            --color-text-secondary: var(--color-empress);
+            --color-bg-primary: var(--color-white);
+            --color-bg-secondary: var(--color-smoke);
+            --color-bg-page: var(--color-clear-day);
+            --color-border: var(--color-silver);
+            --color-border-light: var(--color-gainsboro);
+            --color-success: #1B5E20;
+            --color-success-light: #E8F5E9;
+            --color-warning: #BF360C;
+            --color-error: #B71C1C;
+            --font-family-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif;
+            --font-family-mono: 'SF Mono', 'Monaco', 'Consolas', monospace;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: var(--font-family-primary);
+            background: var(--color-bg-page);
+            color: var(--color-text-primary);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* === PAGE LAYOUT === */
+        .mockup-nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--color-white);
+            border-bottom: 2px solid var(--color-venetian-red);
+            padding: 12px 24px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+        .mockup-nav__title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--color-text-secondary);
+            margin-right: auto;
+        }
+        .mockup-nav__btn {
+            padding: 8px 16px;
+            border: 1px solid var(--color-border);
+            background: var(--color-white);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-family: inherit;
+            color: var(--color-text-primary);
+            transition: all 0.15s;
+        }
+        .mockup-nav__btn:hover {
+            background: var(--color-bg-secondary);
+        }
+        .mockup-nav__btn--active {
+            background: var(--color-primary);
+            color: var(--color-white);
+            border-color: var(--color-primary);
+        }
+        .mockup-section {
+            display: none;
+            max-width: 1200px;
+            margin: 24px auto;
+            padding: 0 24px;
+        }
+        .mockup-section--active { display: block; }
+        .mockup-label {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--color-white);
+            background: var(--color-primary);
+            padding: 4px 10px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+        }
+        .mockup-desc {
+            font-size: 13px;
+            color: var(--color-text-secondary);
+            margin-bottom: 20px;
+            max-width: 700px;
+        }
+
+        /* === SHARED: HEADER === */
+        .header {
+            background: var(--color-white);
+            border-bottom: 1px solid var(--color-border-light);
+            padding: 12px 0;
+            margin-bottom: 0;
+        }
+        .header__content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .header__flag { height: 26px; width: 24px; }
+        .header__titles { display: flex; flex-direction: column; gap: 2px; }
+        .header__org { font-size: 12px; font-weight: 700; }
+        .header__app { font-size: 12px; color: var(--color-text-secondary); }
+        .header__sep { width: 1px; height: 32px; background: var(--color-border); margin: 0 8px; }
+        .header__spacer { flex: 1; }
+        .lang-btn { border: none; background: none; font-size: 12px; font-weight: 600; cursor: pointer; padding: 4px 6px; color: var(--color-text-secondary); }
+        .lang-btn--active { color: var(--color-primary); }
+        .user-icon { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; color: var(--color-text-secondary); font-size: 14px; }
+
+        /* === SHARED: BREADCRUMB === */
+        .breadcrumb {
+            max-width: 1200px;
+            margin: 16px auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .breadcrumb__nav {
+            font-size: 13px;
+            color: var(--color-text-secondary);
+        }
+        .breadcrumb__link { color: var(--color-primary); text-decoration: none; }
+        .breadcrumb__link:hover { text-decoration: underline; }
+        .breadcrumb__current { font-weight: 600; color: var(--color-text-primary); }
+        .breadcrumb__actions { display: flex; gap: 8px; }
+
+        /* === SHARED: BUTTONS === */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-family: inherit;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid transparent;
+            text-decoration: none;
+            transition: all 0.15s;
+        }
+        .btn--primary { background: var(--color-primary); color: var(--color-white); border-color: var(--color-primary); }
+        .btn--primary:hover { background: var(--color-primary-hover); }
+        .btn--secondary { background: var(--color-white); color: var(--color-text-primary); border-color: var(--color-border); }
+        .btn--secondary:hover { background: var(--color-bg-secondary); }
+
+        /* === SHARED: TABS === */
+        .tabs-card {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--color-white);
+            border: 1px solid var(--color-border-light);
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+        }
+        .tabs {
+            display: flex;
+            align-items: flex-end;
+            border-bottom: 1px solid var(--color-border-light);
+            margin-bottom: 24px;
+            gap: 0;
+        }
+        .tabs__list {
+            display: flex;
+            gap: 0;
+            list-style: none;
+            margin-bottom: -1px;
+            flex: 1;
+        }
+        .tab {
+            display: block;
+            padding: 8px 20px 12px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+        }
+        .tab:hover { color: var(--color-text-primary); }
+        .tab--active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
+        .tabs__actions { display: flex; gap: 8px; padding-bottom: 8px; }
+
+        /* === SHARED: CARDS === */
+        .card {
+            border: 1px solid var(--color-border-light);
+            border-radius: 0;
+            background: var(--color-white);
+        }
+        .card__title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--color-border-light);
+        }
+        .card__body { padding: 20px; }
+        .card__header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--color-border-light);
+        }
+        .card__header-title { font-size: 14px; font-weight: 600; }
+
+        /* === DETAIL GRID (label above, value below — reference style) === */
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+        }
+        .detail-field {
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--color-bg-secondary);
+        }
+        .detail-field:nth-child(odd) {
+            border-right: 1px solid var(--color-bg-secondary);
+        }
+        .detail-field__label {
+            font-size: 12px;
+            color: var(--color-text-secondary);
+            margin-bottom: 2px;
+        }
+        .detail-field__value {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--color-text-primary);
+        }
+        .detail-field--full {
+            grid-column: 1 / -1;
+            border-right: none !important;
+        }
+
+        /* === TWO COLUMN LAYOUT === */
+        .overview-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        .overview-left, .overview-right {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* === IMAGE CAROUSEL === */
+        .carousel {
+            position: relative;
+            background: var(--color-bg-secondary);
+            aspect-ratio: 16 / 10;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .carousel img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .carousel__arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.85);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: var(--color-text-primary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .carousel__arrow--left { left: 12px; }
+        .carousel__arrow--right { right: 12px; }
+        .carousel__dots {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 6px;
+        }
+        .carousel__dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.6);
+            border: none;
+            cursor: pointer;
+        }
+        .carousel__dot--active { background: var(--color-white); }
+
+        /* === MAP PLACEHOLDER === */
+        .map-placeholder {
+            width: 100%;
+            height: 240px;
+            background: var(--color-bg-secondary);
+            border-radius: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-text-secondary);
+            font-size: 13px;
+            border: 1px dashed var(--color-border);
+        }
+
+        /* === KPIs === */
+        .kpi-strip {
+            display: flex;
+            gap: 0;
+            margin-bottom: 24px;
+        }
+        .kpi-item {
+            flex: 1;
+            text-align: center;
+            padding: 16px 12px;
+            border: 1px solid var(--color-border-light);
+            border-left: none;
+            background: var(--color-white);
+        }
+        .kpi-item:first-child { border-left: 1px solid var(--color-border-light); }
+        .kpi-item__value {
+            font-size: 20px;
+            font-weight: 700;
+            font-family: var(--font-family-mono);
+            color: var(--color-text-primary);
+        }
+        .kpi-item__value--success { color: var(--color-success); }
+        .kpi-item__value--warning { color: var(--color-warning); }
+        .kpi-item__label {
+            font-size: 11px;
+            color: var(--color-text-secondary);
+            margin-top: 2px;
+        }
+
+        /* === TEAM LIST === */
+        .team-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 20px;
+            border-bottom: 1px solid var(--color-bg-secondary);
+            font-size: 13px;
+        }
+        .team-item:last-child { border-bottom: none; }
+        .team-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--color-primary-light);
+            color: var(--color-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        .team-name { flex: 1; font-weight: 500; }
+        .team-role { color: var(--color-text-secondary); font-size: 12px; }
+        .show-all {
+            display: block;
+            padding: 8px 20px;
+            font-size: 13px;
+            color: var(--color-primary);
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .show-all:hover { text-decoration: underline; }
+
+        /* === RECENT DOCS LIST === */
+        .doc-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 20px;
+            border-bottom: 1px solid var(--color-bg-secondary);
+            font-size: 13px;
+        }
+        .doc-item:last-child { border-bottom: none; }
+        .doc-name {
+            flex: 1;
+            font-family: var(--font-family-mono);
+            font-size: 12px;
+            color: var(--color-primary);
+        }
+        .doc-score { font-family: var(--font-family-mono); font-weight: 600; }
+        .doc-status { width: 16px; text-align: center; }
+        .doc-status--ok { color: var(--color-success); }
+        .doc-status--warn { color: var(--color-warning); }
+
+        /* === TABLE PLACEHOLDER === */
+        .table-placeholder {
+            padding: 40px 20px;
+            text-align: center;
+            color: var(--color-text-secondary);
+            font-size: 13px;
+            border: 1px dashed var(--color-border);
+            border-radius: 4px;
+        }
+
+        /* === STATUS DOT === */
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        .status-dot--active { background: var(--color-success); }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 768px) {
+            .overview-columns {
+                grid-template-columns: 1fr;
+            }
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+            .detail-field:nth-child(odd) {
+                border-right: none;
+            }
+            .kpi-strip {
+                flex-wrap: wrap;
+            }
+            .kpi-item {
+                min-width: calc(50% - 1px);
+                border-left: 1px solid var(--color-border-light);
+            }
+            .tabs__list {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            .tab {
+                white-space: nowrap;
+                padding: 8px 14px 12px;
+                font-size: 13px;
+            }
+        }
+        @media (max-width: 480px) {
+            .kpi-strip {
+                flex-direction: column;
+            }
+            .kpi-item {
+                border-left: 1px solid var(--color-border-light);
+                flex-direction: row;
+                justify-content: space-between;
+                text-align: left;
+            }
+            .breadcrumb { flex-direction: column; align-items: flex-start; gap: 8px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- OPTION SWITCHER -->
+<nav class="mockup-nav">
+    <span class="mockup-nav__title">Building Detail Page — 3 Layouts</span>
+    <button class="mockup-nav__btn mockup-nav__btn--active" onclick="showOption('a')">Option A: Keep All Tabs</button>
+    <button class="mockup-nav__btn" onclick="showOption('b')">Option B: Minimal Tabs</button>
+    <button class="mockup-nav__btn" onclick="showOption('c')">Option C: Balanced</button>
+</nav>
+
+<!-- ======================================================
+     OPTION A: KEEP ALL TABS
+     Ubersicht + Grundrisse + Benutzer + Prufregeln + Einstellungen
+     ====================================================== -->
+<div class="mockup-section mockup-section--active" id="option-a">
+    <span class="mockup-label">Option A</span>
+    <p class="mockup-desc">
+        <strong>Keep all tabs.</strong> Overview is the new first tab. Grundrisse, Benutzer, Prüfregeln, and Einstellungen remain as separate tabs.
+        The overview shows building metadata, photos, map, KPIs, and a preview of team + recent documents.
+    </p>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header__content">
+            <svg class="header__flag" viewBox="0 0 24 26"><rect fill="#DC0018" width="24" height="26" rx="1"/><path d="M11 6h2v6h6v2h-6v6h-2v-6H5v-2h6V6z" fill="#fff"/></svg>
+            <div class="header__sep"></div>
+            <div class="header__titles">
+                <span class="header__org">Bundesamt für Bauten und Logistik BBL</span>
+                <span class="header__app">Prüfplattform Flächenmanagement</span>
+            </div>
+            <span class="header__spacer"></span>
+            <button class="lang-btn lang-btn--active">DE</button>
+            <button class="lang-btn">FR</button>
+            <button class="lang-btn">IT</button>
+            <button class="lang-btn">EN</button>
+            <span class="user-icon">&#9786;</span>
+        </div>
+    </header>
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        <div class="breadcrumb__nav">
+            <a href="#" class="breadcrumb__link">Gebäude</a> /
+            <span class="breadcrumb__current">10802000AA – Bern, Verwaltungsgebäude Liebefeld</span>
+        </div>
+        <div class="breadcrumb__actions">
+            <button class="btn btn--primary">&#9998; Bearbeiten</button>
+            <button class="btn btn--secondary">&larr; Zurück</button>
+        </div>
+    </div>
+
+    <!-- Tabs Card -->
+    <div class="tabs-card">
+        <div class="tabs">
+            <ul class="tabs__list">
+                <li><a class="tab tab--active">Übersicht</a></li>
+                <li><a class="tab">Grundrisse (6)</a></li>
+                <li><a class="tab">Benutzer (11)</a></li>
+                <li><a class="tab">Prüfregeln (14)</a></li>
+                <li><a class="tab">Einstellungen</a></li>
+            </ul>
+        </div>
+
+        <!-- Overview Content -->
+        <div class="overview-columns">
+            <div class="overview-left">
+                <!-- Photos -->
+                <div class="card">
+                    <div class="card__title">Bilder</div>
+                    <div class="carousel">
+                        <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&auto=format&fit=crop" alt="Building">
+                        <button class="carousel__arrow carousel__arrow--left">&lsaquo;</button>
+                        <button class="carousel__arrow carousel__arrow--right">&rsaquo;</button>
+                        <div class="carousel__dots">
+                            <button class="carousel__dot carousel__dot--active"></button>
+                            <button class="carousel__dot"></button>
+                            <button class="carousel__dot"></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Info -->
+                <div class="card">
+                    <div class="card__title">Zusätzliche Informationen</div>
+                    <div class="detail-grid">
+                        <div class="detail-field">
+                            <div class="detail-field__label">SIA Phase</div>
+                            <div class="detail-field__value">53 – Inbetriebnahme</div>
+                        </div>
+                        <div class="detail-field">
+                            <div class="detail-field__label">Status</div>
+                            <div class="detail-field__value">Aktiv</div>
+                        </div>
+                        <div class="detail-field">
+                            <div class="detail-field__label">Sprache</div>
+                            <div class="detail-field__value">DE</div>
+                        </div>
+                        <div class="detail-field">
+                            <div class="detail-field__label">Regelwerk</div>
+                            <div class="detail-field__value">SIA 416 v2.1</div>
+                        </div>
+                        <div class="detail-field">
+                            <div class="detail-field__label">Erstellt</div>
+                            <div class="detail-field__value">14.04.2022</div>
+                        </div>
+                        <div class="detail-field">
+                            <div class="detail-field__label">Erstellt von</div>
+                            <div class="detail-field__value">Peter Schmidt</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="overview-right">
+                <!-- Building Master Data -->
+                <div class="card">
+                    <div class="card__title">Gebäude Stammdaten</div>
+                    <div class="detail-grid">
+                        <div class="detail-field">
+                            <div class="detail-field__label">Bezeichnung</div>
+                            <div class="detail-field__value">Verwaltungsgebäude Liebefeld</div>
+                        </div>
+                        <div class="detail-field">
+                            <div class="detail-field__label">Interne ID</div>
+                            <div class="detail-field__value">10802000AA</div>
+                        </div>
+                        <div class="detail-field">
+                            <div class="detail-field__label">Gebäudetyp</div>
+                            <div class="detail-field__value">Verwaltungsgebäude</div>
+                        </div>
+                        <div class="detail-field">
+                            <div class="detail-field__label">Adresse</div>
+                            <div class="detail-field__value">Holzikofenweg 36, 3003 Liebefeld, BE, CH</div>
+                        </div>
+                        <div class="detail-field">
+                            <div class="detail-field__label">EGID</div>
+                            <div class="detail-field__value">1234567</div>
+                        </div>
+                        <div class="detail-field">
+                            <div class="detail-field__label">EGRID</div>
+                            <div class="detail-field__value">CH955832730623</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Map -->
+                <div class="card">
+                    <div class="map-placeholder">
+                        &#128205; Karte (MapLibre GL) — Holzikofenweg 36, 3003 Liebefeld
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI Strip -->
+        <div class="kpi-strip">
+            <div class="kpi-item">
+                <div class="kpi-item__value kpi-item__value--success">91%</div>
+                <div class="kpi-item__label">Ø Score</div>
+            </div>
+            <div class="kpi-item">
+                <div class="kpi-item__value">53</div>
+                <div class="kpi-item__label">SIA Phase</div>
+            </div>
+            <div class="kpi-item">
+                <div class="kpi-item__value">6</div>
+                <div class="kpi-item__label">Grundrisse</div>
+            </div>
+            <div class="kpi-item">
+                <div class="kpi-item__value">72</div>
+                <div class="kpi-item__label">Räume</div>
+            </div>
+            <div class="kpi-item">
+                <div class="kpi-item__value">2'258 m&sup2;</div>
+                <div class="kpi-item__label">GF</div>
+            </div>
+        </div>
+
+        <!-- Team + Recent Docs -->
+        <div class="overview-columns">
+            <div class="card">
+                <div class="card__header">
+                    <span class="card__header-title">Team (5)</span>
+                    <button class="btn btn--primary" style="font-size:12px; padding: 4px 12px;">+ Einladen</button>
+                </div>
+                <div class="team-item"><span class="team-avatar">MM</span><span class="team-name">Max Muster</span><span class="team-role">Admin</span></div>
+                <div class="team-item"><span class="team-avatar">AM</span><span class="team-name">Anna Müller</span><span class="team-role">Editor</span></div>
+                <div class="team-item"><span class="team-avatar">PS</span><span class="team-name">Peter Schmidt</span><span class="team-role">Editor</span></div>
+                <div class="team-item"><span class="team-avatar">LW</span><span class="team-name">Lisa Weber</span><span class="team-role">Editor</span></div>
+                <a class="show-all">Alle anzeigen &rarr;</a>
+            </div>
+            <div class="card">
+                <div class="card__header">
+                    <span class="card__header-title">Letzte Grundrisse</span>
+                    <button class="btn btn--secondary" style="font-size:12px; padding: 4px 12px;">Alle anzeigen &rarr;</button>
+                </div>
+                <div class="doc-item"><span class="doc-name">10802000AA_00.dwg</span><span class="doc-score">94%</span><span class="doc-status doc-status--ok">&#10003;</span></div>
+                <div class="doc-item"><span class="doc-name">10802000AA_01.dwg</span><span class="doc-score">91%</span><span class="doc-status doc-status--ok">&#10003;</span></div>
+                <div class="doc-item"><span class="doc-name">10802000AA_02.dwg</span><span class="doc-score">88%</span><span class="doc-status doc-status--warn">&#9888;</span></div>
+                <div class="doc-item"><span class="doc-name">10802000AA_03.dwg</span><span class="doc-score">92%</span><span class="doc-status doc-status--ok">&#10003;</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======================================================
+     OPTION B: MINIMAL TABS
+     Ubersicht + Grundrisse + Prufregeln
+     Users & Settings absorbed into overview
+     ====================================================== -->
+<div class="mockup-section" id="option-b">
+    <span class="mockup-label">Option B</span>
+    <p class="mockup-desc">
+        <strong>Minimal tabs.</strong> Only 3 tabs: Übersicht, Grundrisse, Prüfregeln. Users and Settings are fully absorbed into the overview.
+        The overview is self-contained with all building info, photos, map, KPIs, the full team list, and a settings summary.
+    </p>
+
+    <!-- Header (same) -->
+    <header class="header">
+        <div class="header__content">
+            <svg class="header__flag" viewBox="0 0 24 26"><rect fill="#DC0018" width="24" height="26" rx="1"/><path d="M11 6h2v6h6v2h-6v6h-2v-6H5v-2h6V6z" fill="#fff"/></svg>
+            <div class="header__sep"></div>
+            <div class="header__titles">
+                <span class="header__org">Bundesamt für Bauten und Logistik BBL</span>
+                <span class="header__app">Prüfplattform Flächenmanagement</span>
+            </div>
+            <span class="header__spacer"></span>
+            <button class="lang-btn lang-btn--active">DE</button>
+            <button class="lang-btn">FR</button>
+            <button class="lang-btn">IT</button>
+            <button class="lang-btn">EN</button>
+            <span class="user-icon">&#9786;</span>
+        </div>
+    </header>
+
+    <div class="breadcrumb">
+        <div class="breadcrumb__nav">
+            <a href="#" class="breadcrumb__link">Gebäude</a> /
+            <span class="breadcrumb__current">10802000AA – Bern, Verwaltungsgebäude Liebefeld</span>
+        </div>
+        <div class="breadcrumb__actions">
+            <button class="btn btn--primary">&#9998; Bearbeiten</button>
+            <button class="btn btn--secondary">&larr; Zurück</button>
+        </div>
+    </div>
+
+    <div class="tabs-card">
+        <div class="tabs">
+            <ul class="tabs__list">
+                <li><a class="tab tab--active">Übersicht</a></li>
+                <li><a class="tab">Grundrisse (6)</a></li>
+                <li><a class="tab">Prüfregeln (14)</a></li>
+            </ul>
+        </div>
+
+        <!-- KPI Strip -->
+        <div class="kpi-strip">
+            <div class="kpi-item">
+                <div class="kpi-item__value kpi-item__value--success">91%</div>
+                <div class="kpi-item__label">Ø Score</div>
+            </div>
+            <div class="kpi-item">
+                <div class="kpi-item__value">53</div>
+                <div class="kpi-item__label">SIA Phase</div>
+            </div>
+            <div class="kpi-item">
+                <div class="kpi-item__value">6</div>
+                <div class="kpi-item__label">Grundrisse</div>
+            </div>
+            <div class="kpi-item">
+                <div class="kpi-item__value">72</div>
+                <div class="kpi-item__label">Räume</div>
+            </div>
+            <div class="kpi-item">
+                <div class="kpi-item__value">2'258 m&sup2;</div>
+                <div class="kpi-item__label">GF</div>
+            </div>
+        </div>
+
+        <!-- Two-column layout -->
+        <div class="overview-columns">
+            <div class="overview-left">
+                <div class="card">
+                    <div class="carousel">
+                        <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&auto=format&fit=crop" alt="Building">
+                        <button class="carousel__arrow carousel__arrow--left">&lsaquo;</button>
+                        <button class="carousel__arrow carousel__arrow--right">&rsaquo;</button>
+                        <div class="carousel__dots">
+                            <button class="carousel__dot carousel__dot--active"></button>
+                            <button class="carousel__dot"></button>
+                            <button class="carousel__dot"></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card__title">Projektdetails</div>
+                    <div class="detail-grid">
+                        <div class="detail-field">
+                            <div class="detail-field__label">SIA Phase</div>
+                            <div class="detail-field__value">53 – Inbetriebnahme</div>
+                        </div>
+                        <div class="detail-field">
+                            <div class="detail-field__label">Status</div>
+                            <div class="detail-field__value">Aktiv</div>
+                        </div>
+                        <div class="detail-field">
+                            <div class="detail-field__label">Sprache</div>
+                            <div class="detail-field__value">DE</div>
+                        </div>
+                        <div class="detail-field">
+                            <div class="detail-field__label">Regelwerk</div>
+                            <div class="detail-field__value">SIA 416 v2.1</div>
+                        </div>
+                        <div class="detail-field">
+                            <div class="detail-field__label">Erstellt</div>
+                            <div class="detail-field__value">14.04.2022</div>
+                        </div>
+                        <div class="detail-field">
+                            <div class="detail-field__label">Erstellt von</div>
+                            <div class="detail-field__value">Peter Schmidt</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Full Team (no separate tab) -->
+                <div class="card">
+                    <div class="card__header">
+                        <span class="card__header-title">Team (5)</span>
+                        <button class="btn btn--primary" style="font-size:12px; padding: 4px 12px;">+ Einladen</button>
+                    </div>
+                    <div class="team-item"><span class="team-avatar">MM</span><span class="team-name">Max Muster</span><span class="team-role">Admin</span></div>
+                    <div class="team-item"><span class="team-avatar">AM</span><span class="team-name">Anna Müller</span><span class="team-role">Editor</span></div>
+                    <div class="team-item"><span class="team-avatar">PS</span><span class="team-name">Peter Schmidt</span><span class="team-role">Editor</span></div>
+                    <div class="team-item"><span class="team-avatar">LW</span><span class="team-name">Lisa Weber</span><span class="team-role">Editor</span></div>
+                    <div class="team-item"><span class="team-avatar">MK</span><span class="team-name">Maria Keller</span><span class="team-role">Viewer</span></div>
+                </div>
+            </div>
+            <div class="overview-right">
+                <div class="card">
+                    <div class="card__title">Gebäude Stammdaten</div>
+                    <div class="detail-grid">
+                        <div class="detail-field">
+                            <div class="detail-field__label">Bezeichnung</div>
+                            <div class="detail-field__value">Verwaltungsgebäude Liebefeld</div>
+                        </div>
+                        <div class="detail-field">
+                            <div class="detail-field__label">Interne ID</div>
+                            <div class="detail-field__value">10802000AA</div>
+                        </div>
+                        <div class="detail-field">
+                            <div class="detail-field__label">Gebäudetyp</div>
+                            <div class="detail-field__value">Verwaltungsgebäude</div>
+                        </div>
+                        <div class="detail-field">
+                            <div class="detail-field__label">Adresse</div>
+                            <div class="detail-field__value">Holzikofenweg 36, 3003 Liebefeld, BE, CH</div>
+                        </div>
+                        <div class="detail-field">
+                            <div class="detail-field__label">EGID</div>
+                            <div class="detail-field__value">1234567</div>
+                        </div>
+                        <div class="detail-field">
+                            <div class="detail-field__label">EGRID</div>
+                            <div class="detail-field__value">CH955832730623</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="map-placeholder" style="height: 360px;">
+                        &#128205; Karte (MapLibre GL) — Holzikofenweg 36, 3003 Liebefeld
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======================================================
+     OPTION C: BALANCED
+     Ubersicht + Grundrisse + Prufregeln + Einstellungen
+     Users in overview, Settings stays as a tab
+     ====================================================== -->
+<div class="mockup-section" id="option-c">
+    <span class="mockup-label">Option C</span>
+    <p class="mockup-desc">
+        <strong>Balanced.</strong> 4 tabs: Übersicht, Grundrisse, Prüfregeln, Einstellungen. The team is shown in the overview (no separate Users tab),
+        but Settings keeps its own tab for full project configuration and danger zone actions.
+    </p>
+
+    <header class="header">
+        <div class="header__content">
+            <svg class="header__flag" viewBox="0 0 24 26"><rect fill="#DC0018" width="24" height="26" rx="1"/><path d="M11 6h2v6h6v2h-6v6h-2v-6H5v-2h6V6z" fill="#fff"/></svg>
+            <div class="header__sep"></div>
+            <div class="header__titles">
+                <span class="header__org">Bundesamt für Bauten und Logistik BBL</span>
+                <span class="header__app">Prüfplattform Flächenmanagement</span>
+            </div>
+            <span class="header__spacer"></span>
+            <button class="lang-btn lang-btn--active">DE</button>
+            <button class="lang-btn">FR</button>
+            <button class="lang-btn">IT</button>
+            <button class="lang-btn">EN</button>
+            <span class="user-icon">&#9786;</span>
+        </div>
+    </header>
+
+    <div class="breadcrumb">
+        <div class="breadcrumb__nav">
+            <a href="#" class="breadcrumb__link">Gebäude</a> /
+            <span class="breadcrumb__current">10802000AA – Bern, Verwaltungsgebäude Liebefeld</span>
+        </div>
+        <div class="breadcrumb__actions">
+            <button class="btn btn--primary">&#9998; Bearbeiten</button>
+            <button class="btn btn--secondary">&larr; Zurück</button>
+        </div>
+    </div>
+
+    <div class="tabs-card">
+        <div class="tabs">
+            <ul class="tabs__list">
+                <li><a class="tab tab--active">Übersicht</a></li>
+                <li><a class="tab">Grundrisse (6)</a></li>
+                <li><a class="tab">Prüfregeln (14)</a></li>
+                <li><a class="tab">Einstellungen</a></li>
+            </ul>
+        </div>
+
+        <div class="overview-columns">
+            <div class="overview-left">
+                <div class="card">
+                    <div class="card__title">Bilder</div>
+                    <div class="carousel">
+                        <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&auto=format&fit=crop" alt="Building">
+                        <button class="carousel__arrow carousel__arrow--left">&lsaquo;</button>
+                        <button class="carousel__arrow carousel__arrow--right">&rsaquo;</button>
+                        <div class="carousel__dots">
+                            <button class="carousel__dot carousel__dot--active"></button>
+                            <button class="carousel__dot"></button>
+                            <button class="carousel__dot"></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card__title">Projektdetails</div>
+                    <div class="detail-grid">
+                        <div class="detail-field">
+                            <div class="detail-field__label">SIA Phase</div>
+                            <div class="detail-field__value">53 – Inbetriebnahme</div>
+                        </div>
+                        <div class="detail-field">
+                            <div class="detail-field__label">Status</div>
+                            <div class="detail-field__value">Aktiv</div>
+                        </div>
+                        <div class="detail-field">
+                            <div class="detail-field__label">Sprache</div>
+                            <div class="detail-field__value">DE</div>
+                        </div>
+                        <div class="detail-field">
+                            <div class="detail-field__label">Regelwerk</div>
+                            <div class="detail-field__value">SIA 416 v2.1</div>
+                        </div>
+                        <div class="detail-field">
+                            <div class="detail-field__label">Erstellt</div>
+                            <div class="detail-field__value">14.04.2022</div>
+                        </div>
+                        <div class="detail-field">
+                            <div class="detail-field__label">Erstellt von</div>
+                            <div class="detail-field__value">Peter Schmidt</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="overview-right">
+                <div class="card">
+                    <div class="card__title">Gebäude Stammdaten</div>
+                    <div class="detail-grid">
+                        <div class="detail-field">
+                            <div class="detail-field__label">Bezeichnung</div>
+                            <div class="detail-field__value">Verwaltungsgebäude Liebefeld</div>
+                        </div>
+                        <div class="detail-field">
+                            <div class="detail-field__label">Interne ID</div>
+                            <div class="detail-field__value">10802000AA</div>
+                        </div>
+                        <div class="detail-field">
+                            <div class="detail-field__label">Gebäudetyp</div>
+                            <div class="detail-field__value">Verwaltungsgebäude</div>
+                        </div>
+                        <div class="detail-field">
+                            <div class="detail-field__label">Adresse</div>
+                            <div class="detail-field__value">Holzikofenweg 36, 3003 Liebefeld, BE, CH</div>
+                        </div>
+                        <div class="detail-field">
+                            <div class="detail-field__label">EGID</div>
+                            <div class="detail-field__value">1234567</div>
+                        </div>
+                        <div class="detail-field">
+                            <div class="detail-field__label">EGRID</div>
+                            <div class="detail-field__value">CH955832730623</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="map-placeholder">
+                        &#128205; Karte (MapLibre GL) — Holzikofenweg 36, 3003 Liebefeld
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="kpi-strip">
+            <div class="kpi-item">
+                <div class="kpi-item__value kpi-item__value--success">91%</div>
+                <div class="kpi-item__label">Ø Score</div>
+            </div>
+            <div class="kpi-item">
+                <div class="kpi-item__value">53</div>
+                <div class="kpi-item__label">SIA Phase</div>
+            </div>
+            <div class="kpi-item">
+                <div class="kpi-item__value">6</div>
+                <div class="kpi-item__label">Grundrisse</div>
+            </div>
+            <div class="kpi-item">
+                <div class="kpi-item__value">72</div>
+                <div class="kpi-item__label">Räume</div>
+            </div>
+            <div class="kpi-item">
+                <div class="kpi-item__value">2'258 m&sup2;</div>
+                <div class="kpi-item__label">GF</div>
+            </div>
+        </div>
+
+        <div class="overview-columns">
+            <div class="card">
+                <div class="card__header">
+                    <span class="card__header-title">Team (5)</span>
+                    <button class="btn btn--primary" style="font-size:12px; padding: 4px 12px;">+ Einladen</button>
+                </div>
+                <div class="team-item"><span class="team-avatar">MM</span><span class="team-name">Max Muster</span><span class="team-role">Admin</span></div>
+                <div class="team-item"><span class="team-avatar">AM</span><span class="team-name">Anna Müller</span><span class="team-role">Editor</span></div>
+                <div class="team-item"><span class="team-avatar">PS</span><span class="team-name">Peter Schmidt</span><span class="team-role">Editor</span></div>
+                <div class="team-item"><span class="team-avatar">LW</span><span class="team-name">Lisa Weber</span><span class="team-role">Editor</span></div>
+                <a class="show-all">Alle anzeigen &rarr;</a>
+            </div>
+            <div class="card">
+                <div class="card__header">
+                    <span class="card__header-title">Letzte Grundrisse</span>
+                    <button class="btn btn--secondary" style="font-size:12px; padding: 4px 12px;">Alle anzeigen &rarr;</button>
+                </div>
+                <div class="doc-item"><span class="doc-name">10802000AA_00.dwg</span><span class="doc-score">94%</span><span class="doc-status doc-status--ok">&#10003;</span></div>
+                <div class="doc-item"><span class="doc-name">10802000AA_01.dwg</span><span class="doc-score">91%</span><span class="doc-status doc-status--ok">&#10003;</span></div>
+                <div class="doc-item"><span class="doc-name">10802000AA_02.dwg</span><span class="doc-score">88%</span><span class="doc-status doc-status--warn">&#9888;</span></div>
+                <div class="doc-item"><span class="doc-name">10802000AA_03.dwg</span><span class="doc-score">92%</span><span class="doc-status doc-status--ok">&#10003;</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showOption(id) {
+    document.querySelectorAll('.mockup-section').forEach(s => s.classList.remove('mockup-section--active'));
+    document.getElementById('option-' + id).classList.add('mockup-section--active');
+    document.querySelectorAll('.mockup-nav__btn').forEach(b => b.classList.remove('mockup-nav__btn--active'));
+    event.target.classList.add('mockup-nav__btn--active');
+}
+</script>
+
+</body>
+</html>

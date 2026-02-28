@@ -93,10 +93,20 @@
   "detail.rooms": "Räume",
   "detail.gf": "GF",
 
+  "tab.overview": "Übersicht",
   "tab.documents": "Grundrisse",
   "tab.users": "Benutzer",
   "tab.rules": "Prüfregeln",
   "tab.settings": "Einstellungen",
+
+  "overview.projectDetails": "Projektdetails",
+  "overview.buildingData": "Gebäude Stammdaten",
+  "overview.designation": "Bezeichnung",
+  "overview.internalId": "Interne ID",
+  "overview.buildingType": "Gebäudetyp",
+  "overview.address": "Adresse",
+  "overview.created": "Erstellt",
+  "overview.createdBy": "Erstellt von",
 
   "action.edit": "Bearbeiten",
   "action.delete": "Löschen",

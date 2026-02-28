@@ -93,10 +93,20 @@
   "detail.rooms": "Pièces",
   "detail.gf": "SP",
 
+  "tab.overview": "Aperçu",
   "tab.documents": "Plans d'étage",
   "tab.users": "Utilisateurs",
   "tab.rules": "Règles de vérification",
   "tab.settings": "Paramètres",
+
+  "overview.projectDetails": "Détails du projet",
+  "overview.buildingData": "Données du bâtiment",
+  "overview.designation": "Désignation",
+  "overview.internalId": "ID interne",
+  "overview.buildingType": "Type de bâtiment",
+  "overview.address": "Adresse",
+  "overview.created": "Créé",
+  "overview.createdBy": "Créé par",
 
   "action.edit": "Modifier",
   "action.delete": "Supprimer",

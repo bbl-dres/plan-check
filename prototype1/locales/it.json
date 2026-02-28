@@ -93,10 +93,20 @@
   "detail.rooms": "Locali",
   "detail.gf": "SP",
 
+  "tab.overview": "Panoramica",
   "tab.documents": "Piante",
   "tab.users": "Utenti",
   "tab.rules": "Regole di verifica",
   "tab.settings": "Impostazioni",
+
+  "overview.projectDetails": "Dettagli progetto",
+  "overview.buildingData": "Dati edificio",
+  "overview.designation": "Designazione",
+  "overview.internalId": "ID interno",
+  "overview.buildingType": "Tipo edificio",
+  "overview.address": "Indirizzo",
+  "overview.created": "Creato",
+  "overview.createdBy": "Creato da",
 
   "action.edit": "Modifica",
   "action.delete": "Elimina",
