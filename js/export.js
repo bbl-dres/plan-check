@@ -222,6 +222,7 @@ export async function downloadPdfReport() {
                 ['Hochgeladen', state.lastUploadTime ? state.lastUploadTime.toLocaleString('de-CH') : '-'],
                 ['Verarbeitungszeit', state.lastElapsed ? state.lastElapsed + ' s' : '-'],
                 ['Raum-Layer', state.roomLayerName],
+                ['Fl\u00e4chen-Layer', 'R_GESCHOSSPOLYGON'],
             ],
             columnStyles: { 0: { fontStyle: 'bold', cellWidth: 48 } },
         });
@@ -722,6 +723,7 @@ export async function downloadExcelReport() {
             ['Hochgeladen', state.lastUploadTime ? state.lastUploadTime.toLocaleString('de-CH') : '-'],
             ['Verarbeitungszeit', state.lastElapsed ? state.lastElapsed + ' s' : '-'],
             ['Raum-Layer', state.roomLayerName],
+            ['Fl\u00e4chen-Layer', 'R_GESCHOSSPOLYGON'],
             ['R\u00e4ume erkannt', state.roomData.length],
             ['Fl\u00e4chen erkannt', state.areaData.length],
             ['Fehlermeldungen', state.validationErrors.length],

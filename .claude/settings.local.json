@@ -45,7 +45,10 @@
       "Bash(for f in router.js app.js state.js utils.js dwg-processing.js renderer.js validation.js export.js api-docs.js)",
       "Bash(do cp \"c:/Users/DavidRasner/Documents/GitHub/plan-check/js/$f\" \"c:/Users/DavidRasner/Documents/GitHub/plan-check/prototype-material/js/\")",
       "WebFetch(domain:m3.material.io)",
-      "Bash(git -C /c/Users/DavidRasner/Documents/GitHub/plan-check status --short)"
+      "Bash(git -C /c/Users/DavidRasner/Documents/GitHub/plan-check status --short)",
+      "Bash(python3 -c \"import docx; print\\(''python-docx available''\\)\")",
+      "Bash(python3 -c \"import zipfile, xml.etree.ElementTree as ET; print\\(''zipfile available''\\)\")",
+      "Bash(python3:*)"
     ]
   }
 }
