@@ -49,19 +49,18 @@
             <p class="upload-zone__demo-hint">Keine Datei? <a href="#" id="load-demo" class="upload-zone__demo-link">Demo-Projekt laden</a></p>
         </div>
 
+
         <div class="status" id="status"></div>
 
         <!-- Metrics (independent section) -->
-        <div class="panel" id="metrics-panel">
-            <div class="panel__header">Ergebnis</div>
+        <div class="panel open" id="metrics-panel">
+            <div class="panel__header panel__header--toggle">Ergebnis <span class="panel__chevron"></span></div>
             <div class="info-grid" id="metrics-grid"></div>
         </div>
 
         <!-- Validation – Split View (side panel + integrated viewer) -->
-        <div class="panel" id="validation-panel">
-            <div class="panel__header">
-                <span>Validierung</span>
-            </div>
+        <div class="panel open" id="validation-panel">
+            <div class="panel__header panel__header--toggle">Validierung <span class="panel__chevron"></span></div>
             <div class="validation-tabs">
                 <a href="#" class="validation-tabs__tab validation-tabs__tab--active" data-vtab="rules">Prüfregeln (<span id="vtab-rules-count">0</span>/<span id="vtab-rules-total">40</span>)</a>
                 <a href="#" class="validation-tabs__tab" data-vtab="errors">Fehlermeldungen (<span id="vtab-error-count">0</span>)</a>
@@ -112,20 +111,9 @@
             </div>
         </div>
 
-        <!-- Info -->
-        <div class="panel" id="info-panel">
-            <div class="panel__header">Datei-Informationen</div>
-            <div class="info-grid">
-                <div class="info-grid__item"><div class="info-grid__label">Version</div><div class="info-grid__value" id="info-version">-</div></div>
-                <div class="info-grid__item"><div class="info-grid__label">Layer</div><div class="info-grid__value" id="info-layers">-</div></div>
-                <div class="info-grid__item"><div class="info-grid__label">Objekte</div><div class="info-grid__value" id="info-entities">-</div></div>
-                <div class="info-grid__item"><div class="info-grid__label">Dateigrösse</div><div class="info-grid__value" id="info-size">-</div></div>
-            </div>
-        </div>
-
         <!-- Entities -->
         <div class="panel" id="entities-panel">
-            <div class="panel__header">Objektübersicht</div>
+            <div class="panel__header panel__header--toggle">Objektübersicht <span class="panel__chevron"></span></div>
             <table class="entities-table">
                 <thead><tr><th>Typ</th><th>Anzahl</th><th>Layer</th></tr></thead>
                 <tbody id="entities-tbody"></tbody>
@@ -134,7 +122,7 @@
 
         <!-- Console -->
         <div class="panel" id="console-panel">
-            <div class="panel__header">Konsole</div>
+            <div class="panel__header panel__header--toggle">Konsole <span class="panel__chevron"></span></div>
             <div class="console-body" id="console-log"></div>
         </div>
 

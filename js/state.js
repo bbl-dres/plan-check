@@ -90,7 +90,6 @@ export const dom = {
     fileInput: null,
     selectBtn: null,
     statusEl: null,
-    infoPanel: null,
     canvasWrap: null,
     canvas: null,
     ctx: null,
@@ -122,7 +121,6 @@ export function initDom() {
     dom.fileInput = document.getElementById('file-input');
     dom.selectBtn = document.getElementById('select-btn');
     dom.statusEl = document.getElementById('status');
-    dom.infoPanel = document.getElementById('info-panel');
     dom.canvasWrap = document.getElementById('canvas-wrap');
     dom.canvas = document.getElementById('dwg-canvas');
     dom.ctx = dom.canvas.getContext('2d');

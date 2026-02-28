@@ -685,14 +685,6 @@ export function prepareDrawingData(entities, layers, db) {
 }
 
 // ── Display Helpers ──
-export function displayInfo(file, db, entities, layers, elapsed) {
-    document.getElementById('info-version').textContent = db.header?.version || '-';
-    document.getElementById('info-layers').textContent = fmtNum(layers.length);
-    document.getElementById('info-entities').textContent = fmtNum(entities.length);
-    document.getElementById('info-size').textContent = fmtSize(file.size);
-    dom.infoPanel.classList.add('visible');
-}
-
 export function buildLayerInfo(entities, layers) {
     state.hiddenLayers.clear();
     const counts = {};

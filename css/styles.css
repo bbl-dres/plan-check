@@ -268,6 +268,7 @@ body {
 .upload-zone__demo-hint { color: var(--color-text-secondary); font-size: var(--font-size-sm); margin: 0; }
 .upload-zone__demo-link { color: var(--color-primary); font-weight: var(--font-weight-semibold); }
 
+
 /* ----------------------------------------
    Button
    ---------------------------------------- */
@@ -290,13 +291,7 @@ body {
     font-size: var(--font-size-sm); display: none; font-weight: var(--font-weight-medium);
 }
 .status--loading { background: var(--color-primary-light); color: var(--color-primary); display: flex; align-items: center; gap: var(--space-3); }
-.status--success { background: var(--color-success-light); color: var(--color-success); justify-content: space-between; display: flex; align-items: center; }
-.status__console-link {
-    color: inherit; opacity: 0.7; text-decoration: none; font-size: var(--font-size-sm);
-    cursor: pointer; padding: var(--space-1) var(--space-2); border-radius: var(--radius-sm);
-    min-height: var(--min-target-size); display: inline-flex; align-items: center;
-}
-.status__console-link:hover { opacity: 1; text-decoration: underline; }
+.status--success { background: var(--color-success-light); color: var(--color-success); display: flex; align-items: center; }
 .status--error { background: var(--color-error-light); color: var(--color-error); }
 
 /* Spinner */
@@ -481,6 +476,23 @@ body {
    Console
    ---------------------------------------- */
 #console-panel { display: block; }
+
+/* Collapsible panels */
+.panel__header--toggle { cursor: pointer; user-select: none; }
+.panel__chevron {
+    margin-left: auto;
+    width: 18px; height: 18px; flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: transform var(--duration-normal);
+}
+.panel__chevron::after {
+    content: ''; display: block;
+    width: 5px; height: 5px;
+    border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg); margin-top: -2px;
+}
+.panel:not(.open) .panel__chevron { transform: rotate(-90deg); }
+.panel:not(.open) > :not(.panel__header) { display: none; }
 .console-body {
     padding: var(--space-3) var(--space-4); max-height: 200px; overflow-y: auto;
     font-family: var(--font-family-mono); font-size: var(--font-size-sm); line-height: var(--line-height-relaxed); color: var(--color-text-primary);

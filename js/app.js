@@ -4,7 +4,7 @@
 
 import { state, dom, initDom, MAX_FILE_SIZE, BG_DARK, BG_LIGHT } from './state.js';
 import { log, showStatus, pointInPoly } from './utils.js';
-import { processDwgFile, prepareDrawingData, displayInfo, buildLayerInfo, displayEntities } from './dwg-processing.js';
+import { processDwgFile, prepareDrawingData, buildLayerInfo, displayEntities } from './dwg-processing.js';
 import { resizeCanvas, render, scheduleRender, zoomExtents, screenToWorld, hitTest, showFeaturePopup, hideFeaturePopup, showPopupForItem, syncSideSelection } from './renderer.js';
 import { renderValidation, switchValidationTab } from './validation.js';
 
@@ -21,6 +21,13 @@ const WHEEL_ZOOM_OUT = 0.85;
 // Initialize DOM references
 // =============================================
 initDom();
+
+// Collapsible panel toggles
+document.querySelectorAll('.panel__header--toggle').forEach(header => {
+    header.addEventListener('click', () => {
+        header.closest('.panel').classList.toggle('open');
+    });
+});
 
 // =============================================
 // File Handling
@@ -63,7 +70,6 @@ async function handleFile(file) {
     // Reset — release previous file data for GC
     state.drawingData = null;
     dom.entitiesPanel.classList.remove('visible');
-    dom.infoPanel.classList.remove('visible');
     dom.validationPanel.classList.remove('visible');
     state.roomData = [];
     state.areaData = [];
@@ -89,8 +95,6 @@ async function handleFile(file) {
         state.lastElapsed = elapsed;
         state.lastUploadTime = new Date();
 
-        displayInfo(file, db, entities, layers, elapsed);
-
         showStatus('Zeichnung wird gerendert...');
         log('Zeichnungsdaten werden aufbereitet...');
         state.drawingData = prepareDrawingData(entities, layers, db);
@@ -114,6 +118,7 @@ async function handleFile(file) {
         renderValidation();
 
         showStatus(`${file.name} erfolgreich verarbeitet in ${elapsed}s`, 'success');
+
     } catch (err) {
         showStatus(err.message, 'error');
         log(err.message, 'error');

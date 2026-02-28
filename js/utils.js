@@ -20,14 +20,6 @@ export function showStatus(msg, type = 'loading') {
     if (type === 'loading') {
         dom.statusEl.innerHTML = `<div class="spinner"></div><span></span>`;
         dom.statusEl.querySelector('span').textContent = msg;
-    } else if (type === 'success') {
-        dom.statusEl.innerHTML = `<span></span><a href="#console-panel" class="status__console-link">Konsole &#x25BE;</a>`;
-        dom.statusEl.querySelector('span').textContent = msg;
-        dom.statusEl.querySelector('.status__console-link').addEventListener('click', (e) => {
-            e.preventDefault();
-            const consolePanelEl = document.getElementById('console-panel');
-            if (consolePanelEl) consolePanelEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        });
     } else {
         dom.statusEl.textContent = msg;
     }
