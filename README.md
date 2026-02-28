@@ -69,7 +69,7 @@ plan-check/
 ├── index.html                 # Application entry point
 ├── css/
 │   ├── tokens.css             # Design tokens (colors, spacing, typography)
-│   └── styles.css             # Component styles (~900 lines)
+│   └── styles.css             # Component styles (~1100 lines)
 ├── js/
 │   ├── router.js              # URL-based view router (app vs. api-docs)
 │   ├── app.js                 # File handling, pan/zoom, event wiring
@@ -85,7 +85,8 @@ plan-check/
 │   ├── test-files/            # Sample DWG files for demo
 │   └── swiss-logo-*.svg       # Federal identity assets
 ├── docs/
-│   └── anleitung-de.md        # User guide and FAQ (German)
+│   ├── anleitung-de.md        # User guide and FAQ (German)
+│   └── pruefregeln-de.md      # Validation rules reference (German)
 └── prototype1/                # Earlier mockup prototype (archived)
 ```
 
