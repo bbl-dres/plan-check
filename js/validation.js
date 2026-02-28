@@ -39,7 +39,7 @@ export const ALL_RULES = [
     { cat: 'AOID',  code: 'AOID_005',  sev: 'warning', desc: 'AOID-Text ausserhalb aller Raumpolygone' },
     { cat: 'AOID',  code: 'AOID_006',  sev: 'warning', desc: 'AOID-Basispunkt ausserhalb Polygon' },
     { cat: 'GEOM',  code: 'GEOM_001',  sev: 'error',   desc: 'Zeichnungseinheit ist nicht Millimeter' },
-    { cat: 'GEOM',  code: 'GEOM_002',  sev: 'warning', desc: 'Element hat Z-Koordinate \u2260 0' },
+    { cat: 'GEOM',  code: 'GEOM_002',  sev: 'warning', desc: 'Element hat Z-Koordinate != 0' },
     { cat: 'GEOM',  code: 'GEOM_003',  sev: 'error',   desc: 'Unzul\u00e4ssiger Entit\u00e4tstyp vorhanden' },
     { cat: 'GEOM',  code: 'GEOM_004',  sev: 'warning', desc: 'Externe Referenz (XREF) vorhanden' },
     { cat: 'GEOM',  code: 'GEOM_005',  sev: 'warning', desc: 'Element ausserhalb des Schnittrahmens' },
