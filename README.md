@@ -22,6 +22,11 @@ All processing runs locally in the browser via LibreDWG WebAssembly — no files
   <img src="assets/Preview5.jpg" width="45%" style="vertical-align: top;"/>
 </p>
 
+<p align="center">
+  <img src="assets/Preview6.jpg" width="45%" style="vertical-align: top;"/>
+  <img src="assets/Preview7.jpg" width="45%" style="vertical-align: top;"/>
+</p>
+
 **Prototype (Project and IAM Management):** https://bbl-dres.github.io/plan-check/prototype1/
 
 A prototype mockup frontend that explore possible integration of project, building and file structures with user management, roles and access control.
