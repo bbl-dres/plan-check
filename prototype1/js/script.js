@@ -2663,6 +2663,17 @@ function setupEventListeners() {
         });
     }
 
+    // Footer API docs link
+    const navApiLink = document.getElementById('nav-api');
+    if (navApiLink) {
+        navApiLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.querySelector('main').style.display = 'none';
+            document.querySelector('.footer').style.display = 'none';
+            initApiDocs();
+        });
+    }
+
     // Breadcrumb navigation
     document.querySelectorAll('#breadcrumb-projects, #breadcrumb-val-projects, #breadcrumb-results-projects').forEach(link => {
         link.addEventListener('click', (e) => {
@@ -2933,6 +2944,264 @@ function setupKeyboardShortcuts() {
                 switchView('projects');
             }
         }
+    });
+}
+
+// === API DOCUMENTATION ===
+
+const API_METHOD_COLORS = {
+    get: 'success',
+    post: 'primary',
+    put: 'warning',
+    delete: 'error',
+    patch: 'warning'
+};
+
+function apiResolveRef(spec, ref) {
+    const path = ref.replace('#/', '').split('/');
+    let obj = spec;
+    for (const key of path) obj = obj[key];
+    return obj;
+}
+
+function apiResolveSchema(spec, schema) {
+    if (!schema) return null;
+    if (schema.$ref) return apiResolveRef(spec, schema.$ref);
+    return schema;
+}
+
+function apiSchemaToExample(spec, schema, depth) {
+    if (depth === undefined) depth = 0;
+    if (!schema || depth > 5) return null;
+    if (schema.$ref) schema = apiResolveRef(spec, schema.$ref);
+    if (schema.example !== undefined) return schema.example;
+
+    if (schema.type === 'object' && schema.properties) {
+        var obj = {};
+        for (var key of Object.keys(schema.properties)) {
+            obj[key] = apiSchemaToExample(spec, schema.properties[key], depth + 1);
+        }
+        return obj;
+    }
+    if (schema.type === 'array' && schema.items) {
+        return [apiSchemaToExample(spec, schema.items, depth + 1)];
+    }
+    if (schema.enum) return schema.enum[0];
+
+    var defaults = { string: 'string', integer: 0, number: 0.0, boolean: true };
+    return defaults[schema.type] !== undefined ? defaults[schema.type] : null;
+}
+
+function apiRenderSchemaProps(spec, schema) {
+    if (!schema) return '';
+    if (schema.$ref) schema = apiResolveRef(spec, schema.$ref);
+    if (schema.type !== 'object' || !schema.properties) return '';
+
+    var rows = '';
+    for (var name of Object.keys(schema.properties)) {
+        var prop = schema.properties[name];
+        var resolved = prop.$ref ? apiResolveRef(spec, prop.$ref) : prop;
+        var type = resolved.type || 'object';
+        if (resolved.format) type += ' (' + resolved.format + ')';
+        if (resolved.enum) type = resolved.enum.join(' | ');
+        if (resolved.type === 'array') {
+            var itemType = resolved.items && resolved.items.$ref
+                ? resolved.items.$ref.split('/').pop()
+                : (resolved.items && resolved.items.type) || 'object';
+            type = itemType + '[]';
+        }
+        var required = schema.required && schema.required.includes(name) ? '<span class="api-docs__required">required</span>' : '';
+        var desc = resolved.description || '';
+        rows += '<tr>' +
+            '<td><code>' + escapeHtml(name) + '</code> ' + required + '</td>' +
+            '<td class="api-docs__type">' + escapeHtml(type) + '</td>' +
+            '<td>' + escapeHtml(desc) + '</td>' +
+            '</tr>';
+    }
+    return '<table class="api-docs__schema"><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>' + rows + '</tbody></table>';
+}
+
+function apiRenderEndpoint(spec, method, path, op) {
+    var colorClass = API_METHOD_COLORS[method] || 'primary';
+    var id = op.operationId || (method + '-' + path.replace(/[^a-z0-9]/gi, '-'));
+
+    // Parameters
+    var paramsHtml = '';
+    if (op.parameters && op.parameters.length) {
+        var paramRows = '';
+        for (var p of op.parameters) {
+            var s = p.schema || {};
+            paramRows += '<tr>' +
+                '<td><code>' + escapeHtml(p.name) + '</code>' + (p.required ? ' <span class="api-docs__required">required</span>' : '') + '</td>' +
+                '<td class="api-docs__type">' + escapeHtml(s.type || 'string') + (s.format ? ' (' + escapeHtml(s.format) + ')' : '') + '</td>' +
+                '<td>' + escapeHtml(p.in) + '</td>' +
+                '<td>' + escapeHtml(p.description || '') + '</td>' +
+                '</tr>';
+        }
+        paramsHtml = '<div class="api-docs__section-label">Parameter</div>' +
+            '<table class="api-docs__schema"><thead><tr><th>Name</th><th>Type</th><th>In</th><th>Description</th></tr></thead><tbody>' + paramRows + '</tbody></table>';
+    }
+
+    // Request body
+    var bodyHtml = '';
+    if (op.requestBody) {
+        var content = op.requestBody.content;
+        var contentType = Object.keys(content)[0];
+        var bodySchema = content[contentType] && content[contentType].schema;
+        if (bodySchema) {
+            bodyHtml = '<div class="api-docs__section-label">Request Body <span class="api-docs__content-type">' + contentType + '</span></div>';
+            bodyHtml += apiRenderSchemaProps(spec, bodySchema);
+        }
+    }
+
+    // Responses
+    var responsesHtml = '';
+    for (var code of Object.keys(op.responses)) {
+        var resp = op.responses[code];
+        var statusClass = code.startsWith('2') ? 'success' : code.startsWith('4') ? 'error' : 'warning';
+        responsesHtml += '<div class="api-docs__response">' +
+            '<span class="api-docs__status api-docs__status--' + statusClass + '">' + code + '</span>' +
+            '<span>' + escapeHtml(resp.description) + '</span>' +
+            '</div>';
+
+        var respContent = resp.content;
+        if (respContent) {
+            var ct = Object.keys(respContent)[0];
+            var respSchema = respContent[ct] && respContent[ct].schema;
+            if (respSchema && ct === 'application/json') {
+                var resolved = apiResolveSchema(spec, respSchema);
+                if (resolved) {
+                    responsesHtml += apiRenderSchemaProps(spec, resolved);
+                    var example = apiSchemaToExample(spec, resolved);
+                    if (example) {
+                        responsesHtml += '<pre class="api-docs__example">' + JSON.stringify(example, null, 2) + '</pre>';
+                    }
+                }
+            }
+        }
+    }
+
+    // cURL example
+    var baseUrl = (spec.servers && spec.servers[0] && spec.servers[0].url) || 'https://api.example.com';
+    var curl = 'curl -X ' + method.toUpperCase() + ' "' + baseUrl + path + '"';
+    curl += ' \\\n  -H "X-API-Key: YOUR_API_KEY"';
+    if (op.requestBody) {
+        var reqCt = Object.keys(op.requestBody.content)[0];
+        if (reqCt === 'application/json') {
+            curl += ' \\\n  -H "Content-Type: application/json"';
+            var reqBodySchema = op.requestBody.content[reqCt] && op.requestBody.content[reqCt].schema;
+            var bodyExample = reqBodySchema ? apiSchemaToExample(spec, reqBodySchema) : {};
+            curl += " \\\n  -d '" + JSON.stringify(bodyExample, null, 2) + "'";
+        } else if (reqCt === 'multipart/form-data') {
+            curl += ' \\\n  -F "file=@grundriss.dwg"';
+        }
+    }
+
+    var pathHighlighted = path.replace(/\{(\w+)\}/g, '<span class="api-docs__param">{$1}</span>');
+
+    return '<div class="api-docs__endpoint" id="' + id + '">' +
+        '<div class="api-docs__endpoint-header" data-toggle="' + id + '-detail">' +
+            '<span class="api-docs__method api-docs__method--' + colorClass + '">' + method.toUpperCase() + '</span>' +
+            '<span class="api-docs__path">' + pathHighlighted + '</span>' +
+            '<span class="api-docs__summary">' + escapeHtml(op.summary || '') + '</span>' +
+            '<svg class="api-docs__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>' +
+        '</div>' +
+        '<div class="api-docs__detail" id="' + id + '-detail">' +
+            (op.description ? '<p class="api-docs__desc">' + escapeHtml(op.description) + '</p>' : '') +
+            paramsHtml +
+            bodyHtml +
+            '<div class="api-docs__section-label">Responses</div>' +
+            responsesHtml +
+            '<div class="api-docs__section-label">Example</div>' +
+            '<pre class="api-docs__example">' + escapeHtml(curl) + '</pre>' +
+        '</div>' +
+    '</div>';
+}
+
+async function initApiDocs() {
+    var resp = await fetch('../assets/openapi.json');
+    var spec = await resp.json();
+
+    var container = document.getElementById('api-docs-container');
+    container.style.display = 'block';
+
+    // Group endpoints by tag
+    var tagGroups = {};
+    if (spec.tags) {
+        for (var tag of spec.tags) {
+            tagGroups[tag.name] = { description: tag.description, endpoints: [] };
+        }
+    }
+
+    for (var path of Object.keys(spec.paths)) {
+        var methods = spec.paths[path];
+        for (var method of Object.keys(methods)) {
+            var op = methods[method];
+            var tag = (op.tags && op.tags[0]) || 'General';
+            if (!tagGroups[tag]) tagGroups[tag] = { description: '', endpoints: [] };
+            tagGroups[tag].endpoints.push({ method: method, path: path, op: op });
+        }
+    }
+
+    // Render
+    var contentHtml = '';
+
+    // Back button
+    contentHtml += '<a href="#" class="api-docs__back" id="api-docs-back">\u2190 Back</a>';
+
+    // Header section
+    contentHtml += '<div class="api-docs__hero">' +
+        '<h1 class="api-docs__title">' + spec.info.title + '</h1>' +
+        '<div class="api-docs__meta">' +
+            '<span class="api-docs__version">v' + spec.info.version + '</span>' +
+            '<span class="api-docs__server">' + ((spec.servers && spec.servers[0] && spec.servers[0].url) || '') + '</span>' +
+        '</div>' +
+        '<p class="api-docs__intro">' + spec.info.description + '</p>' +
+    '</div>';
+
+    // Auth section
+    var authBaseUrl = (spec.servers && spec.servers[0] && spec.servers[0].url) || '';
+    contentHtml += '<div class="api-docs__auth" id="auth">' +
+        '<h2 class="api-docs__group-title">Authentication</h2>' +
+        '<p>All requests require an API key in the <code>X-API-Key</code> header. Keys can be requested through the BBL portal.</p>' +
+        '<pre class="api-docs__example">curl -H "X-API-Key: YOUR_API_KEY" ' + authBaseUrl + '/health</pre>' +
+    '</div>';
+
+    for (var tagName of Object.keys(tagGroups)) {
+        var group = tagGroups[tagName];
+        var tagId = tagName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+        var endpointsHtml = '';
+        for (var ep of group.endpoints) {
+            endpointsHtml += apiRenderEndpoint(spec, ep.method, ep.path, ep.op);
+        }
+        contentHtml += '<div class="api-docs__group" id="tag-' + tagId + '">' +
+            '<h2 class="api-docs__group-title">' + tagName + '</h2>' +
+            (group.description ? '<p class="api-docs__group-desc">' + escapeHtml(group.description) + '</p>' : '') +
+            endpointsHtml +
+        '</div>';
+    }
+
+    container.innerHTML = '<div class="api-docs__main">' + contentHtml + '</div>';
+
+    // Collapse/expand handlers
+    container.querySelectorAll('.api-docs__endpoint-header').forEach(function(header) {
+        header.addEventListener('click', function() {
+            var targetId = header.dataset.toggle;
+            var detail = document.getElementById(targetId);
+            var endpoint = header.closest('.api-docs__endpoint');
+            if (detail) {
+                detail.classList.toggle('open');
+                endpoint.classList.toggle('expanded');
+            }
+        });
+    });
+
+    // Back button handler
+    document.getElementById('api-docs-back').addEventListener('click', function(e) {
+        e.preventDefault();
+        container.style.display = 'none';
+        document.querySelector('main').style.display = '';
+        document.querySelector('.footer').style.display = '';
     });
 }
 
