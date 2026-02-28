@@ -27,6 +27,16 @@ const CONFIG = {
     MAX_EXCEL_ERRORS_SHOWN: 3
 };
 
+const BUILDING_TYPE_OPTIONS = [
+    { value: 'Verwaltungsgebäude', label: 'Verwaltungsgebäude' },
+    { value: 'Bildungsgebäude', label: 'Bildungsgebäude' },
+    { value: 'Forschungsgebäude', label: 'Forschungsgebäude' },
+    { value: 'Dienstleistungsgebäude', label: 'Dienstleistungsgebäude' },
+    { value: 'Wohngebäude', label: 'Wohngebäude' },
+    { value: 'Lagergebäude', label: 'Lagergebäude' },
+    { value: 'Produktionsgebäude', label: 'Produktionsgebäude' }
+];
+
 // === SECURITY UTILITIES ===
 
 /**
@@ -256,6 +266,8 @@ function setupTabGroup(tabAttribute, paneIdPrefix, paneIds = null, signal = null
     document.querySelectorAll(`.tabs__tab[${tabAttribute}]`).forEach(tab => {
         tab.addEventListener('click', (e) => {
             e.preventDefault();
+            // Block tab switching if tab is disabled (e.g. during inline editing)
+            if (tab.getAttribute('aria-disabled') === 'true') return;
             const tabName = tab.getAttribute(tabAttribute);
 
             // Update active tab within the same tab list
@@ -1429,7 +1441,7 @@ function openProjectDetail(projectId, skipHashUpdate = false) {
         if (overviewTab) overviewTab.classList.add('tabs__tab--active');
     }
     // Reset tab panes
-    ['tab-overview', 'tab-documents', 'tab-rules'].forEach(id => {
+    ['tab-overview', 'tab-documents', 'tab-rules', 'tab-settings'].forEach(id => {
         const pane = document.getElementById(id);
         if (pane) pane.classList.remove('tab-pane--active');
     });
@@ -1441,6 +1453,22 @@ function openProjectDetail(projectId, skipHashUpdate = false) {
         tabsContainer.querySelectorAll('.tabs__actions').forEach(a => a.style.display = 'none');
         const overviewActions = tabsContainer.querySelector('#tabs-actions-overview');
         if (overviewActions) overviewActions.style.display = 'flex';
+    }
+
+    // Reset inline edit mode if active
+    if (isOverviewEditing) {
+        isOverviewEditing = false;
+        const editBtnEl = document.getElementById('overview-edit-btn');
+        const saveBtnEl = document.getElementById('overview-save-btn');
+        const cancelBtnEl = document.getElementById('overview-cancel-btn');
+        if (editBtnEl) editBtnEl.style.display = '';
+        if (saveBtnEl) saveBtnEl.style.display = 'none';
+        if (cancelBtnEl) cancelBtnEl.style.display = 'none';
+        // Re-enable tabs
+        document.querySelectorAll('#view-building-detail .tabs__tab').forEach(tab => {
+            tab.classList.remove('tabs__tab--disabled');
+            tab.removeAttribute('aria-disabled');
+        });
     }
 
     // Update breadcrumb with project name
@@ -1463,11 +1491,19 @@ function openProjectDetail(projectId, skipHashUpdate = false) {
     scoreEl.className = `overview-kpi__value overview-kpi__value--${getScoreStatus(averageScore)}`;
 
     // Update KPIs
-    document.getElementById('project-sia-phase').textContent = currentProject.phase;
+    const projectDocumentIds = projectDocuments.map(d => d.id);
+
+    // Validation errors count for this project's documents
+    const errorCount = mockCheckingResults.filter(r => projectDocumentIds.includes(r.documentId) && r.severity === 'error').length;
+    const errorEl = document.getElementById('project-error-count');
+    if (errorEl) {
+        errorEl.textContent = errorCount;
+        errorEl.className = 'overview-kpi__value' + (errorCount > 0 ? ' overview-kpi__value--error' : ' overview-kpi__value--success');
+    }
+
     document.getElementById('project-document-count').textContent = projectDocuments.length;
 
     // Calculate room count from geometry for this project's documents
-    const projectDocumentIds = projectDocuments.map(d => d.id);
     const roomCount = mockGeometry.filter(g => g.type === 'room' && projectDocumentIds.includes(g.documentId)).length;
     document.getElementById('project-room-count').textContent = roomCount;
 
@@ -1507,68 +1543,306 @@ function openProjectDetail(projectId, skipHashUpdate = false) {
 
 // === OVERVIEW TAB ===
 
+let isOverviewEditing = false;
+
+// --- Inline edit helper functions ---
+
+function renderEditableField(id, label, value, type) {
+    return `
+        <div class="overview-detail-field">
+            <label class="overview-detail-field__label" for="${escapeHtml(id)}">${escapeHtml(label)}</label>
+            <input type="${type || 'text'}" class="form__input--inline" id="${escapeHtml(id)}" value="${escapeHtml(String(value || ''))}">
+        </div>`;
+}
+
+function renderSelectField(id, label, options, selectedValue) {
+    const optionsHtml = options.map(opt =>
+        `<option value="${escapeHtml(String(opt.value))}"${String(opt.value) === String(selectedValue) ? ' selected' : ''}>${escapeHtml(opt.label)}</option>`
+    ).join('');
+    return `
+        <div class="overview-detail-field">
+            <label class="overview-detail-field__label" for="${escapeHtml(id)}">${escapeHtml(label)}</label>
+            <select class="form__input--inline" id="${escapeHtml(id)}">${optionsHtml}</select>
+        </div>`;
+}
+
+function renderReadonlyField(label, value) {
+    return `
+        <div class="overview-detail-field">
+            <span class="overview-detail-field__label">${escapeHtml(label)}</span>
+            <span class="overview-detail-field__value">${escapeHtml(String(value || '–'))}</span>
+        </div>`;
+}
+
+function renderReadonlyFieldWithId(id, label, value) {
+    return `
+        <div class="overview-detail-field">
+            <span class="overview-detail-field__label">${escapeHtml(label)}</span>
+            <span class="overview-detail-field__value" id="${escapeHtml(id)}">${escapeHtml(String(value || '–'))}</span>
+        </div>`;
+}
+
+function renderAddressDisplayFields(project) {
+    const address = [
+        ((project.street || '') + ' ' + (project.streetNumber || '')).trim(),
+        ((project.zip || '') + ' ' + (project.city || '')).trim(),
+        project.canton || '',
+        project.country || ''
+    ].filter(s => s).join(', ');
+
+    return `
+        <div class="overview-detail-field overview-detail-field--wide">
+            <span class="overview-detail-field__label">${escapeHtml(I18n.t('overview.address'))}</span>
+            <span class="overview-detail-field__value" id="edit-address-display">${escapeHtml(address || '–')}</span>
+        </div>`;
+}
+
+function stripHtmlTags(html) {
+    if (!html) return '';
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || '';
+}
+
+function renderDangerZoneCard() {
+    return `
+        <div class="overview-card overview-card--danger">
+            <h3 class="overview-card__title overview-card__title--danger">${escapeHtml(I18n.t('settings.dangerZone'))}</h3>
+            <div class="settings-danger__item">
+                <div class="settings-danger__text">
+                    <p class="settings-danger__label">${escapeHtml(I18n.t('settings.archiveProject'))}</p>
+                    <p class="settings-danger__description">${escapeHtml(I18n.t('settings.archiveDescription'))}</p>
+                </div>
+                <button type="button" class="btn btn--outline-danger btn--sm" id="inline-archive-btn">${escapeHtml(I18n.t('settings.archive'))}</button>
+            </div>
+            <hr class="settings-danger__divider">
+            <div class="settings-danger__item">
+                <div class="settings-danger__text">
+                    <p class="settings-danger__label">${escapeHtml(I18n.t('settings.deleteProject'))}</p>
+                    <p class="settings-danger__description">${escapeHtml(I18n.t('settings.deleteDescription'))}</p>
+                </div>
+                <button type="button" class="btn btn--danger btn--sm" id="inline-delete-btn">${escapeHtml(I18n.t('action.delete'))}</button>
+            </div>
+        </div>`;
+}
+
+// --- Overview edit mode toggle functions ---
+
+let _overviewSnapshot = null;
+
+function enterOverviewEditMode() {
+    isOverviewEditing = true;
+
+    // Snapshot address/EGID/EGRID/coordinates for cancel restore
+    if (currentProject) {
+        _overviewSnapshot = {
+            street: currentProject.street,
+            streetNumber: currentProject.streetNumber,
+            zip: currentProject.zip,
+            city: currentProject.city,
+            canton: currentProject.canton,
+            country: currentProject.country,
+            egid: currentProject.egid,
+            egrid: currentProject.egrid,
+            coordinates: currentProject.coordinates ? [...currentProject.coordinates] : null
+        };
+    }
+
+    // Toggle button visibility
+    const editBtn = document.getElementById('overview-edit-btn');
+    const saveBtn = document.getElementById('overview-save-btn');
+    const cancelBtn = document.getElementById('overview-cancel-btn');
+    if (editBtn) editBtn.style.display = 'none';
+    if (saveBtn) saveBtn.style.display = '';
+    if (cancelBtn) cancelBtn.style.display = '';
+
+    // Re-render overview in edit mode
+    renderOverview(true);
+
+    // Disable other tabs while editing
+    document.querySelectorAll('#view-building-detail .tabs__tab').forEach(tab => {
+        if (tab.getAttribute('data-tab') !== 'overview') {
+            tab.classList.add('tabs__tab--disabled');
+            tab.setAttribute('aria-disabled', 'true');
+        }
+    });
+}
+
+function exitOverviewEditMode(saved) {
+    isOverviewEditing = false;
+
+    // Toggle button visibility
+    const editBtn = document.getElementById('overview-edit-btn');
+    const saveBtn = document.getElementById('overview-save-btn');
+    const cancelBtn = document.getElementById('overview-cancel-btn');
+    if (editBtn) editBtn.style.display = '';
+    if (saveBtn) saveBtn.style.display = 'none';
+    if (cancelBtn) cancelBtn.style.display = 'none';
+
+    // Re-render overview in display mode
+    renderOverview(false);
+
+    // Re-enable other tabs
+    document.querySelectorAll('#view-building-detail .tabs__tab').forEach(tab => {
+        tab.classList.remove('tabs__tab--disabled');
+        tab.removeAttribute('aria-disabled');
+    });
+
+    if (!saved && _overviewSnapshot && currentProject) {
+        Object.assign(currentProject, _overviewSnapshot);
+        showToast(I18n.t('toast.changesDiscarded'), 'info');
+    }
+    _overviewSnapshot = null;
+}
+
+function saveOverviewChanges() {
+    if (!currentProject) return;
+
+    const getVal = (id) => document.getElementById(id)?.value ?? '';
+
+    // Projektdetails fields
+    currentProject.phase = getVal('edit-phase');
+    currentProject.status = getVal('edit-status');
+    currentProject.language = getVal('edit-language');
+    currentProject.ruleSetId = parseInt(getVal('edit-ruleset'), 10);
+
+    // Gebäude Stammdaten — only building type is editable via select
+    // Name, Internal ID, Address, EGID, EGRID are read-only (set by map search)
+    currentProject.buildingType = getVal('edit-building-type');
+
+    // Refresh breadcrumb and header
+    const breadcrumbEl = document.getElementById('breadcrumb-building-name');
+    if (breadcrumbEl) {
+        breadcrumbEl.textContent = currentProject.internalId + ' – ' + currentProject.name;
+    }
+
+    showToast(I18n.t('toast.settingsSaved'), 'success');
+}
+
 /**
  * Renders the overview tab content: building data, project details, team, photo, and map
+ * @param {boolean} editing - If true, renders editable form fields instead of static values
  */
-function renderOverview() {
+function renderOverview(editing = false) {
     if (!currentProject) return;
 
     // Photo carousel
     const images = currentProject.imageUrls || (currentProject.imageUrl ? [currentProject.imageUrl] : []);
     initOverviewCarousel(images, currentProject.name || '');
 
+    // Photo toolbar icons (edit mode only — top-right corner of carousel)
+    const carouselEl = document.getElementById('overview-carousel');
+    const existingToolbar = document.getElementById('overview-photo-toolbar');
+    if (existingToolbar) existingToolbar.remove();
+
+    if (editing && carouselEl) {
+        const toolbarHtml = `
+            <div class="overview-photo-toolbar" id="overview-photo-toolbar">
+                <label class="overview-photo-toolbar__btn" for="overview-image-input" title="${escapeHtml(I18n.t('settings.addImage'))}">
+                    <i data-lucide="plus" class="icon icon-sm" aria-hidden="true"></i>
+                </label>
+                <label class="overview-photo-toolbar__btn" for="overview-image-replace" title="${escapeHtml(I18n.t('settings.changeImage'))}">
+                    <i data-lucide="repeat" class="icon icon-sm" aria-hidden="true"></i>
+                </label>
+                <button class="overview-photo-toolbar__btn" id="overview-image-remove" type="button" title="${escapeHtml(I18n.t('action.delete'))}">
+                    <i data-lucide="trash-2" class="icon icon-sm" aria-hidden="true"></i>
+                </button>
+                <input type="file" id="overview-image-input" accept="image/*" class="sr-only">
+                <input type="file" id="overview-image-replace" accept="image/*" class="sr-only">
+            </div>`;
+        carouselEl.insertAdjacentHTML('beforeend', toolbarHtml);
+        setupInlineImageHandlers();
+    }
+
     // Gebäude Stammdaten
     const buildingDataEl = document.getElementById('overview-building-data');
     if (buildingDataEl) {
-        const address = [
-            currentProject.street + ' ' + currentProject.streetNumber,
-            currentProject.zip + ' ' + currentProject.city,
-            currentProject.canton,
-            currentProject.country
-        ].filter(Boolean).join(', ');
+        if (editing) {
+            buildingDataEl.innerHTML =
+                renderReadonlyFieldWithId('edit-name', I18n.t('overview.designation'), currentProject.name)
+                + renderReadonlyFieldWithId('edit-internal-id', I18n.t('overview.internalId'), currentProject.internalId)
+                + renderSelectField('edit-building-type', I18n.t('overview.buildingType'), BUILDING_TYPE_OPTIONS, currentProject.buildingType)
+                + renderAddressDisplayFields(currentProject)
+                + renderReadonlyFieldWithId('edit-egid', 'EGID', currentProject.egid)
+                + renderReadonlyFieldWithId('edit-egrid', 'EGRID', currentProject.egrid)
+                + renderReadonlyFieldWithId('edit-coordinates', I18n.t('overview.coordinates'),
+                    currentProject.coordinates ? currentProject.coordinates[0].toFixed(6) + ', ' + currentProject.coordinates[1].toFixed(6) : null);
+        } else {
+            const address = [
+                currentProject.street + ' ' + currentProject.streetNumber,
+                currentProject.zip + ' ' + currentProject.city,
+                currentProject.canton,
+                currentProject.country
+            ].filter(Boolean).join(', ');
 
-        buildingDataEl.innerHTML = [
-            { label: I18n.t('overview.designation'), value: currentProject.name },
-            { label: I18n.t('overview.internalId'), value: currentProject.internalId },
-            { label: I18n.t('overview.buildingType'), value: currentProject.buildingType },
-            { label: I18n.t('overview.address'), value: address },
-            { label: 'EGID', value: currentProject.egid },
-            { label: 'EGRID', value: currentProject.egrid }
-        ].map(f => `
-            <div class="overview-detail-field">
-                <span class="overview-detail-field__label">${escapeHtml(f.label)}</span>
-                <span class="overview-detail-field__value">${escapeHtml(String(f.value || '–'))}</span>
-            </div>
-        `).join('');
+            buildingDataEl.innerHTML = [
+                { label: I18n.t('overview.designation'), value: currentProject.name },
+                { label: I18n.t('overview.internalId'), value: currentProject.internalId },
+                { label: I18n.t('overview.buildingType'), value: currentProject.buildingType },
+                { label: I18n.t('overview.address'), value: address },
+                { label: 'EGID', value: currentProject.egid },
+                { label: 'EGRID', value: currentProject.egrid },
+                { label: I18n.t('overview.coordinates'), value: currentProject.coordinates ? currentProject.coordinates[0].toFixed(6) + ', ' + currentProject.coordinates[1].toFixed(6) : null }
+            ].map(f => `
+                <div class="overview-detail-field">
+                    <span class="overview-detail-field__label">${escapeHtml(f.label)}</span>
+                    <span class="overview-detail-field__value">${escapeHtml(String(f.value || '–'))}</span>
+                </div>
+            `).join('');
+        }
     }
 
     // Projektdetails
     const projectDetailsEl = document.getElementById('overview-project-details');
     if (projectDetailsEl) {
-        const siaPhaseText = I18n.t(`siaPhase.${currentProject.phase}`);
-        const statusText = I18n.t(currentProject.status === 'active' ? 'filter.active' : 'filter.completed');
-        const langText = I18n.t(`projectLang.${currentProject.language}`);
-
-        const ruleSet = mockRuleSets.find(rs => rs.id === currentProject.ruleSetId);
-        const ruleSetName = ruleSet ? ruleSet.name : '–';
-
         const createdDate = new Date(currentProject.createdDate).toLocaleDateString('de-CH');
         const creator = getUserById(currentProject.createdBy);
         const creatorName = creator ? creator.name : '–';
 
-        projectDetailsEl.innerHTML = [
-            { label: I18n.t('detail.siaPhase'), value: siaPhaseText },
-            { label: I18n.t('settings.status'), value: statusText },
-            { label: I18n.t('settings.language'), value: langText },
-            { label: I18n.t('settings.ruleSet'), value: ruleSetName },
-            { label: I18n.t('overview.created'), value: createdDate },
-            { label: I18n.t('overview.createdBy'), value: creatorName }
-        ].map(f => `
-            <div class="overview-detail-field">
-                <span class="overview-detail-field__label">${escapeHtml(f.label)}</span>
-                <span class="overview-detail-field__value">${escapeHtml(String(f.value || '–'))}</span>
-            </div>
-        `).join('');
+        if (editing) {
+            const siaOptions = ['31','32','33','41','51','52','53'].map(v => ({
+                value: v, label: I18n.t(`siaPhase.${v}`)
+            }));
+            const statusOptions = [
+                { value: 'active', label: I18n.t('filter.active') },
+                { value: 'completed', label: I18n.t('filter.completed') }
+            ];
+            const langOptions = [
+                { value: 'de', label: I18n.t('projectLang.de') },
+                { value: 'fr', label: I18n.t('projectLang.fr') },
+                { value: 'it', label: I18n.t('projectLang.it') }
+            ];
+            const ruleSetOptions = mockRuleSets.map(rs => ({ value: rs.id, label: rs.name }));
+
+            projectDetailsEl.innerHTML =
+                renderSelectField('edit-phase', I18n.t('detail.siaPhase'), siaOptions, currentProject.phase)
+                + renderSelectField('edit-status', I18n.t('settings.status'), statusOptions, currentProject.status)
+                + renderSelectField('edit-language', I18n.t('settings.language'), langOptions, currentProject.language)
+                + renderSelectField('edit-ruleset', I18n.t('settings.ruleSet'), ruleSetOptions, currentProject.ruleSetId)
+                + renderReadonlyField(I18n.t('overview.created'), createdDate)
+                + renderReadonlyField(I18n.t('overview.createdBy'), creatorName);
+        } else {
+            const siaPhaseText = I18n.t(`siaPhase.${currentProject.phase}`);
+            const statusText = I18n.t(currentProject.status === 'active' ? 'filter.active' : 'filter.completed');
+            const langText = I18n.t(`projectLang.${currentProject.language}`);
+
+            const ruleSet = mockRuleSets.find(rs => rs.id === currentProject.ruleSetId);
+            const ruleSetName = ruleSet ? ruleSet.name : '–';
+
+            projectDetailsEl.innerHTML = [
+                { label: I18n.t('detail.siaPhase'), value: siaPhaseText },
+                { label: I18n.t('settings.status'), value: statusText },
+                { label: I18n.t('settings.language'), value: langText },
+                { label: I18n.t('settings.ruleSet'), value: ruleSetName },
+                { label: I18n.t('overview.created'), value: createdDate },
+                { label: I18n.t('overview.createdBy'), value: creatorName }
+            ].map(f => `
+                <div class="overview-detail-field">
+                    <span class="overview-detail-field__label">${escapeHtml(f.label)}</span>
+                    <span class="overview-detail-field__value">${escapeHtml(String(f.value || '–'))}</span>
+                </div>
+            `).join('');
+        }
     }
 
     // Team
@@ -1577,32 +1851,195 @@ function renderOverview() {
     if (teamListEl && currentProject.users) {
         const teamMembers = currentProject.users.map(u => {
             const user = getUserById(u.userId);
-            return user ? { ...user, role: u.role } : null;
+            return user ? { ...user, role: u.role, assignmentUserId: u.userId } : null;
         }).filter(Boolean);
 
         if (teamTitleEl) {
             teamTitleEl.textContent = `Team (${teamMembers.length})`;
         }
 
-        teamListEl.innerHTML = teamMembers.map(member => {
-            const initials = member.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-            const roleKey = `role.${member.role.toLowerCase()}`;
-            const roleText = I18n.t(roleKey);
-            return `
-                <div class="overview-team-row">
-                    <span class="overview-team-row__avatar">${escapeHtml(initials)}</span>
-                    <span class="overview-team-row__name">${escapeHtml(member.name)}</span>
-                    <span class="overview-team-row__role">${escapeHtml(roleText)}</span>
-                </div>
-            `;
-        }).join('');
+        if (editing) {
+            teamListEl.innerHTML = teamMembers.map(member => {
+                const initials = member.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                const roleKey = `role.${member.role.toLowerCase()}`;
+                const roleText = I18n.t(roleKey);
+                return `
+                    <div class="overview-team-row">
+                        <span class="overview-team-row__avatar">${escapeHtml(initials)}</span>
+                        <div class="overview-team-row__info">
+                            <span class="overview-team-row__name">${escapeHtml(member.name)}</span>
+                            <span class="overview-team-row__email">${escapeHtml(member.email || '')}</span>
+                        </div>
+                        <span class="overview-team-row__role">${escapeHtml(roleText)}</span>
+                        <button type="button" class="overview-team-row__remove" data-user-id="${member.assignmentUserId}" title="${escapeHtml(I18n.t('action.delete'))}">
+                            <i data-lucide="x" class="icon icon-sm" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+
+            // Wire up remove buttons
+            teamListEl.querySelectorAll('.overview-team-row__remove').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const userId = parseInt(btn.dataset.userId, 10);
+                    if (!currentProject || !currentProject.users) return;
+                    const idx = currentProject.users.findIndex(u => u.userId === userId);
+                    if (idx !== -1) {
+                        const user = getUserById(userId);
+                        currentProject.users.splice(idx, 1);
+                        renderOverview(true); // re-render in edit mode
+                        if (user) {
+                            showToast(I18n.t('toast.usersRemoved', { count: 1 }), 'success');
+                        }
+                    }
+                });
+            });
+        } else {
+            teamListEl.innerHTML = teamMembers.map(member => {
+                const initials = member.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                const roleKey = `role.${member.role.toLowerCase()}`;
+                const roleText = I18n.t(roleKey);
+                return `
+                    <div class="overview-team-row">
+                        <span class="overview-team-row__avatar">${escapeHtml(initials)}</span>
+                        <span class="overview-team-row__name">${escapeHtml(member.name)}</span>
+                        <span class="overview-team-row__role">${escapeHtml(roleText)}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+    }
+
+    // Danger zone (edit mode only) — appended to left column
+    const leftCol = document.querySelector('#tab-overview .overview-col-left');
+    const existingDanger = leftCol?.querySelector('.overview-card--danger');
+    if (existingDanger) existingDanger.remove();
+
+    if (editing && leftCol) {
+        leftCol.insertAdjacentHTML('beforeend', renderDangerZoneCard());
+        setupInlineDangerHandlers();
     }
 
     // Initialize overview map
     initOverviewMap();
 
+    // Map search overlay (edit mode only)
+    const mapCard = document.querySelector('#tab-overview .overview-card--map');
+    const existingSearch = document.getElementById('map-search-overlay');
+    if (existingSearch) existingSearch.remove();
+
+    if (editing && mapCard) {
+        const searchHtml = `
+            <div class="map-search" id="map-search-overlay">
+                <div class="map-search__wrapper">
+                    <div class="map-search__results" id="map-search-results"></div>
+                    <i data-lucide="search" class="icon icon-sm map-search__icon" aria-hidden="true"></i>
+                    <input type="text" class="map-search__input" id="map-search-input"
+                           placeholder="${escapeHtml(I18n.t('overview.searchAddress'))}" autocomplete="off">
+                </div>
+            </div>`;
+        mapCard.insertAdjacentHTML('beforeend', searchHtml);
+        initMapSearch();
+    }
+
     // Initialize Lucide icons for new content
     initLucideIcons(document.getElementById('tab-overview'));
+}
+
+/**
+ * Sets up image add/remove handlers for inline edit mode
+ */
+function setupInlineImageHandlers() {
+    const addInput = document.getElementById('overview-image-input');
+    const replaceInput = document.getElementById('overview-image-replace');
+    const removeBtn = document.getElementById('overview-image-remove');
+
+    function getActiveSlideIndex() {
+        const dots = document.querySelectorAll('#carousel-dots .overview-carousel__dot');
+        let activeIdx = 0;
+        dots.forEach((dot, i) => {
+            if (dot.classList.contains('overview-carousel__dot--active')) activeIdx = i;
+        });
+        return activeIdx;
+    }
+
+    // Add new image to gallery
+    if (addInput) {
+        addInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file || !currentProject) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                if (!currentProject.imageUrls) currentProject.imageUrls = [];
+                currentProject.imageUrls.push(ev.target.result);
+                initOverviewCarousel(currentProject.imageUrls, currentProject.name || '');
+            };
+            reader.readAsDataURL(file);
+            addInput.value = '';
+        });
+    }
+
+    // Replace current slide image
+    if (replaceInput) {
+        replaceInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file || !currentProject || !currentProject.imageUrls) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const idx = getActiveSlideIndex();
+                currentProject.imageUrls[idx] = ev.target.result;
+                initOverviewCarousel(currentProject.imageUrls, currentProject.name || '');
+            };
+            reader.readAsDataURL(file);
+            replaceInput.value = '';
+        });
+    }
+
+    // Delete current slide
+    if (removeBtn) {
+        removeBtn.addEventListener('click', () => {
+            if (!currentProject || !currentProject.imageUrls || currentProject.imageUrls.length <= 1) {
+                showToast(I18n.t('toast.changesDiscarded'), 'info');
+                return;
+            }
+            const idx = getActiveSlideIndex();
+            currentProject.imageUrls.splice(idx, 1);
+            initOverviewCarousel(currentProject.imageUrls, currentProject.name || '');
+        });
+    }
+}
+
+/**
+ * Sets up archive/delete handlers for inline danger zone in edit mode
+ */
+function setupInlineDangerHandlers() {
+    const archiveBtn = document.getElementById('inline-archive-btn');
+    const deleteBtn = document.getElementById('inline-delete-btn');
+
+    if (archiveBtn) {
+        archiveBtn.addEventListener('click', () => {
+            if (!currentProject) return;
+            currentProject.status = 'completed';
+            exitOverviewEditMode(true);
+            openProjectDetail(currentProject.id, true);
+            showToast(I18n.t('toast.projectArchived'), 'success');
+        });
+    }
+
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', () => {
+            if (!currentProject) return;
+            const idx = mockProjects.findIndex(p => p.id === currentProject.id);
+            if (idx !== -1) {
+                mockProjects.splice(idx, 1);
+                currentProject = null;
+                isOverviewEditing = false;
+                switchView('buildings');
+                renderProjects();
+                showToast(I18n.t('toast.projectDeleted'), 'success');
+            }
+        });
+    }
 }
 
 /**
@@ -1774,16 +2211,226 @@ function initOverviewMap() {
     });
 
     map.addControl(new maplibregl.NavigationControl(), 'top-right');
+    map.addControl(new maplibregl.ScaleControl({ maxWidth: 100, unit: 'metric' }), 'bottom-left');
 
-    new maplibregl.Marker({ color: '#dc0018' })
+    const marker = new maplibregl.Marker({ color: '#dc0018' })
         .setLngLat([lng, lat])
         .addTo(map);
+
+    mapContainer._marker = marker;
+
+    // Set Google Maps link
+    updateGoogleMapsLink(lat, lng);
 
     // Resize after layout settles so the map fills its container
     map.on('load', () => map.resize());
     requestAnimationFrame(() => map.resize());
 
     mapContainer._mapInstance = map;
+}
+
+/**
+ * Updates the Google Maps link with current coordinates
+ */
+function updateGoogleMapsLink(lat, lng) {
+    const link = document.getElementById('map-google-link');
+    if (link) {
+        link.href = `https://www.google.com/maps?q=${lat},${lng}`;
+    }
+}
+
+/**
+ * Searches the Swisstopo geocoding API for Swiss addresses
+ */
+async function searchSwisstopoAddress(query) {
+    if (!query || query.length < 3) return [];
+
+    const url = `https://api3.geo.admin.ch/rest/services/ech/SearchServer?searchText=${encodeURIComponent(query)}&type=locations&origins=address&sr=4326&limit=3`;
+
+    try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+
+        return (data.results || []).map(r => ({
+            label: stripHtmlTags(r.attrs?.label || ''),
+            lat: r.attrs?.lat,
+            lon: r.attrs?.lon,
+            featureId: r.attrs?.featureId
+        }));
+    } catch (error) {
+        console.error('[MapSearch] Address search failed:', error);
+        return [];
+    }
+}
+
+/**
+ * Fetches EGID, EGRID & address components from the Swiss GWR register
+ */
+async function fetchBuildingDetails(featureId) {
+    if (!featureId) return null;
+
+    const url = `https://api3.geo.admin.ch/rest/services/ech/MapServer/ch.bfs.gebaeude_wohnungs_register/${encodeURIComponent(featureId)}`;
+
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            if (response.status === 404) return null;
+            throw new Error(`HTTP ${response.status}`);
+        }
+        const data = await response.json();
+        const attrs = data.feature?.attributes || {};
+
+        return {
+            egid: attrs.egid || null,
+            egrid: attrs.egrid || null,
+            streetAndNumber: attrs.strname_deinr || null,
+            zip: attrs.dplz4 ? String(attrs.dplz4) : null,
+            city: attrs.ggdename || null,
+            canton: attrs.gdekt || null
+        };
+    } catch (error) {
+        console.error('[MapSearch] Building detail fetch failed:', error);
+        return null;
+    }
+}
+
+/**
+ * Pans the overview map and moves the marker to new coordinates
+ */
+function updateMapPosition(lng, lat) {
+    const mapContainer = document.getElementById('overview-map');
+    if (!mapContainer || !mapContainer._mapInstance) return;
+
+    const map = mapContainer._mapInstance;
+
+    if (mapContainer._marker) {
+        mapContainer._marker.remove();
+    }
+
+    const marker = new maplibregl.Marker({ color: '#dc0018' })
+        .setLngLat([lng, lat])
+        .addTo(map);
+
+    mapContainer._marker = marker;
+    map.flyTo({ center: [lng, lat], zoom: 15 });
+    updateGoogleMapsLink(lat, lng);
+}
+
+/**
+ * Refreshes the read-only address and EGID/EGRID display fields from currentProject
+ */
+function updateAddressDisplay() {
+    const addressEl = document.getElementById('edit-address-display');
+    const egidEl = document.getElementById('edit-egid');
+    const egridEl = document.getElementById('edit-egrid');
+
+    if (addressEl) {
+        const address = [
+            ((currentProject.street || '') + ' ' + (currentProject.streetNumber || '')).trim(),
+            ((currentProject.zip || '') + ' ' + (currentProject.city || '')).trim(),
+            currentProject.canton || '',
+            currentProject.country || ''
+        ].filter(s => s).join(', ');
+        addressEl.textContent = address || '–';
+    }
+
+    if (egidEl) egidEl.textContent = currentProject.egid || '–';
+    if (egridEl) egridEl.textContent = currentProject.egrid || '–';
+
+    const coordsEl = document.getElementById('edit-coordinates');
+    if (coordsEl) {
+        coordsEl.textContent = currentProject.coordinates
+            ? currentProject.coordinates[0].toFixed(6) + ', ' + currentProject.coordinates[1].toFixed(6)
+            : '–';
+    }
+}
+
+/**
+ * Initializes the map search overlay: debounced input, results dropdown, selection handler
+ */
+function initMapSearch() {
+    const input = document.getElementById('map-search-input');
+    const resultsContainer = document.getElementById('map-search-results');
+    if (!input || !resultsContainer) return;
+
+    let currentResults = [];
+
+    const performSearch = debounce(async (query) => {
+        if (query.length < 3) {
+            resultsContainer.classList.remove('map-search__results--visible');
+            resultsContainer.innerHTML = '';
+            return;
+        }
+
+        // Loading state
+        resultsContainer.innerHTML = `<div class="map-search__result-item map-search__result-item--loading">${escapeHtml(I18n.t('overview.searching'))}</div>`;
+        resultsContainer.classList.add('map-search__results--visible');
+
+        currentResults = await searchSwisstopoAddress(query);
+
+        if (currentResults.length === 0) {
+            resultsContainer.innerHTML = `<div class="map-search__result-item map-search__result-item--loading">${escapeHtml(I18n.t('overview.noResults'))}</div>`;
+            return;
+        }
+
+        resultsContainer.innerHTML = currentResults.map((result, index) =>
+            `<div class="map-search__result-item" data-index="${index}" tabindex="0">${escapeHtml(result.label)}</div>`
+        ).join('');
+
+        resultsContainer.querySelectorAll('.map-search__result-item[data-index]').forEach(item => {
+            item.addEventListener('click', () => selectSearchResult(parseInt(item.dataset.index, 10)));
+            item.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') selectSearchResult(parseInt(item.dataset.index, 10));
+            });
+        });
+    }, CONFIG.SEARCH_DEBOUNCE_MS);
+
+    input.addEventListener('input', (e) => {
+        performSearch(e.target.value.trim());
+    });
+
+    // Close results on click outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('#map-search-overlay')) {
+            resultsContainer.classList.remove('map-search__results--visible');
+        }
+    });
+
+    async function selectSearchResult(index) {
+        const result = currentResults[index];
+        if (!result) return;
+
+        input.value = result.label;
+        resultsContainer.classList.remove('map-search__results--visible');
+
+        // Move map
+        updateMapPosition(result.lon, result.lat);
+        currentProject.coordinates = [result.lon, result.lat];
+
+        // Fetch EGID/EGRID from GWR
+        const details = await fetchBuildingDetails(result.featureId);
+
+        if (details) {
+            if (details.streetAndNumber) {
+                const match = details.streetAndNumber.match(/^(.+?)\s+(\d+\w*)$/);
+                if (match) {
+                    currentProject.street = match[1];
+                    currentProject.streetNumber = match[2];
+                } else {
+                    currentProject.street = details.streetAndNumber;
+                    currentProject.streetNumber = '';
+                }
+            }
+            if (details.zip) currentProject.zip = details.zip;
+            if (details.city) currentProject.city = details.city;
+            if (details.canton) currentProject.canton = details.canton;
+            if (details.egid) currentProject.egid = details.egid;
+            if (details.egrid) currentProject.egrid = details.egrid;
+        }
+
+        updateAddressDisplay();
+    }
 }
 
 // === DOCUMENT SELECTION STATE ===
@@ -2194,32 +2841,27 @@ function setupUserActions() {
         });
     }
 
-    // Overview edit button — show settings pane inline
+    // Overview edit button — inline edit mode within the overview tab
     const overviewEditBtn = safeGetElementById('overview-edit-btn');
+    const overviewSaveBtn = safeGetElementById('overview-save-btn');
+    const overviewCancelBtn = safeGetElementById('overview-cancel-btn');
+
     if (overviewEditBtn) {
         overviewEditBtn.addEventListener('click', () => {
-            const overviewPane = document.getElementById('tab-overview');
-            const settingsPane = document.getElementById('tab-settings');
-            if (!overviewPane || !settingsPane) return;
+            enterOverviewEditMode();
+        });
+    }
 
-            const isEditing = settingsPane.classList.contains('tab-pane--active');
-            if (isEditing) {
-                // Switch back to overview
-                settingsPane.classList.remove('tab-pane--active');
-                overviewPane.classList.add('tab-pane--active');
-                overviewEditBtn.querySelector('span').textContent = I18n.t('action.edit');
-                overviewEditBtn.querySelector('[data-lucide]')?.setAttribute('data-lucide', 'pencil');
-                initLucideIcons(overviewEditBtn);
-                renderOverview();
-            } else {
-                // Switch to settings (edit mode)
-                overviewPane.classList.remove('tab-pane--active');
-                settingsPane.classList.add('tab-pane--active');
-                populateSettings();
-                overviewEditBtn.querySelector('span').textContent = I18n.t('action.cancel');
-                overviewEditBtn.querySelector('[data-lucide]')?.setAttribute('data-lucide', 'x');
-                initLucideIcons(overviewEditBtn);
-            }
+    if (overviewCancelBtn) {
+        overviewCancelBtn.addEventListener('click', () => {
+            exitOverviewEditMode(false);
+        });
+    }
+
+    if (overviewSaveBtn) {
+        overviewSaveBtn.addEventListener('click', () => {
+            saveOverviewChanges();
+            exitOverviewEditMode(true);
         });
     }
 

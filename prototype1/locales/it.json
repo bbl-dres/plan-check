@@ -88,6 +88,7 @@
   "breadcrumb.backToOverview": "Torna alla panoramica",
 
   "detail.avgScore": "Score medio",
+  "detail.errors": "Errori",
   "detail.siaPhase": "Fase SIA",
   "detail.floorPlans": "Piante",
   "detail.rooms": "Locali",
@@ -105,8 +106,12 @@
   "overview.internalId": "ID interno",
   "overview.buildingType": "Tipo edificio",
   "overview.address": "Indirizzo",
+  "overview.coordinates": "Coordinate",
   "overview.created": "Creato",
   "overview.createdBy": "Creato da",
+  "overview.searchAddress": "Cerca indirizzo...",
+  "overview.searching": "Ricerca...",
+  "overview.noResults": "Nessun risultato",
 
   "action.edit": "Modifica",
   "action.delete": "Elimina",
@@ -180,6 +185,7 @@
   "settings.status": "Stato",
   "settings.projectImage": "Immagine del progetto",
   "settings.changeImage": "Cambia immagine",
+  "settings.addImage": "Aggiungi immagine",
   "settings.imageHint": "Dimensione consigliata: 800 × 450 px",
   "settings.imageSizeHint": "Dimensione consigliata: 800 × 450 px",
   "settings.ruleSet": "Set di regole",

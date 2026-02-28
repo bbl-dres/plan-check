@@ -88,6 +88,7 @@
   "breadcrumb.backToOverview": "Back to Overview",
 
   "detail.avgScore": "Avg. Score",
+  "detail.errors": "Errors",
   "detail.siaPhase": "SIA Phase",
   "detail.floorPlans": "Floor Plans",
   "detail.rooms": "Rooms",
@@ -105,8 +106,12 @@
   "overview.internalId": "Internal ID",
   "overview.buildingType": "Building Type",
   "overview.address": "Address",
+  "overview.coordinates": "Coordinates",
   "overview.created": "Created",
   "overview.createdBy": "Created by",
+  "overview.searchAddress": "Search address...",
+  "overview.searching": "Searching...",
+  "overview.noResults": "No results",
 
   "action.edit": "Edit",
   "action.delete": "Delete",
@@ -180,6 +185,7 @@
   "settings.status": "Status",
   "settings.projectImage": "Project Image",
   "settings.changeImage": "Change Image",
+  "settings.addImage": "Add Image",
   "settings.imageHint": "Recommended size: 800 × 450 px",
   "settings.imageSizeHint": "Recommended size: 800 × 450 px",
   "settings.ruleSet": "Rule Set",

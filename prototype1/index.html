@@ -9,15 +9,14 @@
         style-src 'self' 'unsafe-inline' https://unpkg.com;
         img-src 'self' data: https://images.unsplash.com https://*.basemaps.cartocdn.com;
         font-src 'self';
-        connect-src 'self' https://unpkg.com https://*.basemaps.cartocdn.com https://basemaps.cartocdn.com;
+        connect-src 'self' https://unpkg.com https://*.basemaps.cartocdn.com https://basemaps.cartocdn.com https://api3.geo.admin.ch;
         worker-src blob:;
         base-uri 'self';
         form-action 'self';
     ">
     <title data-i18n="app.pageTitle">BBL Plan-Check Flächenmanagement</title>
-    <link rel="stylesheet" href="../css/tokens.css">
-    <link rel="stylesheet" href="../css/styles.css">
-    <link rel="stylesheet" href="../css/prototype1.css">
+    <link rel="stylesheet" href="css/tokens.css">
+    <link rel="stylesheet" href="css/styles.css">
     <script src="https://unpkg.com/lucide@0.562.0/dist/umd/lucide.min.js" integrity="sha384-FmRlymRnpgjuKyAnwH4DftRjl+RqHOlfcw9k4xcpPyovclg/2RZRrvw7qe1koVCP" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" crossorigin="anonymous">
     <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js" crossorigin="anonymous"></script>
@@ -293,6 +292,14 @@
                                 <i data-lucide="pencil" class="icon icon-sm" aria-hidden="true"></i>
                                 <span data-i18n="action.edit">Bearbeiten</span>
                             </button>
+                            <button class="btn btn--secondary btn--sm" id="overview-cancel-btn" style="display:none">
+                                <i data-lucide="x" class="icon icon-sm" aria-hidden="true"></i>
+                                <span data-i18n="action.cancel">Abbrechen</span>
+                            </button>
+                            <button class="btn btn--primary btn--sm" id="overview-save-btn" style="display:none">
+                                <i data-lucide="check" class="icon icon-sm" aria-hidden="true"></i>
+                                <span data-i18n="action.save">Speichern</span>
+                            </button>
                         </div>
                         <div class="tabs__actions" id="tabs-actions-documents" style="display: none;">
                             <button class="btn btn--secondary btn--sm" id="edit-document-btn" disabled>
@@ -318,8 +325,8 @@
                             <span class="overview-kpi__label" data-i18n="detail.avgScore">Ø Score</span>
                         </div>
                         <div class="overview-kpi">
-                            <span class="overview-kpi__value" id="project-sia-phase">–</span>
-                            <span class="overview-kpi__label" data-i18n="detail.siaPhase">SIA Phase</span>
+                            <span class="overview-kpi__value" id="project-error-count">0</span>
+                            <span class="overview-kpi__label" data-i18n="detail.errors">Fehler</span>
                         </div>
                         <div class="overview-kpi">
                             <span class="overview-kpi__value" id="project-document-count">0</span>
@@ -374,6 +381,12 @@
                                 </div>
                                 <div class="overview-card overview-card--map">
                                     <div id="overview-map" class="overview-map"></div>
+                                    <div class="map-footer">
+                                        <a class="map-footer__link" id="map-google-link" href="#" target="_blank" rel="noopener noreferrer">
+                                            <i data-lucide="external-link" class="icon icon-sm" aria-hidden="true"></i>
+                                            In Google Maps ansehen
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>

@@ -88,6 +88,7 @@
   "breadcrumb.backToOverview": "Zurück zur Übersicht",
 
   "detail.avgScore": "Ø Score",
+  "detail.errors": "Fehler",
   "detail.siaPhase": "SIA Phase",
   "detail.floorPlans": "Grundrisse",
   "detail.rooms": "Räume",
@@ -105,8 +106,12 @@
   "overview.internalId": "Interne ID",
   "overview.buildingType": "Gebäudetyp",
   "overview.address": "Adresse",
+  "overview.coordinates": "Koordinaten",
   "overview.created": "Erstellt",
   "overview.createdBy": "Erstellt von",
+  "overview.searchAddress": "Adresse suchen...",
+  "overview.searching": "Suche...",
+  "overview.noResults": "Keine Ergebnisse",
 
   "action.edit": "Bearbeiten",
   "action.delete": "Löschen",
@@ -180,6 +185,7 @@
   "settings.status": "Status",
   "settings.projectImage": "Projektbild",
   "settings.changeImage": "Bild ändern",
+  "settings.addImage": "Bild hinzufügen",
   "settings.imageHint": "Empfohlene Grösse: 800 × 450 px",
   "settings.imageSizeHint": "Empfohlene Grösse: 800 × 450 px",
   "settings.ruleSet": "Regelwerk",

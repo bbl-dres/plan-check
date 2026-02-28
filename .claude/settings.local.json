@@ -57,7 +57,9 @@
       "Bash(node -c \"c:/Users/DavidRasner/Documents/GitHub/plan-check/js/i18n.js\")",
       "WebFetch(domain:search.ch)",
       "WebFetch(domain:docs.geo.admin.ch)",
-      "WebFetch(domain:api3.geo.admin.ch)"
+      "WebFetch(domain:api3.geo.admin.ch)",
+      "Bash(for token in \"shadow-xs\" \"shadow-card\" \"shadow-card-hover\" \"shadow-2xl\" \"ease-out\" \"ease-in-out\" \"radius-xs\" \"radius-xl\")",
+      "Bash(do echo -n \"$token: \")"
     ]
   }
 }
