@@ -4,6 +4,7 @@
 
 import { state, dom, CAFM_LAYERS, AOID_TEXT_LAYERS } from './state.js';
 import { fmtNum, esc, computePolygonArea, pointInPoly, log, hasSelfIntersection, hashVertices, visualCenter } from './utils.js';
+import { t } from './i18n.js';
 import { render, resizeCanvas, zoomToPolygon, zoomToItems, zoomToBounds, getItemBounds, showPopupForItem } from './renderer.js';
 import { downloadPdfReport, downloadExcelReport } from './export.js';
 
@@ -54,6 +55,7 @@ export const ALL_RULES = [
     { cat: 'HATCH', code: 'HATCH_001', sev: 'warning', desc: 'Schraffur auf A_SCHRAFFUR ist nicht SOLID' },
 ];
 
+export function getRuleCatLabel(cat) { return t('ruleCat.' + cat); }
 export const RULE_CAT_LABELS = {
     LAYER: 'Layerstruktur', POLY: 'Raumpolygone', GPOLY: 'Geschosspolygone',
     AOID: 'Raumstempel', GEOM: 'Geometrie', TEXT: 'Textelemente',
@@ -154,9 +156,9 @@ function runAbortChecks() {
 
     // ABORT_002: $INSUNITS not mm (4)
     if (state.insunits !== null && state.insunits !== 4) {
-        const unitNames = { 0: 'Ohne', 1: 'Zoll', 2: 'Fuss', 3: 'Meilen', 4: 'Millimeter', 5: 'Zentimeter', 6: 'Meter' };
+        const unitName = t('unit.' + state.insunits) || state.insunits;
         errors.push(mkErr('abort', 'ABORT_002',
-            `Zeichnungseinheit ist nicht Millimeter (1:1) \u2014 aktuell: ${unitNames[state.insunits] || state.insunits}`, 'ABORT'));
+            t('msg.abortNotMm', { unit: unitName }), 'ABORT'));
     }
 
     return errors;
@@ -179,7 +181,7 @@ function runLayerRules() {
     for (const chk of checks) {
         if (!layerNames.includes(chk.name)) {
             errors.push(mkErr(chk.severity, chk.code,
-                `Pflicht-Layer fehlt: ${chk.name} nicht vorhanden`, 'LAYER', { layer: chk.name }));
+                t('msg.layerMissing', { name: chk.name }), 'LAYER', { layer: chk.name }));
         }
     }
 
@@ -189,7 +191,7 @@ function runLayerRules() {
         if (l.name === '0' || l.name === 'Defpoints') continue;
         if (!allowed.has(l.name)) {
             errors.push(mkErr('warning', 'LAYER_008',
-                `Unbekannter Layer: ${l.name} ist nicht in der zul\u00e4ssigen Layerliste`, 'LAYER', { layer: l.name }));
+                t('msg.layerUnknown', { name: l.name }), 'LAYER', { layer: l.name }));
         }
     }
 
@@ -206,7 +208,7 @@ function runPolyRules(renderList) {
     for (const item of items) {
         if (item.t === 'poly' && item.et !== 'LWPOLYLINE') {
             errors.push(mkErr('error', 'POLY_006',
-                `Element auf ${layerName} ist keine LWPOLYLINE (Typ: ${item.et})`, 'POLY', { handle: item.handle }));
+                t('msg.polyNotLwpolyline', { layer: layerName, type: item.et }), 'POLY', { handle: item.handle }));
         }
     }
 
@@ -214,20 +216,20 @@ function runPolyRules(renderList) {
         // POLY_001: Closed check
         if (!poly.closed) {
             errors.push(mkErr('error', 'POLY_001',
-                `Raumpolygon ist nicht geschlossen`, 'POLY', { handle: poly.handle }));
+                t('msg.polyNotClosed'), 'POLY', { handle: poly.handle }));
         }
 
         // POLY_002: Arc segments
         const hasBulge = poly.verts.some(v => v.bulge && Math.abs(v.bulge) > 1e-6);
         if (hasBulge) {
             errors.push(mkErr('error', 'POLY_002',
-                `Raumpolygon enth\u00e4lt Bogensegmente (bulge \u2260 0)`, 'POLY', { handle: poly.handle }));
+                t('msg.polyHasArcs'), 'POLY', { handle: poly.handle }));
         }
 
         // POLY_003: Vertex count
         if (poly.verts.length < 3) {
             errors.push(mkErr('error', 'POLY_003',
-                `Polygon hat weniger als 3 Eckpunkte`, 'POLY', { handle: poly.handle }));
+                t('msg.polyTooFewVerts'), 'POLY', { handle: poly.handle }));
         }
 
         // POLY_004: Area too small
@@ -235,14 +237,14 @@ function runPolyRules(renderList) {
             const areaM2 = computePolygonArea(poly.verts) / 1e6;
             if (areaM2 < 0.25) {
                 errors.push(mkErr('warning', 'POLY_004',
-                    `Raumfl\u00e4che sehr klein (${areaM2.toFixed(2)} m\u00B2 < 0.25 m\u00B2)`, 'POLY', { handle: poly.handle }));
+                    t('msg.polyTooSmall', { area: areaM2.toFixed(2) }), 'POLY', { handle: poly.handle }));
             }
         }
 
         // POLY_007: Self-intersection
         if (poly.closed && poly.verts.length >= 4 && hasSelfIntersection(poly.verts)) {
             errors.push(mkErr('warning', 'POLY_007',
-                `Raumpolygon hat Selbst\u00fcberschneidung`, 'POLY', { handle: poly.handle }));
+                t('msg.polySelfIntersect'), 'POLY', { handle: poly.handle }));
         }
     }
 
@@ -252,7 +254,7 @@ function runPolyRules(renderList) {
         const h = hashVertices(poly.verts);
         if (hashes.has(h)) {
             errors.push(mkErr('warning', 'POLY_005',
-                `M\u00f6gliches doppeltes Polygon (identische Geometrie)`, 'POLY', { handle: poly.handle }));
+                t('msg.polyDuplicate'), 'POLY', { handle: poly.handle }));
         } else {
             hashes.set(h, poly);
         }
@@ -270,7 +272,7 @@ function runGPolyRules(renderList) {
     // GPOLY_004: No floor polygon at all
     if (polys.length === 0) {
         errors.push(mkErr('warning', 'GPOLY_004',
-            'Kein Geschosspolygon vorhanden', 'GPOLY'));
+            t('msg.gpolyNone'), 'GPOLY'));
         return errors;
     }
 
@@ -278,7 +280,7 @@ function runGPolyRules(renderList) {
     for (const item of items) {
         if (item.t === 'poly' && item.et !== 'LWPOLYLINE') {
             errors.push(mkErr('error', 'GPOLY_003',
-                `Element auf ${layerName} ist keine LWPOLYLINE (Typ: ${item.et})`, 'GPOLY', { handle: item.handle }));
+                t('msg.gpolyNotLwpolyline', { layer: layerName, type: item.et }), 'GPOLY', { handle: item.handle }));
         }
     }
 
@@ -286,13 +288,13 @@ function runGPolyRules(renderList) {
         // GPOLY_001: Closed check
         if (!poly.closed) {
             errors.push(mkErr('error', 'GPOLY_001',
-                'Geschosspolygon ist nicht geschlossen', 'GPOLY', { handle: poly.handle }));
+                t('msg.gpolyNotClosed'), 'GPOLY', { handle: poly.handle }));
         }
 
         // GPOLY_002: Arc segments
         if (poly.verts.some(v => v.bulge && Math.abs(v.bulge) > 1e-6)) {
             errors.push(mkErr('error', 'GPOLY_002',
-                'Geschosspolygon enth\u00e4lt Bogensegmente (bulge \u2260 0)', 'GPOLY', { handle: poly.handle }));
+                t('msg.gpolyHasArcs'), 'GPOLY', { handle: poly.handle }));
         }
     }
 
@@ -302,7 +304,7 @@ function runGPolyRules(renderList) {
         const h = hashVertices(poly.verts);
         if (hashes.has(h)) {
             errors.push(mkErr('warning', 'GPOLY_005',
-                'M\u00f6gliches doppeltes Geschosspolygon', 'GPOLY', { handle: poly.handle }));
+                t('msg.gpolyDuplicate'), 'GPOLY', { handle: poly.handle }));
         } else {
             hashes.set(h, poly);
         }
@@ -322,7 +324,7 @@ function runAoidRules(renderList, rooms) {
     for (const room of rooms) {
         if (room.aoidMatches.length === 0) {
             errors.push(mkErr('error', 'AOID_001',
-                `Raum ${room.aoid}: kein AOID-Text auf R_AOID innerhalb des Polygons`, 'AOID',
+                t('msg.aoidMissing', { aoid: room.aoid }), 'AOID',
                 { roomId: room.id, handle: room.handle }));
         }
     }
@@ -331,7 +333,7 @@ function runAoidRules(renderList, rooms) {
     for (const room of rooms) {
         if (room.aoidMatches.length > 1) {
             errors.push(mkErr('warning', 'AOID_004',
-                `Raum ${room.aoid}: ${room.aoidMatches.length} Texte auf R_AOID innerhalb desselben Polygons`, 'AOID',
+                t('msg.aoidMultiple', { aoid: room.aoid, count: room.aoidMatches.length }), 'AOID',
                 { roomId: room.id, handle: room.handle }));
         }
     }
@@ -348,7 +350,7 @@ function runAoidRules(renderList, rooms) {
             const dupeRooms = rooms.filter(r => r.label === aoid);
             for (const room of dupeRooms) {
                 errors.push(mkErr('error', 'AOID_002',
-                    `AOID "${aoid}" ist nicht eindeutig (${count}\u00d7 vorhanden)`, 'AOID',
+                    t('msg.aoidNotUnique', { aoid, count }), 'AOID',
                     { roomId: room.id, handle: room.handle }));
             }
         }
@@ -360,7 +362,7 @@ function runAoidRules(renderList, rooms) {
     for (const room of rooms) {
         if (room.label && !aoidRegex.test(room.label) && !parkingRegex.test(room.label)) {
             errors.push(mkErr('warning', 'AOID_003',
-                `AOID-Format ung\u00fcltig: "${room.label}" (erwartet: WWWW.GG.EE.RRR)`, 'AOID',
+                t('msg.aoidFormatInvalid', { label: room.label }), 'AOID',
                 { roomId: room.id, handle: room.handle }));
         }
     }
@@ -376,7 +378,7 @@ function runAoidRules(renderList, rooms) {
         }
         if (!insideAny) {
             errors.push(mkErr('warning', 'AOID_005',
-                `AOID-Text "${txt.text.trim()}" auf R_AOID liegt ausserhalb aller Raumpolygone`, 'AOID',
+                t('msg.aoidOutside', { text: txt.text.trim() }), 'AOID',
                 { handle: txt.handle }));
         }
     }
@@ -389,9 +391,9 @@ function runGeomRules(renderList) {
 
     // GEOM_001: Drawing unit not mm
     if (state.insunits !== null && state.insunits !== 4) {
-        const unitNames = { 0: 'Ohne', 1: 'Zoll', 2: 'Fuss', 3: 'Meilen', 4: 'Millimeter', 5: 'Zentimeter', 6: 'Meter' };
+        const unitName = t('unit.' + state.insunits) || state.insunits;
         errors.push(mkErr('error', 'GEOM_001',
-            `Zeichnungseinheit ist nicht Millimeter \u2014 aktuell: ${unitNames[state.insunits] || state.insunits}`, 'GEOM'));
+            t('msg.geomNotMm', { unit: unitName }), 'GEOM'));
     }
 
     // GEOM_002: Non-zero Z coordinates
@@ -399,7 +401,7 @@ function runGeomRules(renderList) {
         const count = state.nonZeroZEntities.length;
         const sample = state.nonZeroZEntities.slice(0, 3).map(e => `${e.type}@${e.layer}`).join(', ');
         errors.push(mkErr('warning', 'GEOM_002',
-            `${count} Element(e) mit Z-Koordinate \u2260 0 (z.B. ${sample})`, 'GEOM'));
+            t('msg.geomNonZeroZ', { count, sample }), 'GEOM'));
     }
 
     // GEOM_003: Forbidden entity types
@@ -412,14 +414,15 @@ function runGeomRules(renderList) {
     }
     for (const [type, count] of Object.entries(foundForbidden)) {
         errors.push(mkErr('error', 'GEOM_003',
-            `Unzul\u00e4ssiger Entit\u00e4tstyp: ${type} (${count}\u00d7 vorhanden)`, 'GEOM'));
+            t('msg.geomForbiddenType', { type, count }), 'GEOM'));
     }
 
     // GEOM_004: XREF blocks
     if (state.xrefBlocks.length > 0) {
         for (const xref of state.xrefBlocks) {
+            const pathStr = xref.xrefPath ? t('msg.geomXrefPath', { xrefPath: xref.xrefPath }) : '';
             errors.push(mkErr('warning', 'GEOM_004',
-                `Externe Referenz (XREF): "${xref.name}"${xref.xrefPath ? ` \u2192 ${xref.xrefPath}` : ''}`, 'GEOM'));
+                t('msg.geomXref', { name: xref.name, path: pathStr }), 'GEOM'));
         }
     }
 
@@ -460,7 +463,7 @@ function runGeomRules(renderList) {
         }
         if (outsideCount > 0) {
             errors.push(mkErr('warning', 'GEOM_005',
-                `${outsideCount} Element(e) liegen ausserhalb des Planrahmens`, 'GEOM'));
+                t('msg.geomOutsideFrame', { count: outsideCount }), 'GEOM'));
         }
     }
 
@@ -482,21 +485,21 @@ function runTextRules(renderList) {
     }
     for (const [layer, handles] of Object.entries(wrongLayerMap)) {
         errors.push(mkErr('warning', 'TEXT_001',
-            `${handles.length} Textelement(e) auf unzul\u00e4ssigem Layer "${layer}"`, 'TEXT', { layer, handles }));
+            t('msg.textWrongLayer', { count: handles.length, layer }), 'TEXT', { layer, handles }));
     }
 
     // TEXT_002: Font not ARIAL
     const wrongFontMap = {};
-    for (const t of texts) {
-        if (t.l === 'V_PLANLAYOUT') continue; // exempt per spec
-        if (t.fontName && !/arial/i.test(t.fontName)) {
-            if (!wrongFontMap[t.fontName]) wrongFontMap[t.fontName] = [];
-            wrongFontMap[t.fontName].push(t.handle);
+    for (const txt of texts) {
+        if (txt.l === 'V_PLANLAYOUT') continue; // exempt per spec
+        if (txt.fontName && !/arial/i.test(txt.fontName)) {
+            if (!wrongFontMap[txt.fontName]) wrongFontMap[txt.fontName] = [];
+            wrongFontMap[txt.fontName].push(txt.handle);
         }
     }
     for (const [font, handles] of Object.entries(wrongFontMap)) {
         errors.push(mkErr('warning', 'TEXT_002',
-            `${handles.length} Text(e) verwenden Schriftart "${font}" statt ARIAL`, 'TEXT', { handles }));
+            t('msg.textWrongFont', { count: handles.length, font }), 'TEXT', { handles }));
     }
 
     return errors;
@@ -512,7 +515,7 @@ function runStyleRules(renderList) {
     if (widthPolys.length > 0) {
         const layers = [...new Set(widthPolys.map(p => p.l))].slice(0, 3).join(', ');
         errors.push(mkErr('warning', 'STYLE_001',
-            `${widthPolys.length} Polylinie(n) mit Breite \u2260 0 mm (Layer: ${layers})`, 'STYLE',
+            t('msg.stylePolyWidth', { count: widthPolys.length, layers }), 'STYLE',
             { handles: widthPolys.map(p => p.handle) }));
     }
 
@@ -522,7 +525,7 @@ function runStyleRules(renderList) {
     if (notByLayer.length > 0) {
         const layers = [...new Set(notByLayer.map(p => p.l))].slice(0, 3).join(', ');
         errors.push(mkErr('warning', 'STYLE_002',
-            `${notByLayer.length} Element(e) mit Farbe nicht VONLAYER (Layer: ${layers})`, 'STYLE',
+            t('msg.styleNotByLayer', { count: notByLayer.length, layers }), 'STYLE',
             { handles: notByLayer.map(p => p.handle) }));
     }
 
@@ -535,7 +538,7 @@ function runLayoutRules() {
     // LAYOUT_001: Paper Space layouts present
     if (state.paperSpaceLayouts.length > 0) {
         errors.push(mkErr('warning', 'LAYOUT_001',
-            `${state.paperSpaceLayouts.length} Layout-Tab(s) (Paper Space) vorhanden: ${state.paperSpaceLayouts.join(', ')}`, 'LAYOUT'));
+            t('msg.layoutPaperSpace', { count: state.paperSpaceLayouts.length, names: state.paperSpaceLayouts.join(', ') }), 'LAYOUT'));
     }
 
     // LAYOUT_002: No plan frame on V_PLANLAYOUT
@@ -545,7 +548,7 @@ function runLayoutRules() {
     );
     if (framePolys.length === 0) {
         errors.push(mkErr('warning', 'LAYOUT_002',
-            'Kein Planrahmen auf V_PLANLAYOUT erkannt', 'LAYOUT'));
+            t('msg.layoutNoPlanFrame'), 'LAYOUT'));
     }
 
     return errors;
@@ -558,14 +561,14 @@ function runDimRules() {
     const dimsOnLayer = state.dimensionInfo.filter(d => d.layer === 'V_BEMASSUNG');
     if (dimsOnLayer.length === 0) {
         errors.push(mkErr('warning', 'DIM_001',
-            'Keine Masselemente auf V_BEMASSUNG vorhanden', 'DIM'));
+            t('msg.dimNone'), 'DIM'));
     }
 
     // DIM_002: Non-associative dimensions
     const nonAssoc = state.dimensionInfo.filter(d => !d.associative);
     if (nonAssoc.length > 0) {
         errors.push(mkErr('warning', 'DIM_002',
-            `${nonAssoc.length} Masselement(e) sind nicht assoziativ`, 'DIM',
+            t('msg.dimNotAssociative', { count: nonAssoc.length }), 'DIM',
             { handles: nonAssoc.map(d => d.handle) }));
     }
 
@@ -581,7 +584,7 @@ function runHatchRules(renderList) {
     if (nonSolid.length > 0) {
         const patterns = [...new Set(nonSolid.map(h => h.patternName))].join(', ');
         errors.push(mkErr('warning', 'HATCH_001',
-            `${nonSolid.length} Schraffur(en) auf A_SCHRAFFUR nicht vom Typ SOLID (${patterns})`, 'HATCH',
+            t('msg.hatchNotSolid', { count: nonSolid.length, patterns }), 'HATCH',
             { handles: nonSolid.map(h => h.handle) }));
     }
 
@@ -647,19 +650,19 @@ export function renderValidation() {
         state.roomData = [];
         state.areaData = [];
         renderAbortUI(abortErrors);
-        log(`Pr\u00fcfung abgebrochen: ${state.abortReason}`, 'error');
+        log(t('log.aborted', { reason: state.abortReason }), 'error');
         return;
     }
 
     // Extract rooms and areas
-    log('R\u00e4ume und Fl\u00e4chen werden extrahiert...');
+    log(t('log.extracting'));
     const extracted = extractRooms(renderList);
     state.roomData = extracted.rooms;
     state.areaData = extracted.areas;
-    log(`${state.roomData.length} R\u00e4ume auf ${state.roomLayerName}, ${state.areaData.length} Geschossfl\u00e4che(n) erkannt`, 'success');
+    log(t('log.extractResult', { rooms: state.roomData.length, layer: state.roomLayerName, areas: state.areaData.length }), 'success');
 
     // Run all 40 rules
-    log('40 Pr\u00fcfregeln werden ausgef\u00fchrt...');
+    log(t('log.runningRules'));
     state.validationErrors = runAllRules(renderList, state.roomData);
 
     // Log validation summary
@@ -667,9 +670,9 @@ export function renderValidation() {
     const _warnCount = state.validationErrors.filter(e => e.severity === 'warning').length;
     const _rulesCodes = new Set(state.validationErrors.map(e => e.ruleCode));
     if (_errCount === 0 && _warnCount === 0) {
-        log('Validierung abgeschlossen: keine Fehler oder Warnungen', 'success');
+        log(t('log.validationOk'), 'success');
     } else {
-        log(`Validierung abgeschlossen: ${_errCount} Fehler, ${_warnCount} Warnungen in ${_rulesCodes.size} Regel(n)`,
+        log(t('log.validationResult', { errors: _errCount, warnings: _warnCount, rules: _rulesCodes.size }),
             _errCount > 0 ? 'error' : 'warn');
     }
 
@@ -684,14 +687,14 @@ export function renderValidation() {
     const score = Math.round((passedRules / totalRules) * 100);
     const scoreClass = score >= 90 ? 'success' : score >= 60 ? 'warning' : 'error';
     const ngf = state.roomData.reduce((s, r) => s + r.area, 0);
-    log(`Score: ${passedRules}/${totalRules} Regeln bestanden (${score}%) \u2014 NGF: ${fmtNum(ngf, 1)} m\u00B2`,
+    log(t('log.score', { passed: passedRules, total: totalRules, score, ngf: fmtNum(ngf, 1) }),
         scoreClass === 'warning' ? 'warn' : scoreClass);
     const dlIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
     dom.metricsGrid.innerHTML =
-        `<div class="info-grid__item"><div class="info-grid__label">R\u00e4ume</div><div class="info-grid__value">${fmtNum(state.roomData.length)}</div></div>` +
-        `<div class="info-grid__item"><div class="info-grid__label">NGF</div><div class="info-grid__value">${fmtNum(ngf, 1)} m\u00B2</div></div>` +
-        `<div class="info-grid__item"><div class="info-grid__label">Score (${passedRules}/${totalRules})</div><div class="info-grid__value" style="color: var(--color-${scoreClass})">${score}%</div></div>` +
-        `<div class="info-grid__download"><div class="info-grid__download-label">Bericht</div><div class="info-grid__download-links">` +
+        `<div class="info-grid__item"><div class="info-grid__label">${esc(t('metric.rooms'))}</div><div class="info-grid__value">${fmtNum(state.roomData.length)}</div></div>` +
+        `<div class="info-grid__item"><div class="info-grid__label">${esc(t('metric.ngf'))}</div><div class="info-grid__value">${fmtNum(ngf, 1)} m\u00B2</div></div>` +
+        `<div class="info-grid__item"><div class="info-grid__label">${esc(t('metric.score', { passed: passedRules, total: totalRules }))}</div><div class="info-grid__value" style="color: var(--color-${scoreClass})">${score}%</div></div>` +
+        `<div class="info-grid__download"><div class="info-grid__download-label">${esc(t('metric.report'))}</div><div class="info-grid__download-links">` +
         `<button class="info-grid__dl-btn" data-dl="pdf">${dlIcon} PDF</button>` +
         `<button class="info-grid__dl-btn" data-dl="excel">${dlIcon} Excel</button>` +
         `</div></div>`;
@@ -720,14 +723,14 @@ export function renderValidation() {
     switchValidationTab('rules');
 
     const rulesFired = new Set(state.validationErrors.map(e => e.ruleCode)).size;
-    log(`Validierung: ${state.roomData.length} R\u00e4ume, ${state.areaData.length} Fl\u00e4chen, ${rulesFired} Regeln ausgel\u00f6st (${errCount} Fehler, ${warnCount} Warnungen), Score ${score}%`,
+    log(t('log.validationSummary', { rooms: state.roomData.length, areas: state.areaData.length, rulesFired, errors: errCount, warnings: warnCount, score }),
         errCount > 0 ? 'error' : warnCount > 0 ? 'warn' : 'success');
 }
 
 function renderAbortUI(abortErrors) {
     // Show metrics with abort state
     dom.metricsGrid.innerHTML =
-        `<div class="info-grid__item" style="grid-column: 1/-1"><div class="info-grid__label">Pr\u00fcfung abgebrochen</div>` +
+        `<div class="info-grid__item" style="grid-column: 1/-1"><div class="info-grid__label">${esc(t('abort.title'))}</div>` +
         `<div class="info-grid__value" style="color: var(--color-error)">\u26D4 ${abortErrors.map(e => e.ruleCode).join(', ')}</div></div>`;
     dom.metricsPanel.classList.add('visible');
 
@@ -737,13 +740,13 @@ function renderAbortUI(abortErrors) {
     dom.validationDashboard.style.display = 'block';
     dom.validationDashboard.innerHTML =
         `<div class="kz-dashboard-content" style="padding: 2rem; text-align: center;">` +
-        `<h2 style="color: var(--color-error); margin-bottom: 1rem;">\u26D4 Pr\u00fcfung abgebrochen</h2>` +
+        `<h2 style="color: var(--color-error); margin-bottom: 1rem;">\u26D4 ${esc(t('abort.title'))}</h2>` +
         abortErrors.map(e =>
             `<div style="margin: 0.5rem 0; padding: 1rem; background: rgba(255,0,0,0.08); border-radius: 8px; border-left: 4px solid var(--color-error);">` +
             `<strong>${e.ruleCode}</strong>: ${esc(e.message)}</div>`
         ).join('') +
-        `<p style="margin-top: 1.5rem; color: var(--color-text-secondary);">Der Plan erf\u00fcllt nicht die Grundvoraussetzungen der CAD-Richtlinie BBL V1.0.<br>` +
-        `Bitte korrigieren Sie die oben genannten Punkte und laden Sie den Plan erneut hoch.</p></div>`;
+        `<p style="margin-top: 1.5rem; color: var(--color-text-secondary);">${esc(t('abort.description'))}<br>` +
+        `${esc(t('abort.instruction'))}</p></div>`;
 }
 
 function updateTabCounts() {
@@ -803,8 +806,8 @@ export function switchValidationTab(tabName) {
 
     // Update active tab styling
     const tabs = dom.validationPanel.querySelectorAll('[data-vtab]');
-    tabs.forEach(t => {
-        t.classList.toggle('validation-tabs__tab--active', t.getAttribute('data-vtab') === tabName);
+    tabs.forEach(tab => {
+        tab.classList.toggle('validation-tabs__tab--active', tab.getAttribute('data-vtab') === tabName);
     });
 
     // Ensure canvas is back in split view (may have been moved to kz-viewer)
@@ -883,7 +886,7 @@ function updateToggleAll(hiddenSet, allIds) {
 // Tab 1: Übersicht (Layers)
 // ─────────────────────────────────────────────
 function renderOverviewTab() {
-    dom.vsideSearch.placeholder = 'Layer suchen...';
+    dom.vsideSearch.placeholder = t('search.layers');
     dom.vsideList.innerHTML = '';
     dom.vsideSummary.innerHTML = '';
 
@@ -929,8 +932,8 @@ function renderOverviewTab() {
         status.className = 'vside-item__status';
         status.textContent = layerStatus === 'ok' ? '\u2713' : '\u26A0';
         status.title = layerStatus === 'ok'
-            ? (allowedSet.has(l.name) ? 'Zul\u00e4ssiger CAFM-Layer' : 'Standard-Layer')
-            : 'Unbekannter Layer \u2014 nicht in der CAFM-Layerliste';
+            ? (allowedSet.has(l.name) ? t('layer.cafmAllowed') : t('layer.default'))
+            : t('layer.unknown');
 
         const icon = document.createElement('div');
         icon.className = 'vside-item__icon';
@@ -942,7 +945,7 @@ function renderOverviewTab() {
 
         const value = document.createElement('span');
         value.className = 'vside-item__value';
-        value.textContent = l.count + ' Objekte';
+        value.textContent = l.count + ' ' + t('status.objects');
 
         div.appendChild(cb);
         div.appendChild(status);
@@ -987,12 +990,12 @@ function renderOverviewTab() {
 // Tab 2: Fehlermeldungen (flat error list)
 // ─────────────────────────────────────────────
 function renderErrorsTab() {
-    dom.vsideSearch.placeholder = 'Fehler suchen...';
+    dom.vsideSearch.placeholder = t('search.errors');
     dom.vsideList.innerHTML = '';
     dom.vsideSummary.innerHTML = '';
 
     if (state.validationErrors.length === 0) {
-        dom.vsideList.innerHTML = '<div class="val-empty">Keine Fehler oder Warnungen.</div>';
+        dom.vsideList.innerHTML = `<div class="val-empty">${esc(t('empty.noErrors'))}</div>`;
         return;
     }
 
@@ -1006,13 +1009,13 @@ function renderErrorsTab() {
     if (state.resultFilter === 'errors') {
         sorted = sorted.filter(e => e.severity === 'error');
         if (sorted.length === 0) {
-            dom.vsideList.innerHTML = '<div class="val-empty">Keine Fehler (nur Warnungen vorhanden).</div>';
+            dom.vsideList.innerHTML = `<div class="val-empty">${esc(t('empty.noErrorsOnly'))}</div>`;
             return;
         }
     } else if (state.resultFilter === 'warnings') {
         sorted = sorted.filter(e => e.severity === 'warning');
         if (sorted.length === 0) {
-            dom.vsideList.innerHTML = '<div class="val-empty">Keine Warnungen vorhanden.</div>';
+            dom.vsideList.innerHTML = `<div class="val-empty">${esc(t('empty.noWarnings'))}</div>`;
             return;
         }
     }
@@ -1112,12 +1115,12 @@ function renderErrorsTab() {
 // Tab 3: Räume (flat room list)
 // ─────────────────────────────────────────────
 function renderRoomsTab() {
-    dom.vsideSearch.placeholder = 'Raum suchen...';
+    dom.vsideSearch.placeholder = t('search.rooms');
     dom.vsideList.innerHTML = '';
     dom.vsideSummary.innerHTML = '';
 
     if (state.roomData.length === 0) {
-        dom.vsideList.innerHTML = '<div class="val-empty">Keine R\u00e4ume erkannt.</div>';
+        dom.vsideList.innerHTML = `<div class="val-empty">${esc(t('empty.noRooms'))}</div>`;
         return;
     }
 
@@ -1131,13 +1134,13 @@ function renderRoomsTab() {
     if (state.resultFilter === 'errors') {
         sorted = sorted.filter(r => r.status === 'error');
         if (sorted.length === 0) {
-            dom.vsideList.innerHTML = '<div class="val-empty">Keine Fehler in Räumen.</div>';
+            dom.vsideList.innerHTML = `<div class="val-empty">${esc(t('empty.noRoomErrors'))}</div>`;
             return;
         }
     } else if (state.resultFilter === 'warnings') {
         sorted = sorted.filter(r => r.status === 'warning');
         if (sorted.length === 0) {
-            dom.vsideList.innerHTML = '<div class="val-empty">Keine Warnungen in Räumen.</div>';
+            dom.vsideList.innerHTML = `<div class="val-empty">${esc(t('empty.noRoomWarnings'))}</div>`;
             return;
         }
     }
@@ -1198,12 +1201,12 @@ function renderRoomsTab() {
 // Tab 4: Flächen (flat area list)
 // ─────────────────────────────────────────────
 function renderAreasTab() {
-    dom.vsideSearch.placeholder = 'Fl\u00e4che suchen...';
+    dom.vsideSearch.placeholder = t('search.areas');
     dom.vsideList.innerHTML = '';
     dom.vsideSummary.innerHTML = '';
 
     if (state.areaData.length === 0) {
-        dom.vsideList.innerHTML = '<div class="val-empty">Keine Fl\u00e4chenpolygone gefunden.<br><small>Erwartet: geschlossene Polylinien auf Layer R_GESCHOSSPOLYGON.</small></div>';
+        dom.vsideList.innerHTML = `<div class="val-empty">${esc(t('empty.noAreas'))}<br><small>${esc(t('empty.noAreasHint'))}</small></div>`;
         return;
     }
 
@@ -1319,46 +1322,46 @@ function renderKennzahlenTab() {
     // ── Left column ──
     html += '<div>';
 
-    // Geb\u00e4udevolumen
+    // Gebäudevolumen
     html += '<div class="val-kz-section">';
-    html += '<div class="val-kz-title">Geb\u00e4udevolumen</div>';
+    html += `<div class="val-kz-title">${esc(t('kpiSection.volume'))}</div>`;
     html += '<table class="val-kz-table"><tbody>';
-    html += kzRow('GV', 'Geb\u00e4udevolumen', null, null, true);
+    html += kzRow('GV', t('kpi.GV'), null, null, true);
     html += '</tbody></table></div>';
 
-    // Geb\u00e4udefl\u00e4chen — filled from room + area data
+    // Gebäudeflächen — filled from room + area data
     html += '<div class="val-kz-section">';
-    html += '<div class="val-kz-title">Geb\u00e4udefl\u00e4chen</div>';
+    html += `<div class="val-kz-title">${esc(t('kpiSection.areas'))}</div>`;
     html += '<table class="val-kz-table"><tbody>';
-    html += kzRow('GF', 'Geschossfl\u00e4che', gf, gf);
-    html += kzRow('KF', 'Konstruktionsfl\u00e4che', kf, gf);
-    html += kzRow('NGF', 'Nettogeschossfl\u00e4che', hasRooms ? ngf : null, gf);
-    html += kzRow('NF', 'Nutzfl\u00e4che', hasRooms ? nf : null, gf);
-    html += kzRow('HNF', 'Hauptnutzfl\u00e4che', hasRooms ? hnf : null, gf);
-    html += kzRow('NNF', 'Nebennutzfl\u00e4che', hasRooms ? nnf : null, gf);
-    html += kzRow('VF', 'Verkehrsfl\u00e4che', hasRooms ? vf : null, gf);
-    html += kzRow('FF', 'Funktionsfl\u00e4che', hasRooms ? ff : null, gf);
+    html += kzRow('GF', t('kpi.GF'), gf, gf);
+    html += kzRow('KF', t('kpi.KF'), kf, gf);
+    html += kzRow('NGF', t('kpi.NGF'), hasRooms ? ngf : null, gf);
+    html += kzRow('NF', t('kpi.NF'), hasRooms ? nf : null, gf);
+    html += kzRow('HNF', t('kpi.HNF'), hasRooms ? hnf : null, gf);
+    html += kzRow('NNF', t('kpi.NNF'), hasRooms ? nnf : null, gf);
+    html += kzRow('VF', t('kpi.VF'), hasRooms ? vf : null, gf);
+    html += kzRow('FF', t('kpi.FF'), hasRooms ? ff : null, gf);
     html += '</tbody></table></div>';
 
-    // Fl\u00e4chen DIN 277 — sub-category sums
+    // Flächen DIN 277 — sub-category sums
     const din277Sum = {};
     for (const r of state.roomData) {
         const sub = r.din277 || null;
         if (sub) din277Sum[sub] = (din277Sum[sub] || 0) + r.area;
     }
     html += '<div class="val-kz-section">';
-    html += '<div class="val-kz-title">Fl\u00e4chen DIN 277</div>';
+    html += `<div class="val-kz-title">${esc(t('kpiSection.din277'))}</div>`;
     html += '<table class="val-kz-table"><tbody>';
-    html += kzRow('HNF 1', 'Wohnen und Aufenthalt', din277Sum['1'] || null, gf);
-    html += kzRow('HNF 2', 'B\u00fcroarbeit', din277Sum['2'] || null, gf);
-    html += kzRow('HNF 3', 'Produktion', din277Sum['3'] || null, gf);
-    html += kzRow('HNF 4', 'Lagern, Verteilen, Verkaufen', din277Sum['4'] || null, gf);
-    html += kzRow('HNF 5', 'Bildung, Unterricht, Kultur', din277Sum['5'] || null, gf);
-    html += kzRow('HNF 6', 'Heilen, Pflegen', din277Sum['6'] || null, gf);
-    html += kzRow('NNF 7', 'Sonstige Nutzungen', din277Sum['7'] || null, gf);
-    html += kzRow('FF 8', 'Betriebstechnische Anlagen', din277Sum['8'] || null, gf);
-    html += kzRow('VF 9', 'Verkehrserschliessung und -sicherung', din277Sum['9'] || null, gf);
-    html += kzRow('BUF 10', 'Verschiedene Nutzungen', din277Sum['10'] || null, gf);
+    html += kzRow('HNF 1', t('din277.1'), din277Sum['1'] || null, gf);
+    html += kzRow('HNF 2', t('din277.2'), din277Sum['2'] || null, gf);
+    html += kzRow('HNF 3', t('din277.3'), din277Sum['3'] || null, gf);
+    html += kzRow('HNF 4', t('din277.4'), din277Sum['4'] || null, gf);
+    html += kzRow('HNF 5', t('din277.5'), din277Sum['5'] || null, gf);
+    html += kzRow('HNF 6', t('din277.6'), din277Sum['6'] || null, gf);
+    html += kzRow('NNF 7', t('din277.7'), din277Sum['7'] || null, gf);
+    html += kzRow('FF 8', t('din277.8'), din277Sum['8'] || null, gf);
+    html += kzRow('VF 9', t('din277.9'), din277Sum['9'] || null, gf);
+    html += kzRow('BUF 10', t('din277.10'), din277Sum['10'] || null, gf);
     html += '</tbody></table></div>';
 
     html += '</div>';
@@ -1368,12 +1371,12 @@ function renderKennzahlenTab() {
 
     // Wirtschaftlichkeitskennzahlen
     html += '<div class="val-kz-section">';
-    html += '<div class="val-kz-title">Wirtschaftlichkeitskennzahlen</div>';
+    html += `<div class="val-kz-title">${esc(t('kpiSection.economy'))}</div>`;
     html += '<table class="val-kz-table"><tbody>';
-    html += `<tr><td class="kz-abbr">NGF / GF</td><td>Nettogeschossfl\u00e4che / Geschossfl\u00e4che</td><td class="kz-value">${(gf && hasRooms) ? (ngf / gf).toFixed(2) : DASH}</td></tr>`;
-    html += `<tr><td class="kz-abbr">KF / GF</td><td>Konstruktionsfl\u00e4che / Geschossfl\u00e4che</td><td class="kz-value">${(gf && kf !== null) ? (kf / gf).toFixed(2) : DASH}</td></tr>`;
-    html += `<tr><td class="kz-abbr">NF / NGF</td><td>Nutzfl\u00e4che / Nettogeschossfl\u00e4che</td><td class="kz-value">${(hasRooms && ngf > 0) ? (nf / ngf).toFixed(2) : DASH}</td></tr>`;
-    html += `<tr><td class="kz-abbr">HNF / NGF</td><td>Hauptnutzfl\u00e4che / Nettogeschossfl\u00e4che</td><td class="kz-value">${(hasRooms && ngf > 0) ? (hnf / ngf).toFixed(2) : DASH}</td></tr>`;
+    html += `<tr><td class="kz-abbr">NGF / GF</td><td>${esc(t('kpi.NGF_GF'))}</td><td class="kz-value">${(gf && hasRooms) ? (ngf / gf).toFixed(2) : DASH}</td></tr>`;
+    html += `<tr><td class="kz-abbr">KF / GF</td><td>${esc(t('kpi.KF_GF'))}</td><td class="kz-value">${(gf && kf !== null) ? (kf / gf).toFixed(2) : DASH}</td></tr>`;
+    html += `<tr><td class="kz-abbr">NF / NGF</td><td>${esc(t('kpi.NF_NGF'))}</td><td class="kz-value">${(hasRooms && ngf > 0) ? (nf / ngf).toFixed(2) : DASH}</td></tr>`;
+    html += `<tr><td class="kz-abbr">HNF / NGF</td><td>${esc(t('kpi.HNF_NGF'))}</td><td class="kz-value">${(hasRooms && ngf > 0) ? (hnf / ngf).toFixed(2) : DASH}</td></tr>`;
     html += '</tbody></table></div>';
 
     // Donut chart — SIA 416 breakdown: HNF, NNF, VF, FF, KF
@@ -1389,7 +1392,7 @@ function renderKennzahlenTab() {
     // Objektübersicht
     if (state.entitySummary.length > 0) {
         html += '<div class="val-kz-section">';
-        html += '<div class="val-kz-title">Objekt\u00fcbersicht</div>';
+        html += `<div class="val-kz-title">${esc(t('kpiSection.entitySummary'))}</div>`;
         html += '<table class="val-kz-table"><tbody>';
         for (const e of state.entitySummary) {
             const ls = e.layers.slice(0, 3).join(', ');
@@ -1412,7 +1415,7 @@ function renderKennzahlenTab() {
 // ─────────────────────────────────────────────
 
 function renderRulesTab() {
-    dom.vsideSearch.placeholder = 'Regel suchen...';
+    dom.vsideSearch.placeholder = t('search.rules');
     dom.vsideList.innerHTML = '';
     dom.vsideSummary.innerHTML = '';
 
@@ -1461,11 +1464,12 @@ function renderRulesTab() {
             if (collapsed) div.style.display = 'none';
             div.setAttribute('data-code', r.code);
             div.setAttribute('data-cat', r.cat);
-            div.setAttribute('data-search', r.code + ' ' + r.desc + ' ' + r.cat);
+            const ruleDesc = t('rule.' + r.code);
+            div.setAttribute('data-search', r.code + ' ' + ruleDesc + ' ' + r.cat);
             div.innerHTML =
                 `<span class="rules-row__sev rules-row__sev--${status}">${icon}</span>` +
                 `<span class="rules-row__code">${r.code}</span>` +
-                `<span class="rules-row__desc" title="${esc(r.desc)}">${esc(r.desc)}</span>`;
+                `<span class="rules-row__desc" title="${esc(ruleDesc)}">${esc(ruleDesc)}</span>`;
 
             div.addEventListener('click', () => {
                 if (count > 0) {
@@ -1500,10 +1504,10 @@ function renderRulesTab() {
 
     // Nicht bestanden first, then Bestanden — both expanded
     if (filteredFailed.length > 0) {
-        renderGroup('Nicht bestanden', filteredFailed, false);
+        renderGroup(t('tab.notPassed'), filteredFailed, false);
     }
     if (filteredPassed.length > 0) {
-        renderGroup('Bestanden', filteredPassed, false);
+        renderGroup(t('tab.passed'), filteredPassed, false);
     }
 
     wireSearch('data-search');
@@ -1519,7 +1523,7 @@ function buildValidationDonut(totals, kf, gf) {
         .map(([label, value]) => ({ label, value, color: colorMap[label] || '#999' }));
     if (kf > 0) segments.push({ label: 'KF', value: kf, color: '#CCCCCC' });
 
-    if (segments.length === 0) return '<div class="val-empty">Keine Daten f\u00fcr Diagramm.</div>';
+    if (segments.length === 0) return `<div class="val-empty">${esc(t('empty.noChartData'))}</div>`;
 
     const total = gf || 1;
     const r = 60, sw = 24;

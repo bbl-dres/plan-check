@@ -4,19 +4,20 @@
 
 import { state, dom } from './state.js';
 import { log, showStatus, fmtSize, fmtNum, aciToHex, esc, computePolygonArea } from './utils.js';
+import { t } from './i18n.js';
 
 // ── LibreDWG Init ──
 async function initLibreDwg() {
     if (state.libredwg) return state.libredwg;
-    log('LibreDWG WebAssembly wird geladen (~15 MB)...');
-    showStatus('LibreDWG WebAssembly wird geladen...');
+    log(t('log.wasmLoading'));
+    showStatus(t('log.wasmLoadingStatus'));
     try {
         const mod = await import('https://cdn.jsdelivr.net/npm/@mlightcad/libredwg-web@0.6.6/dist/libredwg-web.js');
         state.libredwg = await mod.LibreDwg.create();
-        log('LibreDWG WebAssembly geladen', 'success');
+        log(t('log.wasmLoaded'), 'success');
         return state.libredwg;
     } catch (err) {
-        log(`LibreDWG laden fehlgeschlagen: ${err.message}`, 'error');
+        log(t('log.wasmFailed', { error: err.message }), 'error');
         throw err;
     }
 }
@@ -24,16 +25,16 @@ async function initLibreDwg() {
 // ── DWG File Processing ──
 export async function processDwgFile(file) {
     const t0 = performance.now();
-    log(`Datei: ${file.name} (${fmtSize(file.size)})`);
+    log(t('log.fileInfo', { name: file.name, size: fmtSize(file.size) }));
 
-    showStatus('Datei wird gelesen...');
+    showStatus(t('log.fileReading'));
     const buffer = await file.arrayBuffer();
 
     const dwgLib = await initLibreDwg();
     const fileType = file.name.toLowerCase().endsWith('.dxf') ? 1 : 0;
 
-    showStatus('DWG wird geparst...');
-    log('DWG wird geparst...');
+    showStatus(t('log.parsing'));
+    log(t('log.parsing'));
 
     // Intercept console output from LibreDWG WASM to capture error codes
     const wasmErrors = [];
@@ -64,37 +65,37 @@ export async function processDwgFile(file) {
         let detail = '';
         if (code > 0) {
             const flags = [];
-            if (code & 1) flags.push('CRC-Fehler');
-            if (code & 2) flags.push('nicht unterstützte Features');
-            if (code & 4) flags.push('unbekannte Objektklassen');
-            if (code & 8) flags.push('ungültiger Typ');
-            if (code & 16) flags.push('ungültiger Handle');
-            if (code & 32) flags.push('ungültige EED');
-            if (code & 64) flags.push('Werte ausserhalb des gültigen Bereichs');
-            if (code & 128) flags.push('Klassen nicht gefunden');
-            if (code & 256) flags.push('Sektion nicht gefunden');
-            if (code & 512) flags.push('Seite nicht gefunden');
-            if (code & 1024) flags.push('interner Fehler');
-            if (code & 2048) flags.push('ungültige DWG-Datei');
-            if (code & 4096) flags.push('IO-Fehler');
-            if (code & 8192) flags.push('Speicherfehler');
-            detail = ` (Code ${code}: ${flags.join(', ')}). Die Datei enthält möglicherweise proprietäre AutoCAD-Erweiterungen (ARX). Versuchen Sie, die Datei in einem anderen CAD-Programm neu zu speichern.`;
+            if (code & 1) flags.push(t('dwg.crcError'));
+            if (code & 2) flags.push(t('dwg.unsupportedFeatures'));
+            if (code & 4) flags.push(t('dwg.unknownClasses'));
+            if (code & 8) flags.push(t('dwg.invalidType'));
+            if (code & 16) flags.push(t('dwg.invalidHandle'));
+            if (code & 32) flags.push(t('dwg.invalidEED'));
+            if (code & 64) flags.push(t('dwg.outOfRange'));
+            if (code & 128) flags.push(t('dwg.classesNotFound'));
+            if (code & 256) flags.push(t('dwg.sectionNotFound'));
+            if (code & 512) flags.push(t('dwg.pageNotFound'));
+            if (code & 1024) flags.push(t('dwg.internalError'));
+            if (code & 2048) flags.push(t('dwg.invalidFile'));
+            if (code & 4096) flags.push(t('dwg.ioError'));
+            if (code & 8192) flags.push(t('dwg.memoryError'));
+            detail = ` (Code ${code}: ${flags.join(', ')}). ${t('dwg.arxHint')}`;
         }
-        throw new Error(`DWG konnte nicht gelesen werden${detail}`);
+        throw new Error(`${t('dwg.readFailed')}${detail}`);
     }
 
     if (wasmErrors.length > 0) {
         const codeMatch = wasmErrors[0].match(/error code:\s*(\d+)/i);
         const code = codeMatch ? parseInt(codeMatch[1]) : 0;
         if (code > 0) {
-            log(`LibreDWG Warnung (Code ${code}): Datei wurde geladen, aber einige Elemente sind möglicherweise unvollständig. Die Datei enthält evtl. proprietäre AutoCAD-Erweiterungen.`, 'warn');
+            log(t('dwg.wasmWarning', { code }), 'warn');
         }
     }
-    log('DWG geparst', 'success');
+    log(t('log.parsed'), 'success');
 
-    showStatus('Daten werden konvertiert...');
+    showStatus(t('log.converting'));
     const { database: db, stats } = dwgLib.convertEx(dwgPtr);
-    if (stats.unknownEntityCount > 0) log(`${stats.unknownEntityCount} unbekannte Entity-Typen`, 'warn');
+    if (stats.unknownEntityCount > 0) log(t('log.unknownTypes', { count: stats.unknownEntityCount }), 'warn');
 
     const entities = db.entities || [];
     const layers = db.tables?.LAYER?.entries || [];
@@ -103,7 +104,7 @@ export async function processDwgFile(file) {
     try { dwgLib.dwg_free(dwgPtr); } catch (e) { /* ok */ }
 
     const elapsed = ((performance.now() - t0) / 1000).toFixed(2);
-    log(`Verarbeitung: ${elapsed}s`, 'success');
+    log(t('log.processingTime', { elapsed }), 'success');
 
     return { db, entities, layers, elapsed };
 }
@@ -161,8 +162,8 @@ export function prepareDrawingData(entities, layers, db) {
             state.xrefBlocks.push({ name: br.name || '', xrefPath: br.xrefPath || '' });
         }
     }
-    if (blockCount > 0) log(`${blockCount} Block-Definitionen geladen`);
-    if (state.xrefBlocks.length > 0) log(`${state.xrefBlocks.length} XREF-Blöcke erkannt`);
+    if (blockCount > 0) log(t('log.blockDefs', { count: blockCount }));
+    if (state.xrefBlocks.length > 0) log(t('log.xrefBlocks', { count: state.xrefBlocks.length }));
 
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
     function expand(x, y) {
@@ -675,7 +676,7 @@ export function prepareDrawingData(entities, layers, db) {
 
     if (!isFinite(minX)) { minX = 0; minY = 0; maxX = 1000; maxY = 1000; }
 
-    if (insertCount > 0) log(`${insertCount} INSERT-Referenzen aufgelöst`);
+    if (insertCount > 0) log(t('log.insertRefs', { count: insertCount }));
     log(`Render-Liste: ${renderList.length} Primitiven, Bounds: (${minX.toFixed(0)}, ${minY.toFixed(0)}) - (${maxX.toFixed(0)}, ${maxY.toFixed(0)})`);
 
     return {

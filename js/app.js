@@ -4,9 +4,17 @@
 
 import { state, dom, initDom, MAX_FILE_SIZE, BG_DARK, BG_LIGHT } from './state.js';
 import { log, showStatus, pointInPoly } from './utils.js';
+import { t, initI18n, setLocale, getLocale } from './i18n.js';
 import { processDwgFile, prepareDrawingData, buildLayerInfo, displayEntities } from './dwg-processing.js';
 import { resizeCanvas, render, scheduleRender, zoomExtents, screenToWorld, hitTest, showFeaturePopup, hideFeaturePopup, showPopupForItem, syncSideSelection } from './renderer.js';
 import { renderValidation, switchValidationTab } from './validation.js';
+
+// Initialize i18n before anything else
+await initI18n();
+// Sync language selector buttons with detected locale
+document.querySelectorAll('.lang-selector__item').forEach(btn => {
+    btn.classList.toggle('lang-selector__item--active', btn.dataset.lang === getLocale());
+});
 
 // =============================================
 // Constants
@@ -42,10 +50,10 @@ document.getElementById('load-demo').addEventListener('click', async (e) => {
     e.stopPropagation();
     const DEMO_PATH = 'assets/test-files/CAD.V01-CAFM-Plan-DE.dwg';
     try {
-        log('Demo-Datei wird geladen...');
-        showStatus('Demo-Datei wird geladen...');
+        log(t('file.demoLoading'));
+        showStatus(t('file.demoLoading'));
         const resp = await fetch(DEMO_PATH);
-        if (!resp.ok) throw new Error(`Demo-Datei nicht gefunden (${resp.status})`);
+        if (!resp.ok) throw new Error(t('file.demoNotFound'));
         const blob = await resp.blob();
         const file = new File([blob], 'CAD.V01-CAFM-Plan-DE.dwg', { type: 'application/octet-stream' });
         handleFile(file);
@@ -64,8 +72,8 @@ dom.uploadZone.addEventListener('drop', (e) => {
 
 async function handleFile(file) {
     const ext = file.name.toLowerCase().split('.').pop();
-    if (!['dwg', 'dxf'].includes(ext)) { showStatus('Nur .dwg / .dxf Dateien.', 'error'); return; }
-    if (file.size > MAX_FILE_SIZE) { showStatus('Datei zu gross (max. 50 MB).', 'error'); return; }
+    if (!['dwg', 'dxf'].includes(ext)) { showStatus(t('file.onlyDwgDxf'), 'error'); return; }
+    if (file.size > MAX_FILE_SIZE) { showStatus(t('file.tooLarge'), 'error'); return; }
 
     // Reset — release previous file data for GC
     state.drawingData = null;
@@ -95,14 +103,14 @@ async function handleFile(file) {
         state.lastElapsed = elapsed;
         state.lastUploadTime = new Date();
 
-        showStatus('Zeichnung wird gerendert...');
-        log('Zeichnungsdaten werden aufbereitet...');
+        showStatus(t('log.rendering'));
+        log(t('log.preparing'));
         state.drawingData = prepareDrawingData(entities, layers, db);
-        log(`${state.drawingData.renderList.length} Objekte f\u00fcr Darstellung vorbereitet`, 'success');
+        log(t('log.objectsPrepared', { count: state.drawingData.renderList.length }), 'success');
 
-        // Build layer info for Übersicht side panel
+        // Build layer info for overview side panel
         buildLayerInfo(entities, layers);
-        log(`${state.layerInfo.length} Layer erkannt`);
+        log(t('log.layersDetected', { count: state.layerInfo.length }));
 
         // Panel must be visible before measuring canvas dimensions
         dom.validationPanel.classList.add('visible');
@@ -114,10 +122,10 @@ async function handleFile(file) {
         displayEntities(entities);
 
         // Run validation (extract rooms, check rules, render tabs)
-        log('Validierung wird gestartet...');
+        log(t('log.validationStarting'));
         renderValidation();
 
-        showStatus(`${file.name} erfolgreich verarbeitet in ${elapsed}s`, 'success');
+        showStatus(t('log.successfullyProcessed', { name: file.name, elapsed }), 'success');
 
     } catch (err) {
         showStatus(err.message, 'error');
@@ -324,7 +332,7 @@ const fullscreenBtn = document.getElementById('fullscreen-btn');
 fullscreenBtn.addEventListener('click', () => {
     if (!document.fullscreenElement) {
         dom.validationPanel.requestFullscreen().catch(err => {
-            log(`Vollbild fehlgeschlagen: ${err.message}`, 'error');
+            log(t('log.fullscreenFailed', { error: err.message }), 'error');
         });
     } else {
         document.exitFullscreen();
@@ -333,21 +341,22 @@ fullscreenBtn.addEventListener('click', () => {
 document.addEventListener('fullscreenchange', () => {
     if (document.fullscreenElement) {
         fullscreenBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>';
-        fullscreenBtn.title = 'Vollbild beenden';
+        fullscreenBtn.title = t('viewer.exitFullscreen');
     } else {
         fullscreenBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>';
-        fullscreenBtn.title = 'Vollbild';
+        fullscreenBtn.title = t('viewer.fullscreen');
     }
     // Re-measure and re-render after layout change
     setTimeout(() => { resizeCanvas(); render(); }, 100);
 });
 
-// Language selector (placeholder)
+// Language selector
 document.querySelectorAll('.lang-selector__item').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
         document.querySelectorAll('.lang-selector__item').forEach(b => b.classList.remove('lang-selector__item--active'));
         btn.classList.add('lang-selector__item--active');
-        log(`Sprache: ${btn.dataset.lang.toUpperCase()} (noch nicht implementiert)`, 'warn');
+        await setLocale(btn.dataset.lang);
+        if (state.drawingData) renderValidation();
     });
 });
 
@@ -385,4 +394,4 @@ if (menuBtn) {
 // =============================================
 // Ready
 // =============================================
-log('Pr\u00fcfplattform bereit. Bitte eine DWG- oder DXF-Datei hochladen.');
+log(t('app.ready'));

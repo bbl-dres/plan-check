@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prüfplattform Flächenmanagement</title>
+    <title data-i18n="app.title">Prüfplattform Flächenmanagement</title>
     <link rel="stylesheet" href="css/tokens.css">
     <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -12,11 +12,11 @@
         <div class="header__content">
             <a href="?" class="header__brand">
                 <img src="assets/swiss-logo-flag.svg" alt="" class="header__flag">
-                <img src="assets/swiss-logo-name.svg" alt="Schweizerische Eidgenossenschaft" class="header__name">
+                <img src="assets/swiss-logo-name.svg" alt="Schweizerische Eidgenossenschaft" data-i18n-alt="app.orgNameFull" class="header__name">
                 <div class="header__sep"></div>
                 <div class="header__titles">
-                    <span class="header__org">Bundesamt für Bauten und Logistik BBL</span>
-                    <span class="header__app">Prüfplattform Flächenmanagement</span>
+                    <span class="header__org" data-i18n="app.orgName">Bundesamt für Bauten und Logistik BBL</span>
+                    <span class="header__app" data-i18n="app.title">Prüfplattform Flächenmanagement</span>
                 </div>
             </a>
             <div class="lang-selector">
@@ -25,13 +25,13 @@
                 <button class="lang-selector__item" data-lang="it">IT</button>
                 <button class="lang-selector__item" data-lang="en">EN</button>
             </div>
-            <button class="header__menu-btn" id="header-menu-btn" aria-label="Menü" aria-expanded="false">
+            <button class="header__menu-btn" id="header-menu-btn" data-i18n-aria-label="nav.menu" aria-label="Menü" aria-expanded="false">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
             </button>
             <nav class="header__nav">
-                <a href="https://www.bbl.admin.ch/de/downloads-bauten" target="_blank" rel="noopener" class="header__nav-link">Downloads BBL Bauten</a>
-                <a href="https://github.com/bbl-dres/plan-check/blob/main/docs/anleitung-de.md" target="_blank" rel="noopener" class="header__nav-link">Anleitung und FAQ</a>
-                <a href="https://www.bbl.admin.ch/de/kontakt" target="_blank" rel="noopener" class="header__nav-link">Kontakt</a>
+                <a href="https://www.bbl.admin.ch/de/downloads-bauten" target="_blank" rel="noopener" class="header__nav-link" data-i18n="nav.downloads">Downloads BBL Bauten</a>
+                <a href="https://github.com/bbl-dres/plan-check/blob/main/docs/anleitung-de.md" target="_blank" rel="noopener" class="header__nav-link" data-i18n="nav.guide">Anleitung und FAQ</a>
+                <a href="https://www.bbl.admin.ch/de/kontakt" target="_blank" rel="noopener" class="header__nav-link" data-i18n="nav.contact">Kontakt</a>
             </nav>
         </div>
     </header>
@@ -42,11 +42,11 @@
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
             </svg>
-            <p>DWG-Datei hierher ziehen oder klicken</p>
-            <button class="btn btn--primary" id="select-btn">Datei auswählen</button>
+            <p data-i18n="upload.dropHint">DWG-Datei hierher ziehen oder klicken</p>
+            <button class="btn btn--primary" id="select-btn" data-i18n="upload.selectBtn">Datei auswählen</button>
             <input type="file" id="file-input" accept=".dwg,.dxf" hidden>
-            <p class="hint">.dwg / .dxf, max. 50 MB</p>
-            <p class="upload-zone__demo-hint">Keine Datei? <a href="#" id="load-demo" class="upload-zone__demo-link">Demo-Projekt laden</a></p>
+            <p class="hint" data-i18n="upload.sizeHint">.dwg / .dxf, max. 50 MB</p>
+            <p class="upload-zone__demo-hint"><span data-i18n="upload.demoHint">Keine Datei?</span> <a href="#" id="load-demo" class="upload-zone__demo-link" data-i18n="upload.demoLink">Demo-Projekt laden</a></p>
         </div>
 
 
@@ -54,29 +54,29 @@
 
         <!-- Metrics (independent section) -->
         <div class="panel open" id="metrics-panel">
-            <div class="panel__header panel__header--toggle">Ergebnis <span class="panel__chevron"></span></div>
+            <div class="panel__header panel__header--toggle"><span data-i18n="panel.result">Ergebnis</span> <span class="panel__chevron"></span></div>
             <div class="info-grid" id="metrics-grid"></div>
         </div>
 
         <!-- Validation – Split View (side panel + integrated viewer) -->
         <div class="panel open" id="validation-panel">
-            <div class="panel__header panel__header--toggle">Validierung <span class="panel__chevron"></span></div>
+            <div class="panel__header panel__header--toggle"><span data-i18n="panel.validation">Validierung</span> <span class="panel__chevron"></span></div>
             <div class="validation-tabs">
-                <a href="#" class="validation-tabs__tab validation-tabs__tab--active" data-vtab="rules">Prüfregeln (<span id="vtab-rules-count">0</span>/<span id="vtab-rules-total">40</span>)</a>
-                <a href="#" class="validation-tabs__tab" data-vtab="errors">Fehlermeldungen (<span id="vtab-error-count">0</span>)</a>
-                <a href="#" class="validation-tabs__tab" data-vtab="overview">Layer (<span id="vtab-layer-count">0</span>)</a>
-                <a href="#" class="validation-tabs__tab" data-vtab="rooms">Räume (<span id="vtab-room-count">0</span>)</a>
-                <a href="#" class="validation-tabs__tab" data-vtab="areas">Flächen (<span id="vtab-area-count">0</span>)</a>
-                <a href="#" class="validation-tabs__tab" data-vtab="kennzahlen">Kennzahlen</a>
-                <div class="status-filter" id="status-filter" role="group" aria-label="Status Filter">
-                    <button class="status-filter__btn status-filter__btn--active" data-filter="all">Alle</button>
+                <a href="#" class="validation-tabs__tab validation-tabs__tab--active" data-vtab="rules"><span data-i18n="tab.rules">Prüfregeln</span> (<span id="vtab-rules-count">0</span>/<span id="vtab-rules-total">40</span>)</a>
+                <a href="#" class="validation-tabs__tab" data-vtab="errors"><span data-i18n="tab.errors">Fehlermeldungen</span> (<span id="vtab-error-count">0</span>)</a>
+                <a href="#" class="validation-tabs__tab" data-vtab="overview"><span data-i18n="tab.layers">Layer</span> (<span id="vtab-layer-count">0</span>)</a>
+                <a href="#" class="validation-tabs__tab" data-vtab="rooms"><span data-i18n="tab.rooms">Räume</span> (<span id="vtab-room-count">0</span>)</a>
+                <a href="#" class="validation-tabs__tab" data-vtab="areas"><span data-i18n="tab.areas">Flächen</span> (<span id="vtab-area-count">0</span>)</a>
+                <a href="#" class="validation-tabs__tab" data-vtab="kennzahlen" data-i18n="tab.kpi">Kennzahlen</a>
+                <div class="status-filter" id="status-filter" role="group" data-i18n-aria-label="filter.statusFilter" aria-label="Status Filter">
+                    <button class="status-filter__btn status-filter__btn--active" data-filter="all" data-i18n="filter.all">Alle</button>
                     <button class="status-filter__btn" data-filter="warnings">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                        Warnungen
+                        <span data-i18n="filter.warnings">Warnungen</span>
                     </button>
                     <button class="status-filter__btn" data-filter="errors">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-                        Fehler
+                        <span data-i18n="filter.errors">Fehler</span>
                     </button>
                 </div>
             </div>
@@ -84,8 +84,8 @@
                 <div class="validation-split" id="validation-split">
                     <div class="validation-side" id="validation-side">
                         <div class="validation-side__toolbar">
-                            <input type="checkbox" class="layer-toggle" id="vside-toggle-all" checked title="Alle ein-/ausblenden">
-                            <input type="text" class="layers-search" id="vside-search" placeholder="Suchen...">
+                            <input type="checkbox" class="layer-toggle" id="vside-toggle-all" checked data-i18n-title="viewer.toggleAll" title="Alle ein-/ausblenden">
+                            <input type="text" class="layers-search" id="vside-search" data-i18n-placeholder="search.generic" placeholder="Suchen...">
                         </div>
                         <div class="validation-side__list" id="validation-side-list"></div>
                         <div class="validation-side__summary" id="validation-side-summary"></div>
@@ -94,13 +94,13 @@
                         <div class="viewer__canvas-wrap" id="canvas-wrap">
                             <canvas id="dwg-canvas"></canvas>
                             <div class="viewer__controls">
-                                <button id="toggle-bg" title="Hintergrund umschalten"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></button>
+                                <button id="toggle-bg" data-i18n-title="viewer.toggleBg" title="Hintergrund umschalten"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></button>
                                 <span class="viewer__sep"></span>
-                                <button id="zoom-in" title="Vergrössern"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35M11 8v6m-3-3h6"/></svg></button>
-                                <button id="zoom-out" title="Verkleinern"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35M8 11h6"/></svg></button>
-                                <button id="zoom-fit" title="Gesamtansicht"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
+                                <button id="zoom-in" data-i18n-title="viewer.zoomIn" title="Vergrössern"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35M11 8v6m-3-3h6"/></svg></button>
+                                <button id="zoom-out" data-i18n-title="viewer.zoomOut" title="Verkleinern"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35M8 11h6"/></svg></button>
+                                <button id="zoom-fit" data-i18n-title="viewer.fitAll" title="Gesamtansicht"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
                                 <span class="viewer__sep"></span>
-                                <button id="fullscreen-btn" title="Vollbild"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg></button>
+                                <button id="fullscreen-btn" data-i18n-title="viewer.fullscreen" title="Vollbild"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg></button>
                             </div>
                             <div class="viewer__coords" id="coords-display">X: 0 Y: 0</div>
                             <div class="feature-popup" id="feature-popup"></div>
@@ -113,7 +113,7 @@
 
         <!-- Console -->
         <div class="panel" id="console-panel">
-            <div class="panel__header panel__header--toggle">Konsole <span class="panel__chevron"></span></div>
+            <div class="panel__header panel__header--toggle"><span data-i18n="panel.console">Konsole</span> <span class="panel__chevron"></span></div>
             <div class="console-body" id="console-log"></div>
         </div>
 
@@ -127,11 +127,11 @@
             <div class="footer__links">
                 <a href="?view=api-docs" class="footer__link">API</a>
                 <span class="footer__sep">|</span>
-                <a href="https://github.com/bbl-dres/plan-check" target="_blank" rel="noopener" class="footer__link">Quellencode</a>
+                <a href="https://github.com/bbl-dres/plan-check" target="_blank" rel="noopener" class="footer__link" data-i18n="footer.sourceCode">Quellencode</a>
                 <span class="footer__sep">|</span>
                 <a href="https://github.com/mlightcad/libredwg-web" target="_blank" rel="noopener" class="footer__link">libredwg-web</a>
                 <span class="footer__sep">|</span>
-                <a href="https://www.admin.ch/gov/de/start/rechtliches.html" target="_blank" rel="noopener" class="footer__link">Rechtliches</a>
+                <a href="https://www.admin.ch/gov/de/start/rechtliches.html" target="_blank" rel="noopener" class="footer__link" data-i18n="footer.legal">Rechtliches</a>
             </div>
         </div>
     </footer>

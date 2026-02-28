@@ -4,6 +4,7 @@
 
 import { state, dom, BG_LIGHT, SIA_COLORS } from './state.js';
 import { esc, computePolygonArea, fmtNum, pointInPoly, distPointToSegment } from './utils.js';
+import { t } from './i18n.js';
 
 // Canvas overlay colors — mirrors tokens.css (Canvas2D can't read CSS vars)
 const OV = {
@@ -483,55 +484,55 @@ export function showFeaturePopup(item, screenX, screenY) {
     const row = (label, value) =>
         `<div class="feature-popup__row"><span class="feature-popup__label">${label}</span><span class="feature-popup__value">${value}</span></div>`;
 
-    html += row('Layer', esc(item.l));
+    html += row(t('popup.layer'), esc(item.l));
     const safeColor = /^#[0-9a-fA-F]{3,8}$|^hsl\(\d{1,3},\s?\d{1,3}%,\s?\d{1,3}%\)$|^rgba?\(\d/.test(item.c) ? item.c : '#CCCCCC';
-    html += row('Farbe', `<span class="feature-popup__color-swatch" style="background:${safeColor}"></span> ${esc(item.c)}`);
-    if (item.handle) html += row('Handle', esc(item.handle));
+    html += row(t('popup.color'), `<span class="feature-popup__color-swatch" style="background:${safeColor}"></span> ${esc(item.c)}`);
+    if (item.handle) html += row(t('popup.handle'), esc(item.handle));
 
     // Type-specific details
     switch (item.t) {
         case 'line':
-            html += row('Start', `${item.x1.toFixed(2)}, ${item.y1.toFixed(2)}`);
-            html += row('Ende', `${item.x2.toFixed(2)}, ${item.y2.toFixed(2)}`);
-            html += row('L\u00e4nge', Math.hypot(item.x2 - item.x1, item.y2 - item.y1).toFixed(2));
+            html += row(t('popup.start'), `${item.x1.toFixed(2)}, ${item.y1.toFixed(2)}`);
+            html += row(t('popup.end'), `${item.x2.toFixed(2)}, ${item.y2.toFixed(2)}`);
+            html += row(t('popup.length'), Math.hypot(item.x2 - item.x1, item.y2 - item.y1).toFixed(2));
             break;
         case 'poly':
-            html += row('Eckpunkte', item.verts.length);
-            html += row('Geschlossen', item.closed ? 'Ja' : 'Nein');
+            html += row(t('popup.vertices'), item.verts.length);
+            html += row(t('popup.closed'), item.closed ? t('popup.yes') : t('popup.no'));
             break;
         case 'circle':
-            html += row('Zentrum', `${item.cx.toFixed(2)}, ${item.cy.toFixed(2)}`);
-            html += row('Radius', item.r.toFixed(2));
+            html += row(t('popup.center'), `${item.cx.toFixed(2)}, ${item.cy.toFixed(2)}`);
+            html += row(t('popup.radius'), item.r.toFixed(2));
             break;
         case 'arc':
-            html += row('Zentrum', `${item.cx.toFixed(2)}, ${item.cy.toFixed(2)}`);
-            html += row('Radius', item.r.toFixed(2));
-            html += row('Winkel', `${(item.sa * 180 / Math.PI).toFixed(1)}\u00b0 - ${(item.ea * 180 / Math.PI).toFixed(1)}\u00b0`);
+            html += row(t('popup.center'), `${item.cx.toFixed(2)}, ${item.cy.toFixed(2)}`);
+            html += row(t('popup.radius'), item.r.toFixed(2));
+            html += row(t('popup.angle'), `${(item.sa * 180 / Math.PI).toFixed(1)}\u00b0 - ${(item.ea * 180 / Math.PI).toFixed(1)}\u00b0`);
             break;
         case 'ellipse':
-            html += row('Zentrum', `${item.cx.toFixed(2)}, ${item.cy.toFixed(2)}`);
-            html += row('Radien', `${item.rx.toFixed(2)} / ${item.ry.toFixed(2)}`);
+            html += row(t('popup.center'), `${item.cx.toFixed(2)}, ${item.cy.toFixed(2)}`);
+            html += row(t('popup.radii'), `${item.rx.toFixed(2)} / ${item.ry.toFixed(2)}`);
             break;
         case 'text':
-            html += row('Text', esc(item.text.length > 30 ? item.text.slice(0, 30) + '...' : item.text));
-            html += row('H\u00f6he', item.h.toFixed(2));
+            html += row(t('popup.text'), esc(item.text.length > 30 ? item.text.slice(0, 30) + '...' : item.text));
+            html += row(t('popup.height'), item.h.toFixed(2));
             break;
         case 'point':
-            html += row('Position', `${item.x.toFixed(2)}, ${item.y.toFixed(2)}`);
+            html += row(t('popup.position'), `${item.x.toFixed(2)}, ${item.y.toFixed(2)}`);
             break;
         case 'solid':
-            html += row('Ecken', item.pts.length);
+            html += row(t('popup.corners'), item.pts.length);
             break;
         case 'hatchfill': {
-            html += row('Grenzen', item.paths.length);
+            html += row(t('popup.boundaries'), item.paths.length);
             let totalVerts = 0;
             let totalArea = 0;
             for (const path of item.paths) {
                 totalVerts += path.length;
                 totalArea += Math.abs(computePolygonArea(path));
             }
-            html += row('Eckpunkte', totalVerts);
-            if (totalArea > 0) html += row('Fl\u00e4che', fmtNum(totalArea, 1) + ' m\u00B2');
+            html += row(t('popup.vertices'), totalVerts);
+            if (totalArea > 0) html += row(t('popup.area'), fmtNum(totalArea, 1) + ' m\u00B2');
             break;
         }
     }
