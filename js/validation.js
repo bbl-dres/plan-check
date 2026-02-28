@@ -747,7 +747,18 @@ function renderAbortUI(abortErrors) {
 }
 
 function updateTabCounts() {
-    if (dom.vtabLayerCount) dom.vtabLayerCount.textContent = state.layerInfo.length;
+    if (dom.vtabLayerCount) {
+        if (state.resultFilter === 'warnings') {
+            const allowedSet = new Set(CAFM_LAYERS.all);
+            const defaultLayers = new Set(['0', 'Defpoints']);
+            dom.vtabLayerCount.textContent = state.layerInfo.filter(l =>
+                !allowedSet.has(l.name) && !defaultLayers.has(l.name)).length;
+        } else if (state.resultFilter === 'errors') {
+            dom.vtabLayerCount.textContent = 0;
+        } else {
+            dom.vtabLayerCount.textContent = state.layerInfo.length;
+        }
+    }
     if (state.resultFilter === 'errors') {
         if (dom.vtabErrorCount) dom.vtabErrorCount.textContent = state.validationErrors.filter(e => e.severity === 'error').length;
         if (dom.vtabRoomCount) dom.vtabRoomCount.textContent = state.roomData.filter(r => r.status === 'error').length;
@@ -758,12 +769,32 @@ function updateTabCounts() {
         if (dom.vtabErrorCount) dom.vtabErrorCount.textContent = state.validationErrors.length;
         if (dom.vtabRoomCount) dom.vtabRoomCount.textContent = state.roomData.length;
     }
-    if (dom.vtabAreaCount) dom.vtabAreaCount.textContent = state.areaData.length;
+    if (dom.vtabAreaCount) {
+        if (state.resultFilter === 'errors') {
+            dom.vtabAreaCount.textContent = state.areaData.filter(a => a.status === 'error').length;
+        } else if (state.resultFilter === 'warnings') {
+            dom.vtabAreaCount.textContent = state.areaData.filter(a => a.status === 'warning').length;
+        } else {
+            dom.vtabAreaCount.textContent = state.areaData.length;
+        }
+    }
     if (dom.vtabRulesCount) {
         const firedCodes = new Set(state.validationErrors.map(e => e.ruleCode));
-        dom.vtabRulesCount.textContent = ALL_RULES.length - firedCodes.size;
+        if (state.resultFilter === 'errors') {
+            const errorCodes = new Set(state.validationErrors.filter(e => e.severity === 'error').map(e => e.ruleCode));
+            const errorRules = ALL_RULES.filter(r => r.sev === 'error');
+            dom.vtabRulesCount.textContent = errorRules.length - errorCodes.size;
+            if (dom.vtabRulesTotal) dom.vtabRulesTotal.textContent = errorRules.length;
+        } else if (state.resultFilter === 'warnings') {
+            const warnCodes = new Set(state.validationErrors.filter(e => e.severity === 'warning').map(e => e.ruleCode));
+            const warnRules = ALL_RULES.filter(r => r.sev === 'warning');
+            dom.vtabRulesCount.textContent = warnRules.length - warnCodes.size;
+            if (dom.vtabRulesTotal) dom.vtabRulesTotal.textContent = warnRules.length;
+        } else {
+            dom.vtabRulesCount.textContent = ALL_RULES.length - firedCodes.size;
+            if (dom.vtabRulesTotal) dom.vtabRulesTotal.textContent = ALL_RULES.length;
+        }
     }
-    if (dom.vtabRulesTotal) dom.vtabRulesTotal.textContent = ALL_RULES.length;
 }
 
 export function switchValidationTab(tabName) {
@@ -866,8 +897,17 @@ function renderOverviewTab() {
         return 'warning';
     }
 
+    // Apply resultFilter
+    const filteredLayers = state.layerInfo.filter(l => {
+        if (state.resultFilter === 'all') return true;
+        const s = getLayerStatus(l.name);
+        if (state.resultFilter === 'errors') return false; // no layer has error status
+        if (state.resultFilter === 'warnings') return s === 'warning';
+        return true;
+    });
+
     // Render layer list with checkboxes and status icons
-    for (const l of state.layerInfo) {
+    for (const l of filteredLayers) {
         const layerStatus = getLayerStatus(l.name);
         const div = document.createElement('div');
         div.className = 'vside-item vside-item--' + layerStatus + (state.hiddenLayers.has(l.name) ? ' hidden' : '');
@@ -881,7 +921,7 @@ function renderOverviewTab() {
         cb.addEventListener('change', () => {
             if (cb.checked) { state.hiddenLayers.delete(l.name); div.classList.remove('hidden'); }
             else { state.hiddenLayers.add(l.name); div.classList.add('hidden'); }
-            updateToggleAll(state.hiddenLayers, state.layerInfo.map(x => x.name));
+            updateToggleAll(state.hiddenLayers, filteredLayers.map(x => x.name));
             render();
         });
 
@@ -1168,10 +1208,17 @@ function renderAreasTab() {
     }
 
     // Sort: errors first, then warnings, then ok (same as rooms)
-    const sorted = state.areaData.slice().sort((a, b) => {
+    let sorted = state.areaData.slice().sort((a, b) => {
         const order = { error: 0, warning: 1, ok: 2 };
         return (order[a.status] || 2) - (order[b.status] || 2);
     });
+
+    // Apply resultFilter
+    if (state.resultFilter === 'errors') {
+        sorted = sorted.filter(a => a.status === 'error');
+    } else if (state.resultFilter === 'warnings') {
+        sorted = sorted.filter(a => a.status === 'warning');
+    }
 
     for (const area of sorted) {
         const div = document.createElement('div');
@@ -1440,11 +1487,24 @@ function renderRulesTab() {
         });
     }
 
-    // Nicht bestanden first, then Bestanden — both expanded
-    if (failed.length > 0) {
-        renderGroup('Nicht bestanden', failed, false);
+    // Apply resultFilter to rules
+    let filteredFailed = failed;
+    let filteredPassed = passed;
+    if (state.resultFilter === 'errors') {
+        filteredFailed = failed.filter(f => f.rule.sev === 'error');
+        filteredPassed = [];
+    } else if (state.resultFilter === 'warnings') {
+        filteredFailed = failed.filter(f => f.rule.sev === 'warning');
+        filteredPassed = [];
     }
-    renderGroup('Bestanden', passed, false);
+
+    // Nicht bestanden first, then Bestanden — both expanded
+    if (filteredFailed.length > 0) {
+        renderGroup('Nicht bestanden', filteredFailed, false);
+    }
+    if (filteredPassed.length > 0) {
+        renderGroup('Bestanden', filteredPassed, false);
+    }
 
     wireSearch('data-search');
 }

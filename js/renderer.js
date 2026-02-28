@@ -788,6 +788,8 @@ function renderRoomOverlays() {
     if (state.validationMode === 'areas') {
         for (const area of state.areaData) {
             if (state.hiddenAreaIds.has(area.id)) continue;
+            if (state.resultFilter === 'errors' && area.status !== 'error') continue;
+            if (state.resultFilter === 'warnings' && area.status !== 'warning') continue;
             const colors = getAreaOverlayColor(area);
             if (!colors) continue;
 
@@ -803,7 +805,12 @@ function renderRoomOverlays() {
 
         // Area labels (second pass — collision detection, same as rooms)
         const placedAreaLabels = [];
-        const visibleAreas = state.areaData.filter(a => !state.hiddenAreaIds.has(a.id));
+        const visibleAreas = state.areaData.filter(a => {
+            if (state.hiddenAreaIds.has(a.id)) return false;
+            if (state.resultFilter === 'errors' && a.status !== 'error') return false;
+            if (state.resultFilter === 'warnings' && a.status !== 'warning') return false;
+            return true;
+        });
         visibleAreas.sort((a, b) => b.area - a.area);
 
         const areaFontSize = 11;
