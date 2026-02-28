@@ -652,7 +652,7 @@ body {
     width: 90px; flex-shrink: 0;
 }
 .rules-row__sev {
-    width: 18px; flex-shrink: 0; text-align: center;
+    width: 20px; flex-shrink: 0; text-align: center;
     font-weight: var(--font-weight-bold);
 }
 .rules-row__sev--pass { color: var(--color-success); }

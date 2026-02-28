@@ -11,7 +11,7 @@ import { downloadPdfReport, downloadExcelReport } from './export.js';
 // Rule Definitions
 // =============================================
 
-const ALL_RULES = [
+export const ALL_RULES = [
     { cat: 'LAYER', code: 'LAYER_001', sev: 'error',   desc: 'Pflicht-Layer fehlt: R_RAUMPOLYGON' },
     { cat: 'LAYER', code: 'LAYER_002', sev: 'error',   desc: 'Pflicht-Layer fehlt: R_AOID' },
     { cat: 'LAYER', code: 'LAYER_003', sev: 'error',   desc: 'Pflicht-Layer fehlt: R_GESCHOSSPOLYGON' },
@@ -54,7 +54,7 @@ const ALL_RULES = [
     { cat: 'HATCH', code: 'HATCH_001', sev: 'warning', desc: 'Schraffur auf A_SCHRAFFUR ist nicht SOLID' },
 ];
 
-const RULE_CAT_LABELS = {
+export const RULE_CAT_LABELS = {
     LAYER: 'Layerstruktur', POLY: 'Raumpolygone', GPOLY: 'Geschosspolygone',
     AOID: 'Raumstempel', GEOM: 'Geometrie', TEXT: 'Textelemente',
     STYLE: 'Linientypen/Farben', LAYOUT: 'Planlayout', DIM: 'Masselemente', HATCH: 'Schraffuren'
@@ -1375,57 +1375,50 @@ function renderRulesTab() {
         violationCounts[err.ruleCode] = (violationCounts[err.ruleCode] || 0) + 1;
     }
 
-    function getStatus(code) {
-        const count = violationCounts[code] || 0;
-        if (count === 0) return 'pass';
-        const rule = ALL_RULES.find(r => r.code === code);
-        return rule?.sev === 'error' ? 'fail' : 'warn';
-    }
-
-    // Group rules by category
-    const categories = [];
-    let currentCat = null;
+    // Split rules into failed (errors first, then warnings) and passed
+    const failed = [];
+    const passed = [];
     for (const r of ALL_RULES) {
-        if (r.cat !== currentCat) {
-            currentCat = r.cat;
-            categories.push({ cat: r.cat, rules: [] });
+        const count = violationCounts[r.code] || 0;
+        if (count > 0) {
+            const status = r.sev === 'error' ? 'fail' : 'warn';
+            failed.push({ rule: r, count, status });
+        } else {
+            passed.push({ rule: r, count: 0, status: 'pass' });
         }
-        categories[categories.length - 1].rules.push(r);
     }
+    // Sort failed: errors first, then warnings; within same severity by code
+    failed.sort((a, b) => {
+        if (a.status !== b.status) return a.status === 'fail' ? -1 : 1;
+        return a.rule.code.localeCompare(b.rule.code);
+    });
 
-    let catIndex = 0;
-    for (const { cat, rules: catRules } of categories) {
-        const passCount = catRules.filter(x => getStatus(x.code) === 'pass').length;
-        const collapsed = catIndex >= 3;
-
+    // Render a group (collapsible section + rule rows)
+    const total = ALL_RULES.length;
+    function renderGroup(label, items, collapsed) {
         const sep = document.createElement('div');
         sep.className = 'rules-cat-sep' + (collapsed ? ' rules-cat-sep--collapsed' : '');
-        sep.setAttribute('data-search', cat + ' ' + (RULE_CAT_LABELS[cat] || cat));
+        sep.setAttribute('data-search', label);
         sep.innerHTML =
             `<span class="rules-cat-sep__chevron"></span>` +
-            `<span class="rules-cat-sep__label">${esc(RULE_CAT_LABELS[cat] || cat)}</span>` +
-            `<span class="rules-cat-sep__stats">${passCount}/${catRules.length}</span>`;
+            `<span class="rules-cat-sep__label">${esc(label)}</span>` +
+            `<span class="rules-cat-sep__stats">${items.length}/${total}</span>`;
         dom.vsideList.appendChild(sep);
 
-        // Create row elements for this category
         const rows = [];
-        for (const r of catRules) {
-            const status = getStatus(r.code);
-            const count = violationCounts[r.code] || 0;
+        for (const { rule: r, count, status } of items) {
             const icon = status === 'pass' ? '\u2713' : status === 'fail' ? '\u2716' : '\u26A0';
-            const countClass = count > 0 ? ' rules-row__count--active' : '';
 
             const div = document.createElement('div');
             div.className = 'rules-row';
             if (collapsed) div.style.display = 'none';
             div.setAttribute('data-code', r.code);
-            div.setAttribute('data-cat', cat);
-            div.setAttribute('data-search', r.code + ' ' + r.desc + ' ' + cat);
+            div.setAttribute('data-cat', r.cat);
+            div.setAttribute('data-search', r.code + ' ' + r.desc + ' ' + r.cat);
             div.innerHTML =
                 `<span class="rules-row__sev rules-row__sev--${status}">${icon}</span>` +
                 `<span class="rules-row__code">${r.code}</span>` +
-                `<span class="rules-row__desc" title="${esc(r.desc)}">${esc(r.desc)}</span>` +
-                `<span class="rules-row__count${countClass}">${count > 0 ? count : '\u2014'}</span>`;
+                `<span class="rules-row__desc" title="${esc(r.desc)}">${esc(r.desc)}</span>`;
 
             div.addEventListener('click', () => {
                 if (count > 0) {
@@ -1439,16 +1432,19 @@ function renderRulesTab() {
             dom.vsideList.appendChild(div);
         }
 
-        // Toggle collapse on category click
         sep.addEventListener('click', () => {
             const isCollapsed = sep.classList.toggle('rules-cat-sep--collapsed');
             for (const row of rows) {
                 row.style.display = isCollapsed ? 'none' : '';
             }
         });
-
-        catIndex++;
     }
+
+    // Nicht bestanden first, then Bestanden — both expanded
+    if (failed.length > 0) {
+        renderGroup('Nicht bestanden', failed, false);
+    }
+    renderGroup('Bestanden', passed, false);
 
     wireSearch('data-search');
 }
