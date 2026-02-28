@@ -2,7 +2,7 @@
   {
     "id": 1,
     "projectId": 1,
-    "name": "Ground Floor (EG).dwg",
+    "name": "Erdgeschoss (EG).dwg",
     "createdBy": 3,
     "createdAt": "2022-04-10T09:30:00.000Z",
     "lastEditedBy": 3,
@@ -13,7 +13,7 @@
   {
     "id": 2,
     "projectId": 1,
-    "name": "1st Upper Floor (1.OG).dwg",
+    "name": "1. Obergeschoss (1.OG).dwg",
     "createdBy": 3,
     "createdAt": "2022-04-10T10:15:00.000Z",
     "lastEditedBy": 3,
@@ -24,7 +24,7 @@
   {
     "id": 3,
     "projectId": 1,
-    "name": "2nd Upper Floor (2.OG).dwg",
+    "name": "2. Obergeschoss (2.OG).dwg",
     "createdBy": 3,
     "createdAt": "2022-04-10T11:00:00.000Z",
     "lastEditedBy": 3,
@@ -35,7 +35,7 @@
   {
     "id": 4,
     "projectId": 1,
-    "name": "3rd Upper Floor (3.OG).dwg",
+    "name": "3. Obergeschoss (3.OG).dwg",
     "createdBy": 5,
     "createdAt": "2022-04-11T08:30:00.000Z",
     "lastEditedBy": 5,
@@ -46,7 +46,7 @@
   {
     "id": 5,
     "projectId": 1,
-    "name": "Basement (UG).dwg",
+    "name": "Untergeschoss (UG).dwg",
     "createdBy": 3,
     "createdAt": "2022-04-11T14:00:00.000Z",
     "lastEditedBy": 3,
@@ -57,7 +57,7 @@
   {
     "id": 6,
     "projectId": 1,
-    "name": "Attic Floor (DG).dwg",
+    "name": "Dachgeschoss (DG).dwg",
     "createdBy": 5,
     "createdAt": "2022-04-12T09:00:00.000Z",
     "lastEditedBy": 5,
@@ -68,7 +68,7 @@
   {
     "id": 7,
     "projectId": 1,
-    "name": "Room_List_Liebefeld.xlsx",
+    "name": "Raumliste_Liebefeld.xlsx",
     "createdBy": 3,
     "createdAt": "2022-04-12T15:00:00.000Z",
     "lastEditedBy": 3,
@@ -178,7 +178,7 @@
   {
     "id": 17,
     "projectId": 3,
-    "name": "Ground Floor (EG).dwg",
+    "name": "Erdgeschoss (EG).dwg",
     "createdBy": 1,
     "createdAt": "2022-06-17T12:30:00.000Z",
     "lastEditedBy": 1,
@@ -189,7 +189,7 @@
   {
     "id": 18,
     "projectId": 3,
-    "name": "1st Upper Floor (1.OG).dwg",
+    "name": "1. Obergeschoss (1.OG).dwg",
     "createdBy": 1,
     "createdAt": "2022-06-17T14:15:00.000Z",
     "lastEditedBy": 1,
@@ -200,7 +200,7 @@
   {
     "id": 19,
     "projectId": 3,
-    "name": "2nd Upper Floor (2.OG).dwg",
+    "name": "2. Obergeschoss (2.OG).dwg",
     "createdBy": 1,
     "createdAt": "2022-06-17T15:30:00.000Z",
     "lastEditedBy": 1,
@@ -211,7 +211,7 @@
   {
     "id": 20,
     "projectId": 3,
-    "name": "3rd Upper Floor (3.OG).dwg",
+    "name": "3. Obergeschoss (3.OG).dwg",
     "createdBy": 2,
     "createdAt": "2022-06-18T09:00:00.000Z",
     "lastEditedBy": 2,
@@ -222,7 +222,7 @@
   {
     "id": 21,
     "projectId": 3,
-    "name": "Basement (UG).dwg",
+    "name": "Untergeschoss (UG).dwg",
     "createdBy": 1,
     "createdAt": "2022-06-16T16:00:00.000Z",
     "lastEditedBy": 1,
@@ -233,7 +233,7 @@
   {
     "id": 22,
     "projectId": 3,
-    "name": "Attic Floor (DG).dwg",
+    "name": "Dachgeschoss (DG).dwg",
     "createdBy": 4,
     "createdAt": "2022-06-19T10:30:00.000Z",
     "lastEditedBy": 4,
@@ -244,7 +244,7 @@
   {
     "id": 23,
     "projectId": 3,
-    "name": "Room_List_Hochschule.xlsx",
+    "name": "Raumliste_BASPO.xlsx",
     "createdBy": 1,
     "createdAt": "2022-06-17T15:00:00.000Z",
     "lastEditedBy": 1,
@@ -255,7 +255,7 @@
   {
     "id": 24,
     "projectId": 4,
-    "name": "Ground Floor (EG).dwg",
+    "name": "Erdgeschoss (EG).dwg",
     "createdBy": 8,
     "createdAt": "2022-01-10T09:00:00.000Z",
     "lastEditedBy": 8,
@@ -266,7 +266,7 @@
   {
     "id": 25,
     "projectId": 4,
-    "name": "1st Upper Floor (1.OG).dwg",
+    "name": "1. Obergeschoss (1.OG).dwg",
     "createdBy": 8,
     "createdAt": "2022-01-10T11:30:00.000Z",
     "lastEditedBy": 8,
@@ -277,7 +277,7 @@
   {
     "id": 26,
     "projectId": 4,
-    "name": "2nd Upper Floor (2.OG).dwg",
+    "name": "2. Obergeschoss (2.OG).dwg",
     "createdBy": 8,
     "createdAt": "2022-01-11T08:00:00.000Z",
     "lastEditedBy": 8,
@@ -288,7 +288,7 @@
   {
     "id": 27,
     "projectId": 4,
-    "name": "Basement (UG).dwg",
+    "name": "Untergeschoss (UG).dwg",
     "createdBy": 9,
     "createdAt": "2022-01-12T10:00:00.000Z",
     "lastEditedBy": 9,
@@ -299,7 +299,7 @@
   {
     "id": 28,
     "projectId": 4,
-    "name": "Room_List_Forschung3.xlsx",
+    "name": "Raumliste_Forschung3.xlsx",
     "createdBy": 8,
     "createdAt": "2022-01-13T14:00:00.000Z",
     "lastEditedBy": 8,
@@ -310,7 +310,7 @@
   {
     "id": 29,
     "projectId": 5,
-    "name": "Ground Floor (EG).dwg",
+    "name": "Erdgeschoss (EG).dwg",
     "createdBy": 10,
     "createdAt": "2021-11-28T09:00:00.000Z",
     "lastEditedBy": 10,
@@ -321,7 +321,7 @@
   {
     "id": 30,
     "projectId": 5,
-    "name": "1st Upper Floor (1.OG).dwg",
+    "name": "1. Obergeschoss (1.OG).dwg",
     "createdBy": 10,
     "createdAt": "2021-11-28T14:00:00.000Z",
     "lastEditedBy": 10,
@@ -332,7 +332,7 @@
   {
     "id": 31,
     "projectId": 5,
-    "name": "Basement (UG).dwg",
+    "name": "Untergeschoss (UG).dwg",
     "createdBy": 11,
     "createdAt": "2021-11-29T08:30:00.000Z",
     "lastEditedBy": 11,
@@ -343,7 +343,7 @@
   {
     "id": 32,
     "projectId": 5,
-    "name": "Room_List_Neubau.xlsx",
+    "name": "Raumliste_Neubau.xlsx",
     "createdBy": 10,
     "createdAt": "2021-11-30T10:00:00.000Z",
     "lastEditedBy": 10,

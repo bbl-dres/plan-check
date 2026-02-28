@@ -1131,7 +1131,7 @@ function initProjectMap() {
         const popup = new maplibregl.Popup({ offset: 20 })
             .setHTML(
                 '<h4>' + escapeHtml(project.name) + '</h4>' +
-                '<p>SIA Phase: ' + escapeHtml(project.phase) + ' | Nr. ' + escapeHtml(project.number) + '</p>' +
+                '<p>' + I18n.t('card.siaPhase') + ': ' + escapeHtml(project.phase) + ' | Nr. ' + escapeHtml(project.number) + '</p>' +
                 '<a href="#" class="project-map-link" data-project-id="' + project.id + '">' + I18n.t('map.openProject') + ' &rarr;</a>'
             );
 
@@ -1178,7 +1178,7 @@ function renderDashboard() {
     // --- KPI Cards ---
     const dwgDocs = mockDocuments.filter(d => d.name.endsWith('.dwg'));
     const rooms = mockGeometry.filter(g => g.type === 'room');
-    const gfAreas = mockGeometry.filter(g => g.type === 'area' && g.aofunction === 'Gross Floor Area');
+    const gfAreas = mockGeometry.filter(g => g.type === 'area' && g.aofunction === 'Geschossfläche');
     const totalGF = gfAreas.reduce((sum, a) => sum + (a.area || 0), 0);
     const avgQuality = mockProjects.length > 0
         ? Math.round(mockProjects.reduce((s, p) => s + p.resultPercentage, 0) / mockProjects.length)
@@ -1270,7 +1270,7 @@ function renderDashboard() {
             const pDocs = mockDocuments.filter(d => d.projectId === p.id && d.name.endsWith('.dwg'));
             const pDocIds = mockDocuments.filter(d => d.projectId === p.id).map(d => d.id);
             const pRooms = mockGeometry.filter(g => g.type === 'room' && pDocIds.includes(g.documentId));
-            const pGF = mockGeometry.filter(g => g.type === 'area' && g.aofunction === 'Gross Floor Area' && pDocIds.includes(g.documentId));
+            const pGF = mockGeometry.filter(g => g.type === 'area' && g.aofunction === 'Geschossfläche' && pDocIds.includes(g.documentId));
             const pGFTotal = pGF.reduce((s, a) => s + (a.area || 0), 0);
             const pErrors = mockCheckingResults.filter(r => pDocIds.includes(r.documentId) && r.severity === 'error');
             const scoreClass = p.resultPercentage >= 90 ? 'success' : p.resultPercentage >= 60 ? 'warning' : 'error';
@@ -1306,10 +1306,7 @@ function initFilters() {
     // Populate region dropdown from project names (extract city)
     const regionSelect = document.getElementById('filter-region');
     if (regionSelect) {
-        const regions = [...new Set(mockProjects.map(p => {
-            const parts = p.name.split(',');
-            return parts[0].trim();
-        }))].sort();
+        const regions = [...new Set(mockProjects.map(p => p.city))].sort();
         regions.forEach(region => {
             const opt = document.createElement('option');
             opt.value = region;
@@ -1394,7 +1391,7 @@ function applyFilters() {
 
         let visible = true;
 
-        if (region && !project.name.startsWith(region)) visible = false;
+        if (region && project.city !== region) visible = false;
         if (status && project.status !== status) visible = false;
         if (quality) {
             const pct = project.resultPercentage;
@@ -1451,9 +1448,9 @@ function openProjectDetail(projectId, skipHashUpdate = false) {
     const roomCount = mockGeometry.filter(g => g.type === 'room' && projectDocumentIds.includes(g.documentId)).length;
     document.getElementById('project-room-count').textContent = roomCount;
 
-    // Calculate total GF (Gross Floor Area) from geometry for this project
+    // Calculate total GF (Geschossfläche) from geometry for this project
     const totalGF = mockGeometry
-        .filter(g => g.type === 'area' && g.aofunction === 'Gross Floor Area' && projectDocumentIds.includes(g.documentId))
+        .filter(g => g.type === 'area' && g.aofunction === 'Geschossfläche' && projectDocumentIds.includes(g.documentId))
         .reduce((sum, g) => sum + g.area, 0);
     const formattedGF = totalGF > 0 ? `${totalGF.toLocaleString('de-CH')} m²` : '0 m²';
     document.getElementById('project-gf').textContent = formattedGF;

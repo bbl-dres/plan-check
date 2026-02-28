@@ -1477,6 +1477,16 @@
           "id": { "type": "integer", "example": 1 },
           "number": { "type": "string", "example": "2022-0145" },
           "name": { "type": "string", "example": "Bern, Verwaltungsgebäude Liebefeld" },
+          "internalId": { "type": "string", "example": "BBL-BE-0145", "description": "BBL-internal reference number" },
+          "buildingType": { "type": "string", "example": "Verwaltungsgebäude", "description": "Building classification in the building's language" },
+          "egid": { "type": "integer", "example": 1234567, "description": "Eidgenössischer Gebäudeidentifikator (federal building ID)" },
+          "egrid": { "type": "string", "example": "CH955832730623", "description": "Eidgenössischer Grundstücksidentifikator (federal property ID)" },
+          "country": { "type": "string", "example": "CH", "description": "ISO 3166-1 alpha-2 country code" },
+          "canton": { "type": "string", "example": "BE", "description": "Swiss canton abbreviation" },
+          "city": { "type": "string", "example": "Liebefeld" },
+          "zip": { "type": "string", "example": "3003" },
+          "street": { "type": "string", "example": "Holzikofenweg" },
+          "streetNumber": { "type": "string", "example": "36" },
           "phase": { "type": "string", "enum": ["31", "32", "33", "41", "51", "52", "53"], "example": "53" },
           "language": { "type": "string", "enum": ["de", "fr", "it"], "example": "de" },
           "status": { "type": "string", "enum": ["active", "completed"], "example": "active" },
@@ -1509,7 +1519,7 @@
         "properties": {
           "id": { "type": "integer", "example": 1 },
           "buildingId": { "type": "integer", "example": 1 },
-          "name": { "type": "string", "example": "Ground Floor (EG).dwg" },
+          "name": { "type": "string", "example": "Erdgeschoss (EG).dwg" },
           "status": { "type": "string", "enum": ["uploaded", "validating", "validated", "error"], "example": "validated" },
           "score": { "type": "integer", "example": 94, "description": "Validation score (0-100)" },
           "createdBy": { "type": "integer", "example": 3 },
@@ -1525,7 +1535,7 @@
           "floorplanId": { "type": "integer", "example": 1 },
           "aoid": { "type": "string", "example": "EG.01", "description": "Area/Object ID per BBL naming convention" },
           "area": { "type": "number", "example": 24.5, "description": "Room area in m²" },
-          "aofunction": { "type": "string", "example": "conference", "description": "Functional classification" },
+          "aofunction": { "type": "string", "example": "Konferenz", "description": "Functional classification" },
           "status": { "type": "string", "enum": ["ok", "warning", "error"], "example": "ok" },
           "siaCategory": { "type": "string", "enum": ["HNF", "NNF", "VF"], "example": "HNF", "description": "SIA space classification: HNF (Net Usable), NNF (Non-Net), VF (Traffic)" },
           "vertices": {
@@ -1546,7 +1556,7 @@
           "floorplanId": { "type": "integer", "example": 9 },
           "aoid": { "type": "string", "example": "GF-RC-001", "description": "Gross floor area identifier" },
           "area": { "type": "number", "example": 550.0, "description": "Gross floor area in m²" },
-          "aofunction": { "type": "string", "example": "Gross Floor Area" },
+          "aofunction": { "type": "string", "example": "Geschossfläche" },
           "status": { "type": "string", "enum": ["ok", "warning", "error"], "example": "ok" },
           "vertices": {
             "type": "array",
@@ -1588,15 +1598,15 @@
           "floorplanId": { "type": "integer", "example": 1 },
           "ruleCode": { "type": "string", "example": "LAYER_001" },
           "severity": { "type": "string", "enum": ["error", "warning", "info"], "example": "error" },
-          "message": { "type": "string", "example": "Required layer \"A-WAENDE\" is missing from the drawing" }
+          "message": { "type": "string", "example": "Erforderlicher Layer «A-WAENDE» fehlt in der Zeichnung" }
         }
       },
       "RuleSet": {
         "type": "object",
         "properties": {
           "id": { "type": "integer", "example": 1 },
-          "name": { "type": "string", "example": "BBL CAD Guideline Standard" },
-          "description": { "type": "string", "example": "Standard validation rules for BBL CAD drawings per the federal area management guidelines" },
+          "name": { "type": "string", "example": "BBL CAD-Richtlinie Standard" },
+          "description": { "type": "string", "example": "Standard-Validierungsregeln für BBL CAD-Zeichnungen" },
           "rules": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/Rule" }
@@ -1607,9 +1617,9 @@
         "type": "object",
         "properties": {
           "code": { "type": "string", "example": "LAYER_001" },
-          "name": { "type": "string", "example": "Required layers present" },
-          "category": { "type": "string", "enum": ["Layer", "Geometry", "Entity", "Text", "AOID"], "example": "Layer" },
-          "description": { "type": "string", "example": "Checks whether all 14 required layers per BBL CAD guideline are present in the drawing" }
+          "name": { "type": "string", "example": "Pflichtlayer vorhanden" },
+          "category": { "type": "string", "enum": ["Layer", "Geometrie", "Entität", "Text", "AOID"], "example": "Layer" },
+          "description": { "type": "string", "example": "Prüft, ob alle 14 Pflichtlayer gemäss BBL CAD-Richtlinie vorhanden sind" }
         }
       },
       "BuildingUser": {

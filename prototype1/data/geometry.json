@@ -5,7 +5,7 @@
     "type": "room",
     "aoid": "EG.01",
     "area": 24.5,
-    "aofunction": "conference",
+    "aofunction": "Konferenz",
     "status": "ok",
     "vertices": [
       [
@@ -33,7 +33,7 @@
     "type": "room",
     "aoid": "EG.02",
     "area": 18.3,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -61,7 +61,7 @@
     "type": "room",
     "aoid": "EG.03",
     "area": 22.1,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "error",
     "vertices": [
       [
@@ -89,7 +89,7 @@
     "type": "room",
     "aoid": "EG.04",
     "area": 15.7,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -117,7 +117,7 @@
     "type": "room",
     "aoid": "EG.05",
     "area": 28.9,
-    "aofunction": "meeting",
+    "aofunction": "Sitzung",
     "status": "ok",
     "vertices": [
       [
@@ -173,7 +173,7 @@
     "type": "room",
     "aoid": "EG.07",
     "area": 45.2,
-    "aofunction": "hall",
+    "aofunction": "Halle",
     "status": "ok",
     "vertices": [
       [
@@ -201,7 +201,7 @@
     "type": "room",
     "aoid": "EG.08",
     "area": 19.8,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -229,7 +229,7 @@
     "type": "room",
     "aoid": "EG.09",
     "area": 21.4,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -257,7 +257,7 @@
     "type": "room",
     "aoid": "EG.10",
     "area": 16.8,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -285,7 +285,7 @@
     "type": "room",
     "aoid": "EG.11",
     "area": 35.6,
-    "aofunction": "conference",
+    "aofunction": "Konferenz",
     "status": "ok",
     "vertices": [
       [
@@ -313,7 +313,7 @@
     "type": "room",
     "aoid": "EG.12",
     "area": 18.5,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -341,7 +341,7 @@
     "type": "room",
     "aoid": "EG.13",
     "area": 14.2,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -397,7 +397,7 @@
     "type": "room",
     "aoid": "EG.15",
     "area": 23.7,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -425,7 +425,7 @@
     "type": "room",
     "aoid": "EG.16",
     "area": 17.9,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -453,7 +453,7 @@
     "type": "area",
     "aoid": "GF-EG-001",
     "area": 450,
-    "aofunction": "Gross Floor Area",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -481,7 +481,7 @@
     "type": "area",
     "aoid": "EBF-EG-001",
     "area": 280,
-    "aofunction": "Energy Reference Area",
+    "aofunction": "Energiebezugsfläche",
     "status": "ok",
     "vertices": [
       [
@@ -509,7 +509,7 @@
     "type": "room",
     "aoid": "1OG.01",
     "area": 35.8,
-    "aofunction": "conference",
+    "aofunction": "Konferenz",
     "status": "ok",
     "vertices": [
       [
@@ -537,7 +537,7 @@
     "type": "room",
     "aoid": "1OG.02",
     "area": 14.2,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -565,7 +565,7 @@
     "type": "room",
     "aoid": "1OG.03",
     "area": 18.95,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -593,7 +593,7 @@
     "type": "room",
     "aoid": "1OG.04",
     "area": 22.7,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "warning",
     "vertices": [
       [
@@ -649,7 +649,7 @@
     "type": "room",
     "aoid": "1OG.06",
     "area": 27.45,
-    "aofunction": "meeting",
+    "aofunction": "Sitzung",
     "status": "ok",
     "vertices": [
       [
@@ -677,7 +677,7 @@
     "type": "room",
     "aoid": "1OG.07",
     "area": 42.3,
-    "aofunction": "hall",
+    "aofunction": "Halle",
     "status": "ok",
     "vertices": [
       [
@@ -705,7 +705,7 @@
     "type": "room",
     "aoid": "1OG.08",
     "area": 19.5,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -733,7 +733,7 @@
     "type": "room",
     "aoid": "1OG.09",
     "area": 16.8,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -761,7 +761,7 @@
     "type": "room",
     "aoid": "1OG.10",
     "area": 21.6,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -789,7 +789,7 @@
     "type": "room",
     "aoid": "1OG.11",
     "area": 24.3,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -817,7 +817,7 @@
     "type": "room",
     "aoid": "1OG.12",
     "area": 18.2,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -845,7 +845,7 @@
     "type": "room",
     "aoid": "1OG.13",
     "area": 12.5,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -901,7 +901,7 @@
     "type": "room",
     "aoid": "1OG.15",
     "area": 38.5,
-    "aofunction": "conference",
+    "aofunction": "Konferenz",
     "status": "ok",
     "vertices": [
       [
@@ -929,7 +929,7 @@
     "type": "area",
     "aoid": "GF-1OG-001",
     "area": 435,
-    "aofunction": "Gross Floor Area",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -957,7 +957,7 @@
     "type": "area",
     "aoid": "EBF-1OG-001",
     "area": 265,
-    "aofunction": "Energy Reference Area",
+    "aofunction": "Energiebezugsfläche",
     "status": "ok",
     "vertices": [
       [
@@ -985,7 +985,7 @@
     "type": "room",
     "aoid": "2OG.01",
     "area": 42.3,
-    "aofunction": "hall",
+    "aofunction": "Halle",
     "status": "ok",
     "vertices": [
       [
@@ -1013,7 +1013,7 @@
     "type": "room",
     "aoid": "2OG.02",
     "area": 20.55,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "error",
     "vertices": [
       [
@@ -1041,7 +1041,7 @@
     "type": "room",
     "aoid": "2OG.03",
     "area": 31.2,
-    "aofunction": "conference",
+    "aofunction": "Konferenz",
     "status": "ok",
     "vertices": [
       [
@@ -1069,7 +1069,7 @@
     "type": "room",
     "aoid": "2OG.04",
     "area": 17.45,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -1097,7 +1097,7 @@
     "type": "room",
     "aoid": "2OG.05",
     "area": 19.8,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "warning",
     "vertices": [
       [
@@ -1125,7 +1125,7 @@
     "type": "room",
     "aoid": "2OG.06",
     "area": 23.6,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -1153,7 +1153,7 @@
     "type": "room",
     "aoid": "2OG.07",
     "area": 18.9,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -1181,7 +1181,7 @@
     "type": "room",
     "aoid": "2OG.08",
     "area": 15.4,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -1237,7 +1237,7 @@
     "type": "room",
     "aoid": "2OG.10",
     "area": 28.7,
-    "aofunction": "meeting",
+    "aofunction": "Sitzung",
     "status": "ok",
     "vertices": [
       [
@@ -1265,7 +1265,7 @@
     "type": "room",
     "aoid": "2OG.11",
     "area": 21.3,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -1293,7 +1293,7 @@
     "type": "room",
     "aoid": "2OG.12",
     "area": 16.5,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -1321,7 +1321,7 @@
     "type": "room",
     "aoid": "2OG.13",
     "area": 25.8,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -1377,7 +1377,7 @@
     "type": "room",
     "aoid": "2OG.15",
     "area": 34.4,
-    "aofunction": "conference",
+    "aofunction": "Konferenz",
     "status": "ok",
     "vertices": [
       [
@@ -1405,7 +1405,7 @@
     "type": "area",
     "aoid": "GF-2OG-001",
     "area": 428,
-    "aofunction": "Gross Floor Area",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -1433,7 +1433,7 @@
     "type": "area",
     "aoid": "EBF-2OG-001",
     "area": 310,
-    "aofunction": "Energy Reference Area",
+    "aofunction": "Energiebezugsfläche",
     "status": "ok",
     "vertices": [
       [
@@ -1461,7 +1461,7 @@
     "type": "room",
     "aoid": "3OG.01",
     "area": 38.5,
-    "aofunction": "meeting",
+    "aofunction": "Sitzung",
     "status": "ok",
     "vertices": [
       [
@@ -1489,7 +1489,7 @@
     "type": "room",
     "aoid": "3OG.02",
     "area": 21.3,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -1517,7 +1517,7 @@
     "type": "room",
     "aoid": "3OG.03",
     "area": 18.75,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -1545,7 +1545,7 @@
     "type": "room",
     "aoid": "3OG.04",
     "area": 24.9,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "error",
     "vertices": [
       [
@@ -1573,7 +1573,7 @@
     "type": "room",
     "aoid": "3OG.05",
     "area": 13.2,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -1601,7 +1601,7 @@
     "type": "room",
     "aoid": "3OG.06",
     "area": 40.8,
-    "aofunction": "hall",
+    "aofunction": "Halle",
     "status": "ok",
     "vertices": [
       [
@@ -1629,7 +1629,7 @@
     "type": "room",
     "aoid": "3OG.07",
     "area": 22.4,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -1657,7 +1657,7 @@
     "type": "room",
     "aoid": "3OG.08",
     "area": 17.6,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -1713,7 +1713,7 @@
     "type": "room",
     "aoid": "3OG.10",
     "area": 32.5,
-    "aofunction": "conference",
+    "aofunction": "Konferenz",
     "status": "ok",
     "vertices": [
       [
@@ -1741,7 +1741,7 @@
     "type": "room",
     "aoid": "3OG.11",
     "area": 19.8,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -1769,7 +1769,7 @@
     "type": "room",
     "aoid": "3OG.12",
     "area": 16.3,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -1797,7 +1797,7 @@
     "type": "room",
     "aoid": "3OG.13",
     "area": 23.7,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -1853,7 +1853,7 @@
     "type": "area",
     "aoid": "GF-3OG-001",
     "area": 415,
-    "aofunction": "Gross Floor Area",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -1881,7 +1881,7 @@
     "type": "area",
     "aoid": "EBF-3OG-001",
     "area": 285,
-    "aofunction": "Energy Reference Area",
+    "aofunction": "Energiebezugsfläche",
     "status": "ok",
     "vertices": [
       [
@@ -1909,7 +1909,7 @@
     "type": "room",
     "aoid": "UG.01",
     "area": 85,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -1937,7 +1937,7 @@
     "type": "room",
     "aoid": "UG.02",
     "area": 42.5,
-    "aofunction": "hall",
+    "aofunction": "Halle",
     "status": "warning",
     "vertices": [
       [
@@ -1965,7 +1965,7 @@
     "type": "room",
     "aoid": "UG.03",
     "area": 28.3,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "error",
     "vertices": [
       [
@@ -2021,7 +2021,7 @@
     "type": "room",
     "aoid": "UG.05",
     "area": 45.2,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -2049,7 +2049,7 @@
     "type": "room",
     "aoid": "UG.06",
     "area": 32.8,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -2077,7 +2077,7 @@
     "type": "room",
     "aoid": "UG.07",
     "area": 18.4,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -2105,7 +2105,7 @@
     "type": "area",
     "aoid": "GF-UG-001",
     "area": 320,
-    "aofunction": "Gross Floor Area",
+    "aofunction": "Geschossfläche",
     "status": "error",
     "vertices": [
       [
@@ -2133,7 +2133,7 @@
     "type": "area",
     "aoid": "EBF-UG-001",
     "area": 180,
-    "aofunction": "Energy Reference Area",
+    "aofunction": "Energiebezugsfläche",
     "status": "ok",
     "vertices": [
       [
@@ -2161,7 +2161,7 @@
     "type": "room",
     "aoid": "DG.01",
     "area": 55,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -2189,7 +2189,7 @@
     "type": "room",
     "aoid": "DG.02",
     "area": 32,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -2217,7 +2217,7 @@
     "type": "room",
     "aoid": "DG.03",
     "area": 28.5,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -2245,7 +2245,7 @@
     "type": "room",
     "aoid": "DG.04",
     "area": 18.2,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -2273,7 +2273,7 @@
     "type": "room",
     "aoid": "DG.05",
     "area": 22.8,
-    "aofunction": "hall",
+    "aofunction": "Halle",
     "status": "ok",
     "vertices": [
       [
@@ -2301,7 +2301,7 @@
     "type": "area",
     "aoid": "GF-DG-001",
     "area": 210,
-    "aofunction": "Gross Floor Area",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -2329,7 +2329,7 @@
     "type": "room",
     "aoid": "SS.01",
     "area": 120,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -2357,7 +2357,7 @@
     "type": "room",
     "aoid": "SS.02",
     "area": 45,
-    "aofunction": "hall",
+    "aofunction": "Halle",
     "status": "warning",
     "vertices": [
       [
@@ -2385,7 +2385,7 @@
     "type": "room",
     "aoid": "SS.03",
     "area": 35,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "error",
     "vertices": [
       [
@@ -2413,7 +2413,7 @@
     "type": "room",
     "aoid": "SS.04",
     "area": 68.5,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -2441,7 +2441,7 @@
     "type": "room",
     "aoid": "SS.05",
     "area": 52.3,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -2469,7 +2469,7 @@
     "type": "room",
     "aoid": "SS.06",
     "area": 38.2,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -2525,7 +2525,7 @@
     "type": "area",
     "aoid": "GF-SS-001",
     "area": 520,
-    "aofunction": "Gross Floor Area",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -2553,7 +2553,7 @@
     "type": "room",
     "aoid": "RC.01",
     "area": 65,
-    "aofunction": "hall",
+    "aofunction": "Halle",
     "status": "ok",
     "vertices": [
       [
@@ -2581,7 +2581,7 @@
     "type": "room",
     "aoid": "RC.02",
     "area": 42,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -2609,7 +2609,7 @@
     "type": "room",
     "aoid": "RC.03",
     "area": 38,
-    "aofunction": "conference",
+    "aofunction": "Konferenz",
     "status": "warning",
     "vertices": [
       [
@@ -2637,7 +2637,7 @@
     "type": "room",
     "aoid": "RC.04",
     "area": 28,
-    "aofunction": "meeting",
+    "aofunction": "Sitzung",
     "status": "ok",
     "vertices": [
       [
@@ -2693,7 +2693,7 @@
     "type": "room",
     "aoid": "RC.06",
     "area": 35.5,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -2721,7 +2721,7 @@
     "type": "room",
     "aoid": "RC.07",
     "area": 24.8,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -2749,7 +2749,7 @@
     "type": "room",
     "aoid": "RC.08",
     "area": 31.2,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -2777,7 +2777,7 @@
     "type": "room",
     "aoid": "RC.09",
     "area": 18.6,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -2805,7 +2805,7 @@
     "type": "room",
     "aoid": "RC.10",
     "area": 12.4,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -2833,7 +2833,7 @@
     "type": "room",
     "aoid": "RC.11",
     "area": 48.5,
-    "aofunction": "conference",
+    "aofunction": "Konferenz",
     "status": "ok",
     "vertices": [
       [
@@ -2861,7 +2861,7 @@
     "type": "room",
     "aoid": "RC.12",
     "area": 22.3,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -2917,7 +2917,7 @@
     "type": "area",
     "aoid": "GF-RC-001",
     "area": 550,
-    "aofunction": "Gross Floor Area",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -2945,7 +2945,7 @@
     "type": "room",
     "aoid": "1E.01",
     "area": 55,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -2973,7 +2973,7 @@
     "type": "room",
     "aoid": "1E.02",
     "area": 48,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -3001,7 +3001,7 @@
     "type": "room",
     "aoid": "1E.03",
     "area": 32,
-    "aofunction": "meeting",
+    "aofunction": "Sitzung",
     "status": "ok",
     "vertices": [
       [
@@ -3057,7 +3057,7 @@
     "type": "room",
     "aoid": "1E.05",
     "area": 58.5,
-    "aofunction": "hall",
+    "aofunction": "Halle",
     "status": "ok",
     "vertices": [
       [
@@ -3085,7 +3085,7 @@
     "type": "room",
     "aoid": "1E.06",
     "area": 42.3,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -3113,7 +3113,7 @@
     "type": "room",
     "aoid": "1E.07",
     "area": 26.8,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -3141,7 +3141,7 @@
     "type": "room",
     "aoid": "1E.08",
     "area": 38.4,
-    "aofunction": "conference",
+    "aofunction": "Konferenz",
     "status": "ok",
     "vertices": [
       [
@@ -3169,7 +3169,7 @@
     "type": "room",
     "aoid": "1E.09",
     "area": 18.9,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -3197,7 +3197,7 @@
     "type": "room",
     "aoid": "1E.10",
     "area": 22.5,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -3225,7 +3225,7 @@
     "type": "room",
     "aoid": "1E.11",
     "area": 14.6,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -3281,7 +3281,7 @@
     "type": "area",
     "aoid": "GF-1E-001",
     "area": 540,
-    "aofunction": "Gross Floor Area",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -3309,7 +3309,7 @@
     "type": "room",
     "aoid": "2E.01",
     "area": 62,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "error",
     "vertices": [
       [
@@ -3337,7 +3337,7 @@
     "type": "room",
     "aoid": "2E.02",
     "area": 45,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "warning",
     "vertices": [
       [
@@ -3365,7 +3365,7 @@
     "type": "room",
     "aoid": "2E.03",
     "area": 28,
-    "aofunction": "meeting",
+    "aofunction": "Sitzung",
     "status": "ok",
     "vertices": [
       [
@@ -3393,7 +3393,7 @@
     "type": "room",
     "aoid": "2E.04",
     "area": 52.8,
-    "aofunction": "hall",
+    "aofunction": "Halle",
     "status": "ok",
     "vertices": [
       [
@@ -3421,7 +3421,7 @@
     "type": "room",
     "aoid": "2E.05",
     "area": 38.5,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -3449,7 +3449,7 @@
     "type": "room",
     "aoid": "2E.06",
     "area": 24.3,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -3477,7 +3477,7 @@
     "type": "room",
     "aoid": "2E.07",
     "area": 42.6,
-    "aofunction": "conference",
+    "aofunction": "Konferenz",
     "status": "ok",
     "vertices": [
       [
@@ -3505,7 +3505,7 @@
     "type": "room",
     "aoid": "2E.08",
     "area": 18.7,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -3533,7 +3533,7 @@
     "type": "room",
     "aoid": "2E.09",
     "area": 21.4,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -3561,7 +3561,7 @@
     "type": "room",
     "aoid": "2E.10",
     "area": 15.2,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -3645,7 +3645,7 @@
     "type": "area",
     "aoid": "GF-2E-001",
     "area": 540,
-    "aofunction": "Gross Floor Area",
+    "aofunction": "Geschossfläche",
     "status": "warning",
     "vertices": [
       [
@@ -3673,7 +3673,7 @@
     "type": "room",
     "aoid": "3E.01",
     "area": 58,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -3701,7 +3701,7 @@
     "type": "room",
     "aoid": "3E.02",
     "area": 52,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "error",
     "vertices": [
       [
@@ -3729,7 +3729,7 @@
     "type": "room",
     "aoid": "3E.03",
     "area": 35,
-    "aofunction": "conference",
+    "aofunction": "Konferenz",
     "status": "ok",
     "vertices": [
       [
@@ -3757,7 +3757,7 @@
     "type": "room",
     "aoid": "3E.04",
     "area": 48.6,
-    "aofunction": "hall",
+    "aofunction": "Halle",
     "status": "ok",
     "vertices": [
       [
@@ -3785,7 +3785,7 @@
     "type": "room",
     "aoid": "3E.05",
     "area": 32.4,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -3813,7 +3813,7 @@
     "type": "room",
     "aoid": "3E.06",
     "area": 26.8,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -3841,7 +3841,7 @@
     "type": "room",
     "aoid": "3E.07",
     "area": 38.2,
-    "aofunction": "meeting",
+    "aofunction": "Sitzung",
     "status": "ok",
     "vertices": [
       [
@@ -3869,7 +3869,7 @@
     "type": "room",
     "aoid": "3E.08",
     "area": 19.5,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -3897,7 +3897,7 @@
     "type": "room",
     "aoid": "3E.09",
     "area": 22.8,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -3925,7 +3925,7 @@
     "type": "room",
     "aoid": "3E.10",
     "area": 16.4,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -4009,7 +4009,7 @@
     "type": "area",
     "aoid": "GF-3E-001",
     "area": 535,
-    "aofunction": "Gross Floor Area",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -4037,7 +4037,7 @@
     "type": "room",
     "aoid": "4E.01",
     "area": 60,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -4065,7 +4065,7 @@
     "type": "room",
     "aoid": "4E.02",
     "area": 48,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "warning",
     "vertices": [
       [
@@ -4093,7 +4093,7 @@
     "type": "room",
     "aoid": "4E.03",
     "area": 30,
-    "aofunction": "meeting",
+    "aofunction": "Sitzung",
     "status": "ok",
     "vertices": [
       [
@@ -4121,7 +4121,7 @@
     "type": "room",
     "aoid": "4E.04",
     "area": 54.2,
-    "aofunction": "hall",
+    "aofunction": "Halle",
     "status": "ok",
     "vertices": [
       [
@@ -4149,7 +4149,7 @@
     "type": "room",
     "aoid": "4E.05",
     "area": 36.8,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -4177,7 +4177,7 @@
     "type": "room",
     "aoid": "4E.06",
     "area": 28.5,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -4205,7 +4205,7 @@
     "type": "room",
     "aoid": "4E.07",
     "area": 42.3,
-    "aofunction": "conference",
+    "aofunction": "Konferenz",
     "status": "ok",
     "vertices": [
       [
@@ -4233,7 +4233,7 @@
     "type": "room",
     "aoid": "4E.08",
     "area": 21.6,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -4261,7 +4261,7 @@
     "type": "room",
     "aoid": "4E.09",
     "area": 18.4,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -4289,7 +4289,7 @@
     "type": "room",
     "aoid": "4E.10",
     "area": 14.8,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -4373,7 +4373,7 @@
     "type": "area",
     "aoid": "GF-4E-001",
     "area": 530,
-    "aofunction": "Gross Floor Area",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -4401,7 +4401,7 @@
     "type": "room",
     "aoid": "T.01",
     "area": 25,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -4429,7 +4429,7 @@
     "type": "room",
     "aoid": "T.02",
     "area": 38.5,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -4457,7 +4457,7 @@
     "type": "room",
     "aoid": "T.03",
     "area": 18.2,
-    "aofunction": "hall",
+    "aofunction": "Halle",
     "status": "ok",
     "vertices": [
       [
@@ -4485,7 +4485,7 @@
     "type": "area",
     "aoid": "GF-T-001",
     "area": 120,
-    "aofunction": "Gross Floor Area",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -4513,7 +4513,7 @@
     "type": "room",
     "aoid": "EG.01",
     "area": 32.5,
-    "aofunction": "conference",
+    "aofunction": "Konferenz",
     "status": "ok",
     "vertices": [
       [
@@ -4541,7 +4541,7 @@
     "type": "room",
     "aoid": "EG.02",
     "area": 24.8,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -4569,7 +4569,7 @@
     "type": "room",
     "aoid": "EG.03",
     "area": 28.4,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -4597,7 +4597,7 @@
     "type": "room",
     "aoid": "EG.04",
     "area": 18.9,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -4625,7 +4625,7 @@
     "type": "room",
     "aoid": "EG.05",
     "area": 35.6,
-    "aofunction": "meeting",
+    "aofunction": "Sitzung",
     "status": "ok",
     "vertices": [
       [
@@ -4681,7 +4681,7 @@
     "type": "room",
     "aoid": "EG.07",
     "area": 52.3,
-    "aofunction": "hall",
+    "aofunction": "Halle",
     "status": "ok",
     "vertices": [
       [
@@ -4709,7 +4709,7 @@
     "type": "room",
     "aoid": "EG.08",
     "area": 21.6,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -4737,7 +4737,7 @@
     "type": "room",
     "aoid": "EG.09",
     "area": 19.4,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -4765,7 +4765,7 @@
     "type": "room",
     "aoid": "EG.10",
     "area": 16.8,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -4793,7 +4793,7 @@
     "type": "room",
     "aoid": "EG.11",
     "area": 25.3,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -4821,7 +4821,7 @@
     "type": "room",
     "aoid": "EG.12",
     "area": 12.5,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -4877,7 +4877,7 @@
     "type": "area",
     "aoid": "GF-EG-001",
     "area": 380,
-    "aofunction": "Gross Floor Area",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -4905,7 +4905,7 @@
     "type": "area",
     "aoid": "EBF-EG-001",
     "area": 240,
-    "aofunction": "Energy Reference Area",
+    "aofunction": "Energiebezugsfläche",
     "status": "ok",
     "vertices": [
       [
@@ -4933,7 +4933,7 @@
     "type": "room",
     "aoid": "1OG.01",
     "area": 42,
-    "aofunction": "conference",
+    "aofunction": "Konferenz",
     "status": "ok",
     "vertices": [
       [
@@ -4961,7 +4961,7 @@
     "type": "room",
     "aoid": "1OG.02",
     "area": 18.5,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -4989,7 +4989,7 @@
     "type": "room",
     "aoid": "1OG.03",
     "area": 22.3,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "warning",
     "vertices": [
       [
@@ -5017,7 +5017,7 @@
     "type": "room",
     "aoid": "1OG.04",
     "area": 28.9,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -5073,7 +5073,7 @@
     "type": "room",
     "aoid": "1OG.06",
     "area": 48.5,
-    "aofunction": "hall",
+    "aofunction": "Halle",
     "status": "ok",
     "vertices": [
       [
@@ -5101,7 +5101,7 @@
     "type": "room",
     "aoid": "1OG.07",
     "area": 24.6,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -5129,7 +5129,7 @@
     "type": "room",
     "aoid": "1OG.08",
     "area": 19.8,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -5157,7 +5157,7 @@
     "type": "room",
     "aoid": "1OG.09",
     "area": 31.2,
-    "aofunction": "meeting",
+    "aofunction": "Sitzung",
     "status": "ok",
     "vertices": [
       [
@@ -5185,7 +5185,7 @@
     "type": "room",
     "aoid": "1OG.10",
     "area": 15.4,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -5213,7 +5213,7 @@
     "type": "room",
     "aoid": "1OG.11",
     "area": 21.8,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -5269,7 +5269,7 @@
     "type": "area",
     "aoid": "GF-1OG-001",
     "area": 375,
-    "aofunction": "Gross Floor Area",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -5297,7 +5297,7 @@
     "type": "room",
     "aoid": "2OG.01",
     "area": 48.6,
-    "aofunction": "hall",
+    "aofunction": "Halle",
     "status": "ok",
     "vertices": [
       [
@@ -5325,7 +5325,7 @@
     "type": "room",
     "aoid": "2OG.02",
     "area": 26.4,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "error",
     "vertices": [
       [
@@ -5353,7 +5353,7 @@
     "type": "room",
     "aoid": "2OG.03",
     "area": 38.2,
-    "aofunction": "conference",
+    "aofunction": "Konferenz",
     "status": "ok",
     "vertices": [
       [
@@ -5381,7 +5381,7 @@
     "type": "room",
     "aoid": "2OG.04",
     "area": 21.5,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -5409,7 +5409,7 @@
     "type": "room",
     "aoid": "2OG.05",
     "area": 19.8,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -5437,7 +5437,7 @@
     "type": "room",
     "aoid": "2OG.06",
     "area": 24.3,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -5465,7 +5465,7 @@
     "type": "room",
     "aoid": "2OG.07",
     "area": 17.6,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -5493,7 +5493,7 @@
     "type": "room",
     "aoid": "2OG.08",
     "area": 32.8,
-    "aofunction": "meeting",
+    "aofunction": "Sitzung",
     "status": "ok",
     "vertices": [
       [
@@ -5521,7 +5521,7 @@
     "type": "room",
     "aoid": "2OG.09",
     "area": 14.2,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -5577,7 +5577,7 @@
     "type": "room",
     "aoid": "2OG.11",
     "area": 22.5,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -5633,7 +5633,7 @@
     "type": "area",
     "aoid": "GF-2OG-001",
     "area": 370,
-    "aofunction": "Gross Floor Area",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -5661,7 +5661,7 @@
     "type": "room",
     "aoid": "3OG.01",
     "area": 44.8,
-    "aofunction": "meeting",
+    "aofunction": "Sitzung",
     "status": "ok",
     "vertices": [
       [
@@ -5689,7 +5689,7 @@
     "type": "room",
     "aoid": "3OG.02",
     "area": 25.6,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -5717,7 +5717,7 @@
     "type": "room",
     "aoid": "3OG.03",
     "area": 22.4,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -5745,7 +5745,7 @@
     "type": "room",
     "aoid": "3OG.04",
     "area": 30.2,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "warning",
     "vertices": [
       [
@@ -5773,7 +5773,7 @@
     "type": "room",
     "aoid": "3OG.05",
     "area": 46.5,
-    "aofunction": "hall",
+    "aofunction": "Halle",
     "status": "ok",
     "vertices": [
       [
@@ -5801,7 +5801,7 @@
     "type": "room",
     "aoid": "3OG.06",
     "area": 18.9,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -5829,7 +5829,7 @@
     "type": "room",
     "aoid": "3OG.07",
     "area": 21.3,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -5857,7 +5857,7 @@
     "type": "room",
     "aoid": "3OG.08",
     "area": 36.4,
-    "aofunction": "conference",
+    "aofunction": "Konferenz",
     "status": "ok",
     "vertices": [
       [
@@ -5885,7 +5885,7 @@
     "type": "room",
     "aoid": "3OG.09",
     "area": 12.8,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -5969,7 +5969,7 @@
     "type": "area",
     "aoid": "GF-3OG-001",
     "area": 365,
-    "aofunction": "Gross Floor Area",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -5997,7 +5997,7 @@
     "type": "room",
     "aoid": "UG.01",
     "area": 95,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -6025,7 +6025,7 @@
     "type": "room",
     "aoid": "UG.02",
     "area": 48.5,
-    "aofunction": "hall",
+    "aofunction": "Halle",
     "status": "error",
     "vertices": [
       [
@@ -6053,7 +6053,7 @@
     "type": "room",
     "aoid": "UG.03",
     "area": 32.8,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "warning",
     "vertices": [
       [
@@ -6081,7 +6081,7 @@
     "type": "room",
     "aoid": "UG.04",
     "area": 42.3,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -6109,7 +6109,7 @@
     "type": "room",
     "aoid": "UG.05",
     "area": 28.6,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -6165,7 +6165,7 @@
     "type": "area",
     "aoid": "GF-UG-001",
     "area": 280,
-    "aofunction": "Gross Floor Area",
+    "aofunction": "Geschossfläche",
     "status": "warning",
     "vertices": [
       [
@@ -6193,7 +6193,7 @@
     "type": "room",
     "aoid": "EG.01",
     "area": 28,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -6221,7 +6221,7 @@
     "type": "room",
     "aoid": "EG.02",
     "area": 35.5,
-    "aofunction": "conference",
+    "aofunction": "Konferenz",
     "status": "ok",
     "vertices": [
       [
@@ -6249,7 +6249,7 @@
     "type": "room",
     "aoid": "EG.03",
     "area": 22,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -6277,7 +6277,7 @@
     "type": "room",
     "aoid": "EG.04",
     "area": 45,
-    "aofunction": "hall",
+    "aofunction": "Halle",
     "status": "ok",
     "vertices": [
       [
@@ -6333,7 +6333,7 @@
     "type": "room",
     "aoid": "EG.06",
     "area": 18.5,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -6361,7 +6361,7 @@
     "type": "room",
     "aoid": "EG.07",
     "area": 15.3,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -6389,7 +6389,7 @@
     "type": "area",
     "aoid": "GF-EG-001",
     "area": 220,
-    "aofunction": "Gross Floor Area",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -6417,7 +6417,7 @@
     "type": "room",
     "aoid": "1OG.01",
     "area": 32,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -6445,7 +6445,7 @@
     "type": "room",
     "aoid": "1OG.02",
     "area": 28,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -6473,7 +6473,7 @@
     "type": "room",
     "aoid": "1OG.03",
     "area": 40,
-    "aofunction": "conference",
+    "aofunction": "Konferenz",
     "status": "ok",
     "vertices": [
       [
@@ -6529,7 +6529,7 @@
     "type": "room",
     "aoid": "1OG.05",
     "area": 38.5,
-    "aofunction": "hall",
+    "aofunction": "Halle",
     "status": "ok",
     "vertices": [
       [
@@ -6557,7 +6557,7 @@
     "type": "room",
     "aoid": "1OG.06",
     "area": 18.2,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -6585,7 +6585,7 @@
     "type": "area",
     "aoid": "GF-1OG-001",
     "area": 215,
-    "aofunction": "Gross Floor Area",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -6613,7 +6613,7 @@
     "type": "room",
     "aoid": "2OG.01",
     "area": 30,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -6641,7 +6641,7 @@
     "type": "room",
     "aoid": "2OG.02",
     "area": 30,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -6669,7 +6669,7 @@
     "type": "room",
     "aoid": "2OG.03",
     "area": 35,
-    "aofunction": "meeting",
+    "aofunction": "Sitzung",
     "status": "ok",
     "vertices": [
       [
@@ -6697,7 +6697,7 @@
     "type": "room",
     "aoid": "2OG.04",
     "area": 42.3,
-    "aofunction": "hall",
+    "aofunction": "Halle",
     "status": "ok",
     "vertices": [
       [
@@ -6725,7 +6725,7 @@
     "type": "room",
     "aoid": "2OG.05",
     "area": 18.6,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -6781,7 +6781,7 @@
     "type": "area",
     "aoid": "GF-2OG-001",
     "area": 210,
-    "aofunction": "Gross Floor Area",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -6809,7 +6809,7 @@
     "type": "room",
     "aoid": "UG.01",
     "area": 65,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -6837,7 +6837,7 @@
     "type": "room",
     "aoid": "UG.02",
     "area": 35,
-    "aofunction": "hall",
+    "aofunction": "Halle",
     "status": "ok",
     "vertices": [
       [
@@ -6865,7 +6865,7 @@
     "type": "room",
     "aoid": "UG.03",
     "area": 42.5,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -6893,7 +6893,7 @@
     "type": "area",
     "aoid": "GF-UG-001",
     "area": 180,
-    "aofunction": "Gross Floor Area",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -6921,7 +6921,7 @@
     "type": "room",
     "aoid": "EG.01",
     "area": 38,
-    "aofunction": "conference",
+    "aofunction": "Konferenz",
     "status": "ok",
     "vertices": [
       [
@@ -6949,7 +6949,7 @@
     "type": "room",
     "aoid": "EG.02",
     "area": 26.5,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -6977,7 +6977,7 @@
     "type": "room",
     "aoid": "EG.03",
     "area": 32,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "warning",
     "vertices": [
       [
@@ -7005,7 +7005,7 @@
     "type": "room",
     "aoid": "EG.04",
     "area": 50,
-    "aofunction": "hall",
+    "aofunction": "Halle",
     "status": "ok",
     "vertices": [
       [
@@ -7061,7 +7061,7 @@
     "type": "room",
     "aoid": "EG.06",
     "area": 21.3,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -7089,7 +7089,7 @@
     "type": "room",
     "aoid": "EG.07",
     "area": 18.5,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -7117,7 +7117,7 @@
     "type": "room",
     "aoid": "EG.08",
     "area": 12.4,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -7145,7 +7145,7 @@
     "type": "area",
     "aoid": "GF-EG-001",
     "area": 260,
-    "aofunction": "Gross Floor Area",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -7173,7 +7173,7 @@
     "type": "room",
     "aoid": "1OG.01",
     "area": 42,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -7201,7 +7201,7 @@
     "type": "room",
     "aoid": "1OG.02",
     "area": 36,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -7229,7 +7229,7 @@
     "type": "room",
     "aoid": "1OG.03",
     "area": 48,
-    "aofunction": "conference",
+    "aofunction": "Konferenz",
     "status": "ok",
     "vertices": [
       [
@@ -7285,7 +7285,7 @@
     "type": "room",
     "aoid": "1OG.05",
     "area": 44.5,
-    "aofunction": "hall",
+    "aofunction": "Halle",
     "status": "ok",
     "vertices": [
       [
@@ -7313,7 +7313,7 @@
     "type": "room",
     "aoid": "1OG.06",
     "area": 24.8,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -7341,7 +7341,7 @@
     "type": "room",
     "aoid": "1OG.07",
     "area": 16.2,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -7397,7 +7397,7 @@
     "type": "area",
     "aoid": "GF-1OG-001",
     "area": 255,
-    "aofunction": "Gross Floor Area",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -7425,7 +7425,7 @@
     "type": "room",
     "aoid": "UG.01",
     "area": 75,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -7453,7 +7453,7 @@
     "type": "room",
     "aoid": "UG.02",
     "area": 40,
-    "aofunction": "hall",
+    "aofunction": "Halle",
     "status": "ok",
     "vertices": [
       [
@@ -7481,7 +7481,7 @@
     "type": "room",
     "aoid": "UG.03",
     "area": 25,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "warning",
     "vertices": [
       [
@@ -7509,7 +7509,7 @@
     "type": "room",
     "aoid": "UG.04",
     "area": 32.5,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -7537,7 +7537,7 @@
     "type": "area",
     "aoid": "GF-UG-001",
     "area": 210,
-    "aofunction": "Gross Floor Area",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -7565,7 +7565,7 @@
     "type": "room",
     "aoid": "5E.01",
     "area": 58,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -7593,7 +7593,7 @@
     "type": "room",
     "aoid": "5E.02",
     "area": 55,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -7621,7 +7621,7 @@
     "type": "room",
     "aoid": "5E.03",
     "area": 42,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -7649,7 +7649,7 @@
     "type": "room",
     "aoid": "5E.04",
     "area": 38,
-    "aofunction": "meeting",
+    "aofunction": "Sitzung",
     "status": "ok",
     "vertices": [
       [
@@ -7677,7 +7677,7 @@
     "type": "room",
     "aoid": "5E.05",
     "area": 48,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "warning",
     "vertices": [
       [
@@ -7705,7 +7705,7 @@
     "type": "room",
     "aoid": "5E.06",
     "area": 65,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -7733,7 +7733,7 @@
     "type": "room",
     "aoid": "5E.07",
     "area": 52,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "ok",
     "vertices": [
       [
@@ -7761,7 +7761,7 @@
     "type": "room",
     "aoid": "5E.08",
     "area": 28,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -7789,7 +7789,7 @@
     "type": "room",
     "aoid": "5E.09",
     "area": 18,
-    "aofunction": "wc",
+    "aofunction": "WC",
     "status": "ok",
     "vertices": [
       [
@@ -7817,7 +7817,7 @@
     "type": "room",
     "aoid": "5E.10",
     "area": 32,
-    "aofunction": "corridor",
+    "aofunction": "Korridor",
     "status": "ok",
     "vertices": [
       [
@@ -7845,7 +7845,7 @@
     "type": "room",
     "aoid": "5E.11",
     "area": 45,
-    "aofunction": "office",
+    "aofunction": "Büro",
     "status": "error",
     "vertices": [
       [
@@ -7873,7 +7873,7 @@
     "type": "room",
     "aoid": "5E.12",
     "area": 24,
-    "aofunction": "tech",
+    "aofunction": "Technik",
     "status": "ok",
     "vertices": [
       [
@@ -7901,7 +7901,7 @@
     "type": "area",
     "aoid": "GF-5E-001",
     "area": 525,
-    "aofunction": "Gross Floor Area",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [
@@ -7929,7 +7929,7 @@
     "type": "room",
     "aoid": "DG.01",
     "area": 72,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "ok",
     "vertices": [
       [
@@ -7957,7 +7957,7 @@
     "type": "room",
     "aoid": "DG.02",
     "area": 45,
-    "aofunction": "tech",
+    "aofunction": "Technik",
     "status": "ok",
     "vertices": [
       [
@@ -7985,7 +7985,7 @@
     "type": "room",
     "aoid": "DG.03",
     "area": 38,
-    "aofunction": "storage",
+    "aofunction": "Lager",
     "status": "warning",
     "vertices": [
       [
@@ -8013,7 +8013,7 @@
     "type": "room",
     "aoid": "DG.04",
     "area": 22,
-    "aofunction": "corridor",
+    "aofunction": "Korridor",
     "status": "ok",
     "vertices": [
       [
@@ -8041,7 +8041,7 @@
     "type": "room",
     "aoid": "DG.05",
     "area": 15,
-    "aofunction": "tech",
+    "aofunction": "Technik",
     "status": "ok",
     "vertices": [
       [
@@ -8069,7 +8069,7 @@
     "type": "area",
     "aoid": "GF-DG-001",
     "area": 240,
-    "aofunction": "Gross Floor Area",
+    "aofunction": "Geschossfläche",
     "status": "ok",
     "vertices": [
       [

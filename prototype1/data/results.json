@@ -4,300 +4,300 @@
     "documentId": 1,
     "ruleCode": "LAYER_001",
     "severity": "error",
-    "message": "Required layer \"A-WAENDE\" is missing from the drawing"
+    "message": "Erforderlicher Layer «A-WAENDE» fehlt in der Zeichnung"
   },
   {
     "id": 2,
     "documentId": 1,
     "ruleCode": "GEOM_001",
     "severity": "error",
-    "message": "Room polygon EG.03 is not closed (gap: 2.3mm)"
+    "message": "Raumpolygon EG.03 ist nicht geschlossen (Lücke: 2.3 mm)"
   },
   {
     "id": 3,
     "documentId": 1,
     "ruleCode": "AOID_001",
     "severity": "warning",
-    "message": "AOID EG.06 does not conform to the BBL format"
+    "message": "AOID EG.06 entspricht nicht dem BBL-Format"
   },
   {
     "id": 4,
     "documentId": 2,
     "ruleCode": "GEOM_001",
     "severity": "warning",
-    "message": "Room polygon 1OG.04 has minimal self-intersection"
+    "message": "Raumpolygon 1OG.04 hat minimale Selbstüberschneidung"
   },
   {
     "id": 5,
     "documentId": 2,
     "ruleCode": "TEXT_001",
     "severity": "error",
-    "message": "Text style \"ARIAL_2.5\" not found"
+    "message": "Textstil «ARIAL_2.5» nicht gefunden"
   },
   {
     "id": 6,
     "documentId": 3,
     "ruleCode": "LAYER_002",
     "severity": "error",
-    "message": "Layer \"A-RAEUME\" has incorrect color (expected: 7, found: 256)"
+    "message": "Layer «A-RAEUME» hat falsche Farbe (erwartet: 7, gefunden: 256)"
   },
   {
     "id": 7,
     "documentId": 3,
     "ruleCode": "GEOM_001",
     "severity": "error",
-    "message": "Room polygon 2OG.02 is not closed"
+    "message": "Raumpolygon 2OG.02 ist nicht geschlossen"
   },
   {
     "id": 8,
     "documentId": 3,
     "ruleCode": "AOID_001",
     "severity": "warning",
-    "message": "AOID 2OG.05 does not conform to the BBL format"
+    "message": "AOID 2OG.05 entspricht nicht dem BBL-Format"
   },
   {
     "id": 9,
     "documentId": 4,
     "ruleCode": "GEOM_001",
     "severity": "error",
-    "message": "Room polygon 3OG.04 has invalid geometry"
+    "message": "Raumpolygon 3OG.04 hat ungültige Geometrie"
   },
   {
     "id": 10,
     "documentId": 4,
     "ruleCode": "ENT_001",
     "severity": "warning",
-    "message": "Block definition \"TUER_90\" contains disallowed entity types"
+    "message": "Blockdefinition «TUER_90» enthält unzulässige Entitätstypen"
   },
   {
     "id": 11,
     "documentId": 5,
     "ruleCode": "LAYER_001",
     "severity": "error",
-    "message": "Required layer \"A-SANITAER\" is missing"
+    "message": "Erforderlicher Layer «A-SANITAER» fehlt"
   },
   {
     "id": 12,
     "documentId": 5,
     "ruleCode": "GEOM_001",
     "severity": "error",
-    "message": "Room polygon UG.03 is not closed (gap: 1.8mm)"
+    "message": "Raumpolygon UG.03 ist nicht geschlossen (Lücke: 1.8 mm)"
   },
   {
     "id": 13,
     "documentId": 5,
     "ruleCode": "GEOM_002",
     "severity": "error",
-    "message": "GFA polygon BGF-UG-001 overlaps with adjacent polygon"
+    "message": "GF-Polygon BGF-UG-001 überlappt mit angrenzendem Polygon"
   },
   {
     "id": 14,
     "documentId": 5,
     "ruleCode": "AOID_001",
     "severity": "warning",
-    "message": "AOID UG.02 has unexpected prefix"
+    "message": "AOID UG.02 hat unerwarteten Präfix"
   },
   {
     "id": 15,
     "documentId": 8,
     "ruleCode": "LAYER_001",
     "severity": "error",
-    "message": "Required layer \"A-WAENDE\" is missing from the drawing"
+    "message": "Erforderlicher Layer «A-WAENDE» fehlt in der Zeichnung"
   },
   {
     "id": 16,
     "documentId": 8,
     "ruleCode": "LAYER_002",
     "severity": "error",
-    "message": "Layer \"A-RAEUME\" has incorrect color"
+    "message": "Layer «A-RAEUME» hat falsche Farbe"
   },
   {
     "id": 17,
     "documentId": 8,
     "ruleCode": "GEOM_001",
     "severity": "error",
-    "message": "Room polygon SS.03 is not closed"
+    "message": "Raumpolygon SS.03 ist nicht geschlossen"
   },
   {
     "id": 18,
     "documentId": 8,
     "ruleCode": "AOID_001",
     "severity": "warning",
-    "message": "AOID SS.02 has invalid format"
+    "message": "AOID SS.02 hat ungültiges Format"
   },
   {
     "id": 19,
     "documentId": 9,
     "ruleCode": "GEOM_001",
     "severity": "warning",
-    "message": "Room polygon RC.03 has minimal overlap"
+    "message": "Raumpolygon RC.03 hat minimale Überlappung"
   },
   {
     "id": 20,
     "documentId": 9,
     "ruleCode": "TEXT_001",
     "severity": "error",
-    "message": "Text height outside tolerance (expected: 2.5mm, found: 3.2mm)"
+    "message": "Texthöhe ausserhalb der Toleranz (erwartet: 2.5 mm, gefunden: 3.2 mm)"
   },
   {
     "id": 21,
     "documentId": 10,
     "ruleCode": "ENT_001",
     "severity": "warning",
-    "message": "Disallowed hatch pattern in layer A-RAEUME"
+    "message": "Unzulässiges Schraffurmuster in Layer A-RAEUME"
   },
   {
     "id": 22,
     "documentId": 11,
     "ruleCode": "LAYER_001",
     "severity": "error",
-    "message": "Required layer \"A-MOBILIAR\" is missing"
+    "message": "Erforderlicher Layer «A-MOBILIAR» fehlt"
   },
   {
     "id": 23,
     "documentId": 11,
     "ruleCode": "GEOM_001",
     "severity": "error",
-    "message": "Room polygon 2E.01 is not closed"
+    "message": "Raumpolygon 2E.01 ist nicht geschlossen"
   },
   {
     "id": 24,
     "documentId": 11,
     "ruleCode": "GEOM_002",
     "severity": "warning",
-    "message": "GFA polygon has minimal deviation from outer edge"
+    "message": "GF-Polygon hat minimale Abweichung von der Aussenkante"
   },
   {
     "id": 25,
     "documentId": 11,
     "ruleCode": "AOID_001",
     "severity": "warning",
-    "message": "AOID 2E.02 does not conform to the BBL format"
+    "message": "AOID 2E.02 entspricht nicht dem BBL-Format"
   },
   {
     "id": 26,
     "documentId": 12,
     "ruleCode": "GEOM_001",
     "severity": "error",
-    "message": "Room polygon 3E.02 has self-intersection"
+    "message": "Raumpolygon 3E.02 hat Selbstüberschneidung"
   },
   {
     "id": 27,
     "documentId": 12,
     "ruleCode": "TEXT_002",
     "severity": "error",
-    "message": "Text font is non-standard (found: Comic Sans)"
+    "message": "Schriftart ist nicht standardkonform (gefunden: Comic Sans)"
   },
   {
     "id": 28,
     "documentId": 13,
     "ruleCode": "GEOM_001",
     "severity": "warning",
-    "message": "Room polygon 4E.02 has unusual angles"
+    "message": "Raumpolygon 4E.02 hat ungewöhnliche Winkel"
   },
   {
     "id": 29,
     "documentId": 13,
     "ruleCode": "ENT_001",
     "severity": "error",
-    "message": "3D objects not allowed in 2D drawing"
+    "message": "3D-Objekte sind in 2D-Zeichnungen nicht zulässig"
   },
   {
     "id": 30,
     "documentId": 15,
     "ruleCode": "LAYER_002",
     "severity": "warning",
-    "message": "Layer order does not conform to the standard"
+    "message": "Layerreihenfolge entspricht nicht dem Standard"
   },
   {
     "id": 31,
     "documentId": 17,
     "ruleCode": "AOID_001",
     "severity": "warning",
-    "message": "AOID EG.06 does not conform to the BBL format"
+    "message": "AOID EG.06 entspricht nicht dem BBL-Format"
   },
   {
     "id": 32,
     "documentId": 18,
     "ruleCode": "GEOM_001",
     "severity": "warning",
-    "message": "Room polygon 1OG.03 has minimal deviation"
+    "message": "Raumpolygon 1OG.03 hat minimale Abweichung"
   },
   {
     "id": 33,
     "documentId": 18,
     "ruleCode": "TEXT_001",
     "severity": "error",
-    "message": "Text style not used consistently"
+    "message": "Textstil wird nicht einheitlich verwendet"
   },
   {
     "id": 34,
     "documentId": 19,
     "ruleCode": "GEOM_001",
     "severity": "error",
-    "message": "Room polygon 2OG.02 is not closed (gap: 0.5mm)"
+    "message": "Raumpolygon 2OG.02 ist nicht geschlossen (Lücke: 0.5 mm)"
   },
   {
     "id": 35,
     "documentId": 19,
     "ruleCode": "LAYER_002",
     "severity": "warning",
-    "message": "Layer \"A-TREPPEN\" has non-standard line type"
+    "message": "Layer «A-TREPPEN» hat nicht-standardkonformen Linientyp"
   },
   {
     "id": 36,
     "documentId": 20,
     "ruleCode": "GEOM_001",
     "severity": "warning",
-    "message": "Room polygon 3OG.04 has minor overlap"
+    "message": "Raumpolygon 3OG.04 hat geringfügige Überlappung"
   },
   {
     "id": 37,
     "documentId": 20,
     "ruleCode": "AOID_001",
     "severity": "info",
-    "message": "AOID numbering has gaps (recommended: sequential)"
+    "message": "AOID-Nummerierung hat Lücken (empfohlen: fortlaufend)"
   },
   {
     "id": 38,
     "documentId": 21,
     "ruleCode": "LAYER_001",
     "severity": "error",
-    "message": "Required layer \"A-TECHNIK\" is missing from the drawing"
+    "message": "Erforderlicher Layer «A-TECHNIK» fehlt in der Zeichnung"
   },
   {
     "id": 39,
     "documentId": 21,
     "ruleCode": "GEOM_001",
     "severity": "error",
-    "message": "Room polygon UG.02 has invalid geometry"
+    "message": "Raumpolygon UG.02 hat ungültige Geometrie"
   },
   {
     "id": 40,
     "documentId": 21,
     "ruleCode": "GEOM_002",
     "severity": "warning",
-    "message": "GFA polygon UG exceeds building outline"
+    "message": "GF-Polygon UG überschreitet die Gebäudeumrisslinie"
   },
   {
     "id": 41,
     "documentId": 21,
     "ruleCode": "AOID_001",
     "severity": "warning",
-    "message": "AOID UG.03 format error"
+    "message": "AOID UG.03 Formatfehler"
   },
   {
     "id": 42,
     "documentId": 29,
     "ruleCode": "AOID_001",
     "severity": "warning",
-    "message": "AOID EG.03 has unusual suffix"
+    "message": "AOID EG.03 hat ungewöhnlichen Suffix"
   },
   {
     "id": 43,
     "documentId": 31,
     "ruleCode": "GEOM_001",
     "severity": "warning",
-    "message": "Room polygon UG.03 has minor gap (0.2mm)"
+    "message": "Raumpolygon UG.03 hat geringfügige Lücke (0.2 mm)"
   }
 ]

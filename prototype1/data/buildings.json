@@ -2,7 +2,17 @@
   {
     "id": 1,
     "number": "2022-0145",
-    "name": "Bern, Administrative Building Liebefeld",
+    "name": "Bern, Verwaltungsgebäude Liebefeld",
+    "internalId": "BBL-BE-0145",
+    "buildingType": "Verwaltungsgebäude",
+    "egid": 1234567,
+    "egrid": "CH955832730623",
+    "country": "CH",
+    "canton": "BE",
+    "city": "Liebefeld",
+    "zip": "3003",
+    "street": "Holzikofenweg",
+    "streetNumber": "36",
     "phase": "53",
     "language": "de",
     "createdBy": 3,
@@ -13,36 +23,28 @@
     "ruleSetId": 1,
     "imageUrl": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&auto=format&fit=crop",
     "users": [
-      {
-        "userId": 1,
-        "role": "Admin"
-      },
-      {
-        "userId": 2,
-        "role": "Editor"
-      },
-      {
-        "userId": 3,
-        "role": "Editor"
-      },
-      {
-        "userId": 4,
-        "role": "Editor"
-      },
-      {
-        "userId": 5,
-        "role": "Viewer"
-      }
+      { "userId": 1, "role": "Admin" },
+      { "userId": 2, "role": "Editor" },
+      { "userId": 3, "role": "Editor" },
+      { "userId": 4, "role": "Editor" },
+      { "userId": 5, "role": "Viewer" }
     ],
-    "coordinates": [
-      7.3986,
-      46.929
-    ]
+    "coordinates": [7.3986, 46.929]
   },
   {
     "id": 2,
     "number": "2022-0089",
-    "name": "Geneva, Service Center Montbrillant",
+    "name": "Genève, Centre de services Montbrillant",
+    "internalId": "BBL-GE-0089",
+    "buildingType": "Bâtiment de services",
+    "egid": 2345678,
+    "egrid": "CH389205761834",
+    "country": "CH",
+    "canton": "GE",
+    "city": "Genève",
+    "zip": "1201",
+    "street": "Rue de Montbrillant",
+    "streetNumber": "46",
     "phase": "52",
     "language": "fr",
     "createdBy": 6,
@@ -53,28 +55,26 @@
     "ruleSetId": 1,
     "imageUrl": "https://images.unsplash.com/photo-1511818966892-d7d671e672a2?w=800&auto=format&fit=crop",
     "users": [
-      {
-        "userId": 1,
-        "role": "Admin"
-      },
-      {
-        "userId": 6,
-        "role": "Editor"
-      },
-      {
-        "userId": 7,
-        "role": "Editor"
-      }
+      { "userId": 1, "role": "Admin" },
+      { "userId": 6, "role": "Editor" },
+      { "userId": 7, "role": "Editor" }
     ],
-    "coordinates": [
-      6.1317,
-      46.2121
-    ]
+    "coordinates": [6.1317, 46.2121]
   },
   {
     "id": 3,
     "number": "2022-0056",
-    "name": "Magglingen, BAZG, University Main Building",
+    "name": "Magglingen, BASPO Hauptgebäude",
+    "internalId": "BBL-BE-0056",
+    "buildingType": "Bildungsgebäude",
+    "egid": 3456789,
+    "egrid": "CH704518293647",
+    "country": "CH",
+    "canton": "BE",
+    "city": "Magglingen",
+    "zip": "2532",
+    "street": "Hauptstrasse",
+    "streetNumber": "247",
     "phase": "51",
     "language": "de",
     "createdBy": 10,
@@ -85,28 +85,26 @@
     "ruleSetId": 1,
     "imageUrl": "https://images.unsplash.com/photo-1502101872923-d48509bff386?w=800&auto=format&fit=crop",
     "users": [
-      {
-        "userId": 1,
-        "role": "Admin"
-      },
-      {
-        "userId": 10,
-        "role": "Editor"
-      },
-      {
-        "userId": 11,
-        "role": "Viewer"
-      }
+      { "userId": 1, "role": "Admin" },
+      { "userId": 10, "role": "Editor" },
+      { "userId": 11, "role": "Viewer" }
     ],
-    "coordinates": [
-      7.2078,
-      47.1345
-    ]
+    "coordinates": [7.2078, 47.1345]
   },
   {
     "id": 4,
     "number": "2022-0023",
-    "name": "Zollikofen, Research 3",
+    "name": "Zollikofen, Forschungsgebäude 3",
+    "internalId": "BBL-BE-0023",
+    "buildingType": "Forschungsgebäude",
+    "egid": 4567890,
+    "egrid": "CH618473920156",
+    "country": "CH",
+    "canton": "BE",
+    "city": "Zollikofen",
+    "zip": "3052",
+    "street": "Schwarzenburgstrasse",
+    "streetNumber": "155",
     "phase": "53",
     "language": "de",
     "createdBy": 8,
@@ -117,28 +115,26 @@
     "ruleSetId": 1,
     "imageUrl": "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&auto=format&fit=crop",
     "users": [
-      {
-        "userId": 1,
-        "role": "Admin"
-      },
-      {
-        "userId": 8,
-        "role": "Editor"
-      },
-      {
-        "userId": 9,
-        "role": "Viewer"
-      }
+      { "userId": 1, "role": "Admin" },
+      { "userId": 8, "role": "Editor" },
+      { "userId": 9, "role": "Viewer" }
     ],
-    "coordinates": [
-      7.4597,
-      46.9988
-    ]
+    "coordinates": [7.4597, 46.9988]
   },
   {
     "id": 5,
     "number": "2021-0312",
-    "name": "Magglingen, BAZG, University New Building",
+    "name": "Magglingen, BASPO Neubau",
+    "internalId": "BBL-BE-0312",
+    "buildingType": "Bildungsgebäude",
+    "egid": 5678901,
+    "egrid": "CH492837156480",
+    "country": "CH",
+    "canton": "BE",
+    "city": "Magglingen",
+    "zip": "2532",
+    "street": "Hauptstrasse",
+    "streetNumber": "249",
     "phase": "52",
     "language": "de",
     "createdBy": 10,
@@ -149,22 +145,10 @@
     "ruleSetId": 1,
     "imageUrl": "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=800&auto=format&fit=crop",
     "users": [
-      {
-        "userId": 1,
-        "role": "Admin"
-      },
-      {
-        "userId": 10,
-        "role": "Editor"
-      },
-      {
-        "userId": 11,
-        "role": "Viewer"
-      }
+      { "userId": 1, "role": "Admin" },
+      { "userId": 10, "role": "Editor" },
+      { "userId": 11, "role": "Viewer" }
     ],
-    "coordinates": [
-      7.2098,
-      47.1355
-    ]
+    "coordinates": [7.2098, 47.1355]
   }
 ]
