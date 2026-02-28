@@ -102,7 +102,7 @@ plan-check/
 
 ## Roadmap
 
-- **Project & Building Management** — Multi-project backend with hierarchical structure (projects, buildings, floors, documents) and user/role management (Admin, Editor, Viewer) as demonstrated in the [prototype](prototype1/).
+- **Project & Building Management** — Multi-project backend with hierarchical structure (projects, buildings, floors, documents) and user/role management (Admin, Editor, Viewer) as demonstrated in the [prototype](https://bbl-dres.github.io/plan-check/prototype1/).
 - **REST API** — Backend service for automated batch validation. Documented at [`?view=api-docs`](https://bbl-dres.github.io/plan-check/?view=api-docs) with an [OpenAPI 3.0 spec](assets/openapi.json). Key endpoints: `/validate`, `/jobs/{jobId}/result`, `/export`, `/batch`.
 - **Configurable Rule Sets** — Interchangeable checking configurations and rule definitions loaded from external files, replacing the currently hard-coded validation rules.
 - **Advanced Geometry Checks** — Geometry consistency validation including duplicate detection, overlapping polygons, gap analysis, and self-intersection checks.
