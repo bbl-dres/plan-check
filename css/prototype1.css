@@ -3426,19 +3426,8 @@ a:hover {
     }
 }
 
-/* API Docs Back Button */
-.api-docs__back {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    color: var(--color-primary);
-    text-decoration: none;
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    margin-bottom: var(--space-4);
-    padding: var(--space-1) 0;
-}
-
-.api-docs__back:hover {
-    text-decoration: underline;
+/* API Docs — match prototype1 content width */
+.api-docs {
+    max-width: 1200px;
+    padding: var(--space-5) var(--space-4) var(--space-8);
 }

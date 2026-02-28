@@ -84,7 +84,7 @@
   "map.projectLocations": "Project locations on the map",
   "map.openProject": "Open project",
 
-  "breadcrumb.projects": "Projects",
+  "breadcrumb.buildings": "Buildings",
   "breadcrumb.backToOverview": "Back to Overview",
 
   "detail.avgScore": "Avg. Score",
@@ -96,7 +96,7 @@
   "tab.documents": "Floor Plans",
   "tab.users": "Users",
   "tab.rules": "Validation Rules",
-  "tab.settings": "Project Settings",
+  "tab.settings": "Settings",
 
   "action.edit": "Edit",
   "action.delete": "Delete",

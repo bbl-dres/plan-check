@@ -1,0 +1,1721 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "BBL Plan-Check Area Management API",
+    "version": "2.0.0",
+    "description": "REST API for the BBL Area Management Platform. Manages buildings, floor plan documents (DWG/DXF), room and area geometry, validation against BBL CAD guidelines, team collaboration, and export to PDF, Excel, GeoJSON, and BCF. Supports the full lifecycle from building creation through document upload, automated validation, and compliance reporting.",
+    "contact": {
+      "name": "BBL DRES – Directorate of Resources",
+      "url": "https://www.bbl.admin.ch/de/kontakt"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.pruefplattform.admin.ch/v2",
+      "description": "Production"
+    },
+    {
+      "url": "https://api-staging.pruefplattform.admin.ch/v2",
+      "description": "Staging"
+    }
+  ],
+  "tags": [
+    { "name": "System", "description": "Health check and API information" },
+    { "name": "Buildings", "description": "Building lifecycle management – create, update, archive, and delete area management buildings" },
+    { "name": "Floorplans", "description": "Floor plan (DWG/DXF) and room list (Excel) management" },
+    { "name": "Geometry", "description": "Rooms, areas, and spatial data extracted from floor plan documents" },
+    { "name": "Users", "description": "Building team management – invite members, assign roles, manage access" },
+    { "name": "Rule Sets", "description": "Validation rule sets and individual rule definitions per BBL CAD guideline" },
+    { "name": "Validation", "description": "Document validation against rule sets with async job processing" },
+    { "name": "Export", "description": "PDF, Excel, GeoJSON, and BCF export from validation results" },
+    { "name": "Batch", "description": "Multi-floorplan batch validation within a building" }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": ["System"],
+        "summary": "Health check",
+        "description": "Returns the current status of the API. Useful for monitoring and load balancers.",
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "description": "API is operational",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "ok" },
+                    "version": { "type": "string", "example": "2.0.0" },
+                    "uptime": { "type": "number", "example": 86400, "description": "Uptime in seconds" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/info": {
+      "get": {
+        "tags": ["System"],
+        "summary": "API information",
+        "description": "Returns version information, supported file formats, API limits, and available SIA phases.",
+        "operationId": "getInfo",
+        "responses": {
+          "200": {
+            "description": "API metadata",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "version": { "type": "string", "example": "2.0.0" },
+                    "supportedFormats": {
+                      "type": "array",
+                      "items": { "type": "string" },
+                      "example": [".dwg", ".dxf", ".xlsx"]
+                    },
+                    "maxFileSize": { "type": "string", "example": "50MB" },
+                    "maxBatchSize": { "type": "integer", "example": 20 },
+                    "exportFormats": {
+                      "type": "array",
+                      "items": { "type": "string" },
+                      "example": ["pdf", "excel", "geojson", "bcf"]
+                    },
+                    "siaPhases": {
+                      "type": "array",
+                      "items": { "type": "string" },
+                      "example": ["31", "32", "33", "41", "51", "52", "53"]
+                    },
+                    "languages": {
+                      "type": "array",
+                      "items": { "type": "string" },
+                      "example": ["de", "fr", "it", "en"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/buildings": {
+      "get": {
+        "tags": ["Buildings"],
+        "summary": "List buildings",
+        "description": "Returns a paginated list of all buildings the authenticated user has access to. Supports filtering by status, search by name or number, and sorting.",
+        "operationId": "listBuildings",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["active", "completed"] },
+            "description": "Filter by building status"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": { "type": "string" },
+            "description": "Search by building name or number"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": { "type": "integer", "default": 20, "maximum": 100 },
+            "description": "Maximum number of results"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": { "type": "integer", "default": 0 },
+            "description": "Pagination offset"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of buildings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total": { "type": "integer", "example": 5 },
+                    "buildings": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Building" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Buildings"],
+        "summary": "Create building",
+        "description": "Creates a new area management building. The building number must be unique. A rule set must be assigned for validation.",
+        "operationId": "createBuilding",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["number", "name", "phase", "language", "ruleSetId"],
+                "properties": {
+                  "number": { "type": "string", "example": "2024-0201", "description": "Unique building number" },
+                  "name": { "type": "string", "example": "Bern, Verwaltungsgebäude Neufeld", "description": "Building display name" },
+                  "phase": { "type": "string", "enum": ["31", "32", "33", "41", "51", "52", "53"], "example": "32", "description": "SIA phase" },
+                  "language": { "type": "string", "enum": ["de", "fr", "it"], "example": "de", "description": "Building language" },
+                  "ruleSetId": { "type": "integer", "example": 1, "description": "Validation rule set to use" },
+                  "coordinates": {
+                    "type": "array",
+                    "items": { "type": "number" },
+                    "example": [7.4474, 46.9480],
+                    "description": "Geographic location [longitude, latitude]"
+                  },
+                  "imageUrl": { "type": "string", "description": "Optional building image URL" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Building created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Building" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input or duplicate building number",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/buildings/{buildingId}": {
+      "get": {
+        "tags": ["Buildings"],
+        "summary": "Get building",
+        "description": "Returns the full details of a building, including floorplan count, compliance score, and assigned team members.",
+        "operationId": "getBuilding",
+        "parameters": [
+          {
+            "name": "buildingId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "example": 1,
+            "description": "Building ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Building details",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Building" }
+              }
+            }
+          },
+          "404": {
+            "description": "Building not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Buildings"],
+        "summary": "Update building",
+        "description": "Updates building metadata. Only fields included in the request body are updated.",
+        "operationId": "updateBuilding",
+        "parameters": [
+          {
+            "name": "buildingId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string", "example": "Bern, Verwaltungsgebäude Liebefeld (updated)" },
+                  "phase": { "type": "string", "enum": ["31", "32", "33", "41", "51", "52", "53"] },
+                  "language": { "type": "string", "enum": ["de", "fr", "it"] },
+                  "ruleSetId": { "type": "integer" },
+                  "coordinates": {
+                    "type": "array",
+                    "items": { "type": "number" }
+                  },
+                  "imageUrl": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Building updated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Building" }
+              }
+            }
+          },
+          "404": {
+            "description": "Building not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Buildings"],
+        "summary": "Delete building",
+        "description": "Permanently deletes a building and all associated floorplans, geometry, and validation results. This action cannot be undone.",
+        "operationId": "deleteBuilding",
+        "parameters": [
+          {
+            "name": "buildingId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Building deleted"
+          },
+          "404": {
+            "description": "Building not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/buildings/{buildingId}/archive": {
+      "patch": {
+        "tags": ["Buildings"],
+        "summary": "Archive building",
+        "description": "Sets the building status to `completed`. Archived buildings are read-only but remain accessible for reporting.",
+        "operationId": "archiveBuilding",
+        "parameters": [
+          {
+            "name": "buildingId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Building archived",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Building" }
+              }
+            }
+          },
+          "404": {
+            "description": "Building not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/buildings/{buildingId}/statistics": {
+      "get": {
+        "tags": ["Geometry"],
+        "summary": "Building statistics",
+        "description": "Returns aggregated KPIs for the building: total floorplans, rooms, gross floor area, average compliance score, and error/warning counts.",
+        "operationId": "getBuildingStatistics",
+        "parameters": [
+          {
+            "name": "buildingId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Building statistics",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/BuildingStatistics" }
+              }
+            }
+          },
+          "404": {
+            "description": "Building not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/buildings/{buildingId}/floorplans": {
+      "get": {
+        "tags": ["Floorplans"],
+        "summary": "List floorplans",
+        "description": "Returns all floorplans belonging to a building, including floor plans (DWG) and room lists (Excel) with their validation scores.",
+        "operationId": "listFloorplans",
+        "parameters": [
+          {
+            "name": "buildingId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of floorplans",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total": { "type": "integer", "example": 7 },
+                    "floorplans": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Floorplan" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Building not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Floorplans"],
+        "summary": "Upload floorplan",
+        "description": "Uploads a floor plan (DWG/DXF, max 50 MB) or room list (Excel, max 10 MB) to the building. Geometry is automatically extracted from DWG files.",
+        "operationId": "uploadFloorplan",
+        "parameters": [
+          {
+            "name": "buildingId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["file"],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "DWG/DXF file (max 50 MB) or Excel file (max 10 MB)"
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Optional display name (defaults to filename)",
+                    "example": "Ground Floor (EG).dwg"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Document uploaded",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Floorplan" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid file format",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "413": {
+            "description": "File too large",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/floorplans/{floorplanId}": {
+      "get": {
+        "tags": ["Floorplans"],
+        "summary": "Get floorplan",
+        "description": "Returns document details including validation score, creation and edit timestamps, and file metadata.",
+        "operationId": "getFloorplan",
+        "parameters": [
+          {
+            "name": "floorplanId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Document details",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Floorplan" }
+              }
+            }
+          },
+          "404": {
+            "description": "Document not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Floorplans"],
+        "summary": "Delete floorplan",
+        "description": "Permanently deletes a document and its associated geometry and validation results.",
+        "operationId": "deleteFloorplan",
+        "parameters": [
+          {
+            "name": "floorplanId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Document deleted"
+          },
+          "404": {
+            "description": "Document not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/floorplans/{floorplanId}/rooms": {
+      "get": {
+        "tags": ["Geometry"],
+        "summary": "List rooms",
+        "description": "Returns all rooms extracted from a floor plan document, including AOID, area, function classification, SIA category, validation status, and polygon vertices.",
+        "operationId": "listRooms",
+        "parameters": [
+          {
+            "name": "floorplanId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "example": 1
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["ok", "warning", "error"] },
+            "description": "Filter by validation status"
+          },
+          {
+            "name": "siaCategory",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["HNF", "NNF", "VF"] },
+            "description": "Filter by SIA space classification"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of rooms",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total": { "type": "integer", "example": 42 },
+                    "totalArea": { "type": "number", "example": 1250.5, "description": "Sum of all room areas in m²" },
+                    "rooms": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Room" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Document not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/floorplans/{floorplanId}/rooms/{roomId}": {
+      "get": {
+        "tags": ["Geometry"],
+        "summary": "Get room detail",
+        "description": "Returns full details of a single room including polygon vertices for rendering.",
+        "operationId": "getRoom",
+        "parameters": [
+          {
+            "name": "floorplanId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "example": 1
+          },
+          {
+            "name": "roomId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Room details",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Room" }
+              }
+            }
+          },
+          "404": {
+            "description": "Room not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/floorplans/{floorplanId}/areas": {
+      "get": {
+        "tags": ["Geometry"],
+        "summary": "List areas",
+        "description": "Returns gross floor area polygons extracted from a document. Areas represent aggregate building sections used for GFA (Geschossfläche) calculation.",
+        "operationId": "listAreas",
+        "parameters": [
+          {
+            "name": "floorplanId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of areas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total": { "type": "integer", "example": 3 },
+                    "totalGrossFloorArea": { "type": "number", "example": 1650.0, "description": "Sum of all gross floor areas in m²" },
+                    "areas": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Area" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Document not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/buildings/{buildingId}/users": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "List building members",
+        "description": "Returns all team members assigned to the building with their roles.",
+        "operationId": "listBuildingUsers",
+        "parameters": [
+          {
+            "name": "buildingId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of building members",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total": { "type": "integer", "example": 3 },
+                    "users": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/BuildingUser" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Building not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Users"],
+        "summary": "Invite user",
+        "description": "Invites a user to the building by email and assigns a role. An invitation email is sent automatically.",
+        "operationId": "inviteUser",
+        "parameters": [
+          {
+            "name": "buildingId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "role"],
+                "properties": {
+                  "email": { "type": "string", "format": "email", "example": "neue.person@architekten-bern.ch", "description": "Email address of the user to invite" },
+                  "role": { "type": "string", "enum": ["Admin", "Editor", "Viewer"], "example": "Editor", "description": "Role to assign within the building" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User invited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/BuildingUser" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid email or role",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "409": {
+            "description": "User already in building",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/buildings/{buildingId}/users/{userId}": {
+      "put": {
+        "tags": ["Users"],
+        "summary": "Update user role",
+        "description": "Updates the role of an existing building member.",
+        "operationId": "updateUserRole",
+        "parameters": [
+          {
+            "name": "buildingId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "example": 1
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "example": 2
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["role"],
+                "properties": {
+                  "role": { "type": "string", "enum": ["Admin", "Editor", "Viewer"], "example": "Admin" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Role updated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/BuildingUser" }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found in building",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Users"],
+        "summary": "Remove user",
+        "description": "Removes a user from the building. The user's account is not deleted, only their building access.",
+        "operationId": "removeUser",
+        "parameters": [
+          {
+            "name": "buildingId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "example": 1
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "example": 2
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "User removed from building"
+          },
+          "404": {
+            "description": "User not found in building",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rule-sets": {
+      "get": {
+        "tags": ["Rule Sets"],
+        "summary": "List rule sets",
+        "description": "Returns all available validation rule sets. Each building must reference a rule set for validation.",
+        "operationId": "listRuleSets",
+        "responses": {
+          "200": {
+            "description": "List of rule sets",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ruleSets": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/RuleSet" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rule-sets/{ruleSetId}": {
+      "get": {
+        "tags": ["Rule Sets"],
+        "summary": "Get rule set",
+        "description": "Returns a rule set with all its validation rules, grouped by category (Layer, Geometry, Entity, Text, AOID).",
+        "operationId": "getRuleSet",
+        "parameters": [
+          {
+            "name": "ruleSetId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Rule set with rules",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RuleSet" }
+              }
+            }
+          },
+          "404": {
+            "description": "Rule set not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rule-sets/{ruleSetId}/rules/{code}": {
+      "get": {
+        "tags": ["Rule Sets"],
+        "summary": "Get single rule",
+        "description": "Returns the details of a specific validation rule within a rule set.",
+        "operationId": "getRule",
+        "parameters": [
+          {
+            "name": "ruleSetId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "example": 1
+          },
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "example": "LAYER_001",
+            "description": "Unique rule code"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Rule details",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Rule" }
+              }
+            }
+          },
+          "404": {
+            "description": "Rule not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/floorplans/{floorplanId}/validate": {
+      "post": {
+        "tags": ["Validation"],
+        "summary": "Validate floorplan",
+        "description": "Starts asynchronous validation of a floorplan against the building's assigned rule set. Returns a job ID for status tracking. Validation checks layers, geometry, entity types, text, and AOID compliance.",
+        "operationId": "validateFloorplan",
+        "parameters": [
+          {
+            "name": "floorplanId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "rules": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Optional subset of rule codes to validate (default: all rules in rule set)",
+                    "example": ["LAYER_001", "GEOM_001", "AOID_001"]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Validation started",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "jobId": { "type": "string", "format": "uuid", "example": "a3b1c2d4-e5f6-7890-abcd-ef1234567890" },
+                    "floorplanId": { "type": "integer", "example": 1 },
+                    "status": { "type": "string", "example": "queued" },
+                    "createdAt": { "type": "string", "format": "date-time" }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Document not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/floorplans/{floorplanId}/validation/status": {
+      "get": {
+        "tags": ["Validation"],
+        "summary": "Validation status",
+        "description": "Returns the current validation job status for a document. Possible statuses: `queued`, `processing`, `done`, `failed`.",
+        "operationId": "getValidationStatus",
+        "parameters": [
+          {
+            "name": "floorplanId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Validation job status",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Job" }
+              }
+            }
+          },
+          "404": {
+            "description": "No validation found for document",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/floorplans/{floorplanId}/validation/results": {
+      "get": {
+        "tags": ["Validation"],
+        "summary": "Validation results",
+        "description": "Returns the full validation results for a document, including compliance score, all errors and warnings, and per-rule pass/fail status. Only available when validation status is `done`.",
+        "operationId": "getValidationResults",
+        "parameters": [
+          {
+            "name": "floorplanId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "example": 1
+          },
+          {
+            "name": "severity",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["error", "warning", "info"] },
+            "description": "Filter results by severity"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Validation results",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ValidationResult" }
+              }
+            }
+          },
+          "404": {
+            "description": "No results found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "409": {
+            "description": "Validation not yet completed",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/floorplans/{floorplanId}/export": {
+      "post": {
+        "tags": ["Export"],
+        "summary": "Create export",
+        "description": "Creates an export from a validated document. Supported formats: `pdf` (validation report), `excel` (room list with areas), `geojson` (floor plan geometries), `bcf` (BIM Collaboration Format for error markup).",
+        "operationId": "createExport",
+        "parameters": [
+          {
+            "name": "floorplanId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["format"],
+                "properties": {
+                  "format": {
+                    "type": "string",
+                    "enum": ["pdf", "excel", "geojson", "bcf"],
+                    "description": "Desired export format"
+                  },
+                  "language": {
+                    "type": "string",
+                    "enum": ["de", "fr", "it", "en"],
+                    "default": "de",
+                    "description": "Report language"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Export started",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "exportId": { "type": "string", "format": "uuid", "example": "f1e2d3c4-b5a6-7890-fedc-ba0987654321" },
+                    "format": { "type": "string", "example": "pdf" },
+                    "status": { "type": "string", "example": "generating" },
+                    "createdAt": { "type": "string", "format": "date-time" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid format",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "409": {
+            "description": "Document not yet validated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/exports/{exportId}": {
+      "get": {
+        "tags": ["Export"],
+        "summary": "Export status",
+        "description": "Returns the status of an in-progress or completed export.",
+        "operationId": "getExport",
+        "parameters": [
+          {
+            "name": "exportId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Export status",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Export" }
+              }
+            }
+          },
+          "404": {
+            "description": "Export not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/exports/{exportId}/download": {
+      "get": {
+        "tags": ["Export"],
+        "summary": "Download export",
+        "description": "Downloads the generated export file. Only available when export status is `ready`. The download link is valid for 24 hours.",
+        "operationId": "downloadExport",
+        "parameters": [
+          {
+            "name": "exportId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Export file",
+            "content": {
+              "application/pdf": { "schema": { "type": "string", "format": "binary" } },
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": { "schema": { "type": "string", "format": "binary" } },
+              "application/geo+json": { "schema": { "type": "string", "format": "binary" } },
+              "application/octet-stream": { "schema": { "type": "string", "format": "binary" } }
+            }
+          },
+          "404": {
+            "description": "Export not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "409": {
+            "description": "Export not yet ready",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/buildings/{buildingId}/batch": {
+      "post": {
+        "tags": ["Batch"],
+        "summary": "Batch validate building",
+        "description": "Starts parallel validation of all DWG floorplans in the building. Each floorplan is validated against the building's assigned rule set.",
+        "operationId": "createBuildingBatch",
+        "parameters": [
+          {
+            "name": "buildingId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "floorplanIds": {
+                    "type": "array",
+                    "items": { "type": "integer" },
+                    "description": "Optional subset of document IDs to validate (default: all DWG documents)",
+                    "example": [1, 2, 3]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Batch started",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "batchId": { "type": "string", "format": "uuid", "example": "b1a2c3d4-e5f6-7890-abcd-ef1234567890" },
+                    "buildingId": { "type": "integer", "example": 1 },
+                    "fileCount": { "type": "integer", "example": 6 },
+                    "status": { "type": "string", "example": "processing" },
+                    "jobs": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "jobId": { "type": "string", "format": "uuid" },
+                          "floorplanId": { "type": "integer", "example": 1 },
+                          "filename": { "type": "string", "example": "Ground Floor (EG).dwg" },
+                          "status": { "type": "string", "example": "queued" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Building not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/batch/{batchId}": {
+      "get": {
+        "tags": ["Batch"],
+        "summary": "Batch status",
+        "description": "Returns the status of a batch validation, including progress of each individual document.",
+        "operationId": "getBatch",
+        "parameters": [
+          {
+            "name": "batchId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Batch status",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/BatchJob" }
+              }
+            }
+          },
+          "404": {
+            "description": "Batch not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/batch/{batchId}/summary": {
+      "get": {
+        "tags": ["Batch"],
+        "summary": "Batch summary",
+        "description": "Returns an aggregated summary of all validation results in the batch. Only available when all jobs are completed.",
+        "operationId": "getBatchSummary",
+        "parameters": [
+          {
+            "name": "batchId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Aggregated results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "batchId": { "type": "string", "format": "uuid" },
+                    "buildingId": { "type": "integer", "example": 1 },
+                    "totalFiles": { "type": "integer", "example": 6 },
+                    "passed": { "type": "integer", "example": 4 },
+                    "failed": { "type": "integer", "example": 2 },
+                    "totalRooms": { "type": "integer", "example": 256 },
+                    "totalErrors": { "type": "integer", "example": 12 },
+                    "averageScore": { "type": "number", "example": 91.0 },
+                    "completedAt": { "type": "string", "format": "date-time" },
+                    "floorplans": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "floorplanId": { "type": "integer" },
+                          "filename": { "type": "string" },
+                          "score": { "type": "number" },
+                          "rooms": { "type": "integer" },
+                          "errors": { "type": "integer" },
+                          "status": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Batch not yet completed",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Building": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "number": { "type": "string", "example": "2022-0145" },
+          "name": { "type": "string", "example": "Bern, Verwaltungsgebäude Liebefeld" },
+          "phase": { "type": "string", "enum": ["31", "32", "33", "41", "51", "52", "53"], "example": "53" },
+          "language": { "type": "string", "enum": ["de", "fr", "it"], "example": "de" },
+          "status": { "type": "string", "enum": ["active", "completed"], "example": "active" },
+          "ruleSetId": { "type": "integer", "example": 1 },
+          "coordinates": {
+            "type": "array",
+            "items": { "type": "number" },
+            "example": [7.3986, 46.929],
+            "description": "Geographic location [longitude, latitude]"
+          },
+          "imageUrl": { "type": "string", "example": "https://images.unsplash.com/photo-example" },
+          "documentCount": { "type": "integer", "example": 7 },
+          "resultPercentage": { "type": "integer", "example": 91, "description": "Average compliance score (0-100)" },
+          "createdBy": { "type": "integer", "example": 3 },
+          "createdDate": { "type": "string", "format": "date", "example": "2022-04-14" },
+          "users": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "userId": { "type": "integer", "example": 1 },
+                "role": { "type": "string", "enum": ["Admin", "Editor", "Viewer"], "example": "Admin" }
+              }
+            }
+          }
+        }
+      },
+      "Floorplan": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "buildingId": { "type": "integer", "example": 1 },
+          "name": { "type": "string", "example": "Ground Floor (EG).dwg" },
+          "status": { "type": "string", "enum": ["uploaded", "validating", "validated", "error"], "example": "validated" },
+          "score": { "type": "integer", "example": 94, "description": "Validation score (0-100)" },
+          "createdBy": { "type": "integer", "example": 3 },
+          "createdAt": { "type": "string", "format": "date-time", "example": "2022-04-10T09:30:00.000Z" },
+          "lastEditedBy": { "type": "integer", "example": 3 },
+          "lastEditedAt": { "type": "string", "format": "date-time", "example": "2022-04-14T14:20:00.000Z" }
+        }
+      },
+      "Room": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "floorplanId": { "type": "integer", "example": 1 },
+          "aoid": { "type": "string", "example": "EG.01", "description": "Area/Object ID per BBL naming convention" },
+          "area": { "type": "number", "example": 24.5, "description": "Room area in m²" },
+          "aofunction": { "type": "string", "example": "conference", "description": "Functional classification" },
+          "status": { "type": "string", "enum": ["ok", "warning", "error"], "example": "ok" },
+          "siaCategory": { "type": "string", "enum": ["HNF", "NNF", "VF"], "example": "HNF", "description": "SIA space classification: HNF (Net Usable), NNF (Non-Net), VF (Traffic)" },
+          "vertices": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": { "type": "number" }
+            },
+            "example": [[0, 8.59], [4.02, 8.59], [4.02, 14.68], [0, 14.68]],
+            "description": "Polygon coordinates as [x, y] pairs"
+          }
+        }
+      },
+      "Area": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 105 },
+          "floorplanId": { "type": "integer", "example": 9 },
+          "aoid": { "type": "string", "example": "GF-RC-001", "description": "Gross floor area identifier" },
+          "area": { "type": "number", "example": 550.0, "description": "Gross floor area in m²" },
+          "aofunction": { "type": "string", "example": "Gross Floor Area" },
+          "status": { "type": "string", "enum": ["ok", "warning", "error"], "example": "ok" },
+          "vertices": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": { "type": "number" }
+            },
+            "example": [[0, 0], [37.81, 0], [37.81, 15.63], [0, 15.63]],
+            "description": "Polygon coordinates as [x, y] pairs"
+          }
+        }
+      },
+      "ValidationResult": {
+        "type": "object",
+        "properties": {
+          "floorplanId": { "type": "integer", "example": 1 },
+          "filename": { "type": "string", "example": "Ground Floor (EG).dwg" },
+          "score": { "type": "number", "example": 94.0, "description": "Compliance score (0-100)" },
+          "errors": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ValidationError" }
+          },
+          "metrics": {
+            "type": "object",
+            "properties": {
+              "totalRules": { "type": "integer", "example": 16 },
+              "passedRules": { "type": "integer", "example": 14 },
+              "failedRules": { "type": "integer", "example": 2 },
+              "errorCount": { "type": "integer", "example": 3 },
+              "warningCount": { "type": "integer", "example": 1 }
+            }
+          }
+        }
+      },
+      "ValidationError": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "floorplanId": { "type": "integer", "example": 1 },
+          "ruleCode": { "type": "string", "example": "LAYER_001" },
+          "severity": { "type": "string", "enum": ["error", "warning", "info"], "example": "error" },
+          "message": { "type": "string", "example": "Required layer \"A-WAENDE\" is missing from the drawing" }
+        }
+      },
+      "RuleSet": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "name": { "type": "string", "example": "BBL CAD Guideline Standard" },
+          "description": { "type": "string", "example": "Standard validation rules for BBL CAD drawings per the federal area management guidelines" },
+          "rules": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Rule" }
+          }
+        }
+      },
+      "Rule": {
+        "type": "object",
+        "properties": {
+          "code": { "type": "string", "example": "LAYER_001" },
+          "name": { "type": "string", "example": "Required layers present" },
+          "category": { "type": "string", "enum": ["Layer", "Geometry", "Entity", "Text", "AOID"], "example": "Layer" },
+          "description": { "type": "string", "example": "Checks whether all 14 required layers per BBL CAD guideline are present in the drawing" }
+        }
+      },
+      "BuildingUser": {
+        "type": "object",
+        "properties": {
+          "userId": { "type": "integer", "example": 1 },
+          "name": { "type": "string", "example": "Max Muster" },
+          "email": { "type": "string", "format": "email", "example": "max.muster@bbl.admin.ch" },
+          "role": { "type": "string", "enum": ["Admin", "Editor", "Viewer"], "example": "Admin" },
+          "lastActivity": { "type": "string", "format": "date-time", "example": "2022-06-27T12:30:00.000Z" }
+        }
+      },
+      "BuildingStatistics": {
+        "type": "object",
+        "properties": {
+          "buildingId": { "type": "integer", "example": 1 },
+          "totalFloorplans": { "type": "integer", "example": 7 },
+          "totalRooms": { "type": "integer", "example": 42 },
+          "grossFloorArea": { "type": "number", "example": 3300.0, "description": "Total gross floor area in m²" },
+          "netFloorArea": { "type": "number", "example": 2850.5, "description": "Total net floor area (sum of all rooms) in m²" },
+          "averageScore": { "type": "number", "example": 91.0, "description": "Average validation score across all floorplans" },
+          "errorCount": { "type": "integer", "example": 8 },
+          "warningCount": { "type": "integer", "example": 4 },
+          "roomsByCategory": {
+            "type": "object",
+            "properties": {
+              "HNF": { "type": "integer", "example": 28, "description": "Net usable area rooms" },
+              "NNF": { "type": "integer", "example": 8, "description": "Non-net area rooms" },
+              "VF": { "type": "integer", "example": 6, "description": "Traffic area rooms" }
+            }
+          }
+        }
+      },
+      "Job": {
+        "type": "object",
+        "properties": {
+          "jobId": { "type": "string", "format": "uuid" },
+          "floorplanId": { "type": "integer", "example": 1 },
+          "status": { "type": "string", "enum": ["queued", "processing", "done", "failed"] },
+          "progress": { "type": "number", "example": 75, "description": "Progress percentage (0-100)" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "completedAt": { "type": "string", "format": "date-time", "nullable": true },
+          "error": { "type": "string", "nullable": true, "description": "Error message when status is 'failed'" }
+        }
+      },
+      "Export": {
+        "type": "object",
+        "properties": {
+          "exportId": { "type": "string", "format": "uuid" },
+          "floorplanId": { "type": "integer", "example": 1 },
+          "format": { "type": "string", "enum": ["pdf", "excel", "geojson", "bcf"] },
+          "status": { "type": "string", "enum": ["generating", "ready", "failed"] },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "readyAt": { "type": "string", "format": "date-time", "nullable": true },
+          "expiresAt": { "type": "string", "format": "date-time", "nullable": true, "description": "Download available until (24h)" },
+          "downloadUrl": { "type": "string", "nullable": true }
+        }
+      },
+      "BatchJob": {
+        "type": "object",
+        "properties": {
+          "batchId": { "type": "string", "format": "uuid" },
+          "buildingId": { "type": "integer", "example": 1 },
+          "status": { "type": "string", "enum": ["processing", "done", "partial_failure"] },
+          "fileCount": { "type": "integer" },
+          "completedCount": { "type": "integer" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "jobs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "jobId": { "type": "string", "format": "uuid" },
+                "floorplanId": { "type": "integer" },
+                "filename": { "type": "string" },
+                "status": { "type": "string" },
+                "progress": { "type": "number" }
+              }
+            }
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string", "example": "not_found" },
+          "message": { "type": "string", "example": "The requested resource was not found." }
+        }
+      }
+    },
+    "securitySchemes": {
+      "apiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "API key for authentication. Request via the BBL portal."
+      },
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT token for user-level authentication. Obtain via the login endpoint."
+      }
+    }
+  },
+  "security": [
+    { "apiKey": [] }
+  ]
+}

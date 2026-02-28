@@ -725,8 +725,8 @@ let mockUsers = [];
  */
 async function loadData() {
     const endpoints = [
-        { name: 'projects', url: 'data/projects.json', target: 'mockProjects' },
-        { name: 'documents', url: 'data/documents.json', target: 'mockDocuments' },
+        { name: 'projects', url: 'data/buildings.json', target: 'mockProjects' },
+        { name: 'documents', url: 'data/floorplans.json', target: 'mockDocuments' },
         { name: 'geometry', url: 'data/geometry.json', target: 'mockGeometry' },
         { name: 'rules', url: 'data/rules.json', target: 'mockRuleSets' },
         { name: 'results', url: 'data/results.json', target: 'mockCheckingResults' },
@@ -797,8 +797,8 @@ async function loadData() {
 function buildHashParams() {
     const params = new URLSearchParams();
 
-    // View type (only on projects view)
-    if (currentView === 'projects') {
+    // View type (only on buildings view)
+    if (currentView === 'buildings') {
         const activeBtn = document.querySelector('.view-toggle__btn--active');
         const viewType = activeBtn ? activeBtn.dataset.view : 'grid';
         if (viewType !== 'grid') params.set('view', viewType);
@@ -822,14 +822,14 @@ function updateUrlHash() {
     let hash = '';
     const params = buildHashParams();
 
-    if (currentView === 'projects') {
-        hash = `#/projects${params}`;
-    } else if (currentView === 'project-detail' && currentProject) {
-        hash = `#/project/${currentProject.id}${params}`;
+    if (currentView === 'buildings') {
+        hash = `#/buildings${params}`;
+    } else if (currentView === 'building-detail' && currentProject) {
+        hash = `#/building/${currentProject.id}${params}`;
     } else if (currentView === 'validation' && currentProject && currentDocument) {
-        hash = `#/project/${currentProject.id}/document/${currentDocument.id}${params}`;
+        hash = `#/building/${currentProject.id}/floorplan/${currentDocument.id}${params}`;
     } else if (currentView === 'results' && currentProject && currentDocument) {
-        hash = `#/project/${currentProject.id}/document/${currentDocument.id}/results${params}`;
+        hash = `#/building/${currentProject.id}/floorplan/${currentDocument.id}/results${params}`;
     } else if (currentView === 'login') {
         hash = '#/login';
     }
@@ -858,7 +858,7 @@ function parseUrlHash() {
 
 /**
  * Parses query parameters from the hash string.
- * E.g. "#/projects?view=map&region=Bern" → { view: "map", region: "Bern" }
+ * E.g. "#/buildings?view=map&region=Bern" → { view: "map", region: "Bern" }
  */
 function parseHashParams(hash) {
     const qIndex = hash.indexOf('?');
@@ -924,12 +924,12 @@ function navigateFromHash() {
     const params = parseHashParams(hash);
 
     // Parse the hash path
-    const projectMatch = hashPath.match(/#\/project\/(\d+)/);
-    const documentMatch = hashPath.match(/\/document\/(\d+)/);
+    const projectMatch = hashPath.match(/#\/building\/(\d+)/);
+    const documentMatch = hashPath.match(/\/floorplan\/(\d+)/);
     const isResults = hashPath.includes('/results');
 
-    if (hashPath === '#/projects' || hashPath === '' || hash.startsWith('#/projects?')) {
-        switchView('projects');
+    if (hashPath === '#/buildings' || hashPath === '' || hash.startsWith('#/buildings?')) {
+        switchView('buildings');
         renderProjects();
         applyFiltersFromParams(params);
         // Defer view type switch so DOM is ready
@@ -1413,7 +1413,7 @@ function openProjectDetail(projectId, skipHashUpdate = false) {
     if (!currentProject) return;
 
     // Update breadcrumb with project name
-    document.getElementById('breadcrumb-project-name').textContent = currentProject.name;
+    document.getElementById('breadcrumb-building-name').textContent = currentProject.name;
 
     // Get documents for this project
     const projectDocuments = mockDocuments.filter(doc => doc.projectId === currentProject.id);
@@ -1476,12 +1476,12 @@ function openProjectDetail(projectId, skipHashUpdate = false) {
     if (skipHashUpdate) {
         // Directly switch view without updating hash
         document.querySelectorAll('.view').forEach(view => view.classList.remove('view--active'));
-        document.getElementById('view-project-detail')?.classList.add('view--active');
-        currentView = 'project-detail';
+        document.getElementById('view-building-detail')?.classList.add('view--active');
+        currentView = 'building-detail';
         // Re-initialize Lucide icons
-        initLucideIcons(document.getElementById('view-project-detail'));
+        initLucideIcons(document.getElementById('view-building-detail'));
     } else {
-        switchView('project-detail');
+        switchView('building-detail');
     }
 }
 
@@ -2034,7 +2034,7 @@ function setupSettingsHandlers() {
         if (idx !== -1) {
             mockProjects.splice(idx, 1);
             currentProject = null;
-            switchView('projects');
+            switchView('buildings');
             renderProjects();
             showToast(I18n.t('toast.projectDeleted'), 'success');
         }
@@ -2060,7 +2060,7 @@ function openValidationView(documentId, skipHashUpdate = false) {
     if (!currentDocument) return;
 
     // Update breadcrumbs
-    document.getElementById('breadcrumb-val-project').textContent = currentProject.name;
+    document.getElementById('breadcrumb-val-building').textContent = currentProject.name;
     document.getElementById('breadcrumb-val-document').textContent = currentDocument.name;
 
     // Update step 1 score KPI with current document's score
@@ -2594,9 +2594,16 @@ function setupEventListeners() {
     if (headerBrand) {
         headerBrand.addEventListener('click', (e) => {
             e.preventDefault();
+            // Close API docs if visible
+            var apiContainer = document.getElementById('api-docs-container');
+            if (apiContainer && apiContainer.style.display !== 'none') {
+                apiContainer.style.display = 'none';
+                document.querySelector('main').style.display = '';
+                document.querySelector('.footer').style.display = '';
+            }
             const currentView = document.querySelector('.view--active').id;
             if (currentView !== 'view-login') {
-                switchView('projects');
+                switchView('buildings');
                 renderProjects();
             }
         });
@@ -2607,7 +2614,7 @@ function setupEventListeners() {
     if (loginForm) {
         loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            switchView('projects');
+            switchView('buildings');
             renderProjects();
         });
     }
@@ -2616,7 +2623,7 @@ function setupEventListeners() {
     const demoBtn = document.getElementById('demo-btn');
     if (demoBtn) {
         demoBtn.addEventListener('click', () => {
-            switchView('projects');
+            switchView('buildings');
             renderProjects();
         });
     }
@@ -2629,20 +2636,11 @@ function setupEventListeners() {
         });
     }
 
-    // Brand logo → navigate to login (simulate logout)
-    const brandLink = document.querySelector('.header__brand');
-    if (brandLink) {
-        brandLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            switchView('login');
-        });
-    }
-
     // Back to projects from project detail
     const backBtn = document.getElementById('back-to-overview');
     if (backBtn) {
         backBtn.addEventListener('click', () => {
-            switchView('projects');
+            switchView('buildings');
             renderProjects();
         });
     }
@@ -2651,7 +2649,7 @@ function setupEventListeners() {
     const backToProjectBtn = document.getElementById('back-to-project');
     if (backToProjectBtn) {
         backToProjectBtn.addEventListener('click', () => {
-            switchView('project-detail');
+            switchView('building-detail');
         });
     }
 
@@ -2659,7 +2657,7 @@ function setupEventListeners() {
     const backToProjectResultsBtn = document.getElementById('back-to-project-results');
     if (backToProjectResultsBtn) {
         backToProjectResultsBtn.addEventListener('click', () => {
-            switchView('project-detail');
+            switchView('building-detail');
         });
     }
 
@@ -2675,18 +2673,18 @@ function setupEventListeners() {
     }
 
     // Breadcrumb navigation
-    document.querySelectorAll('#breadcrumb-projects, #breadcrumb-val-projects, #breadcrumb-results-projects').forEach(link => {
+    document.querySelectorAll('#breadcrumb-buildings, #breadcrumb-val-buildings, #breadcrumb-results-buildings').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
-            switchView('projects');
+            switchView('buildings');
             renderProjects();
         });
     });
 
-    document.querySelectorAll('#breadcrumb-val-project, #breadcrumb-results-project').forEach(link => {
+    document.querySelectorAll('#breadcrumb-val-building, #breadcrumb-results-building').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
-            switchView('project-detail');
+            switchView('building-detail');
         });
     });
 
@@ -2940,8 +2938,8 @@ function setupKeyboardShortcuts() {
 
         // Escape to close/go back
         if (e.key === 'Escape') {
-            if (currentView !== 'login' && currentView !== 'projects') {
-                switchView('projects');
+            if (currentView !== 'login' && currentView !== 'buildings') {
+                switchView('buildings');
             }
         }
     });
@@ -2960,8 +2958,11 @@ const API_METHOD_COLORS = {
 function apiResolveRef(spec, ref) {
     const path = ref.replace('#/', '').split('/');
     let obj = spec;
-    for (const key of path) obj = obj[key];
-    return obj;
+    for (const key of path) {
+        if (obj === undefined || obj === null) return null;
+        obj = obj[key];
+    }
+    return obj || null;
 }
 
 function apiResolveSchema(spec, schema) {
@@ -2973,7 +2974,10 @@ function apiResolveSchema(spec, schema) {
 function apiSchemaToExample(spec, schema, depth) {
     if (depth === undefined) depth = 0;
     if (!schema || depth > 5) return null;
-    if (schema.$ref) schema = apiResolveRef(spec, schema.$ref);
+    if (schema.$ref) {
+        schema = apiResolveRef(spec, schema.$ref);
+        if (!schema) return null;
+    }
     if (schema.example !== undefined) return schema.example;
 
     if (schema.type === 'object' && schema.properties) {
@@ -3119,7 +3123,7 @@ function apiRenderEndpoint(spec, method, path, op) {
 }
 
 async function initApiDocs() {
-    var resp = await fetch('../assets/openapi.json');
+    var resp = await fetch('data/openapi.json');
     var spec = await resp.json();
 
     var container = document.getElementById('api-docs-container');
@@ -3145,9 +3149,6 @@ async function initApiDocs() {
 
     // Render
     var contentHtml = '';
-
-    // Back button
-    contentHtml += '<a href="#" class="api-docs__back" id="api-docs-back">\u2190 Back</a>';
 
     // Header section
     contentHtml += '<div class="api-docs__hero">' +
@@ -3196,13 +3197,6 @@ async function initApiDocs() {
         });
     });
 
-    // Back button handler
-    document.getElementById('api-docs-back').addEventListener('click', function(e) {
-        e.preventDefault();
-        container.style.display = 'none';
-        document.querySelector('main').style.display = '';
-        document.querySelector('.footer').style.display = '';
-    });
 }
 
 // === INITIALIZATION ===

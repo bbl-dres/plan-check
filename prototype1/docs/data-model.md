@@ -97,8 +97,8 @@ The prototype uses the following JSON files:
 
 ```
 data/
-├── projects.json      # Project list
-├── documents.json     # Documents linked to projects
+├── buildings.json      # Project list
+├── floorplans.json     # Documents linked to projects
 ├── geometry.json      # Polygon geometries (rooms + areas) linked to documents
 ├── rules.json         # Rule sets with validation rules ("Prüfregeln")
 ├── results.json       # Validation results ("Fehlermeldungen") linked to documents
@@ -147,7 +147,7 @@ The following fields are denormalized for display performance:
 
 **Note:** In a production system, these would be calculated dynamically or updated via triggers. In the prototype, they may become stale if documents are added/removed.
 
-### Example (data/projects.json)
+### Example (data/buildings.json)
 
 ```json
 [
@@ -209,7 +209,7 @@ interface Document {
 }
 ```
 
-### Example (data/documents.json)
+### Example (data/floorplans.json)
 
 ```json
 [
@@ -461,8 +461,8 @@ Data is loaded at application startup via `loadData()` in `script.js`:
 ```javascript
 async function loadData() {
     const [projectsRes, documentsRes, geometryRes, rulesRes, resultsRes, usersRes] = await Promise.all([
-        fetch('data/projects.json'),
-        fetch('data/documents.json'),
+        fetch('data/buildings.json'),
+        fetch('data/floorplans.json'),
         fetch('data/geometry.json'),
         fetch('data/rules.json'),
         fetch('data/results.json'),
@@ -522,13 +522,13 @@ const rules = ruleSet ? ruleSet.rules : [];
 
 To add data for a new document:
 
-1. Add the document to `documents.json` with a `projectId`
+1. Add the document to `floorplans.json` with a `projectId`
 2. Add geometry entries to `geometry.json` with the document's `id` as `documentId`
 
 Example: Adding data for document ID 2
 
 ```json
-// documents.json
+// floorplans.json
 { "id": 2, "projectId": 1, "name": "1. Obergeschoss (1.OG).dwg", ... }
 
 // geometry.json - rooms (aim for ~75-85% of BGF as total room area)

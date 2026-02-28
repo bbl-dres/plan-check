@@ -84,7 +84,7 @@
   "map.projectLocations": "Emplacements des projets sur la carte",
   "map.openProject": "Ouvrir le projet",
 
-  "breadcrumb.projects": "Projets",
+  "breadcrumb.buildings": "Bâtiments",
   "breadcrumb.backToOverview": "Retour à l'aperçu",
 
   "detail.avgScore": "Score moy.",
@@ -96,7 +96,7 @@
   "tab.documents": "Plans d'étage",
   "tab.users": "Utilisateurs",
   "tab.rules": "Règles de vérification",
-  "tab.settings": "Paramètres du projet",
+  "tab.settings": "Paramètres",
 
   "action.edit": "Modifier",
   "action.delete": "Supprimer",

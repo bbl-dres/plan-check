@@ -84,7 +84,7 @@
   "map.projectLocations": "Posizioni dei progetti sulla mappa",
   "map.openProject": "Apri progetto",
 
-  "breadcrumb.projects": "Progetti",
+  "breadcrumb.buildings": "Edifici",
   "breadcrumb.backToOverview": "Torna alla panoramica",
 
   "detail.avgScore": "Score medio",
@@ -96,7 +96,7 @@
   "tab.documents": "Piante",
   "tab.users": "Utenti",
   "tab.rules": "Regole di verifica",
-  "tab.settings": "Impostazioni progetto",
+  "tab.settings": "Impostazioni",
 
   "action.edit": "Modifica",
   "action.delete": "Elimina",

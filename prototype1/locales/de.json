@@ -84,7 +84,7 @@
   "map.projectLocations": "Projektstandorte auf der Karte",
   "map.openProject": "Projekt öffnen",
 
-  "breadcrumb.projects": "Projekte",
+  "breadcrumb.buildings": "Gebäude",
   "breadcrumb.backToOverview": "Zurück zur Übersicht",
 
   "detail.avgScore": "Ø Score",
@@ -96,7 +96,7 @@
   "tab.documents": "Grundrisse",
   "tab.users": "Benutzer",
   "tab.rules": "Prüfregeln",
-  "tab.settings": "Projekteinstellungen",
+  "tab.settings": "Einstellungen",
 
   "action.edit": "Bearbeiten",
   "action.delete": "Löschen",
