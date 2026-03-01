@@ -392,5 +392,22 @@
 
   "role.viewer": "Osservatore",
   "role.editor": "Redattore",
-  "role.admin": "Amministratore"
+  "role.admin": "Amministratore",
+
+  "common.on": "il",
+  "status.ok": "OK",
+  "status.warning": "Avvertimento",
+  "status.error": "Errore",
+
+  "layer.roomPolygons": "Poligoni stanza",
+  "layer.walls": "Pareti",
+  "layer.doors": "Porte",
+  "layer.windows": "Finestre",
+  "layer.dimensions": "Quotature",
+  "layer.text": "Testo",
+  "layer.hatching": "Tratteggio",
+  "layer.stairs": "Scale",
+  "layer.furniture": "Mobili",
+
+  "val.areaDistribution": "Distribuzione delle superfici"
 }

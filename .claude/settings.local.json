@@ -59,7 +59,8 @@
       "WebFetch(domain:docs.geo.admin.ch)",
       "WebFetch(domain:api3.geo.admin.ch)",
       "Bash(for token in \"shadow-xs\" \"shadow-card\" \"shadow-card-hover\" \"shadow-2xl\" \"ease-out\" \"ease-in-out\" \"radius-xs\" \"radius-xl\")",
-      "Bash(do echo -n \"$token: \")"
+      "Bash(do echo -n \"$token: \")",
+      "Bash(du -sh prototype1/*)"
     ]
   }
 }

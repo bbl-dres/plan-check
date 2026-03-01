@@ -498,6 +498,67 @@ var FloorPlanViewer = (function () {
                 render();
             }
         }, { signal: signal });
+
+        // Keyboard navigation when canvas is focused
+        canvasWrap.addEventListener('keydown', function (e) {
+            var visibleRooms = (mode === 'areas' ? areas : rooms).filter(function (r) {
+                return r.vertices && r.vertices.length >= 3 && isVisibleByFilter(r.status);
+            });
+            if (visibleRooms.length === 0) return;
+
+            var currentIndex = -1;
+            if (selectedRoomId !== null) {
+                currentIndex = visibleRooms.findIndex(function (r) { return r.id === selectedRoomId; });
+            }
+
+            switch (e.key) {
+                case 'ArrowRight':
+                case 'ArrowDown':
+                    e.preventDefault();
+                    currentIndex = (currentIndex + 1) % visibleRooms.length;
+                    selectedRoomId = visibleRooms[currentIndex].id;
+                    zoomToRoom(selectedRoomId);
+                    if (onClickCallback) onClickCallback(selectedRoomId);
+                    break;
+                case 'ArrowLeft':
+                case 'ArrowUp':
+                    e.preventDefault();
+                    currentIndex = currentIndex <= 0 ? visibleRooms.length - 1 : currentIndex - 1;
+                    selectedRoomId = visibleRooms[currentIndex].id;
+                    zoomToRoom(selectedRoomId);
+                    if (onClickCallback) onClickCallback(selectedRoomId);
+                    break;
+                case 'Enter':
+                case ' ':
+                    e.preventDefault();
+                    if (selectedRoomId !== null) {
+                        var room = visibleRooms.find(function (r) { return r.id === selectedRoomId; });
+                        if (room) {
+                            var center = worldToScreen(
+                                room.vertices.reduce(function (s, v) { return s + v[0]; }, 0) / room.vertices.length,
+                                room.vertices.reduce(function (s, v) { return s + v[1]; }, 0) / room.vertices.length
+                            );
+                            showPopup(room, center[0], center[1]);
+                        }
+                    }
+                    break;
+                case '+':
+                case '=':
+                    e.preventDefault();
+                    cam.zoom *= 1.4;
+                    render();
+                    break;
+                case '-':
+                    e.preventDefault();
+                    cam.zoom /= 1.4;
+                    render();
+                    break;
+                case 'Home':
+                    e.preventDefault();
+                    zoomExtents();
+                    break;
+            }
+        }, { signal: signal });
     }
 
     function setupControls() {
@@ -518,6 +579,11 @@ var FloorPlanViewer = (function () {
             ctx = canvas.getContext('2d');
             popupEl = wrapEl.querySelector('.canvas-viewer__popup');
             coordsEl = wrapEl.querySelector('.canvas-viewer__coords');
+
+            // Make canvas wrap keyboard-focusable and labeled
+            canvasWrap.setAttribute('tabindex', '0');
+            canvasWrap.setAttribute('aria-label', 'Floor plan viewer. Use arrow keys to cycle rooms, plus/minus to zoom, Enter to select, Home to fit view.');
+            canvasWrap.setAttribute('role', 'application');
 
             resizeCanvas();
             setupEvents();

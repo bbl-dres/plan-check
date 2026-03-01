@@ -29,15 +29,15 @@ var ValidationView = (function () {
 
     // Mock layer data for the Overview tab
     var MOCK_LAYERS = [
-        { name: 'A1Z21---E-', color: '#FF0000', count: 0, description: 'Room polygons' },
-        { name: 'A-WALL', color: '#FFFFFF', count: 42, description: 'Walls' },
-        { name: 'A-DOOR', color: '#00FF00', count: 12, description: 'Doors' },
-        { name: 'A-WINDOW', color: '#00FFFF', count: 8, description: 'Windows' },
-        { name: 'A-DIM', color: '#FFFF00', count: 35, description: 'Dimensions' },
-        { name: 'A-TEXT', color: '#CCCCCC', count: 22, description: 'Text' },
-        { name: 'A-HATCH', color: '#808080', count: 18, description: 'Hatching' },
-        { name: 'A-STAIR', color: '#FF00FF', count: 3, description: 'Stairs' },
-        { name: 'A-FURNITURE', color: '#FFB74D', count: 28, description: 'Furniture' },
+        { name: 'A1Z21---E-', color: '#FF0000', count: 0, descriptionKey: 'layer.roomPolygons' },
+        { name: 'A-WALL', color: '#FFFFFF', count: 42, descriptionKey: 'layer.walls' },
+        { name: 'A-DOOR', color: '#00FF00', count: 12, descriptionKey: 'layer.doors' },
+        { name: 'A-WINDOW', color: '#00FFFF', count: 8, descriptionKey: 'layer.windows' },
+        { name: 'A-DIM', color: '#FFFF00', count: 35, descriptionKey: 'layer.dimensions' },
+        { name: 'A-TEXT', color: '#CCCCCC', count: 22, descriptionKey: 'layer.text' },
+        { name: 'A-HATCH', color: '#808080', count: 18, descriptionKey: 'layer.hatching' },
+        { name: 'A-STAIR', color: '#FF00FF', count: 3, descriptionKey: 'layer.stairs' },
+        { name: 'A-FURNITURE', color: '#FFB74D', count: 28, descriptionKey: 'layer.furniture' },
     ];
 
     var SIA_COLORS = {
@@ -374,6 +374,12 @@ var ValidationView = (function () {
         FloorPlanViewer.setMode(tabName);
         applyViewerFilter();
 
+        // Show/hide status legend for room/error modes
+        var legend = document.getElementById('viewer-legend');
+        if (legend) {
+            legend.hidden = !(tabName === 'rooms' || tabName === 'errors' || tabName === 'areas');
+        }
+
         // Re-initialize Lucide icons in the panel
         if (typeof lucide !== 'undefined') {
             requestAnimationFrame(function () {
@@ -581,9 +587,10 @@ var ValidationView = (function () {
     }
 
     function kpiRow(abbr, label, value, total, gf) {
+        var locale = (typeof I18n !== 'undefined' && I18n.getLocale) ? I18n.getLocale() + '-CH' : 'de-CH';
         var fmtValue = value >= 1000 ?
-            Math.round(value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "'") :
-            value.toFixed(1);
+            new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(Math.round(value)) :
+            new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(value);
         var unit = abbr.indexOf('GV') === 0 ? 'm\u00B3' : 'm\u00B2';
         var pct = total > 0 ? ((value / total) * 100).toFixed(0) : '0';
         return '<tr>' +
@@ -608,7 +615,12 @@ var ValidationView = (function () {
         var circumference = 2 * Math.PI * r;
         var offset = 0;
 
-        var svg = '<svg viewBox="0 0 200 200" class="donut-multi">';
+        // Build aria-label summarizing the distribution
+        var ariaLabel = segments.map(function (s) {
+            return s.label + ': ' + (s.value / total * 100).toFixed(1) + '%';
+        }).join(', ');
+
+        var svg = '<svg viewBox="0 0 200 200" class="donut-multi" role="img" aria-label="' + I18n.t('val.areaDistribution') + ' — ' + ariaLabel + '">';
         svg += '<circle cx="100" cy="100" r="' + r + '" fill="none" stroke="#E5E5E5" stroke-width="' + sw + '"/>';
 
         for (var i = 0; i < segments.length; i++) {

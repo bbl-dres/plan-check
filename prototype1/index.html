@@ -110,8 +110,8 @@
                     </div>
                 </div>
 
-                <div class="login__downloads">
-                    <h2 class="text-h3" data-i18n="login.downloads">Downloads</h2>
+                <details class="login__downloads">
+                    <summary class="login__downloads-toggle text-h3" data-i18n="login.downloads">Downloads</summary>
                     <ul class="download-list">
                         <li><a href="#" class="download-list__link" data-i18n="login.cadDirective">BBL CAD-Richtlinie.pdf</a></li>
                         <li><a href="#" class="download-list__link" data-i18n="login.cadCatalog">BBL CAD-Prüfkatalog.pdf</a></li>
@@ -119,7 +119,7 @@
                         <li><a href="#" class="download-list__link" data-i18n="login.cadRoomList">BBL CAD-Raumliste-Vorlage.xlsx</a></li>
                         <li><a href="#" class="download-list__link" data-i18n="login.cadExamples">BBL CAD-Beispieldateien.zip</a></li>
                     </ul>
-                </div>
+                </details>
             </div>
         </section>
 
@@ -182,7 +182,7 @@
                     </div>
                 </div>
 
-                <div class="card-grid" id="project-grid">
+                <div class="card-grid" id="project-grid" aria-live="polite">
                     <!-- Projects will be rendered here by JavaScript -->
                 </div>
 
@@ -907,7 +907,7 @@
                                             <input type="text" class="validation-panel__search" id="layer-search" placeholder="Layer suchen..." data-i18n-placeholder="val.searchLayers">
                                         </div>
                                     </div>
-                                    <div id="layer-list" class="layer-list">
+                                    <div id="layer-list" class="layer-list" aria-live="polite">
                                         <!-- Rendered by JS -->
                                     </div>
                                 </div>
@@ -921,7 +921,7 @@
                                             <input type="text" class="validation-panel__search" id="room-search" placeholder="Räume suchen..." data-i18n-placeholder="val.searchRooms">
                                         </div>
                                     </div>
-                                    <div id="room-list" class="room-list">
+                                    <div id="room-list" class="room-list" aria-live="polite">
                                         <!-- Rendered by JS -->
                                     </div>
                                 </div>
@@ -935,7 +935,7 @@
                                             <input type="text" class="validation-panel__search" id="area-search" placeholder="Flächen suchen..." data-i18n-placeholder="val.searchAreas">
                                         </div>
                                     </div>
-                                    <div id="area-list" class="area-list">
+                                    <div id="area-list" class="area-list" aria-live="polite">
                                         <!-- Rendered by JS -->
                                     </div>
                                 </div>
@@ -946,7 +946,7 @@
                                         <i data-lucide="search" class="icon icon-sm validation-panel__search-icon"></i>
                                         <input type="text" class="validation-panel__search" id="error-search" placeholder="Fehler suchen..." data-i18n-placeholder="val.searchErrors">
                                     </div>
-                                    <div id="error-groups" class="error-groups">
+                                    <div id="error-groups" class="error-groups" aria-live="polite">
                                         <!-- Rendered by JS -->
                                     </div>
                                 </div>
@@ -957,7 +957,7 @@
                                         <i data-lucide="search" class="icon icon-sm validation-panel__search-icon"></i>
                                         <input type="text" class="validation-panel__search" id="val-rule-search" placeholder="Regeln suchen..." data-i18n-placeholder="val.searchRules">
                                     </div>
-                                    <div id="val-rule-list" class="rule-list">
+                                    <div id="val-rule-list" class="rule-list" aria-live="polite">
                                         <!-- Rendered by JS -->
                                     </div>
                                 </div>
@@ -980,6 +980,11 @@
                                     </div>
                                     <div class="canvas-viewer__coords" id="viewer-coords"></div>
                                     <div class="canvas-viewer__popup" id="room-popup"></div>
+                                    <div class="viewer__legend" id="viewer-legend" hidden>
+                                        <span class="viewer__legend-item"><span class="viewer__legend-dot viewer__legend-dot--ok"></span> <span data-i18n="status.ok">OK</span></span>
+                                        <span class="viewer__legend-item"><span class="viewer__legend-dot viewer__legend-dot--warning"></span> <span data-i18n="status.warning">Warnung</span></span>
+                                        <span class="viewer__legend-item"><span class="viewer__legend-dot viewer__legend-dot--error"></span> <span data-i18n="status.error">Fehler</span></span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1241,6 +1246,26 @@
             <div class="modal__footer">
                 <button type="button" class="btn btn--secondary" data-modal-close data-i18n="action.cancel">Abbrechen</button>
                 <button type="submit" class="btn btn--primary" form="new-document-form" data-i18n="modal.createFloorPlan">Grundriss erstellen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal (reusable) -->
+    <div class="modal" id="confirm-modal" role="alertdialog" aria-labelledby="confirm-modal-title" aria-describedby="confirm-modal-message" aria-modal="true" hidden>
+        <div class="modal__backdrop" data-modal-close></div>
+        <div class="modal__content modal__content--sm">
+            <div class="modal__header">
+                <h2 class="modal__title" id="confirm-modal-title"></h2>
+                <button class="modal__close" data-modal-close aria-label="Schliessen">
+                    <i data-lucide="x" class="icon icon-md" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="modal__body">
+                <p id="confirm-modal-message"></p>
+            </div>
+            <div class="modal__footer">
+                <button type="button" class="btn btn--secondary" data-modal-close data-i18n="action.cancel">Abbrechen</button>
+                <button type="button" class="btn btn--danger" id="confirm-modal-action"></button>
             </div>
         </div>
     </div>

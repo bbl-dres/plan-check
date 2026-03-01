@@ -220,13 +220,13 @@ function formatDateDisplay(isoString) {
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
+    return `${day}.${month}.${year}`;
 }
 
 /**
- * Formats an ISO 8601 datetime string to DD/MM/YYYY HH:mm format
+ * Formats an ISO 8601 datetime string to DD.MM.YYYY HH:mm format (Swiss locale)
  * @param {string} isoString - The ISO 8601 datetime string (e.g., "2022-04-14T09:30:00.000Z")
- * @returns {string} Formatted datetime string (DD/MM/YYYY HH:mm)
+ * @returns {string} Formatted datetime string (DD.MM.YYYY HH:mm)
  */
 function formatDateTimeDisplay(isoString) {
     if (!isoString) return '-';
@@ -237,7 +237,7 @@ function formatDateTimeDisplay(isoString) {
     const year = date.getFullYear();
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
-    return `${day}/${month}/${year} ${hours}:${minutes}`;
+    return `${day}.${month}.${year} ${hours}:${minutes}`;
 }
 
 /**
@@ -250,7 +250,7 @@ function formatUserTimestamp(userId, timestamp) {
     const user = getUserById(userId);
     const formattedTime = formatDateTimeDisplay(timestamp);
     if (!user) return formattedTime;
-    return `${user.email} on ${formattedTime}`;
+    return `${user.email} ${I18n.t('common.on') || 'on'} ${formattedTime}`;
 }
 
 /**
@@ -363,6 +363,35 @@ function closeModal(modalId) {
     modal.hidden = true;
     document.body.style.overflow = '';
     modal.removeEventListener('keydown', trapFocus);
+}
+
+/**
+ * Shows a styled confirmation modal instead of browser confirm()
+ * @param {string} title - The modal title
+ * @param {string} message - The confirmation message
+ * @param {string} actionLabel - The label for the confirm action button
+ * @param {Function} onConfirm - Callback when user confirms
+ */
+function showConfirmModal(title, message, actionLabel, onConfirm) {
+    const titleEl = safeGetElementById('confirm-modal-title');
+    const messageEl = safeGetElementById('confirm-modal-message');
+    const actionBtn = safeGetElementById('confirm-modal-action');
+    if (!titleEl || !messageEl || !actionBtn) return;
+
+    titleEl.textContent = title;
+    messageEl.textContent = message;
+    actionBtn.textContent = actionLabel;
+
+    // Clone and replace to remove any previous listeners
+    const newBtn = actionBtn.cloneNode(true);
+    actionBtn.parentNode.replaceChild(newBtn, actionBtn);
+
+    newBtn.addEventListener('click', () => {
+        onConfirm();
+        closeModal('confirm-modal');
+    });
+
+    openModal('confirm-modal');
 }
 
 /**
@@ -1019,6 +1048,12 @@ function switchView(viewName) {
     if (targetView) {
         targetView.classList.add('view--active');
         currentView = viewName;
+
+        // Brief loading transition
+        showViewLoading(targetView);
+        requestAnimationFrame(() => {
+            hideViewLoading(targetView);
+        });
     }
 
     // Show demo button only on login view
@@ -1032,6 +1067,29 @@ function switchView(viewName) {
 
     // Re-initialize Lucide icons in the visible view
     initLucideIcons(targetView);
+}
+
+/**
+ * Shows a loading spinner overlay inside a view container
+ * @param {HTMLElement} viewEl - The view element
+ */
+function showViewLoading(viewEl) {
+    if (!viewEl || viewEl.querySelector('.view-loader')) return;
+    const loader = document.createElement('div');
+    loader.className = 'view-loader';
+    loader.innerHTML = '<div class="spinner"></div>';
+    loader.setAttribute('aria-label', I18n.t('action.loading') || 'Loading');
+    viewEl.prepend(loader);
+}
+
+/**
+ * Removes the loading spinner overlay from a view container
+ * @param {HTMLElement} viewEl - The view element
+ */
+function hideViewLoading(viewEl) {
+    if (!viewEl) return;
+    const loader = viewEl.querySelector('.view-loader');
+    if (loader) loader.remove();
 }
 
 // === PROJECT RENDERING ===
@@ -2532,7 +2590,7 @@ function renderDocuments() {
         const scoreStatus = getScoreIconStatus(doc.score);
 
         return `
-            <tr data-document-id="${safeParseInt(doc.id)}">
+            <tr data-document-id="${safeParseInt(doc.id)}" tabindex="0">
                 <td class="table__checkbox-col">
                     <label class="checkbox">
                         <input type="checkbox" class="document-checkbox" data-doc-id="${safeParseInt(doc.id)}" aria-label="Select floor plan ${escapeHtml(doc.name)}">
@@ -2556,7 +2614,7 @@ function renderDocuments() {
         label.addEventListener('click', (e) => e.stopPropagation());
     });
 
-    // Add click handlers for row selection (not on checkbox)
+    // Add click and keyboard handlers for row selection (not on checkbox)
     tbody.querySelectorAll('tr').forEach(row => {
         row.addEventListener('click', (e) => {
             // If clicking on checkbox label/input, don't open document
@@ -2566,6 +2624,16 @@ function renderDocuments() {
             const docId = safeParseInt(row.dataset.documentId);
             if (docId > 0) {
                 openValidationView(docId);
+            }
+        });
+        row.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                if (e.target.closest('.checkbox')) return;
+                e.preventDefault();
+                const docId = safeParseInt(row.dataset.documentId);
+                if (docId > 0) {
+                    openValidationView(docId);
+                }
             }
         });
     });
@@ -2646,30 +2714,34 @@ function setupDocumentActions() {
         deleteBtn.addEventListener('click', () => {
             const count = DocumentSelection.getSelectedCount();
             if (count > 0) {
-                const confirmed = confirm(I18n.t('toast.deleteFloorPlansConfirm', { count: count }));
-                if (confirmed) {
-                    // Remove selected documents from mockDocuments
-                    const selectedIds = Array.from(DocumentSelection.selectedIds);
-                    selectedIds.forEach(id => {
-                        const index = mockDocuments.findIndex(d => d.id === id);
-                        if (index !== -1) {
-                            mockDocuments.splice(index, 1);
+                showConfirmModal(
+                    I18n.t('action.delete'),
+                    I18n.t('toast.deleteFloorPlansConfirm', { count: count }),
+                    I18n.t('action.delete'),
+                    () => {
+                        // Remove selected documents from mockDocuments
+                        const selectedIds = Array.from(DocumentSelection.selectedIds);
+                        selectedIds.forEach(id => {
+                            const index = mockDocuments.findIndex(d => d.id === id);
+                            if (index !== -1) {
+                                mockDocuments.splice(index, 1);
+                            }
+                        });
+
+                        // Update document count in tab
+                        const countEl = safeGetElementById('tab-documents-count');
+                        if (countEl) {
+                            const projectDocuments = currentProject
+                                ? mockDocuments.filter(doc => doc.projectId === currentProject.id)
+                                : mockDocuments;
+                            countEl.textContent = projectDocuments.length;
                         }
-                    });
 
-                    // Update document count in tab
-                    const countEl = safeGetElementById('tab-documents-count');
-                    if (countEl) {
-                        const projectDocuments = currentProject
-                            ? mockDocuments.filter(doc => doc.projectId === currentProject.id)
-                            : mockDocuments;
-                        countEl.textContent = projectDocuments.length;
+                        // Re-render and show toast
+                        renderDocuments();
+                        showToast(I18n.t('toast.floorPlansDeleted', { count: count }), 'success');
                     }
-
-                    // Re-render and show toast
-                    renderDocuments();
-                    showToast(I18n.t('toast.floorPlansDeleted', { count: count }), 'success');
-                }
+                );
             }
         });
     }
@@ -2761,7 +2833,7 @@ function renderUsers() {
 
     tbody.innerHTML = mockUsers.map(user => {
         return `
-            <tr data-user-id="${safeParseInt(user.id)}">
+            <tr data-user-id="${safeParseInt(user.id)}" tabindex="0">
                 <td class="table__checkbox-col">
                     <label class="checkbox">
                         <input type="checkbox" class="user-checkbox" data-user-id="${safeParseInt(user.id)}" aria-label="${I18n.t('table.selectAll')}">
@@ -2895,21 +2967,25 @@ function setupUserActions() {
         deleteBtn.addEventListener('click', () => {
             const count = UserSelection.getSelectedCount();
             if (count > 0) {
-                const confirmed = confirm(I18n.t('toast.deleteUsersConfirm', { count: count }));
-                if (confirmed) {
-                    // Remove selected users from mockUsers
-                    const selectedIds = Array.from(UserSelection.selectedIds);
-                    selectedIds.forEach(id => {
-                        const index = mockUsers.findIndex(u => u.id === id);
-                        if (index !== -1) {
-                            mockUsers.splice(index, 1);
-                        }
-                    });
+                showConfirmModal(
+                    I18n.t('action.delete'),
+                    I18n.t('toast.deleteUsersConfirm', { count: count }),
+                    I18n.t('action.delete'),
+                    () => {
+                        // Remove selected users from mockUsers
+                        const selectedIds = Array.from(UserSelection.selectedIds);
+                        selectedIds.forEach(id => {
+                            const index = mockUsers.findIndex(u => u.id === id);
+                            if (index !== -1) {
+                                mockUsers.splice(index, 1);
+                            }
+                        });
 
-                    // Re-render and show toast
-                    renderUsers();
-                    showToast(I18n.t('toast.usersRemoved', { count: count }), 'success');
-                }
+                        // Re-render and show toast
+                        renderUsers();
+                        showToast(I18n.t('toast.usersRemoved', { count: count }), 'success');
+                    }
+                );
             }
         });
     }

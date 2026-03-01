@@ -392,5 +392,22 @@
 
   "role.viewer": "Viewer",
   "role.editor": "Editor",
-  "role.admin": "Administrator"
+  "role.admin": "Administrator",
+
+  "common.on": "on",
+  "status.ok": "OK",
+  "status.warning": "Warning",
+  "status.error": "Error",
+
+  "layer.roomPolygons": "Room polygons",
+  "layer.walls": "Walls",
+  "layer.doors": "Doors",
+  "layer.windows": "Windows",
+  "layer.dimensions": "Dimensions",
+  "layer.text": "Text",
+  "layer.hatching": "Hatching",
+  "layer.stairs": "Stairs",
+  "layer.furniture": "Furniture",
+
+  "val.areaDistribution": "Area distribution"
 }
