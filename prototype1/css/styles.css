@@ -4043,6 +4043,7 @@ a:hover {
     display: flex;
     transition: transform 0.3s var(--ease-out);
     height: 100%;
+    touch-action: pan-y;
 }
 
 .overview-carousel__slide {
@@ -4176,6 +4177,7 @@ a:hover {
 
 .lightbox:not([hidden]) {
     display: flex;
+    touch-action: none;
 }
 
 .lightbox__backdrop {
@@ -4587,21 +4589,68 @@ select.form__input--inline {
         font-size: var(--font-size-sm);
     }
 
-    /* Tabs — horizontal scroll + wrap filter */
+    /* Page header — wrap title + actions */
+    .page-header {
+        flex-wrap: wrap;
+    }
+
+    /* Workflow actions — stack on mobile */
+    .workflow-actions {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    /* Table actions — wrap */
+    .table-actions {
+        flex-wrap: wrap;
+    }
+
+    /* Card list view — stack vertically on mobile */
+    .card-grid--list .card {
+        flex-direction: column;
+    }
+    .card-grid--list .card__image {
+        width: 100%;
+        min-height: 0;
+        aspect-ratio: 16 / 9;
+    }
+
+    /* Results grid — reduce min for phones */
+    .results__grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Overview carousel/map — reduce height */
+    .overview-carousel {
+        height: 240px;
+    }
+    .overview-map {
+        height: 240px;
+    }
+
+    /* Canvas viewer — reduce min-height */
+    .canvas-viewer {
+        min-height: 350px;
+    }
+
+    /* Tabs — wrap status-filter to its own row; tab list scrolls */
     .tabs {
+        flex-wrap: wrap;
+    }
+    .tabs__list {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
+        gap: var(--space-4);
     }
+    .tabs__list::-webkit-scrollbar { display: none; }
     .status-filter {
         width: 100%;
         justify-content: flex-end;
         padding-top: var(--space-2);
         padding-bottom: var(--space-2);
     }
-    .tabs::-webkit-scrollbar { display: none; }
-    .tabs__list { gap: var(--space-4); }
     .tabs__tab {
         white-space: nowrap;
         min-height: 44px;
@@ -4751,6 +4800,13 @@ select.form__input--inline {
     /* -- KPI (mobile) -- */
     .val-kpi { grid-template-columns: 1fr; }
 
+    /* -- Toast (mobile) -- */
+    .toast {
+        left: var(--space-4);
+        right: var(--space-4);
+        max-width: none;
+    }
+
     /* -- Footer (mobile) -- */
     .footer__content { flex-direction: column; gap: var(--space-2); text-align: center; padding: var(--space-3) var(--space-4); }
     .footer__sep { display: none; }
@@ -4871,6 +4927,28 @@ select.form__input--inline {
     /* -- Donut Chart (small phone) -- */
     .val-donut { flex-direction: column; align-items: flex-start; }
     .val-donut svg { width: 120px; height: 120px; }
+
+    /* -- Page header (small phone) -- */
+    .page-header__actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    /* -- Workflow actions (small phone) -- */
+    .workflow-actions {
+        flex-direction: column;
+    }
+    .workflow-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* -- Overview carousel/map (small phone) -- */
+    .overview-carousel { height: 180px; }
+    .overview-map { height: 200px; }
+
+    /* -- Canvas viewer (small phone) -- */
+    .canvas-viewer { min-height: 280px; }
 
     /* -- Footer (small phone) -- */
     .footer__links { gap: var(--space-2); flex-wrap: wrap; }

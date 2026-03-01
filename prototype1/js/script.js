@@ -2056,6 +2056,35 @@ function setupInlineDangerHandlers() {
 }
 
 /**
+ * Adds horizontal swipe navigation to an element.
+ * @param {HTMLElement} el - Element to listen on
+ * @param {object} opts
+ * @param {function} opts.onSwipeLeft  - Called on left swipe (next)
+ * @param {function} opts.onSwipeRight - Called on right swipe (prev)
+ * @param {AbortSignal} opts.signal    - AbortController signal for cleanup
+ * @param {number} [opts.threshold=50] - Minimum px delta to trigger
+ */
+function addSwipeNavigation(el, { onSwipeLeft, onSwipeRight, signal, threshold = 50 }) {
+    let startX = 0;
+    let startY = 0;
+
+    el.addEventListener('touchstart', (e) => {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+    }, { signal, passive: true });
+
+    el.addEventListener('touchend', (e) => {
+        const dx = e.changedTouches[0].clientX - startX;
+        const dy = e.changedTouches[0].clientY - startY;
+        // Only trigger if horizontal swipe dominates over vertical
+        if (Math.abs(dx) > threshold && Math.abs(dx) > Math.abs(dy)) {
+            if (dx < 0) onSwipeLeft();
+            else onSwipeRight();
+        }
+    }, { signal, passive: true });
+}
+
+/**
  * Initializes the image carousel on the overview tab
  */
 let carouselController = null;
@@ -2122,6 +2151,15 @@ function initOverviewCarousel(images, altText) {
         if (slide) openLightbox(images, currentIndex);
     }, { signal });
 
+    // Swipe navigation (mobile)
+    if (images.length > 1) {
+        addSwipeNavigation(track, {
+            onSwipeLeft: () => goTo(currentIndex + 1),
+            onSwipeRight: () => goTo(currentIndex - 1),
+            signal
+        });
+    }
+
     goTo(0);
 }
 
@@ -2174,6 +2212,15 @@ function openLightbox(images, startIndex) {
     nextBtn?.addEventListener('click', () => show(current + 1), { signal });
     closeBtn?.addEventListener('click', close, { signal });
     backdrop?.addEventListener('click', close, { signal });
+
+    // Swipe navigation (mobile)
+    if (images.length > 1) {
+        addSwipeNavigation(lightbox, {
+            onSwipeLeft: () => show(current + 1),
+            onSwipeRight: () => show(current - 1),
+            signal
+        });
+    }
 }
 
 /**
@@ -3589,6 +3636,16 @@ function setupEventListeners() {
         demoBtn.addEventListener('click', () => {
             switchView('buildings');
             renderProjects();
+        });
+    }
+
+    // Mobile hamburger menu toggle
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const headerNav = document.querySelector('.header__nav');
+    if (mobileMenuBtn && headerNav) {
+        mobileMenuBtn.addEventListener('click', () => {
+            const isOpen = headerNav.classList.toggle('open');
+            mobileMenuBtn.setAttribute('aria-expanded', String(isOpen));
         });
     }
 
