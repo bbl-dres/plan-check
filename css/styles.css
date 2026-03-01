@@ -400,10 +400,26 @@ body {
 .viewer__canvas-wrap:active { cursor: grabbing; }
 .viewer__canvas-wrap canvas { position: absolute; left: 0; top: 0; }
 .viewer__coords {
-    position: absolute; bottom: var(--space-2); left: var(--space-3);
+    position: absolute; bottom: var(--space-2); right: var(--space-3);
     color: var(--color-text-secondary); font-size: var(--font-size-xs); font-family: var(--font-family-mono);
     pointer-events: none;
     background: rgba(255, 255, 255, 0.7); padding: var(--space-1) var(--space-2); border-radius: var(--radius-sm);
+}
+.viewer__scale-bar {
+    position: absolute; bottom: var(--space-2); left: var(--space-3);
+    display: flex; align-items: flex-end; gap: var(--space-1);
+    pointer-events: none;
+    background: rgba(255, 255, 255, 0.7); padding: var(--space-1) var(--space-2); border-radius: var(--radius-sm);
+}
+.viewer__scale-bar-line {
+    height: 6px; min-width: 20px;
+    border-left: 1.5px solid var(--color-text-secondary);
+    border-bottom: 1.5px solid var(--color-text-secondary);
+    border-right: 1.5px solid var(--color-text-secondary);
+}
+.viewer__scale-bar-label {
+    font-size: var(--font-size-xs); font-family: var(--font-family-mono);
+    color: var(--color-text-secondary); line-height: 1; white-space: nowrap;
 }
 
 /* ----------------------------------------

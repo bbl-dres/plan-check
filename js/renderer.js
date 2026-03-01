@@ -6,6 +6,34 @@ import { state, dom, BG_LIGHT, SIA_COLORS } from './state.js';
 import { esc, computePolygonArea, fmtNum, pointInPoly, distPointToSegment } from './utils.js';
 import { t } from './i18n.js';
 
+// Scale bar — nice round distances in mm (1-2-5 progression)
+const SCALE_STEPS = [
+    { mm: 1, label: '1 mm' }, { mm: 2, label: '2 mm' }, { mm: 5, label: '5 mm' },
+    { mm: 10, label: '1 cm' }, { mm: 20, label: '2 cm' }, { mm: 50, label: '5 cm' },
+    { mm: 100, label: '10 cm' }, { mm: 200, label: '20 cm' }, { mm: 500, label: '50 cm' },
+    { mm: 1000, label: '1 m' }, { mm: 2000, label: '2 m' }, { mm: 5000, label: '5 m' },
+    { mm: 10000, label: '10 m' }, { mm: 20000, label: '20 m' }, { mm: 50000, label: '50 m' },
+    { mm: 100000, label: '100 m' }, { mm: 200000, label: '200 m' }, { mm: 500000, label: '500 m' },
+];
+
+let _scaleBarEl, _scaleBarLine, _scaleBarLabel;
+function updateScaleBar() {
+    if (!_scaleBarEl) {
+        _scaleBarEl = document.getElementById('scale-bar');
+        _scaleBarLine = document.getElementById('scale-bar-line');
+        _scaleBarLabel = document.getElementById('scale-bar-label');
+    }
+    if (!_scaleBarEl) return;
+    _scaleBarEl.style.display = '';
+    const MAX_PX = 150;
+    let best = SCALE_STEPS[0];
+    for (const step of SCALE_STEPS) {
+        if (step.mm * state.cam.zoom <= MAX_PX) best = step;
+    }
+    _scaleBarLine.style.width = Math.round(best.mm * state.cam.zoom) + 'px';
+    _scaleBarLabel.textContent = best.label;
+}
+
 // Canvas overlay colors — mirrors tokens.css (Canvas2D can't read CSS vars)
 const OV = {
     highlight:     '#0099CC',
@@ -367,6 +395,8 @@ export function render() {
     renderRoomOverlays();
 
     ctx.restore();
+
+    updateScaleBar();
 }
 
 // =============================================

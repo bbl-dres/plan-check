@@ -29,7 +29,6 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
             </button>
             <nav class="header__nav">
-                <a href="https://www.bbl.admin.ch/de/downloads-bauten" target="_blank" rel="noopener" class="header__nav-link" data-i18n="nav.downloads">Downloads BBL Bauten</a>
                 <a href="https://github.com/bbl-dres/plan-check/blob/main/docs/anleitung-de.md" target="_blank" rel="noopener" class="header__nav-link" data-i18n="nav.guide">Anleitung und FAQ</a>
                 <a href="https://www.bbl.admin.ch/de/kontakt" target="_blank" rel="noopener" class="header__nav-link" data-i18n="nav.contact">Kontakt</a>
             </nav>
@@ -62,11 +61,11 @@
         <div class="panel open" id="validation-panel">
             <div class="panel__header panel__header--toggle"><span data-i18n="panel.validation">Validierung</span> <span class="panel__chevron"></span></div>
             <div class="validation-tabs">
-                <a href="#" class="validation-tabs__tab validation-tabs__tab--active" data-vtab="rules"><span data-i18n="tab.rules">Prüfregeln</span> (<span id="vtab-rules-count">0</span>/<span id="vtab-rules-total">40</span>)</a>
-                <a href="#" class="validation-tabs__tab" data-vtab="errors"><span data-i18n="tab.errors">Fehlermeldungen</span> (<span id="vtab-error-count">0</span>)</a>
-                <a href="#" class="validation-tabs__tab" data-vtab="overview"><span data-i18n="tab.layers">Layer</span> (<span id="vtab-layer-count">0</span>)</a>
-                <a href="#" class="validation-tabs__tab" data-vtab="rooms"><span data-i18n="tab.rooms">Räume</span> (<span id="vtab-room-count">0</span>)</a>
-                <a href="#" class="validation-tabs__tab" data-vtab="areas"><span data-i18n="tab.areas">Flächen</span> (<span id="vtab-area-count">0</span>)</a>
+                <a href="#" class="validation-tabs__tab validation-tabs__tab--active" data-vtab="rules"><span data-i18n="tab.rules">Prüfregeln</span>&#160;(<span id="vtab-rules-count">0</span>/<span id="vtab-rules-total">40</span>)</a>
+                <a href="#" class="validation-tabs__tab" data-vtab="errors"><span data-i18n="tab.errors">Fehlermeldungen</span>&#160;(<span id="vtab-error-count">0</span>)</a>
+                <a href="#" class="validation-tabs__tab" data-vtab="overview"><span data-i18n="tab.layers">Layer</span>&#160;(<span id="vtab-layer-count">0</span>)</a>
+                <a href="#" class="validation-tabs__tab" data-vtab="rooms"><span data-i18n="tab.rooms">Räume</span>&#160;(<span id="vtab-room-count">0</span>)</a>
+                <a href="#" class="validation-tabs__tab" data-vtab="areas"><span data-i18n="tab.areas">Flächen</span>&#160;(<span id="vtab-area-count">0</span>)</a>
                 <a href="#" class="validation-tabs__tab" data-vtab="kpi" data-i18n="tab.kpi">Kennzahlen</a>
                 <div class="status-filter" id="status-filter" role="group" data-i18n-aria-label="filter.statusFilter" aria-label="Status Filter">
                     <button class="status-filter__btn status-filter__btn--active" data-filter="all" data-i18n="filter.all">Alle</button>
@@ -102,6 +101,10 @@
                                 <span class="viewer__sep"></span>
                                 <button id="fullscreen-btn" data-i18n-title="viewer.fullscreen" title="Vollbild"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg></button>
                             </div>
+                            <div class="viewer__scale-bar" id="scale-bar" style="display:none">
+                                <div class="viewer__scale-bar-line" id="scale-bar-line"></div>
+                                <span class="viewer__scale-bar-label" id="scale-bar-label">0 m</span>
+                            </div>
                             <div class="viewer__coords" id="coords-display">X: 0 Y: 0</div>
                             <div class="feature-popup" id="feature-popup"></div>
                         </div>
@@ -126,11 +129,8 @@
             <span class="footer__version">v1.0.0</span>
             <div class="footer__links">
                 <a href="?view=api-docs" class="footer__link">API</a>
-                <span class="footer__sep">|</span>
                 <a href="https://github.com/bbl-dres/plan-check" target="_blank" rel="noopener" class="footer__link" data-i18n="footer.sourceCode">Quellencode</a>
-                <span class="footer__sep">|</span>
-                <a href="https://github.com/mlightcad/libredwg-web" target="_blank" rel="noopener" class="footer__link">libredwg-web</a>
-                <span class="footer__sep">|</span>
+                <a href="https://www.bbl.admin.ch/de/downloads-bauten" target="_blank" rel="noopener" class="footer__link" data-i18n="nav.downloads">Downloads BBL Bauten</a>
                 <a href="https://www.admin.ch/gov/de/start/rechtliches.html" target="_blank" rel="noopener" class="footer__link" data-i18n="footer.legal">Rechtliches</a>
             </div>
         </div>
