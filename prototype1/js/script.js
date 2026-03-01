@@ -862,7 +862,10 @@ function updateUrlHash() {
     }
 
     if (hash && window.location.hash !== hash) {
-        history.pushState(null, '', hash);
+        // Preserve existing search params (e.g. ?lang=fr) when updating the hash
+        const url = new URL(window.location);
+        url.hash = hash;
+        history.pushState(null, '', url);
     }
 }
 
@@ -912,7 +915,8 @@ function applyFiltersFromParams(params) {
  * Applies the view type parameter (grid/list/map/dashboard) from the URL.
  */
 function applyViewTypeFromParams(params) {
-    const viewType = params.view || 'grid';
+    const allowedViews = ['grid', 'list', 'map', 'dashboard'];
+    const viewType = allowedViews.includes(params.view) ? params.view : 'grid';
     const btn = document.querySelector(`.view-toggle__btn[data-view="${viewType}"]`);
     if (btn) {
         btn.click();
@@ -936,14 +940,21 @@ function navigateFromHash() {
     // Parse the hash path
     const projectMatch = hashPath.match(/#\/building\/(\d+)/);
     const documentMatch = hashPath.match(/\/floorplan\/(\d+)/);
-    if (hashPath === '#/buildings' || hashPath === '' || hash.startsWith('#/buildings?')) {
+    if (hashPath === '#/api') {
+        showApiDocs();
+        isNavigatingFromHash = false;
+        return;
+    } else if (hashPath === '#/buildings' || hashPath === '' || hash.startsWith('#/buildings?')) {
         switchView('buildings');
         renderProjects();
         applyFiltersFromParams(params);
         // Defer view type switch so DOM is ready
         requestAnimationFrame(() => {
-            applyViewTypeFromParams(params);
-            isNavigatingFromHash = false;
+            try {
+                applyViewTypeFromParams(params);
+            } finally {
+                isNavigatingFromHash = false;
+            }
         });
         return;
     } else if (hashPath === '#/login') {
@@ -959,11 +970,19 @@ function navigateFromHash() {
             // First open project, then document
             openProjectDetail(projectId, true); // true = skip hash update
 
+            if (!currentProject) {
+                isNavigatingFromHash = false;
+                return;
+            }
+
             // Use requestAnimationFrame for reliable timing after DOM updates
             _navigationTimeoutId = requestAnimationFrame(() => {
-                _navigationTimeoutId = null;
-                openValidationView(documentId, true);
-                isNavigatingFromHash = false;
+                try {
+                    _navigationTimeoutId = null;
+                    openValidationView(documentId, true);
+                } finally {
+                    isNavigatingFromHash = false;
+                }
             });
             return;
         } else {
@@ -989,6 +1008,9 @@ function setupRouting() {
 
 // === VIEW SWITCHING ===
 function switchView(viewName) {
+    // Close API docs if open
+    hideApiDocs();
+
     // Hide all views
     document.querySelectorAll('.view').forEach(view => {
         view.classList.remove('view--active');
@@ -1547,6 +1569,7 @@ function openProjectDetail(projectId, skipHashUpdate = false) {
 
     if (skipHashUpdate) {
         // Directly switch view without updating hash
+        hideApiDocs();
         document.querySelectorAll('.view').forEach(view => view.classList.remove('view--active'));
         document.getElementById('view-building-detail')?.classList.add('view--active');
         currentView = 'building-detail';
@@ -3163,6 +3186,7 @@ function openValidationView(documentId, skipHashUpdate = false) {
     // Switch view FIRST to make container visible
     if (skipHashUpdate) {
         // Directly switch view without updating hash
+        hideApiDocs();
         document.querySelectorAll('.view').forEach(view => view.classList.remove('view--active'));
         document.getElementById('view-validation')?.classList.add('view--active');
         currentView = 'validation';
@@ -3605,13 +3629,7 @@ function setupEventListeners() {
     if (headerBrand) {
         headerBrand.addEventListener('click', (e) => {
             e.preventDefault();
-            // Close API docs if visible
-            var apiContainer = document.getElementById('api-docs-container');
-            if (apiContainer && apiContainer.style.display !== 'none') {
-                apiContainer.style.display = 'none';
-                document.querySelector('main').style.display = '';
-                document.querySelector('.footer').style.display = '';
-            }
+            hideApiDocs();
             const currentView = document.querySelector('.view--active').id;
             if (currentView !== 'view-login') {
                 switchView('buildings');
@@ -3679,9 +3697,7 @@ function setupEventListeners() {
     if (navApiLink) {
         navApiLink.addEventListener('click', (e) => {
             e.preventDefault();
-            document.querySelector('main').style.display = 'none';
-            document.querySelector('.footer').style.display = 'none';
-            initApiDocs();
+            showApiDocs();
         });
     }
 
@@ -4143,6 +4159,24 @@ function apiRenderEndpoint(spec, method, path, op) {
     '</div>';
 }
 
+function showApiDocs() {
+    document.querySelector('main').style.display = 'none';
+    initApiDocs();
+    if (!isNavigatingFromHash) {
+        const url = new URL(window.location);
+        url.hash = '#/api';
+        history.pushState(null, '', url);
+    }
+}
+
+function hideApiDocs() {
+    var apiContainer = document.getElementById('api-docs-container');
+    if (apiContainer && apiContainer.style.display !== 'none') {
+        apiContainer.style.display = 'none';
+        document.querySelector('main').style.display = '';
+    }
+}
+
 async function initApiDocs() {
     var resp = await fetch('data/openapi.json');
     var spec = await resp.json();
@@ -4232,12 +4266,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupTabs();
     setupSearch();
     setupKeyboardShortcuts();
+    initFilters();
     setupRouting();
     setupModals();
     setupDocumentActions();
     setupUserActions();
     setupSettingsHandlers();
-    initFilters();
 
     // Initialize Lucide icons (global initialization on page load)
     initLucideIcons();
