@@ -3598,6 +3598,16 @@ function setupEventListeners() {
         });
     }
 
+    // Mobile hamburger menu toggle
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const headerNav = document.querySelector('.header__nav');
+    if (mobileMenuBtn && headerNav) {
+        mobileMenuBtn.addEventListener('click', () => {
+            const isOpen = headerNav.classList.toggle('open');
+            mobileMenuBtn.setAttribute('aria-expanded', String(isOpen));
+        });
+    }
+
     // User icon → navigate to login (simulate logout)
     const userMenuBtn = document.getElementById('user-menu-btn');
     if (userMenuBtn) {
