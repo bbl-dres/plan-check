@@ -27,6 +27,13 @@
 
   "a11y.skipToContent": "Zum Hauptinhalt springen",
   "a11y.userMenu": "Benutzermenü",
+  "a11y.close": "Schliessen",
+  "a11y.previous": "Zurück",
+  "a11y.next": "Weiter",
+  "a11y.removeImage": "Bild entfernen",
+  "a11y.validationWorkflow": "Validierungs-Workflow",
+  "a11y.username": "Benutzername oder E-Mail",
+  "a11y.password": "Passwort",
 
   "projects.searchPlaceholder": "Bezeichnung, Adresse, ID...",
   "projects.toggleFilters": "Filter ein-/ausblenden",

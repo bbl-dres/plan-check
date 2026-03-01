@@ -79,8 +79,8 @@ const SecurityTests = {
         'escapeHtml should handle quotes': () => {
             TestRunner.assertEqual(
                 escapeHtml('Say "hello"'),
-                'Say "hello"',
-                'Double quotes should be preserved (textContent handles them)'
+                'Say &quot;hello&quot;',
+                'Double quotes should be escaped for safe attribute use'
             );
         },
 
@@ -145,25 +145,25 @@ const UITests = {
     tests: {
         'renderStatusIcon should render success icon': () => {
             const result = renderStatusIcon('ok');
-            TestRunner.assert(result.includes('status-pill--success'), 'Should have success class');
-            TestRunner.assert(result.includes('data-lucide="check"'), 'Should have check icon');
+            TestRunner.assert(result.includes('status-icon--ok'), 'Should have ok class');
+            TestRunner.assert(result.includes('data-lucide="check-circle-2"'), 'Should have check-circle-2 icon');
         },
 
         'renderStatusIcon should render warning icon': () => {
             const result = renderStatusIcon('warning');
-            TestRunner.assert(result.includes('status-pill--warning'), 'Should have warning class');
+            TestRunner.assert(result.includes('status-icon--warning'), 'Should have warning class');
             TestRunner.assert(result.includes('data-lucide="alert-triangle"'), 'Should have alert icon');
         },
 
         'renderStatusIcon should render error icon': () => {
             const result = renderStatusIcon('error');
-            TestRunner.assert(result.includes('status-pill--error'), 'Should have error class');
-            TestRunner.assert(result.includes('data-lucide="x"'), 'Should have x icon');
+            TestRunner.assert(result.includes('status-icon--error'), 'Should have error class');
+            TestRunner.assert(result.includes('data-lucide="x-circle"'), 'Should have x-circle icon');
         },
 
         'renderStatusIcon should default to error for unknown status': () => {
             const result = renderStatusIcon('unknown');
-            TestRunner.assert(result.includes('status-pill--error'), 'Unknown status should default to error');
+            TestRunner.assert(result.includes('status-icon--error'), 'Unknown status should default to error');
         },
 
         'formatFileSize should format bytes correctly': () => {
@@ -216,8 +216,6 @@ const ConfigTests = {
     name: 'Configuration',
     tests: {
         'CONFIG should have required properties': () => {
-            TestRunner.assertNotNull(CONFIG.SPECKLE_PROJECT_ID, 'Should have Speckle project ID');
-            TestRunner.assertNotNull(CONFIG.SPECKLE_MODEL_ID, 'Should have Speckle model ID');
             TestRunner.assertNotNull(CONFIG.TOAST_DURATION_MS, 'Should have toast duration');
             TestRunner.assertNotNull(CONFIG.STEP_COUNT, 'Should have step count');
             TestRunner.assertNotNull(CONFIG.BYTES_PER_KB, 'Should have bytes per KB');
@@ -242,13 +240,6 @@ const ConfigTests = {
 
         'CONFIG.BYTES_PER_KB should be 1024': () => {
             TestRunner.assertEqual(CONFIG.BYTES_PER_KB, 1024, 'Should be 1024');
-        },
-
-        'getSpeckleViewerUrl should return valid URL': () => {
-            const url = getSpeckleViewerUrl();
-            TestRunner.assert(url.includes('app.speckle.systems'), 'Should contain Speckle domain');
-            TestRunner.assert(url.includes(CONFIG.SPECKLE_PROJECT_ID), 'Should contain project ID');
-            TestRunner.assert(url.includes(CONFIG.SPECKLE_MODEL_ID), 'Should contain model ID');
         }
     }
 };

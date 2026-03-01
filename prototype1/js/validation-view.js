@@ -59,15 +59,6 @@ var ValidationView = (function () {
         };
     }
 
-    function escapeHtml(str) {
-        if (!str) return '';
-        return String(str)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;');
-    }
-
     // --- Initialization ---
 
     function init(documentId) {
@@ -320,7 +311,7 @@ var ValidationView = (function () {
 
                 buttons.forEach(function (b) {
                     var val = b.getAttribute('data-filter');
-                    b.classList.toggle('status-filter__btn--active', statusFilter.has(val));
+                    b.classList.toggle('seg-btn--active', statusFilter.has(val));
                 });
 
                 applyStatusFilter();
@@ -424,7 +415,7 @@ var ValidationView = (function () {
             var visible = matchesStatusFilter(room.status);
             html += '<div class="panel-list__item" data-room-id="' + room.id + '" ' +
                 'data-aoid="' + escapeHtml(room.aoid) + '" data-func="' + escapeHtml(room.aofunction) + '" ' +
-                'data-status="' + room.status + '"' +
+                'data-status="' + room.status + '" tabindex="0" role="button"' +
                 (visible ? '' : ' style="display:none"') + '>' +
                 '<input type="checkbox" checked> ' +
                 icon +
@@ -435,14 +426,21 @@ var ValidationView = (function () {
 
         roomListEl.innerHTML = html;
 
-        // Click handlers
+        // Click and keyboard handlers
         var items = roomListEl.querySelectorAll('.panel-list__item');
         items.forEach(function (item) {
-            item.addEventListener('click', function () {
+            function activate() {
                 var roomId = parseInt(item.getAttribute('data-room-id'), 10);
                 selectRoomInList(roomId);
                 FloorPlanViewer.selectRoom(roomId);
                 FloorPlanViewer.zoomToRoom(roomId);
+            }
+            item.addEventListener('click', activate);
+            item.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    activate();
+                }
             });
         });
     }
@@ -467,7 +465,7 @@ var ValidationView = (function () {
                 var visible = matchesStatusFilter(area.status);
                 html += '<div class="panel-list__item" data-area-id="' + area.id + '" ' +
                     'data-aoid="' + escapeHtml(area.aoid) + '" data-detail="' + escapeHtml(area.aofunction) + '" ' +
-                    'data-status="' + area.status + '"' +
+                    'data-status="' + area.status + '" tabindex="0" role="button"' +
                     (visible ? '' : ' style="display:none"') + '>' +
                     '<input type="checkbox" checked> ' +
                     icon +
@@ -479,15 +477,22 @@ var ValidationView = (function () {
 
         areaListEl.innerHTML = html;
 
-        // Click handlers to highlight area in viewer
+        // Click and keyboard handlers to highlight area in viewer
         var items = areaListEl.querySelectorAll('.panel-list__item');
         items.forEach(function (item) {
-            item.addEventListener('click', function () {
+            function activate() {
                 var areaId = parseInt(item.getAttribute('data-area-id'), 10);
                 items.forEach(function (el) { el.classList.remove('panel-list__item--selected'); });
                 item.classList.add('panel-list__item--selected');
                 FloorPlanViewer.selectRoom(areaId);
                 FloorPlanViewer.zoomToRoom(areaId);
+            }
+            item.addEventListener('click', activate);
+            item.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    activate();
+                }
             });
         });
     }
@@ -681,7 +686,7 @@ var ValidationView = (function () {
                 var errVisible = matchesSeverityFilter(err.severity);
                 html += '<div class="error-list__item" data-code="' + escapeHtml(err.ruleCode) + '" data-msg="' + escapeHtml(err.message) + '" ' +
                     'data-severity="' + err.severity + '"' +
-                    (roomId ? ' data-room-id="' + roomId + '"' : '') +
+                    (roomId ? ' data-room-id="' + roomId + '" tabindex="0" role="button"' : '') +
                     (errVisible ? '' : ' style="display:none"') + '>' +
                     icon +
                     '<span class="error-list__code">' + escapeHtml(err.ruleCode) + '</span>' +
@@ -692,41 +697,23 @@ var ValidationView = (function () {
 
         groupsEl.innerHTML = html;
 
-        // Click error items to highlight and zoom to affected room
+        // Click and keyboard handlers for error items to highlight and zoom to affected room
         var items = groupsEl.querySelectorAll('.error-list__item[data-room-id]');
         items.forEach(function (item) {
             item.style.cursor = 'pointer';
-            item.addEventListener('click', function () {
+            function activate() {
                 var id = parseInt(item.getAttribute('data-room-id'), 10);
                 FloorPlanViewer.selectRoom(id);
                 FloorPlanViewer.zoomToRoom(id);
+            }
+            item.addEventListener('click', activate);
+            item.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    activate();
+                }
             });
         });
-    }
-
-    function renderErrorGroupItem(err) {
-        var sevClass = err.severity === 'error' ? 'error' : 'warning';
-
-        // Try to find which room this error references
-        var roomId = null;
-        var roomAoid = '';
-        var aoidMatch = err.message.match(/([A-Z0-9]+\.[0-9]+)/i);
-        if (aoidMatch) {
-            var room = docRooms.find(function (r) { return r.aoid === aoidMatch[1]; });
-            if (room) {
-                roomId = room.id;
-                roomAoid = room.aoid + ' \u00B7 ' + room.aofunction;
-            }
-        }
-
-        return '<div class="error-group__item error-group__item--' + sevClass + '"' +
-            (roomId ? ' data-room-id="' + roomId + '"' : '') + '>' +
-            '<div class="error-group__item-header">' +
-            '<span class="error-group__item-code">' + escapeHtml(err.ruleCode) + '</span>' +
-            (roomAoid ? '<span class="error-group__item-room">' + escapeHtml(roomAoid) + '</span>' : '') +
-            '</div>' +
-            '<div class="error-group__item-message">' + escapeHtml(err.message) + '</div>' +
-            '</div>';
     }
 
     function renderRulesPanel() {

@@ -12,6 +12,12 @@ var I18n = (function () {
     var DEFAULT   = 'de';
     var STORE_KEY = 'plan-check-proto-lang';
 
+    // Capture base URL at load time via document.currentScript (reliable)
+    var _scriptBase = '';
+    if (document.currentScript && document.currentScript.src) {
+        _scriptBase = document.currentScript.src.replace(/js\/i18n\.js.*$/, '');
+    }
+
     var locale   = DEFAULT;
     var messages = {};
     var cache    = {};
@@ -63,20 +69,8 @@ var I18n = (function () {
         if (SUPPORTED.indexOf(lang) === -1) lang = DEFAULT;
 
         if (!cache[lang]) {
-            // Determine base URL relative to this script
-            var scripts = document.getElementsByTagName('script');
-            var base = '';
-            for (var i = 0; i < scripts.length; i++) {
-                var src = scripts[i].src || '';
-                if (src.indexOf('i18n.js') !== -1) {
-                    base = src.replace(/js\/i18n\.js.*$/, '');
-                    break;
-                }
-            }
-            if (!base) {
-                // Fallback: use current page location
-                base = window.location.href.replace(/[^/]*$/, '');
-            }
+            // Use base URL captured at load time, fall back to page location
+            var base = _scriptBase || window.location.href.replace(/[^/]*$/, '');
 
             return fetch(base + 'locales/' + lang + '.json')
                 .then(function (resp) {
@@ -123,6 +117,41 @@ var I18n = (function () {
     }
 
     /**
+     * Sanitizes HTML from translation strings, only allowing safe inline tags.
+     * Prevents XSS from compromised locale files while supporting basic formatting.
+     */
+    function sanitizeHtml(str) {
+        if (!str) return '';
+        var ALLOWED_TAGS = ['br', 'strong', 'em', 'b', 'i'];
+        var tmp = document.createElement('div');
+        tmp.innerHTML = str;
+
+        function walk(node) {
+            var children = Array.prototype.slice.call(node.childNodes);
+            for (var i = 0; i < children.length; i++) {
+                var child = children[i];
+                if (child.nodeType === 1) { // Element node
+                    var tag = child.tagName.toLowerCase();
+                    if (ALLOWED_TAGS.indexOf(tag) === -1) {
+                        // Replace disallowed element with its text content
+                        var text = document.createTextNode(child.textContent);
+                        node.replaceChild(text, child);
+                    } else {
+                        // Remove all attributes from allowed tags
+                        while (child.attributes.length > 0) {
+                            child.removeAttribute(child.attributes[0].name);
+                        }
+                        walk(child);
+                    }
+                }
+            }
+        }
+
+        walk(tmp);
+        return tmp.innerHTML;
+    }
+
+    /**
      * Walk all data-i18n* attributes in the DOM and apply translations.
      */
     function translatePage() {
@@ -161,7 +190,7 @@ var I18n = (function () {
         els = document.querySelectorAll('[data-i18n-html]');
         for (var f = 0; f < els.length; f++) {
             var k6 = els[f].getAttribute('data-i18n-html');
-            if (k6) els[f].innerHTML = t(k6);
+            if (k6) els[f].innerHTML = sanitizeHtml(t(k6));
         }
 
         // Update <title>

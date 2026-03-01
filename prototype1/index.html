@@ -18,8 +18,8 @@
     <link rel="stylesheet" href="css/tokens.css">
     <link rel="stylesheet" href="css/styles.css">
     <script src="https://unpkg.com/lucide@0.562.0/dist/umd/lucide.min.js" integrity="sha384-FmRlymRnpgjuKyAnwH4DftRjl+RqHOlfcw9k4xcpPyovclg/2RZRrvw7qe1koVCP" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" crossorigin="anonymous">
-    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" integrity="sha384-MinO0mNliZ3vwppuPOUnGa+iq619pfMhLVUXfC4LHwSCvF9H+6P/KO4Q7qBOYV5V" crossorigin="anonymous">
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js" integrity="sha384-SYKAG6cglRMN0RVvhNeBY0r3FYKNOJtznwA0v7B5Vp9tr31xAHsZC0DqkQ/pZDmj" crossorigin="anonymous"></script>
 </head>
 <body>
     <!-- Skip to Main Content (Accessibility) -->
@@ -72,7 +72,7 @@
                             <label for="username" class="sr-only" data-i18n="login.username">Benutzername oder E-Mail</label>
                             <div class="form__input-group">
                                 <i data-lucide="user" class="form__input-icon icon icon-sm"></i>
-                                <input type="text" class="form__input" placeholder="Benutzername oder E-Mail" id="username" autocomplete="username" aria-label="Username or email" data-i18n-placeholder="login.username">
+                                <input type="text" class="form__input" placeholder="Benutzername oder E-Mail" id="username" autocomplete="username" aria-label="Benutzername oder E-Mail" data-i18n-placeholder="login.username" data-i18n-aria-label="a11y.username">
                             </div>
                         </div>
 
@@ -80,7 +80,7 @@
                             <label for="password" class="sr-only" data-i18n="login.password">Passwort</label>
                             <div class="form__input-group">
                                 <i data-lucide="lock" class="form__input-icon icon icon-sm"></i>
-                                <input type="password" class="form__input" placeholder="Passwort" id="password" autocomplete="current-password" aria-label="Password" data-i18n-placeholder="login.password">
+                                <input type="password" class="form__input" placeholder="Passwort" id="password" autocomplete="current-password" aria-label="Passwort" data-i18n-placeholder="login.password" data-i18n-aria-label="a11y.password">
                             </div>
                         </div>
 
@@ -138,16 +138,16 @@
                             <span class="filter-toggle__badge" id="filter-badge" style="display: none;">0</span>
                         </button>
                         <div class="view-toggle" role="group" aria-label="Ansicht wechseln" data-i18n-aria-label="projects.switchView">
-                            <button class="view-toggle__btn view-toggle__btn--active" data-view="grid" aria-label="Rasteransicht" aria-pressed="true" title="Rasteransicht" data-i18n-title="projects.gridView" data-i18n-aria-label="projects.gridView">
+                            <button class="seg-btn view-toggle__btn seg-btn--active" data-view="grid" aria-label="Rasteransicht" aria-pressed="true" title="Rasteransicht" data-i18n-title="projects.gridView" data-i18n-aria-label="projects.gridView">
                                 <i data-lucide="grid-2x2" class="icon icon-md" aria-hidden="true"></i>
                             </button>
-                            <button class="view-toggle__btn" data-view="list" aria-label="Listenansicht" aria-pressed="false" title="Listenansicht" data-i18n-title="projects.listView" data-i18n-aria-label="projects.listView">
+                            <button class="seg-btn view-toggle__btn" data-view="list" aria-label="Listenansicht" aria-pressed="false" title="Listenansicht" data-i18n-title="projects.listView" data-i18n-aria-label="projects.listView">
                                 <i data-lucide="list" class="icon icon-md" aria-hidden="true"></i>
                             </button>
-                            <button class="view-toggle__btn" data-view="map" aria-label="Kartenansicht" aria-pressed="false" title="Kartenansicht" data-i18n-title="projects.mapView" data-i18n-aria-label="projects.mapView">
+                            <button class="seg-btn view-toggle__btn" data-view="map" aria-label="Kartenansicht" aria-pressed="false" title="Kartenansicht" data-i18n-title="projects.mapView" data-i18n-aria-label="projects.mapView">
                                 <i data-lucide="map" class="icon icon-md" aria-hidden="true"></i>
                             </button>
-                            <button class="view-toggle__btn" data-view="dashboard" aria-label="Dashboard" aria-pressed="false" title="Dashboard" data-i18n-title="projects.dashboard" data-i18n-aria-label="projects.dashboard">
+                            <button class="seg-btn view-toggle__btn" data-view="dashboard" aria-label="Dashboard" aria-pressed="false" title="Dashboard" data-i18n-title="projects.dashboard" data-i18n-aria-label="projects.dashboard">
                                 <i data-lucide="bar-chart-3" class="icon icon-md" aria-hidden="true"></i>
                             </button>
                         </div>
@@ -350,10 +350,10 @@
                                 <div class="overview-card overview-card--photo">
                                     <div class="overview-carousel" id="overview-carousel">
                                         <div class="overview-carousel__track" id="overview-carousel-track"></div>
-                                        <button class="overview-carousel__btn overview-carousel__btn--prev" id="carousel-prev" aria-label="Previous">
+                                        <button class="overview-carousel__btn overview-carousel__btn--prev" id="carousel-prev" aria-label="Zurück" data-i18n-aria-label="a11y.previous">
                                             <i data-lucide="chevron-left" class="icon icon-sm" aria-hidden="true"></i>
                                         </button>
-                                        <button class="overview-carousel__btn overview-carousel__btn--next" id="carousel-next" aria-label="Next">
+                                        <button class="overview-carousel__btn overview-carousel__btn--next" id="carousel-next" aria-label="Weiter" data-i18n-aria-label="a11y.next">
                                             <i data-lucide="chevron-right" class="icon icon-sm" aria-hidden="true"></i>
                                         </button>
                                         <div class="overview-carousel__dots" id="carousel-dots"></div>
@@ -572,7 +572,7 @@
                     </button>
                 </nav>
 
-                <nav class="stepper" aria-label="Validation Workflow">
+                <nav class="stepper" aria-label="Validierungs-Workflow" data-i18n-aria-label="a11y.validationWorkflow">
                     <ol class="stepper__list">
                         <li class="stepper__item stepper__item--complete" data-step="1">
                             <span class="stepper__indicator">
@@ -885,11 +885,11 @@
                                 <li><a href="#" class="tabs__tab" data-val-tab="areas"><span data-i18n="val.tabAreas">Flächen</span> (<span id="val-tab-areas-count">0</span>)</a></li>
                             </ul>
                             <div class="status-filter" id="status-filter" role="group" aria-label="Statusfilter" data-i18n-aria-label="val.statusFilter">
-                                <button class="status-filter__btn status-filter__btn--active" data-filter="all" data-i18n="val.all">Alle</button>
-                                <button class="status-filter__btn" data-filter="warning">
+                                <button class="seg-btn status-filter__btn seg-btn--active" data-filter="all" data-i18n="val.all">Alle</button>
+                                <button class="seg-btn status-filter__btn" data-filter="warning">
                                     <i data-lucide="alert-triangle" class="icon icon-sm"></i> <span data-i18n="val.warning">Warnung</span>
                                 </button>
-                                <button class="status-filter__btn" data-filter="error">
+                                <button class="seg-btn status-filter__btn" data-filter="error">
                                     <i data-lucide="x-circle" class="icon icon-sm"></i> <span data-i18n="val.errors">Fehler</span>
                                 </button>
                             </div>
@@ -1111,14 +1111,14 @@
     <!-- New Project Modal -->
     <div class="lightbox" id="image-lightbox" hidden>
         <div class="lightbox__backdrop"></div>
-        <button class="lightbox__close" aria-label="Close">
+        <button class="lightbox__close" aria-label="Schliessen" data-i18n-aria-label="a11y.close">
             <i data-lucide="x" class="icon" aria-hidden="true"></i>
         </button>
-        <button class="lightbox__btn lightbox__btn--prev" aria-label="Previous">
+        <button class="lightbox__btn lightbox__btn--prev" aria-label="Zurück" data-i18n-aria-label="a11y.previous">
             <i data-lucide="chevron-left" class="icon" aria-hidden="true"></i>
         </button>
         <img class="lightbox__img" id="lightbox-img" src="" alt="">
-        <button class="lightbox__btn lightbox__btn--next" aria-label="Next">
+        <button class="lightbox__btn lightbox__btn--next" aria-label="Weiter" data-i18n-aria-label="a11y.next">
             <i data-lucide="chevron-right" class="icon" aria-hidden="true"></i>
         </button>
         <div class="lightbox__counter" id="lightbox-counter"></div>
@@ -1129,7 +1129,7 @@
         <div class="modal__content">
             <div class="modal__header">
                 <h2 class="modal__title" id="modal-title" data-i18n="modal.createProject">Neues Gebäude erstellen</h2>
-                <button class="modal__close" data-modal-close aria-label="Schliessen">
+                <button class="modal__close" data-modal-close aria-label="Schliessen" data-i18n-aria-label="a11y.close">
                     <i data-lucide="x" class="icon icon-md" aria-hidden="true"></i>
                 </button>
             </div>
@@ -1181,7 +1181,7 @@
                         </div>
                         <div class="form__file-preview" id="project-image-preview" hidden>
                             <img src="" alt="Projektbild Vorschau" id="project-image-preview-img">
-                            <button type="button" class="form__file-remove" id="project-image-remove" aria-label="Bild entfernen">
+                            <button type="button" class="form__file-remove" id="project-image-remove" aria-label="Bild entfernen" data-i18n-aria-label="a11y.removeImage">
                                 <i data-lucide="x" class="icon icon-sm" aria-hidden="true"></i>
                             </button>
                         </div>
@@ -1201,7 +1201,7 @@
         <div class="modal__content modal__content--sm">
             <div class="modal__header">
                 <h2 class="modal__title" id="invite-user-modal-title" data-i18n="modal.inviteUser">Benutzer einladen</h2>
-                <button class="modal__close" data-modal-close aria-label="Schliessen">
+                <button class="modal__close" data-modal-close aria-label="Schliessen" data-i18n-aria-label="a11y.close">
                     <i data-lucide="x" class="icon icon-md" aria-hidden="true"></i>
                 </button>
             </div>
@@ -1233,7 +1233,7 @@
         <div class="modal__content modal__content--sm">
             <div class="modal__header">
                 <h2 class="modal__title" id="new-document-modal-title" data-i18n="modal.newFloorPlan">Neuer Grundriss</h2>
-                <button class="modal__close" data-modal-close aria-label="Schliessen">
+                <button class="modal__close" data-modal-close aria-label="Schliessen" data-i18n-aria-label="a11y.close">
                     <i data-lucide="x" class="icon icon-md" aria-hidden="true"></i>
                 </button>
             </div>
@@ -1256,7 +1256,7 @@
         <div class="modal__content modal__content--sm">
             <div class="modal__header">
                 <h2 class="modal__title" id="confirm-modal-title"></h2>
-                <button class="modal__close" data-modal-close aria-label="Schliessen">
+                <button class="modal__close" data-modal-close aria-label="Schliessen" data-i18n-aria-label="a11y.close">
                     <i data-lucide="x" class="icon icon-md" aria-hidden="true"></i>
                 </button>
             </div>

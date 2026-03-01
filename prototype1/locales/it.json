@@ -27,6 +27,13 @@
 
   "a11y.skipToContent": "Vai al contenuto principale",
   "a11y.userMenu": "Menu utente",
+  "a11y.close": "Chiudi",
+  "a11y.previous": "Precedente",
+  "a11y.next": "Successivo",
+  "a11y.removeImage": "Rimuovi immagine",
+  "a11y.validationWorkflow": "Flusso di validazione",
+  "a11y.username": "Nome utente o e-mail",
+  "a11y.password": "Password",
 
   "projects.searchPlaceholder": "Designazione, indirizzo, ID...",
   "projects.toggleFilters": "Mostra/nascondi filtri",

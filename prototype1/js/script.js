@@ -5,10 +5,6 @@
 
 // === CONFIGURATION ===
 const CONFIG = {
-    SPECKLE_PROJECT_ID: 'fccae9bd00',
-    SPECKLE_MODEL_ID: 'e65877a4ee',
-    // Token should be loaded from environment/server in production
-    SPECKLE_EMBED_TOKEN: 'cd8278c08caa75725d392d5b5ecb650b579db274a1',
     TOAST_DURATION_MS: 3000,
     STEP_COUNT: 4,
     BYTES_PER_KB: 1024,
@@ -46,9 +42,11 @@ const BUILDING_TYPE_OPTIONS = [
  */
 function escapeHtml(str) {
     if (str === null || str === undefined) return '';
-    const div = document.createElement('div');
-    div.textContent = String(str);
-    return div.innerHTML;
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
 }
 
 /**
@@ -639,28 +637,6 @@ function formatDateTime(date) {
     return date.toISOString();
 }
 
-/**
- * Generates the Speckle viewer URL
- * @returns {string} The Speckle viewer URL
- */
-function getSpeckleViewerUrl() {
-    const baseUrl = `https://app.speckle.systems/projects/${CONFIG.SPECKLE_PROJECT_ID}/models/${CONFIG.SPECKLE_MODEL_ID}`;
-    const embedOptions = encodeURIComponent(JSON.stringify({
-        isEnabled: true,
-        isTransparent: true,
-        hideControls: true,
-        hideSelectionInfo: true,
-        disableModelLink: true
-    }));
-    const savedView = encodeURIComponent(JSON.stringify({ id: '0a421b6a94' }));
-
-    let url = `${baseUrl}?embed=${embedOptions}&savedView=${savedView}`;
-    if (CONFIG.SPECKLE_EMBED_TOKEN) {
-        url = `${baseUrl}?embedToken=${CONFIG.SPECKLE_EMBED_TOKEN}#embed=${embedOptions}&savedView=${savedView}`;
-    }
-    return url;
-}
-
 // === STATE MANAGEMENT ===
 const AppState = {
     currentView: 'login',
@@ -852,7 +828,7 @@ function buildHashParams() {
 
     // View type (only on buildings view)
     if (currentView === 'buildings') {
-        const activeBtn = document.querySelector('.view-toggle__btn--active');
+        const activeBtn = document.querySelector('.view-toggle__btn.seg-btn--active');
         const viewType = activeBtn ? activeBtn.dataset.view : 'grid';
         if (viewType !== 'grid') params.set('view', viewType);
     }
@@ -890,23 +866,6 @@ function updateUrlHash() {
     if (hash && window.location.hash !== hash) {
         history.pushState(null, '', hash);
     }
-}
-
-/**
- * Parses the URL hash into route components
- * @returns {{view: string, projectId: number|null, documentId: number|null, isResults: boolean}}
- * @description Utility function for URL routing. Can be used for deep linking.
- */
-function parseUrlHash() {
-    const hash = window.location.hash || '#/login';
-    const parts = hash.replace('#/', '').split('/');
-
-    return {
-        view: parts[0] || 'login',
-        projectId: parts[1] === 'project' ? null : (parts[0] === 'project' ? safeParseInt(parts[1]) : null),
-        documentId: parts.includes('document') ? safeParseInt(parts[parts.indexOf('document') + 1]) : null,
-        isResults: parts.includes('results')
-    };
 }
 
 /**
@@ -1372,7 +1331,7 @@ function renderDashboard() {
         // Click row to navigate to project detail
         tableBody.querySelectorAll('tr[data-project-id]').forEach(row => {
             row.addEventListener('click', () => {
-                openProjectDetail(row.dataset.projectId);
+                openProjectDetail(safeParseInt(row.dataset.projectId));
             });
         });
     }
@@ -1530,7 +1489,8 @@ function openProjectDetail(projectId, skipHashUpdate = false) {
     }
 
     // Update breadcrumb with project name
-    document.getElementById('breadcrumb-building-name').textContent = currentProject.internalId + ' – ' + currentProject.name;
+    const breadcrumbEl = document.getElementById('breadcrumb-building-name');
+    if (breadcrumbEl) breadcrumbEl.textContent = currentProject.internalId + ' – ' + currentProject.name;
 
     // Get documents for this project
     const projectDocuments = mockDocuments.filter(doc => doc.projectId === currentProject.id);
@@ -1545,8 +1505,10 @@ function openProjectDetail(projectId, skipHashUpdate = false) {
 
     // Update KPI strip score with color
     const scoreEl = document.getElementById('project-completion');
-    scoreEl.textContent = `${averageScore}%`;
-    scoreEl.className = `overview-kpi__value overview-kpi__value--${getScoreStatus(averageScore)}`;
+    if (scoreEl) {
+        scoreEl.textContent = `${averageScore}%`;
+        scoreEl.className = `overview-kpi__value overview-kpi__value--${getScoreStatus(averageScore)}`;
+    }
 
     // Update KPIs
     const projectDocumentIds = projectDocuments.map(d => d.id);
@@ -1559,18 +1521,21 @@ function openProjectDetail(projectId, skipHashUpdate = false) {
         errorEl.className = 'overview-kpi__value' + (errorCount > 0 ? ' overview-kpi__value--error' : ' overview-kpi__value--success');
     }
 
-    document.getElementById('project-document-count').textContent = projectDocuments.length;
+    const docCountEl = document.getElementById('project-document-count');
+    if (docCountEl) docCountEl.textContent = projectDocuments.length;
 
     // Calculate room count from geometry for this project's documents
     const roomCount = mockGeometry.filter(g => g.type === 'room' && projectDocumentIds.includes(g.documentId)).length;
-    document.getElementById('project-room-count').textContent = roomCount;
+    const roomCountEl = document.getElementById('project-room-count');
+    if (roomCountEl) roomCountEl.textContent = roomCount;
 
     // Calculate total GF (Geschossfläche) from geometry for this project
     const totalGF = mockGeometry
         .filter(g => g.type === 'area' && g.aofunction === 'Geschossfläche' && projectDocumentIds.includes(g.documentId))
         .reduce((sum, g) => sum + g.area, 0);
     const formattedGF = totalGF > 0 ? `${totalGF.toLocaleString('de-CH')} m²` : '0 m²';
-    document.getElementById('project-gf').textContent = formattedGF;
+    const gfEl = document.getElementById('project-gf');
+    if (gfEl) gfEl.textContent = formattedGF;
 
     // Render overview, documents, rules, and settings
     renderOverview();
@@ -1584,8 +1549,10 @@ function openProjectDetail(projectId, skipHashUpdate = false) {
     const ruleSet = mockRuleSets.find(rs => rs.id === ruleSetId);
     const rulesCount = ruleSet ? ruleSet.rules.length : 0;
 
-    document.getElementById('tab-documents-count').textContent = projectDocuments.length;
-    document.getElementById('tab-rules-count').textContent = rulesCount;
+    const tabDocsCountEl = document.getElementById('tab-documents-count');
+    if (tabDocsCountEl) tabDocsCountEl.textContent = projectDocuments.length;
+    const tabRulesCountEl = document.getElementById('tab-rules-count');
+    if (tabRulesCountEl) tabRulesCountEl.textContent = rulesCount;
 
     if (skipHashUpdate) {
         // Directly switch view without updating hash
@@ -1657,9 +1624,7 @@ function renderAddressDisplayFields(project) {
 
 function stripHtmlTags(html) {
     if (!html) return '';
-    const tmp = document.createElement('div');
-    tmp.innerHTML = html;
-    return tmp.textContent || tmp.innerText || '';
+    return String(html).replace(/<[^>]*>/g, '');
 }
 
 function renderDangerZoneCard() {
@@ -2103,12 +2068,18 @@ function setupInlineDangerHandlers() {
 /**
  * Initializes the image carousel on the overview tab
  */
+let carouselController = null;
 function initOverviewCarousel(images, altText) {
     const track = document.getElementById('overview-carousel-track');
     const dots = document.getElementById('carousel-dots');
     const prevBtn = document.getElementById('carousel-prev');
     const nextBtn = document.getElementById('carousel-next');
     if (!track) return;
+
+    // Abort previous carousel listeners to prevent leaks
+    if (carouselController) carouselController.abort();
+    carouselController = new AbortController();
+    const { signal } = carouselController;
 
     let currentIndex = 0;
 
@@ -2137,13 +2108,13 @@ function initOverviewCarousel(images, altText) {
         }
     }
 
-    if (prevBtn) prevBtn.addEventListener('click', () => goTo(currentIndex - 1));
-    if (nextBtn) nextBtn.addEventListener('click', () => goTo(currentIndex + 1));
+    if (prevBtn) prevBtn.addEventListener('click', () => goTo(currentIndex - 1), { signal });
+    if (nextBtn) nextBtn.addEventListener('click', () => goTo(currentIndex + 1), { signal });
     if (dots) {
         dots.addEventListener('click', (e) => {
             const dot = e.target.closest('.overview-carousel__dot');
             if (dot) goTo(parseInt(dot.dataset.index, 10));
-        });
+        }, { signal });
     }
 
     // Hide arrows if only one image
@@ -2159,7 +2130,7 @@ function initOverviewCarousel(images, altText) {
     track.addEventListener('click', (e) => {
         const slide = e.target.closest('.overview-carousel__slide');
         if (slide) openLightbox(images, currentIndex);
-    });
+    }, { signal });
 
     goTo(0);
 }
@@ -2167,6 +2138,7 @@ function initOverviewCarousel(images, altText) {
 /**
  * Opens a fullscreen lightbox for image viewing
  */
+let lightboxController = null;
 function openLightbox(images, startIndex) {
     const lightbox = document.getElementById('image-lightbox');
     const img = document.getElementById('lightbox-img');
@@ -2176,6 +2148,11 @@ function openLightbox(images, startIndex) {
     const closeBtn = lightbox?.querySelector('.lightbox__close');
     const backdrop = lightbox?.querySelector('.lightbox__backdrop');
     if (!lightbox || !img) return;
+
+    // Abort any previous lightbox listeners
+    if (lightboxController) lightboxController.abort();
+    lightboxController = new AbortController();
+    const { signal } = lightboxController;
 
     let current = startIndex || 0;
 
@@ -2189,41 +2166,24 @@ function openLightbox(images, startIndex) {
 
     function close() {
         lightbox.hidden = true;
-        document.removeEventListener('keydown', onKey);
-    }
-
-    function onKey(e) {
-        if (e.key === 'Escape') close();
-        else if (e.key === 'ArrowLeft') show(current - 1);
-        else if (e.key === 'ArrowRight') show(current + 1);
+        if (lightboxController) lightboxController.abort();
+        lightboxController = null;
     }
 
     lightbox.hidden = false;
     show(current);
     initLucideIcons(lightbox);
-    document.addEventListener('keydown', onKey);
 
-    // Single-use click handlers (cleaned up on close)
-    const onPrev = () => show(current - 1);
-    const onNext = () => show(current + 1);
-    prevBtn?.addEventListener('click', onPrev);
-    nextBtn?.addEventListener('click', onNext);
-    closeBtn?.addEventListener('click', close);
-    backdrop?.addEventListener('click', close);
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') close();
+        else if (e.key === 'ArrowLeft') show(current - 1);
+        else if (e.key === 'ArrowRight') show(current + 1);
+    }, { signal });
 
-    // Override close to also clean up listeners
-    const origClose = close;
-    function closeAndClean() {
-        origClose();
-        prevBtn?.removeEventListener('click', onPrev);
-        nextBtn?.removeEventListener('click', onNext);
-        closeBtn?.removeEventListener('click', closeAndClean);
-        backdrop?.removeEventListener('click', closeAndClean);
-    }
-    closeBtn?.removeEventListener('click', close);
-    backdrop?.removeEventListener('click', close);
-    closeBtn?.addEventListener('click', closeAndClean);
-    backdrop?.addEventListener('click', closeAndClean);
+    prevBtn?.addEventListener('click', () => show(current - 1), { signal });
+    nextBtn?.addEventListener('click', () => show(current + 1), { signal });
+    closeBtn?.addEventListener('click', close, { signal });
+    backdrop?.addEventListener('click', close, { signal });
 }
 
 /**
@@ -3181,11 +3141,9 @@ function openValidationView(documentId, skipHashUpdate = false) {
     renderErrors();
     updateValidationTabCounts();
 
-    // Initialize the new validation view with Canvas viewer
+    // Initialize the validation view with Canvas viewer
     if (typeof ValidationView !== 'undefined') {
         ValidationView.init(documentId);
-    } else {
-        renderFloorPlan();
     }
 }
 
@@ -3505,46 +3463,6 @@ function renderStep2Errors() {
     }).join('');
 }
 
-// === SPECKLE VIEWER ===
-let _speckleViewerInitialized = false; // Prevent duplicate event listener attachment
-
-function initSpeckleViewer() {
-    const iframe = document.getElementById('speckle-viewer');
-    const loading = document.getElementById('speckle-loading');
-
-    if (!iframe || !loading) return;
-
-    // Set the Speckle viewer URL dynamically (only once)
-    const viewerUrl = getSpeckleViewerUrl();
-    if (viewerUrl && !iframe.src) {
-        iframe.src = viewerUrl;
-    }
-
-    // Only attach event listeners once to prevent duplicates
-    if (!_speckleViewerInitialized) {
-        _speckleViewerInitialized = true;
-
-        // Hide loading indicator when iframe loads
-        iframe.addEventListener('load', () => {
-            loading.classList.add('is-hidden');
-        });
-
-        // Handle iframe load errors
-        iframe.addEventListener('error', () => {
-            loading.innerHTML = '<span>Error loading 3D floor plan</span>';
-        });
-    }
-}
-
-// Legacy function kept for compatibility - now handled by Speckle iframe
-function renderFloorPlan() {
-    // Speckle viewer is now used instead of SVG rendering
-    // Use requestAnimationFrame to avoid blocking table rendering
-    requestAnimationFrame(() => {
-        initSpeckleViewer();
-    });
-}
-
 // === PIE CHART RENDERING ===
 function renderPieChart() {
     const slicesGroup = document.getElementById('pie-chart-slices');
@@ -3769,10 +3687,10 @@ function setupEventListeners() {
     document.querySelectorAll('.view-toggle__btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.view-toggle__btn').forEach(b => {
-                b.classList.remove('view-toggle__btn--active');
+                b.classList.remove('seg-btn--active');
                 b.setAttribute('aria-pressed', 'false');
             });
-            btn.classList.add('view-toggle__btn--active');
+            btn.classList.add('seg-btn--active');
             btn.setAttribute('aria-pressed', 'true');
 
             const viewType = btn.dataset.view;
@@ -3996,6 +3914,14 @@ function setupKeyboardShortcuts() {
 
         // Escape to close/go back
         if (e.key === 'Escape') {
+            // Don't navigate if a modal is open (modal handler closes it)
+            const openModal = document.querySelector('.modal:not([hidden])');
+            if (openModal) return;
+
+            // Don't navigate if the lightbox is open (lightbox handler closes it)
+            const lightbox = document.getElementById('image-lightbox');
+            if (lightbox && !lightbox.hidden) return;
+
             if (currentView !== 'login' && currentView !== 'buildings') {
                 switchView('buildings');
             }
