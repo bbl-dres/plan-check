@@ -171,15 +171,13 @@
     --overlay-dark: rgba(0, 0, 0, 0.6);
     --overlay-backdrop: rgba(0, 0, 0, 0.9);
 
-    /* Semi-transparent whites (glass/frosted surfaces) */
-    --color-white-alpha-15: rgba(255, 255, 255, 0.15);
-    --color-white-alpha-30: rgba(255, 255, 255, 0.30);
+    /* Semi-transparent whites (glass/frosted surfaces) — 5-step scale.
+       Collapsed from 8: merged 15+30→20, 80+85→80, 90+92→90. */
+    --color-white-alpha-20: rgba(255, 255, 255, 0.20);
     --color-white-alpha-50: rgba(255, 255, 255, 0.50);
     --color-white-alpha-70: rgba(255, 255, 255, 0.70);
     --color-white-alpha-80: rgba(255, 255, 255, 0.80);
-    --color-white-alpha-85: rgba(255, 255, 255, 0.85);
     --color-white-alpha-90: rgba(255, 255, 255, 0.90);
-    --color-white-alpha-92: rgba(255, 255, 255, 0.92);
 
     /* Semi-transparent blacks (borders, overlays) */
     --color-black-alpha-3: rgba(0, 0, 0, 0.03);
@@ -187,11 +185,9 @@
     --color-black-alpha-15: rgba(0, 0, 0, 0.15);
 
     /* Canvas Labels */
-    --color-label-bg: var(--color-white-alpha-85);
+    --color-label-bg: var(--color-white-alpha-80);
 
-    /* Video Player */
-    --color-video-gradient-start: #667eea;
-    --color-video-gradient-end: #764ba2;
+    /* Video Player — gradient inlined at point of use (single reference) */
 
     /* Card overlay gradient */
     --overlay-card: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.5) 100%);
@@ -202,11 +198,9 @@
     --color-chart-yellow: #FFF176;
     --color-chart-blue: #64B5F6;
 
-    /* Firework celebration colors */
+    /* Firework celebration colors — 3-color palette (was 6).
+       Removed green (→ teal), purple (→ --color-primary), amber (→ gold). */
     --color-firework-gold: #FFD700;
-    --color-firework-green: #32CD32;
     --color-firework-coral: #FF6B6B;
     --color-firework-teal: #4ECDC4;
-    --color-firework-purple: #9B59B6;
-    --color-firework-amber: #F39C12;
 }

@@ -237,6 +237,9 @@
   "step2.area": "AREA",
   "step2.function": "FUNCTION",
   "step2.error": "ERROR",
+  "step2.severity": "SEVERITY",
+  "step2.code": "CODE",
+  "step2.message": "MESSAGE",
 
   "step3.resultsTitle": "Results Summary",
   "step3.resultsSummary": "Results Summary",

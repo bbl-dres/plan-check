@@ -237,6 +237,9 @@
   "step2.area": "FLÄCHE",
   "step2.function": "FUNKTION",
   "step2.error": "FEHLER",
+  "step2.severity": "SCHWEREGRAD",
+  "step2.code": "CODE",
+  "step2.message": "MELDUNG",
 
   "step3.resultsTitle": "Ergebniszusammenfassung",
   "step3.resultsSummary": "Ergebniszusammenfassung",

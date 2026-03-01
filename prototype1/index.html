@@ -674,11 +674,11 @@
                                 <table class="table table--compact">
                                     <thead>
                                         <tr>
-                                            <th scope="col">AOID</th>
-                                            <th scope="col">NAME</th>
-                                            <th scope="col" class="text-right">AREA</th>
-                                            <th scope="col">AOFUNCTION</th>
-                                            <th scope="col" class="text-center">ERROR</th>
+                                            <th scope="col" class="text-center" data-i18n="step2.error">FEHLER</th>
+                                            <th scope="col" data-i18n="step2.aoid">AOID</th>
+                                            <th scope="col" data-i18n="step2.name">NAME</th>
+                                            <th scope="col" class="text-right" data-i18n="step2.area">FLÄCHE</th>
+                                            <th scope="col" data-i18n="step2.function">FUNKTION</th>
                                         </tr>
                                     </thead>
                                     <tbody id="step2-room-table-body">
@@ -690,8 +690,19 @@
 
                         <!-- Errors Tab -->
                         <div class="tab-pane" id="step2-tab-errors">
-                            <div class="error-list" id="step2-error-list">
-                                <!-- Errors rendered by JS -->
+                            <div class="table-wrapper">
+                                <table class="table table--compact">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col" class="text-center" data-i18n="step2.severity">SCHWEREGRAD</th>
+                                            <th scope="col" data-i18n="step2.code">CODE</th>
+                                            <th scope="col" data-i18n="step2.message">MELDUNG</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="step2-error-table-body">
+                                        <!-- Errors rendered by JS -->
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -702,14 +713,6 @@
                     <h2 class="text-h2" data-i18n="step3.resultsTitle">Ergebniszusammenfassung</h2>
 
                     <div class="tabs-card">
-                        <div class="tabs">
-                            <ul class="tabs__list">
-                                <li><a href="#" class="tabs__tab tabs__tab--active" data-step3-tab="kpi" data-i18n="step3.kpi">KPI</a></li>
-                                <li><a href="#" class="tabs__tab" data-step3-tab="viewer" data-i18n="step3.viewer">Viewer</a></li>
-                            </ul>
-                        </div>
-
-                        <!-- KPI Tab -->
                         <div class="tab-pane tab-pane--active" id="step3-tab-kpi">
                             <div class="results__layout">
                                 <!-- Left Column: Tables -->
@@ -720,8 +723,6 @@
                                         <table class="table table--compact table--no-borders">
                                             <tbody>
                                                 <tr><td class="table__abbr">GV</td><td data-i18n="step3.gv">Gebäudevolumen</td><td class="text-right table__value">74'786 m³</td><td class="text-right table__percent">100%</td></tr>
-                                                <tr><td class="table__abbr">GV OG</td><td data-i18n="step3.gvOg">Gebäudevolumen oberirdisch</td><td class="text-right table__value">74'786 m³</td><td class="text-right table__percent">100%</td></tr>
-                                                <tr><td class="table__abbr">GV UG</td><td data-i18n="step3.gvUg">Gebäudevolumen unterirdisch</td><td class="text-right table__value">74'786 m³</td><td class="text-right table__percent">100%</td></tr>
                                             </tbody>
                                         </table>
                                     </div>
@@ -821,14 +822,6 @@
                             </div>
                         </div>
 
-                        <!-- Viewer Tab -->
-                        <div class="tab-pane" id="step3-tab-viewer">
-                            <div class="empty-state">
-                                <i data-lucide="construction" class="empty-state__icon"></i>
-                                <h3 class="empty-state__title" data-i18n="step3.futureDev">Zukünftige Entwicklung</h3>
-                                <p class="empty-state__message" data-i18n="step3.futureDevHint">Der 3D-Viewer wird in einer zukünftigen Version implementiert.</p>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -1020,8 +1013,6 @@
                         <table class="table table--compact table--no-borders">
                             <tbody>
                                 <tr><td data-i18n="results.gv">GV (Gebäudevolumen)</td><td class="text-right">16'848 m³</td><td class="text-right">100%</td></tr>
-                                <tr><td data-i18n="results.gvOg">GV OG (oberirdisch)</td><td class="text-right">14'500 m³</td><td class="text-right">86%</td></tr>
-                                <tr><td data-i18n="results.gvUg">GV UG (unterirdisch)</td><td class="text-right">2'348 m³</td><td class="text-right">14%</td></tr>
                             </tbody>
                         </table>
                     </div>

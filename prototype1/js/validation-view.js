@@ -534,8 +534,6 @@ var ValidationView = (function () {
             '<h3 class="results__section-title">' + I18n.t('step3.buildingVolume') + '</h3>' +
             '<table class="table table--compact table--no-borders"><tbody>' +
             kpiRow('GV', I18n.t('step3.gvDesc'), gv, gv, gf) +
-            kpiRow('GV OG', I18n.t('step3.gvOgDesc'), gvOg, gv, gf) +
-            kpiRow('GV UG', I18n.t('step3.gvUgDesc'), gvUg, gv, gf) +
             '</tbody></table></div>';
 
         // Building areas

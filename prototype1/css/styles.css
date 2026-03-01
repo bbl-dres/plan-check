@@ -147,6 +147,66 @@ body {
     padding: var(--space-2) var(--space-3);
 }
 
+/* -- KPI value: large numeric display used across all KPI cards --
+   Merge of: .kpi-card__value, .metric-card__value,
+   .overview-kpi__value, .project-kpi__value */
+.kpi-card__value,
+.metric-card__value,
+.overview-kpi__value,
+.project-kpi__value {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+    line-height: var(--line-height-tight);
+}
+
+/* -- KPI label: secondary text below KPI values --
+   Merge of: .kpi-card__label, .metric-card__label,
+   .overview-kpi__label, .project-kpi__label */
+.kpi-card__label,
+.metric-card__label,
+.overview-kpi__label,
+.project-kpi__label {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+}
+
+/* -- Section heading: card/panel titles with border --
+   Merge of: .dashboard-panel__title, .overview-card__title,
+   .results__section-title */
+.dashboard-panel__title,
+.overview-card__title,
+.results__section-title {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-3);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+/* -- List item code: monospace identifier in list rows --
+   Merge of: .rule-list__code, .error-list__code */
+.rule-list__code,
+.error-list__code {
+    font-family: var(--font-family-mono);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
+    flex-shrink: 0;
+    min-width: 90px;
+}
+
+/* -- List item text: truncated label in list rows --
+   Merge of: .rule-list__name, .error-list__message */
+.rule-list__name,
+.error-list__message {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 /* -- Surface: elevated white card with border + shadow --
    Merge of: .kpi-card, .metric-card, .overview-card,
    .dashboard-panel, .tabs-card, .login__form,
@@ -261,7 +321,7 @@ body {
     display: flex; align-items: flex-start; gap: 0;
     text-decoration: none; min-width: 0; flex-shrink: 1;
     color: inherit;
-    transition: opacity var(--duration-normal) ease;
+    transition: opacity var(--duration-normal) var(--ease-out);
 }
 .header__flag { flex-shrink: 0; height: 33px; width: 30px; display: block; margin-right: var(--space-3); }
 .header__name { height: 50px; width: auto; display: block; }
@@ -812,8 +872,8 @@ body {
    API Documentation View
    ======================================== */
 .api-docs {
-    width: 100%; max-width: 1400px; margin: 0 auto;
-    padding: var(--space-5) var(--space-5) var(--space-8);
+    width: 100%; max-width: 1200px; margin: 0 auto;
+    padding: var(--space-5) var(--space-4) var(--space-8);
 }
 .api-docs__main { max-width: 100%; }
 
@@ -1047,7 +1107,7 @@ body {
 a {
     color: var(--color-primary);
     text-decoration: none;
-    transition: color var(--duration-normal) ease;
+    transition: color var(--duration-normal) var(--ease-out);
 }
 
 a:hover {
@@ -1235,7 +1295,7 @@ a:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, var(--color-video-gradient-start) 0%, var(--color-video-gradient-end) 100%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 .video-player__controls {
@@ -1376,7 +1436,7 @@ a:hover {
     position: relative;
     border: 2px dashed var(--color-border);
     background: var(--color-bg-secondary);
-    transition: all var(--duration-normal) ease;
+    transition: all var(--duration-normal) var(--ease-out);
     cursor: pointer;
 }
 
@@ -1437,7 +1497,7 @@ a:hover {
     border-radius: var(--radius-full);
     cursor: pointer;
     z-index: 2;
-    transition: background var(--duration-normal) ease, transform var(--duration-normal) ease;
+    transition: background var(--duration-normal) var(--ease-out), transform var(--duration-normal) var(--ease-out);
 }
 
 .form__file-remove:hover {
@@ -1606,7 +1666,7 @@ a:hover {
     overflow: hidden;
     max-height: 0;
     opacity: 0;
-    transition: max-height var(--duration-medium) ease, opacity var(--duration-medium) ease, margin var(--duration-medium) ease;
+    transition: max-height var(--duration-medium) var(--ease-out), opacity var(--duration-medium) var(--ease-out), margin var(--duration-medium) var(--ease-out);
     margin-bottom: 0;
 }
 
@@ -1658,7 +1718,7 @@ a:hover {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: var(--space-5);
-    transition: all var(--duration-slow) ease;
+    transition: all var(--duration-slow) var(--ease-out);
 }
 
 .card-grid--list {
@@ -1710,7 +1770,7 @@ a:hover {
     color: var(--color-white);
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-bold);
-    transition: transform var(--duration-normal) ease;
+    transition: transform var(--duration-normal) var(--ease-out);
 }
 
 .project-map-marker:hover {
@@ -1759,16 +1819,12 @@ a:hover {
 }
 
 .kpi-card__value {
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text-primary);
-    line-height: var(--line-height-tight);
+    /* shared via KPI value group above */
     margin-bottom: var(--space-1);
 }
 
 .kpi-card__label {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
+    /* shared via KPI label group above */
 }
 
 /* Dashboard Row */
@@ -1788,12 +1844,8 @@ a:hover {
 }
 
 .dashboard-panel__title {
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text-primary);
+    /* shared via section heading group above */
     margin-bottom: var(--space-4);
-    padding-bottom: var(--space-2);
-    border-bottom: 1px solid var(--color-border-light);
 }
 
 /* Status bars */
@@ -1826,7 +1878,7 @@ a:hover {
 .status-bar__fill {
     height: 100%;
     border-radius: var(--radius-md);
-    transition: width 0.6s ease;
+    transition: width 0.6s var(--ease-out);
 }
 
 .status-bar__fill--active { background: var(--color-primary); }
@@ -2244,14 +2296,12 @@ a:hover {
 }
 
 .project-kpi__value {
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-bold);
+    /* shared via KPI value group above */
     font-family: var(--font-family-mono);
-    color: var(--color-text-primary);
-    line-height: var(--line-height-tight);
 }
 
 .project-kpi__label {
+    /* shared via KPI label group above */
     font-size: var(--font-size-base);
     color: var(--color-text-primary);
     margin-top: var(--space-1);
@@ -2280,7 +2330,7 @@ a:hover {
     fill: none;
     stroke-width: 6;
     stroke-linecap: round;
-    transition: stroke-dashoffset 0.5s ease;
+    transition: stroke-dashoffset 0.5s var(--ease-out);
 }
 
 .donut-chart__progress--success { stroke: var(--color-success); }
@@ -2539,7 +2589,7 @@ a:hover {
 }
 
 .table--selectable tbody tr {
-    transition: background var(--duration-normal) ease;
+    transition: background var(--duration-normal) var(--ease-out);
 }
 
 .table--selectable tbody tr.is-selected {
@@ -2636,13 +2686,13 @@ a:hover {
     position: relative;
     flex: 1;
     cursor: pointer;
-    transition: all var(--duration-normal) ease;
+    transition: all var(--duration-normal) var(--ease-out);
 }
 
 .stepper__item:not(:last-child)::after {
     content: '';
     position: absolute;
-    top: 20px;
+    top: var(--space-5);
     left: calc(50% + 24px);
     width: calc(100% - 48px);
     height: 3px;
@@ -2783,17 +2833,14 @@ a:hover {
 }
 
 .metric-card__value {
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-bold);
+    /* shared via KPI value group above */
     font-family: var(--font-family-mono);
-    color: var(--color-text-primary);
     line-height: var(--line-height-none);
     margin-bottom: var(--space-2);
 }
 
 .metric-card__label {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
+    /* shared via KPI label group above */
 }
 
 .metric-card--error .metric-card__value { color: var(--color-error); }
@@ -2923,11 +2970,11 @@ a:hover {
 .viewer__legend {
     position: absolute;
     bottom: var(--space-3);
-    left: var(--space-3);
+    right: var(--space-3);
     display: flex;
     gap: var(--space-3);
     padding: var(--space-1) var(--space-3);
-    background: var(--color-white-alpha-92);
+    background: var(--color-white-alpha-90);
     border: 1px solid var(--color-border-light);
     border-radius: var(--radius-md);
     font-size: var(--font-size-xs);
@@ -3151,12 +3198,8 @@ a:hover {
 }
 
 .results__section-title {
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text-primary);
-    margin-bottom: var(--space-3);
-    padding-bottom: var(--space-2);
-    border-bottom: 1px solid var(--color-border);
+    /* shared via section heading group above */
+    border-bottom-color: var(--color-border);
 }
 
 .results__donut {
@@ -3520,7 +3563,7 @@ a:hover {
     padding: var(--space-2);
     border-bottom: 1px solid var(--color-border-light);
     cursor: pointer;
-    transition: background var(--duration-normal) ease;
+    transition: background var(--duration-normal) var(--ease-out);
     font-size: var(--font-size-sm);
 }
 
@@ -3604,19 +3647,11 @@ a:hover {
 }
 
 .rule-list__code {
-    font-family: var(--font-family-mono);
-    font-weight: var(--font-weight-semibold);
-    font-size: var(--font-size-sm);
-    flex-shrink: 0;
-    min-width: 90px;
+    /* shared via list item code group above */
 }
 
 .rule-list__name {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-primary);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    /* shared via list item text group above */
 }
 
 /* ========================================
@@ -3659,19 +3694,11 @@ a:hover {
 }
 
 .error-list__code {
-    font-family: var(--font-family-mono);
-    font-weight: var(--font-weight-semibold);
-    font-size: var(--font-size-sm);
-    flex-shrink: 0;
-    min-width: 90px;
+    /* shared via list item code group above */
 }
 
 .error-list__message {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-primary);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    /* shared via list item text group above */
 }
 
 /* ========================================
@@ -3875,11 +3902,9 @@ a:hover {
             0 0 var(--color-venetian-red),
             0 0 var(--color-firework-gold),
             0 0 var(--color-primary),
-            0 0 var(--color-firework-green),
-            0 0 var(--color-firework-coral),
             0 0 var(--color-firework-teal),
-            0 0 var(--color-firework-purple),
-            0 0 var(--color-firework-amber);
+            0 0 var(--color-firework-coral),
+            0 0 var(--color-firework-gold);
     }
     20% { opacity: 1; }
     100% {
@@ -3889,11 +3914,9 @@ a:hover {
             -40px -40px var(--color-venetian-red),
             40px -40px var(--color-firework-gold),
             -40px 40px var(--color-primary),
-            40px 40px var(--color-firework-green),
+            40px 40px var(--color-firework-teal),
             -55px 0 var(--color-firework-coral),
-            55px 0 var(--color-firework-teal),
-            0 -55px var(--color-firework-purple),
-            0 55px var(--color-firework-amber);
+            55px 0 var(--color-firework-gold);
     }
 }
 
@@ -3904,8 +3927,8 @@ a:hover {
         box-shadow:
             0 0 var(--color-firework-coral),
             0 0 var(--color-firework-teal),
-            0 0 var(--color-firework-purple),
-            0 0 var(--color-firework-amber);
+            0 0 var(--color-primary),
+            0 0 var(--color-firework-gold);
     }
     20% { opacity: 1; }
     100% {
@@ -3914,8 +3937,8 @@ a:hover {
         box-shadow:
             -35px -35px var(--color-firework-coral),
             35px -35px var(--color-firework-teal),
-            -35px 35px var(--color-firework-purple),
-            35px 35px var(--color-firework-amber);
+            -35px 35px var(--color-primary),
+            35px 35px var(--color-firework-gold);
     }
 }
 
@@ -3946,11 +3969,9 @@ a:hover {
 }
 
 .overview-kpi__value {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
+    /* shared via KPI value group above */
     font-family: var(--font-family-mono);
-    color: var(--color-text-primary);
-    line-height: var(--line-height-tight);
+    font-size: var(--font-size-lg);
 }
 
 .overview-kpi__value--success { color: var(--color-success); }
@@ -3958,8 +3979,7 @@ a:hover {
 .overview-kpi__value--error { color: var(--color-error); }
 
 .overview-kpi__label {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
+    /* shared via KPI label group above */
     margin-top: var(--space-1);
 }
 
@@ -3996,9 +4016,7 @@ a:hover {
 }
 
 .overview-card__title {
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text-primary);
+    /* shared via section heading group above */
     margin: 0 0 var(--space-4) 0;
 }
 
@@ -4023,7 +4041,7 @@ a:hover {
 
 .overview-carousel__track {
     display: flex;
-    transition: transform 0.3s ease;
+    transition: transform 0.3s var(--ease-out);
     height: 100%;
 }
 
@@ -4039,9 +4057,9 @@ a:hover {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
+    width: var(--control-height-md);
+    height: var(--control-height-md);
+    border-radius: var(--radius-full);
     border: none;
     background: var(--color-white-alpha-90);
     color: var(--color-text-primary);
@@ -4080,14 +4098,14 @@ a:hover {
 }
 
 .overview-carousel__dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
+    width: var(--space-2);
+    height: var(--space-2);
+    border-radius: var(--radius-full);
     border: none;
     background: var(--color-white-alpha-50);
     cursor: pointer;
     padding: 0;
-    transition: background 0.2s ease;
+    transition: background 0.2s var(--ease-out);
 }
 
 .overview-carousel__dot--active {
@@ -4199,20 +4217,20 @@ a:hover {
     top: 50%;
     transform: translateY(-50%);
     z-index: 2;
-    background: var(--color-white-alpha-15);
+    background: var(--color-white-alpha-20);
     border: none;
     color: var(--color-white);
     cursor: pointer;
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
+    width: var(--space-8);
+    height: var(--space-8);
+    border-radius: var(--radius-full);
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .lightbox__btn:hover {
-    background: var(--color-white-alpha-30);
+    background: var(--color-white-alpha-20);
 }
 
 .lightbox__btn--prev { left: var(--space-4); }
@@ -4359,7 +4377,7 @@ select.form__input--inline {
     height: 28px;
     border-radius: var(--radius-full);
     border: none;
-    background: var(--color-white-alpha-85);
+    background: var(--color-white-alpha-80);
     color: var(--color-text-primary);
     cursor: pointer;
     box-shadow: var(--shadow-sm);
@@ -5014,8 +5032,4 @@ select.form__input--inline {
     }
 }
 
-/* API Docs — match prototype1 content width */
-.api-docs {
-    max-width: 1200px;
-    padding: var(--space-5) var(--space-4) var(--space-8);
-}
+/* API Docs max-width consolidated into main .api-docs rule above */

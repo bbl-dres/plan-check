@@ -3410,11 +3410,11 @@ function renderStep2Rooms() {
 
         return `
             <tr>
+                <td class="text-center">${renderStatusIcon(matchStatus)}</td>
                 <td>${escapeHtml(room.aoid)}</td>
                 <td>Raum ${escapeHtml(room.aoid)}</td>
                 <td class="text-right">${Math.round(room.area || 0)}</td>
                 <td>${escapeHtml(room.aofunction)}</td>
-                <td class="text-center">${renderStatusIcon(matchStatus)}</td>
             </tr>
         `;
     }).join('');
@@ -3424,9 +3424,6 @@ function renderStep2Rooms() {
 }
 
 function renderStep2Errors() {
-    const errorList = document.getElementById('step2-error-list');
-    if (!errorList) return;
-
     // Excel matching errors
     const excelErrors = [
         {
@@ -3446,19 +3443,21 @@ function renderStep2Errors() {
         }
     ];
 
-    const validSeverities = ['error', 'warning', 'info'];
-    errorList.innerHTML = excelErrors.map(error => {
-        const severity = validSeverities.includes(error.severity) ? error.severity : 'error';
+    const tbody = document.getElementById('step2-error-table-body');
+    if (!tbody) return;
+
+    tbody.innerHTML = excelErrors.map(error => {
+        const severity = ['error', 'warning', 'info'].includes(error.severity) ? error.severity : 'error';
         return `
-            <div class="error-item error-item--${severity}">
-                <div class="error-item__header">
-                    <span class="error-item__code">${escapeHtml(error.code)}</span>
-                    <span class="error-item__severity error-item__severity--${severity}">${escapeHtml(error.severity)}</span>
-                </div>
-                <div class="error-item__message">${escapeHtml(error.message)}</div>
-            </div>
+            <tr>
+                <td class="text-center">${renderStatusIcon(severity)}</td>
+                <td>${escapeHtml(error.code)}</td>
+                <td>${escapeHtml(error.message)}</td>
+            </tr>
         `;
     }).join('');
+
+    initLucideIcons(tbody);
 }
 
 // === PIE CHART RENDERING ===
@@ -3530,9 +3529,6 @@ function setupTabs() {
 
     // Step 2 tabs (rooms, errors)
     setupTabGroup('data-step2-tab', 'step2-tab-', ['step2-tab-rooms', 'step2-tab-errors'], signal);
-
-    // Step 3 tabs (kpi, viewer)
-    setupTabGroup('data-step3-tab', 'step3-tab-', ['step3-tab-kpi', 'step3-tab-viewer'], signal);
 }
 
 // === PROJECT SEARCH ===

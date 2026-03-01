@@ -237,6 +237,9 @@
   "step2.area": "SUPERFICIE",
   "step2.function": "FUNZIONE",
   "step2.error": "ERRORE",
+  "step2.severity": "GRAVITÀ",
+  "step2.code": "CODICE",
+  "step2.message": "MESSAGGIO",
 
   "step3.resultsTitle": "Riepilogo dei risultati",
   "step3.resultsSummary": "Riepilogo dei risultati",

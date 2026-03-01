@@ -237,6 +237,9 @@
   "step2.area": "SURFACE",
   "step2.function": "FONCTION",
   "step2.error": "ERREUR",
+  "step2.severity": "GRAVITÉ",
+  "step2.code": "CODE",
+  "step2.message": "MESSAGE",
 
   "step3.resultsTitle": "Résumé des résultats",
   "step3.resultsSummary": "Résumé des résultats",
