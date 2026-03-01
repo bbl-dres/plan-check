@@ -44,7 +44,7 @@
                 <button class="lang-selector__item" data-lang="en">EN</button>
             </div>
             <nav class="header__nav">
-                <a href="https://www.bbl.admin.ch/de/downloads-bauten" target="_blank" rel="noopener" class="header__nav-link" data-i18n="nav.downloads">Downloads BBL Bauten</a>
+                <a href="https://github.com/bbl-dres/plan-check/blob/main/docs/anleitung-de.md" target="_blank" rel="noopener" class="header__nav-link" data-i18n="nav.guide">Anleitung und FAQ</a>
                 <a href="https://www.bbl.admin.ch/de/kontakt" target="_blank" rel="noopener" class="header__nav-link" data-i18n="nav.contact">Kontakt</a>
             </nav>
             <button class="btn btn--primary btn--sm header__demo" id="demo-btn" style="display:none" data-i18n="nav.startDemo">Demo starten</button>
@@ -988,96 +988,6 @@
             </div>
         </section>
 
-        <!-- RESULTS SUMMARY -->
-        <section id="view-results" class="view">
-            <div class="container">
-                <nav class="breadcrumb">
-                    <div class="breadcrumb__nav">
-                        <a href="#" class="breadcrumb__link" id="breadcrumb-results-buildings" data-i18n="breadcrumb.buildings">Gebäude</a>
-                        <span class="breadcrumb__separator">/</span>
-                        <a href="#" class="breadcrumb__link" id="breadcrumb-results-building">Building</a>
-                        <span class="breadcrumb__separator">/</span>
-                        <span class="breadcrumb__current" data-i18n="results.title">Ergebniszusammenfassung</span>
-                    </div>
-                    <button class="btn btn--secondary btn--sm" id="back-to-project-results">
-                        <i data-lucide="arrow-left" class="icon icon-sm"></i>
-                        <span data-i18n="breadcrumb.backToOverview">Zurück zur Übersicht</span>
-                    </button>
-                </nav>
-
-                <h1 class="text-h1" data-i18n="results.title">Ergebniszusammenfassung</h1>
-
-                <div class="results__grid">
-                    <div class="results__section">
-                        <h2 class="text-h3" data-i18n="results.buildingVolume">Gebäudevolumen</h2>
-                        <table class="table table--compact table--no-borders">
-                            <tbody>
-                                <tr><td data-i18n="results.gv">GV (Gebäudevolumen)</td><td class="text-right">16'848 m³</td><td class="text-right">100%</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="results__section">
-                        <h2 class="text-h3" data-i18n="results.buildingAreas">Gebäudeflächen SIA 416</h2>
-                        <table class="table table--compact table--no-borders">
-                            <tbody>
-                                <tr><td data-i18n="results.gf">GF (Geschossfläche)</td><td class="text-right">4'500 m²</td><td class="text-right">100%</td></tr>
-                                <tr><td data-i18n="results.kf">KF (Konstruktionsfläche)</td><td class="text-right">500 m²</td><td class="text-right">11%</td></tr>
-                                <tr><td data-i18n="results.ngf">NGF (Nettogeschossfläche)</td><td class="text-right">4'000 m²</td><td class="text-right">89%</td></tr>
-                                <tr><td data-i18n="results.nf">NF (Nutzfläche)</td><td class="text-right">3'900 m²</td><td class="text-right">87%</td></tr>
-                                <tr><td data-i18n="results.hnf">HNF (Hauptnutzfläche)</td><td class="text-right">3'200 m²</td><td class="text-right">71%</td></tr>
-                                <tr><td data-i18n="results.nnf">NNF (Nebennutzfläche)</td><td class="text-right">400 m²</td><td class="text-right">9%</td></tr>
-                                <tr><td data-i18n="results.vf">VF (Verkehrsfläche)</td><td class="text-right">300 m²</td><td class="text-right">7%</td></tr>
-                                <tr><td data-i18n="results.ff">FF (Funktionsfläche)</td><td class="text-right">100 m²</td><td class="text-right">2%</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="results__section">
-                        <h2 class="text-h3" data-i18n="results.areasDin277">Flächen DIN 277</h2>
-                        <table class="table table--compact table--no-borders">
-                            <tbody>
-                                <tr><td data-i18n="results.hnf1">HNF 1 - Wohnen und Aufenthalt</td><td class="text-right">850 m²</td><td class="text-right">27%</td></tr>
-                                <tr><td data-i18n="results.hnf2">HNF 2 - Büroarbeit</td><td class="text-right">1'200 m²</td><td class="text-right">38%</td></tr>
-                                <tr><td data-i18n="results.hnf3">HNF 3 - Produktion</td><td class="text-right">0 m²</td><td class="text-right">0%</td></tr>
-                                <tr><td data-i18n="results.hnf4">HNF 4 - Lagern</td><td class="text-right">150 m²</td><td class="text-right">5%</td></tr>
-                                <tr><td data-i18n="results.hnf5">HNF 5 - Verteilen</td><td class="text-right">500 m²</td><td class="text-right">16%</td></tr>
-                                <tr><td data-i18n="results.hnf6">HNF 6 - Bildung</td><td class="text-right">300 m²</td><td class="text-right">9%</td></tr>
-                                <tr><td data-i18n="results.hnf7">HNF 7 - Heilen/Pflegen</td><td class="text-right">200 m²</td><td class="text-right">6%</td></tr>
-                                <tr><td data-i18n="results.ff8">FF 8 - Betriebstechnik</td><td class="text-right">100 m²</td><td class="text-right">3%</td></tr>
-                                <tr><td data-i18n="results.vf9">VF 9 - Verkehrsfläche</td><td class="text-right">300 m²</td><td class="text-right">9%</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="results__section">
-                        <h2 class="text-h3" data-i18n="results.economyRatios">Wirtschaftlichkeitskennwerte</h2>
-                        <div class="pie-chart">
-                            <svg class="pie-chart__svg" width="300" height="300" viewBox="0 0 300 300">
-                                <!-- Pie chart rendered by JS -->
-                                <g id="pie-chart-slices"></g>
-                            </svg>
-                            <div class="pie-chart__legend" id="pie-legend">
-                                <!-- Legend rendered by JS -->
-                            </div>
-                        </div>
-                        <table class="table table--compact table--no-borders">
-                            <tbody>
-                                <tr><td>HNF/GF</td><td class="text-right">71%</td></tr>
-                                <tr><td>NNF/GF</td><td class="text-right">9%</td></tr>
-                                <tr><td>VF/GF</td><td class="text-right">7%</td></tr>
-                                <tr><td>VMF/GF (VF+NNF)</td><td class="text-right">16%</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="workflow-actions">
-                    <button class="btn btn--secondary" data-i18n="nav.prevStep">Vorheriger Schritt</button>
-                    <button class="btn btn--primary" data-i18n="step4.completeOrder">Auftrag abschliessen</button>
-                </div>
-            </div>
-        </section>
 
     </main>
 
@@ -1088,6 +998,7 @@
             <span class="footer__version" data-i18n="footer.version">v1.0.0</span>
             <span class="footer__prototype" data-i18n="footer.prototype">Prototyp – nur zur Demonstration</span>
             <div class="footer__links">
+                <a href="https://www.bbl.admin.ch/de/downloads-bauten" target="_blank" rel="noopener noreferrer" class="footer__link" data-i18n="nav.downloads">Downloads BBL Bauten</a>
                 <a href="#" class="footer__link" id="nav-api" data-i18n="footer.api">API</a>
                 <a href="https://github.com/bbl-dres/plan-check" target="_blank" rel="noopener noreferrer" class="footer__link" data-i18n="footer.sourceCode">Quellcode</a>
                 <a href="https://www.admin.ch/gov/de/start/rechtliches.html" target="_blank" rel="noopener noreferrer" class="footer__link" data-i18n="footer.legal">Rechtliches</a>

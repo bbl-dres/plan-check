@@ -857,8 +857,6 @@ function updateUrlHash() {
         hash = `#/building/${currentProject.id}${params}`;
     } else if (currentView === 'validation' && currentProject && currentDocument) {
         hash = `#/building/${currentProject.id}/floorplan/${currentDocument.id}${params}`;
-    } else if (currentView === 'results' && currentProject && currentDocument) {
-        hash = `#/building/${currentProject.id}/floorplan/${currentDocument.id}/results${params}`;
     } else if (currentView === 'login') {
         hash = '#/login';
     }
@@ -938,8 +936,6 @@ function navigateFromHash() {
     // Parse the hash path
     const projectMatch = hashPath.match(/#\/building\/(\d+)/);
     const documentMatch = hashPath.match(/\/floorplan\/(\d+)/);
-    const isResults = hashPath.includes('/results');
-
     if (hashPath === '#/buildings' || hashPath === '' || hash.startsWith('#/buildings?')) {
         switchView('buildings');
         renderProjects();
@@ -967,10 +963,6 @@ function navigateFromHash() {
             _navigationTimeoutId = requestAnimationFrame(() => {
                 _navigationTimeoutId = null;
                 openValidationView(documentId, true);
-                if (isResults) {
-                    switchView('results');
-                    renderPieChart();
-                }
                 isNavigatingFromHash = false;
             });
             return;
@@ -3261,10 +3253,12 @@ function nextStep() {
     if (currentStep < 4) {
         navigateToStep(currentStep + 1);
     } else if (currentStep === 4) {
-        // On final step, go to results view
-        switchView('results');
-        renderPieChart();
+        // On final step, mark as completed and go back to project detail
+        if (currentProject) {
+            currentProject.status = 'completed';
+        }
         showToast(I18n.t('toast.validationDone'), 'success');
+        switchView('building-detail');
     }
 }
 
@@ -3623,14 +3617,6 @@ function setupEventListeners() {
         });
     }
 
-    // Back to project detail from results view
-    const backToProjectResultsBtn = document.getElementById('back-to-project-results');
-    if (backToProjectResultsBtn) {
-        backToProjectResultsBtn.addEventListener('click', () => {
-            switchView('building-detail');
-        });
-    }
-
     // Footer API docs link
     const navApiLink = document.getElementById('nav-api');
     if (navApiLink) {
@@ -3643,7 +3629,7 @@ function setupEventListeners() {
     }
 
     // Breadcrumb navigation
-    document.querySelectorAll('#breadcrumb-buildings, #breadcrumb-val-buildings, #breadcrumb-results-buildings').forEach(link => {
+    document.querySelectorAll('#breadcrumb-buildings, #breadcrumb-val-buildings').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
             switchView('buildings');
@@ -3651,7 +3637,7 @@ function setupEventListeners() {
         });
     });
 
-    document.querySelectorAll('#breadcrumb-val-building, #breadcrumb-results-building').forEach(link => {
+    document.querySelectorAll('#breadcrumb-val-building').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
             switchView('building-detail');
