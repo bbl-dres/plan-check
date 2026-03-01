@@ -1097,7 +1097,6 @@ function renderProjects() {
                     <h3 class="card__title">${escapeHtml(project.internalId)} – ${escapeHtml(project.name)}</h3>
                     <dl class="card__meta">
                         <div class="card__meta-left">
-                            <dd>${I18n.t('card.siaPhase')}: ${escapeHtml(project.phase)}</dd>
                             <dd>${escapeHtml(formatDateDisplay(project.createdDate))}</dd>
                             <dd>${projectDocuments.length} ${I18n.t('card.floorPlans')}</dd>
                         </div>
@@ -1172,7 +1171,7 @@ function initProjectMap() {
         const popup = new maplibregl.Popup({ offset: 20 })
             .setHTML(
                 '<h4>' + escapeHtml(project.internalId) + ' – ' + escapeHtml(project.name) + '</h4>' +
-                '<p>' + I18n.t('card.siaPhase') + ': ' + escapeHtml(project.phase) + ' | Nr. ' + escapeHtml(project.number) + '</p>' +
+                '<p>Nr. ' + escapeHtml(project.number) + '</p>' +
                 '<a href="#" class="project-map-link" data-project-id="' + project.id + '">' + I18n.t('map.openProject') + ' &rarr;</a>'
             );
 
@@ -1820,7 +1819,7 @@ function renderOverview(editing = false) {
     if (projectDetailsEl) {
         const createdDate = new Date(currentProject.createdDate).toLocaleDateString('de-CH');
         const creator = getUserById(currentProject.createdBy);
-        const creatorName = creator ? creator.name : '–';
+        const creatorName = creator ? (creator.email || creator.name) : '–';
 
         if (editing) {
             const siaOptions = ['31','32','33','41','51','52','53'].map(v => ({
@@ -1890,8 +1889,7 @@ function renderOverview(editing = false) {
                     <div class="overview-team-row">
                         <span class="overview-team-row__avatar">${escapeHtml(initials)}</span>
                         <div class="overview-team-row__info">
-                            <span class="overview-team-row__name">${escapeHtml(member.name)}</span>
-                            <span class="overview-team-row__email">${escapeHtml(member.email || '')}</span>
+                            <span class="overview-team-row__name">${escapeHtml(member.email || member.name)}</span>
                         </div>
                         <span class="overview-team-row__role">${escapeHtml(roleText)}</span>
                         <button type="button" class="overview-team-row__remove" data-user-id="${member.assignmentUserId}" title="${escapeHtml(I18n.t('action.delete'))}">
@@ -1925,7 +1923,7 @@ function renderOverview(editing = false) {
                 return `
                     <div class="overview-team-row">
                         <span class="overview-team-row__avatar">${escapeHtml(initials)}</span>
-                        <span class="overview-team-row__name">${escapeHtml(member.name)}</span>
+                        <span class="overview-team-row__name">${escapeHtml(member.email || member.name)}</span>
                         <span class="overview-team-row__role">${escapeHtml(roleText)}</span>
                     </div>
                 `;

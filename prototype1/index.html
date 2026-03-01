@@ -325,10 +325,6 @@
                             <span class="overview-kpi__label" data-i18n="detail.avgScore">Ø Score</span>
                         </div>
                         <div class="overview-kpi">
-                            <span class="overview-kpi__value" id="project-error-count">0</span>
-                            <span class="overview-kpi__label" data-i18n="detail.errors">Fehler</span>
-                        </div>
-                        <div class="overview-kpi">
                             <span class="overview-kpi__value" id="project-document-count">0</span>
                             <span class="overview-kpi__label" data-i18n="detail.floorPlans">Grundrisse</span>
                         </div>
@@ -783,39 +779,39 @@
                                     <div class="results__donut">
                                         <svg viewBox="0 0 200 200" class="donut-multi">
                                             <!-- Background circle -->
-                                            <circle cx="100" cy="100" r="70" fill="none" stroke="#E5E5E5" stroke-width="30"/>
-                                            <!-- HNF segment (74%) - red (SIA standard) -->
-                                            <circle cx="100" cy="100" r="70" fill="none" stroke="#E57373" stroke-width="30"
+                                            <circle class="donut-multi__bg" cx="100" cy="100" r="70" fill="none" stroke-width="30"/>
+                                            <!-- HNF segment (74%) -->
+                                            <circle class="donut-multi__red" cx="100" cy="100" r="70" fill="none" stroke-width="30"
                                                     stroke-dasharray="327.6 112.4" stroke-dashoffset="110"/>
-                                            <!-- NNF segment (14.6%) - orange (SIA standard) -->
-                                            <circle cx="100" cy="100" r="70" fill="none" stroke="#FFB74D" stroke-width="30"
+                                            <!-- NNF segment (14.6%) -->
+                                            <circle class="donut-multi__orange" cx="100" cy="100" r="70" fill="none" stroke-width="30"
                                                     stroke-dasharray="64.2 375.8" stroke-dashoffset="-217.6"/>
-                                            <!-- VF segment (10%) - yellow (SIA standard) -->
-                                            <circle cx="100" cy="100" r="70" fill="none" stroke="#FFF176" stroke-width="30"
+                                            <!-- VF segment (10%) -->
+                                            <circle class="donut-multi__yellow" cx="100" cy="100" r="70" fill="none" stroke-width="30"
                                                     stroke-dasharray="44 396" stroke-dashoffset="-281.8"/>
-                                            <!-- FF segment (1.4%) - blue (SIA standard) -->
-                                            <circle cx="100" cy="100" r="70" fill="none" stroke="#64B5F6" stroke-width="30"
+                                            <!-- FF segment (1.4%) -->
+                                            <circle class="donut-multi__blue" cx="100" cy="100" r="70" fill="none" stroke-width="30"
                                                     stroke-dasharray="6.2 433.8" stroke-dashoffset="-325.8"/>
                                         </svg>
                                         <!-- Legend -->
                                         <div class="donut-legend">
                                             <div class="donut-legend__item">
-                                                <span class="donut-legend__color" style="background: #FFF176;"></span>
+                                                <span class="donut-legend__color donut-legend__color--yellow"></span>
                                                 <span class="donut-legend__label">VF</span>
                                                 <span class="donut-legend__value">10%</span>
                                             </div>
                                             <div class="donut-legend__item">
-                                                <span class="donut-legend__color" style="background: #64B5F6;"></span>
+                                                <span class="donut-legend__color donut-legend__color--blue"></span>
                                                 <span class="donut-legend__label">FF</span>
                                                 <span class="donut-legend__value">1.4%</span>
                                             </div>
                                             <div class="donut-legend__item">
-                                                <span class="donut-legend__color" style="background: #FFB74D;"></span>
+                                                <span class="donut-legend__color donut-legend__color--orange"></span>
                                                 <span class="donut-legend__label">NNF</span>
                                                 <span class="donut-legend__value">14.6%</span>
                                             </div>
                                             <div class="donut-legend__item">
-                                                <span class="donut-legend__color" style="background: #E57373;"></span>
+                                                <span class="donut-legend__color donut-legend__color--red"></span>
                                                 <span class="donut-legend__label">HNF</span>
                                                 <span class="donut-legend__value">74%</span>
                                             </div>

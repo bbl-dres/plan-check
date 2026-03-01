@@ -60,7 +60,10 @@
       "WebFetch(domain:api3.geo.admin.ch)",
       "Bash(for token in \"shadow-xs\" \"shadow-card\" \"shadow-card-hover\" \"shadow-2xl\" \"ease-out\" \"ease-in-out\" \"radius-xs\" \"radius-xl\")",
       "Bash(do echo -n \"$token: \")",
-      "Bash(du -sh prototype1/*)"
+      "Bash(du -sh prototype1/*)",
+      "Bash(find \"c:\\\\Users\\\\DavidRasner\\\\Documents\\\\GitHub\\\\plan-check\\\\prototype1\"\" -type f -name \"* \")",
+      "Bash(comm -23 /tmp/used_vars.txt /tmp/defined_vars.txt)",
+      "Bash(awk 'BEGIN {open=0} /{/ {open++} /}/ {open--} END {print \"\"Brace count diff: \"\" open}' C:/Users/DavidRasner/Documents/GitHub/plan-check/prototype1/css/styles.css)"
     ]
   }
 }
