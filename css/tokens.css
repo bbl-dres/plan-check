@@ -11,12 +11,10 @@
 
     /* Background Colors */
     --color-clear-day: #F2F7F9;
-    --color-pattens-blue: #D8E8EF;
 
-    /* Grayscale — 7-step neutral scale, collapsed from 10.
+    /* Grayscale — neutral scale.
        Removed #000000 (unused), #D5D5D5 (near-duplicate of #CCCCCC). */
     --color-night-rider: #333333;
-    --color-coal: #454545;
     --color-empress: #6B6B6B;  /* Darkened from #757575 → fixes WCAG AA on all backgrounds */
     --color-silver: #CCCCCC;
     --color-gainsboro: #E5E5E5;
@@ -41,10 +39,11 @@
 
     --color-border: var(--color-silver);
     --color-border-light: var(--color-gainsboro);
+    --color-swatch-border: rgba(0, 0, 0, 0.08);
+
+    --color-bg-inverse: var(--color-night-rider);
 
     --color-focus: #0066CC;                             /* 5.6:1 on white — replaces #66AFE9 (was 2.35:1, failed 3:1) */
-
-    --color-zebra: #F4F6F9;
 
     /* Semantic Colors - Traffic Light Scheme (WCAG AA ≥ 4.5:1 on -light bg & with white text) */
     --color-success: #1B5E20;
@@ -112,12 +111,8 @@
     --space-10: 4rem;     /* 64px */
 
     /* Component-specific Spacing */
-    --button-padding-y-sm: var(--space-2);        /* 8px */
-    --button-padding-x-sm: var(--space-4);        /* 16px */
     --button-padding-y: var(--space-2);            /* 8px */
     --button-padding-x: var(--space-4);            /* 16px */
-    --button-padding-y-lg: var(--space-3);         /* 12px */
-    --button-padding-x-lg: var(--space-4);         /* 16px */
 
     --input-icon-offset: 2.75rem;                  /* Space for icon in inputs */
 
@@ -133,12 +128,10 @@
     --icon-size-lg: 24px;
 
     /* Border Radius */
-    --radius-none: 0;
     --radius-sm: 2px;
     --radius-md: 4px;
     --radius-lg: 8px;
     --radius-full: 50%;
-    --radius-pill: 0.625rem;         /* 10px */
 
     /* Z-Index Scale */
     --z-index-controls: 10;
@@ -152,6 +145,7 @@
     --control-height-md: 2.25rem;    /* 36px */
     --control-height-lg: 2.5rem;     /* 40px */
     --min-target-size: 2.25rem;      /* 36px — minimum accessible click/tap target */
+    --min-target-size-touch: 2.75rem; /* 44px — mobile touch target */
 
     /* Shadows */
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -164,7 +158,11 @@
     /* Overlays */
     --overlay-light: rgba(0, 0, 0, 0.5);
     --overlay-dark: rgba(0, 0, 0, 0.6);
+    --overlay-glass: rgba(255, 255, 255, 0.7);
 
     /* Canvas Labels */
     --color-label-bg: rgba(255, 255, 255, 0.88);
+
+    /* Layout */
+    --container-max-width: 1400px;
 }
