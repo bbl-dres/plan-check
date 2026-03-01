@@ -4043,6 +4043,7 @@ a:hover {
     display: flex;
     transition: transform 0.3s var(--ease-out);
     height: 100%;
+    touch-action: pan-y;
 }
 
 .overview-carousel__slide {
@@ -4176,6 +4177,7 @@ a:hover {
 
 .lightbox:not([hidden]) {
     display: flex;
+    touch-action: none;
 }
 
 .lightbox__backdrop {
