@@ -4,7 +4,7 @@
 
 import { state, dom, CAFM_LAYERS } from './state.js';
 import { fmtSize, fmtNum, log, computeKpis } from './utils.js';
-import { render, zoomExtents } from './renderer.js';
+import { render, zoomExtents, drawScaleBarOnCanvas } from './renderer.js';
 import { ALL_RULES, getRuleCatLabel } from './validation.js';
 import { t, getLocale } from './i18n.js';
 
@@ -36,6 +36,7 @@ function captureCanvasForMode(mode) {
         state.selectedRoom = null;
         state.selectedItem = null;
         zoomExtents();
+        drawScaleBarOnCanvas();
 
         return dom.canvas.toDataURL('image/png');
     } finally {

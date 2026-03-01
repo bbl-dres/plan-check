@@ -17,6 +17,16 @@ const SCALE_STEPS = [
 ];
 
 let _scaleBarEl, _scaleBarLine, _scaleBarLabel;
+
+function pickScaleStep() {
+    const MAX_PX = 150;
+    let best = SCALE_STEPS[0];
+    for (const step of SCALE_STEPS) {
+        if (step.mm * state.cam.zoom <= MAX_PX) best = step;
+    }
+    return best;
+}
+
 function updateScaleBar() {
     if (!_scaleBarEl) {
         _scaleBarEl = document.getElementById('scale-bar');
@@ -25,13 +35,57 @@ function updateScaleBar() {
     }
     if (!_scaleBarEl) return;
     _scaleBarEl.style.display = '';
-    const MAX_PX = 150;
-    let best = SCALE_STEPS[0];
-    for (const step of SCALE_STEPS) {
-        if (step.mm * state.cam.zoom <= MAX_PX) best = step;
-    }
+    const best = pickScaleStep();
     _scaleBarLine.style.width = Math.round(best.mm * state.cam.zoom) + 'px';
     _scaleBarLabel.textContent = best.label;
+}
+
+// Draw the scale bar directly onto the canvas (used for PDF export capture)
+export function drawScaleBarOnCanvas() {
+    const ctx = dom.ctx;
+    const rect = dom.canvasWrap.getBoundingClientRect();
+    const best = pickScaleStep();
+    const barPx = Math.round(best.mm * state.cam.zoom);
+
+    const padX = 12, padY = 10;
+    const tickH = 6, lineW = 1.5;
+    const fontSize = 11;
+    const gap = 4;
+
+    ctx.save();
+    ctx.resetTransform();
+    const dpr = window.devicePixelRatio || 1;
+    ctx.scale(dpr, dpr);
+
+    const x = padX;
+    const y = rect.height - padY;
+
+    // Background pill
+    ctx.font = `${fontSize}px ui-monospace, SFMono-Regular, monospace`;
+    const labelW = ctx.measureText(best.label).width;
+    const bgW = barPx + gap + labelW + 12;
+    const bgH = tickH + fontSize + 6;
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+    ctx.beginPath();
+    ctx.roundRect(x - 4, y - bgH - 2, bgW, bgH + 4, 3);
+    ctx.fill();
+
+    // U-bracket (left tick, bottom line, right tick)
+    ctx.strokeStyle = '#757575';
+    ctx.lineWidth = lineW;
+    ctx.beginPath();
+    ctx.moveTo(x, y - tickH);
+    ctx.lineTo(x, y);
+    ctx.lineTo(x + barPx, y);
+    ctx.lineTo(x + barPx, y - tickH);
+    ctx.stroke();
+
+    // Label
+    ctx.fillStyle = '#757575';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(best.label, x + barPx + gap, y);
+
+    ctx.restore();
 }
 
 // Canvas overlay colors — mirrors tokens.css (Canvas2D can't read CSS vars)
