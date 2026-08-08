@@ -123,7 +123,8 @@ plan-check/
 
 - [Swiss Federal Design System](https://github.com/swiss/designsystem)
 - [SIA 416 — Areas and Volumes of Buildings](https://www.sia.ch/de/dienstleistungen/sia-norm/sia-416/)
-- [libredwg-web — LibreDWG WebAssembly](https://mlightcad.github.io/libredwg-web/docs/)
+- [libredwg-web — LibreDWG WebAssembly Github](https://github.com/mlightcad/libredwg-web)
+- [libredwg-web — LibreDWG WebAssembly Docs](https://mlightcad.github.io/libredwg-web/docs/)
 - [BBL — Bundesamt für Bauten und Logistik](https://www.bbl.admin.ch/)
 
 ## License
