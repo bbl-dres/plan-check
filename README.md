@@ -1,136 +1,50 @@
 # Plan Checker / Prüfplattform Flächenmanagement
 
-![Social Media Preview](assets/Social3.jpg)
+<p align="center">
+  <a href="https://bbl-dres.github.io/plan-check/">
+    <img src="assets/Social3.jpg" width="100%" alt="BBL Plan Checker">
+  </a>
+</p>
 
-[![GitHub Pages](https://img.shields.io/badge/demo-live-brightgreen?logo=github)](https://bbl-dres.github.io/plan-check/)
+[![Demo](https://img.shields.io/badge/demo-GitHub%20Pages-brightgreen?logo=github)](https://bbl-dres.github.io/plan-check/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![JavaScript](https://img.shields.io/badge/javascript-vanilla-F7DF1E?logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
-[![WebAssembly](https://img.shields.io/badge/WebAssembly-654FF0?logo=webassembly&logoColor=white)](https://webassembly.org/)
-[![Canvas 2D](https://img.shields.io/badge/Canvas_2D-API-orange?logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API)
-[![No Build](https://img.shields.io/badge/build-none-lightgrey)](#technology)
-
-**BBL Plan-Check** — BBL Plan Checker / Prüfplattform Flächenmanagement - A prototype for validating floor plan drawings against Swiss Federal BBL CAD standards.
 
 > [!CAUTION]
-> **This is an unofficial mockup for demonstration purposes only.**
-> All data is fictional. Not all features are fully functional. This project serves as a visual and conceptual prototype — it is not intended for production use.
+> Unofficial prototype for demonstration only. The sample data is fictional, validation is incomplete, and the tool is not a production approval service.
+
+Browser-based prototype for checking DWG and DXF floor plans against selected BBL CAD and area-management rules.
 
 ## Demo
 
-**Live Demo (Working Viewer and Checking Engine):** https://bbl-dres.github.io/plan-check/
+- **Plan viewer and checker:** https://bbl-dres.github.io/plan-check/
+- **Project and access-management mockup:** https://bbl-dres.github.io/plan-check/prototype1/
 
-All processing runs locally in the browser via LibreDWG WebAssembly — no files are uploaded to a server.
-
-<p align="center">
-  <img src="assets/Preview4.jpg" width="45%" style="vertical-align: top;"/>
-  <img src="assets/Preview5.jpg" width="45%" style="vertical-align: top;"/>
-</p>
-
-<p align="center">
-  <img src="assets/Preview6.jpg" width="45%" style="vertical-align: top;"/>
-  <img src="assets/Preview7.jpg" width="45%" style="vertical-align: top;"/>
-</p>
-
-**Prototype (Project and IAM Management):** https://bbl-dres.github.io/plan-check/prototype1/
-
-A prototype mockup frontend that explore possible integration of project, building and file structures with user management, roles and access control.
-
-<p align="center">
-  <img src="assets/Preview1.jpg" width="45%" style="vertical-align: top;"/>
-  <img src="assets/Preview3.jpg" width="45%" style="vertical-align: top;"/>
-</p>
+Files are processed locally in the browser and are not uploaded to a server.
 
 ## Features
 
-- **DWG/DXF Processing** — Upload and parse AutoCAD files (R13–R2024) directly in the browser using LibreDWG WebAssembly
-- **Room Extraction** — Automatic detection of room polygons on the `A1Z21---E-` layer with text label matching
-- **Area Extraction** — Recognition of area polygons on BGF/EBF/GF layers
-- **Validation Rules** — Configurable rule engine checking labels, geometry closure, polygon integrity, and minimum area
-- **Interactive Viewer** — Canvas 2D floor plan renderer with pan, zoom (mouse wheel + pinch), and click-to-select
-- **Kennzahlen** — SIA 416 / DIN 277 area breakdowns (GF, NGF, KF, HNF, NNF, VF, FF) with donut chart visualization
-- **PDF Report** — 6-page report with cover, layer overview, error list, room list, area list, and Kennzahlen
-- **Excel Report** — XLSX workbook with 6 sheets matching the PDF structure
-- **GeoJSON / BCF Export** — Export room geometries and BIM Collaboration Format issues (planned)
-- **API Documentation** — Swagger-style docs rendered from an OpenAPI 3.0 spec (`?view=api-docs`)
-- **Responsive Design** — Mobile-first layout with hamburger menu, touch gestures, and adaptive split view
-  
-## Getting Started
+- Parse supported DWG and DXF files in the browser.
+- Detect rooms and area polygons and apply configurable checks.
+- Inspect plans with pan, zoom, selection, and issue highlighting.
+- Review SIA 416 and DIN 277 area indicators.
+- Export PDF and Excel validation reports.
+- Open the prototype API reference from the same interface.
 
-### View Online
-
-Visit **[bbl-dres.github.io/plan-check](https://bbl-dres.github.io/plan-check/)** and either upload a DWG/DXF file or click **«Demo-Projekt laden»**.
-
-### Run Locally
+## Run locally
 
 ```bash
-git clone https://github.com/bbl-dres/plan-check.git
-cd plan-check
 python -m http.server 8000
-# Visit http://localhost:8000
 ```
 
-No build step, no dependencies — just a static file server.
-
-## Repository Structure
-
-```
-plan-check/
-├── index.html                 # Application entry point
-├── css/
-│   ├── tokens.css             # Design tokens (colors, spacing, typography)
-│   └── styles.css             # Component styles (~1100 lines)
-├── js/
-│   ├── router.js              # URL-based view router (app vs. api-docs)
-│   ├── app.js                 # File handling, pan/zoom, event wiring
-│   ├── state.js               # Centralized application state
-│   ├── dwg-processing.js      # LibreDWG WASM integration, entity parsing
-│   ├── renderer.js            # Canvas 2D drawing, hit testing, popups
-│   ├── validation.js          # Room extraction, rules engine, tab UI
-│   ├── export.js              # PDF (jsPDF) and Excel (SheetJS) generation
-│   ├── api-docs.js            # OpenAPI spec renderer
-│   └── utils.js               # Shared helpers (formatting, geometry)
-├── assets/
-│   ├── openapi.json           # OpenAPI 3.0 specification
-│   ├── test-files/            # Sample DWG files for demo
-│   └── swiss-logo-*.svg       # Federal identity assets
-├── docs/
-│   ├── anleitung-de.md        # User guide and FAQ (German)
-│   └── pruefregeln-de.md      # Validation rules reference (German)
-└── prototype1/                # Earlier mockup prototype (archived)
-```
-
-## Technology
-
-| Component | Technology |
-|-----------|-----------|
-| DWG Parsing | [libredwg-web](https://mlightcad.github.io/libredwg-web/docs/) (WebAssembly) |
-| Rendering | [Canvas 2D API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API) |
-| PDF Export | [jsPDF](https://github.com/parallax/jsPDF) + [jspdf-autotable](https://github.com/simonbengtsson/jsPDF-AutoTable) |
-| Excel Export | [SheetJS](https://sheetjs.com/) |
-| Build Tools | None — vanilla HTML/CSS/JS |
-
-## Roadmap
-
-- **Project & Building Management** — Multi-project backend with hierarchical structure (projects, buildings, floors, documents) and user/role management (Admin, Editor, Viewer) as demonstrated in the [prototype](https://bbl-dres.github.io/plan-check/prototype1/).
-- **REST API** — Backend service for automated batch validation. Documented at [`?view=api-docs`](https://bbl-dres.github.io/plan-check/?view=api-docs) with an [OpenAPI 3.0 spec](assets/openapi.json). Key endpoints: `/validate`, `/jobs/{jobId}/result`, `/export`, `/batch`.
-- **Configurable Rule Sets** — Interchangeable checking configurations and rule definitions loaded from external files, replacing the currently hard-coded validation rules.
-- **Advanced Geometry Checks** — Geometry consistency validation including duplicate detection, overlapping polygons, gap analysis, and self-intersection checks.
-- **Auto-Corrections** — Suggesting fixes and automatically applying corrections to the drawing — closing open polygons, snapping endpoints, removing duplicate entities.
-- **Plugins for Authoring Tools** — Integration with CAD/BIM authoring tools via plugins. Investigating [Speckle](https://speckle.systems/) and similar platforms for interoperability with AutoCAD, Revit, and other design software.
+Open <http://localhost:8000/>.
 
 ## Documentation
 
-- [Anleitung und FAQ (DE)](docs/anleitung-de.md) — User guide covering upload, validation, viewer, exports
-- [API Documentation](https://bbl-dres.github.io/plan-check/?view=api-docs) — REST API reference
-
-## References
-
-- [Swiss Federal Design System](https://github.com/swiss/designsystem)
-- [SIA 416 — Areas and Volumes of Buildings](https://www.sia.ch/de/dienstleistungen/sia-norm/sia-416/)
-- [libredwg-web — LibreDWG WebAssembly Github](https://github.com/mlightcad/libredwg-web)
-- [libredwg-web — LibreDWG WebAssembly Docs](https://mlightcad.github.io/libredwg-web/docs/)
-- [BBL — Bundesamt für Bauten und Logistik](https://www.bbl.admin.ch/)
+- [User guide and FAQ (DE)](docs/anleitung-de.md)
+- [Validation rules (DE)](docs/pruefregeln-de.md)
+- [Terminology comparison](docs/terminologie-vergleich.md)
+- [Prototype API reference](https://bbl-dres.github.io/plan-check/?view=api-docs)
 
 ## License
 
-MIT License — See [LICENSE](LICENSE) for details.
+[MIT License](LICENSE). The bundled LibreDWG-based runtime retains its applicable license terms.
