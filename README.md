@@ -19,12 +19,10 @@ Browser-based prototype for checking DWG and DXF floor plans against selected BB
 - **Plan viewer and checker:** https://bbl-dres.github.io/plan-check/
 - **Project and access-management mockup:** https://bbl-dres.github.io/plan-check/prototype1/
 
-<table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
-  <tr>
-    <td width="50%" valign="top"><img src="assets/preview-4.jpg" alt="Plan Checker validation results and drawing viewer" width="100%"/></td>
-    <td width="50%" valign="top"><img src="assets/preview-6.jpg" alt="Plan Checker area and building metrics" width="100%"/></td>
-  </tr>
-</table>
+<p align="center">
+  <img src="assets/preview-4.jpg" alt="Plan Checker validation results and drawing viewer" width="49%"/>
+  <img src="assets/preview-6.jpg" alt="Plan Checker area and building metrics" width="49%"/>
+</p>
 
 Files are processed locally in the browser and are not uploaded to a server.
 
