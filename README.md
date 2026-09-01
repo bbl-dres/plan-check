@@ -2,11 +2,11 @@
 
 <p align="center">
   <a href="https://bbl-dres.github.io/plan-check/">
-    <img src="assets/Social3.jpg" width="100%" alt="BBL Plan Checker">
+    <img src="assets/social-preview-3.jpg" width="100%" alt="BBL Plan Checker">
   </a>
 </p>
 
-[![Demo](https://img.shields.io/badge/demo-GitHub%20Pages-brightgreen?logo=github)](https://bbl-dres.github.io/plan-check/)
+[![Demo](https://img.shields.io/badge/demo-GitHub%20Pages-2ea44f?logo=github&logoColor=white)](https://bbl-dres.github.io/plan-check/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 > [!CAUTION]
@@ -18,6 +18,13 @@ Browser-based prototype for checking DWG and DXF floor plans against selected BB
 
 - **Plan viewer and checker:** https://bbl-dres.github.io/plan-check/
 - **Project and access-management mockup:** https://bbl-dres.github.io/plan-check/prototype1/
+
+<table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+  <tr>
+    <td width="50%" valign="top"><img src="assets/preview-4.jpg" alt="Plan Checker validation results and drawing viewer" width="100%"/></td>
+    <td width="50%" valign="top"><img src="assets/preview-6.jpg" alt="Plan Checker area and building metrics" width="100%"/></td>
+  </tr>
+</table>
 
 Files are processed locally in the browser and are not uploaded to a server.
 
