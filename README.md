@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://bbl-dres.github.io/plan-check/">
-    <img src="assets/social-preview-3.jpg" width="100%" alt="BBL Plan Checker">
+    <img src="assets/hero-abstract-painterly.jpg" width="100%" alt="Abstract architectural painting with blue and cream blocks, fine floor-plan lines, and a red accent">
   </a>
 </p>
 
