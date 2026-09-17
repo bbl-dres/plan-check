@@ -1,111 +1,62 @@
 // =============================================
-// Entry Point — File Handling & Event Wiring
+// Entry point of the checker view: file handling, viewer input and header controls
 // =============================================
 
-import { state, dom, initDom, MAX_FILE_SIZE, BG_DARK, BG_LIGHT } from './state.js';
-import { log, showStatus, pointInPoly } from './utils.js';
-import { t, initI18n, setLocale, getLocale } from './i18n.js';
-import { processDwgFile, prepareDrawingData, buildLayerInfo, displayEntities } from './dwg-processing.js';
-import { resizeCanvas, render, scheduleRender, zoomExtents, screenToWorld, hitTest, showFeaturePopup, hideFeaturePopup, showPopupForItem, syncSideSelection } from './renderer.js';
-import { renderValidation, switchValidationTab } from './validation.js';
+import { state, dom, initDom, resetFileState, MAX_FILE_SIZE, BG_DARK, BG_LIGHT } from './state.js';
+import { log, showStatus } from './utils.js';
+import { t } from './i18n.js';
+import { initHeader } from './header.js';
+import { processDwgFile, prepareDrawingData, buildLayerInfo, summarizeEntities } from './dwg-processing.js';
+import { resizeCanvas, render, scheduleRender, hitTest, visibleOverlayEntries } from './renderer.js';
+import { screenToWorld, zoomAt, zoomBy, zoomExtents, clampZoom, anchorWorldPoint } from './camera.js';
+import { selectPolygon, selectItem, clearSelection } from './selection.js';
+import { renderValidation, switchValidationTab, initValidationUi } from './validation.js';
+import { pointInPolygonTolerant } from './geometry.js';
 
-// Initialize i18n before anything else
-await initI18n();
-// Sync language selector buttons with detected locale
-document.querySelectorAll('.lang-selector__item').forEach(btn => {
-    btn.classList.toggle('lang-selector__item--active', btn.dataset.lang === getLocale());
-});
-
-// =============================================
-// Constants
-// =============================================
-const TAP_THRESHOLD_PX = 8;           // Max movement (px) to still count as a tap
-const ZOOM_IN_FACTOR = 1.4;
-const ZOOM_OUT_FACTOR = 1 / 1.4;
+const DEMO_FILE = 'assets/test-files/CAD.V01-CAFM-Plan-DE.dwg';
+const TAP_THRESHOLD_PX = 8;      // pointer travel that still counts as a tap
+const HIT_TOLERANCE_PX = 8;      // click distance to an outline
+const ZOOM_STEP = 1.4;           // zoom buttons
 const WHEEL_ZOOM_IN = 1.18;
 const WHEEL_ZOOM_OUT = 0.85;
-const MIN_ZOOM = 0.001;
-const MAX_ZOOM = 10000;
 
-function clampZoom() {
-    state.cam.zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, state.cam.zoom));
+initDom();
+initValidationUi();
+initHeader({ onLocaleChange: () => { if (state.drawingData) renderValidation({ keepTab: true }); } });
+
+// =============================================
+// Panels
+// =============================================
+for (const btn of document.querySelectorAll('.panel__toggle')) {
+    btn.addEventListener('click', () => {
+        const open = btn.closest('.panel').classList.toggle('open');
+        btn.setAttribute('aria-expanded', String(open));
+    });
 }
 
 // =============================================
-// Initialize DOM references
+// File handling
 // =============================================
-initDom();
-
-// Collapsible panel toggles
-document.querySelectorAll('.panel__header--toggle').forEach(header => {
-    header.addEventListener('click', () => {
-        header.closest('.panel').classList.toggle('open');
-    });
-});
-
-// =============================================
-// File Handling
-// =============================================
-dom.selectBtn.addEventListener('click', (e) => { e.stopPropagation(); dom.fileInput.click(); });
-dom.uploadZone.addEventListener('click', (e) => { if (e.target.closest('#load-demo')) return; dom.fileInput.click(); });
-dom.fileInput.addEventListener('change', (e) => { if (e.target.files[0]) handleFile(e.target.files[0]); });
-
-// Demo file loader
-document.getElementById('load-demo').addEventListener('click', async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const DEMO_PATH = 'assets/test-files/CAD.V01-CAFM-Plan-DE.dwg';
-    try {
-        log(t('file.demoLoading'));
-        showStatus(t('file.demoLoading'));
-        const resp = await fetch(DEMO_PATH);
-        if (!resp.ok) throw new Error(t('file.demoNotFound'));
-        const blob = await resp.blob();
-        const file = new File([blob], 'CAD.V01-CAFM-Plan-DE.dwg', { type: 'application/octet-stream' });
-        handleFile(file);
-    } catch (err) {
-        showStatus(err.message, 'error');
-        log(err.message, 'error');
-    }
-});
-
-dom.uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); dom.uploadZone.classList.add('dragover'); });
-dom.uploadZone.addEventListener('dragleave', () => dom.uploadZone.classList.remove('dragover'));
-dom.uploadZone.addEventListener('drop', (e) => {
-    e.preventDefault(); dom.uploadZone.classList.remove('dragover');
-    if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
-});
+let loadToken = 0;
 
 async function handleFile(file) {
-    const ext = file.name.toLowerCase().split('.').pop();
-    if (!['dwg', 'dxf'].includes(ext)) { showStatus(t('file.onlyDwgDxf'), 'error'); return; }
+    if (!/\.dwg$/i.test(file.name)) { showStatus(t('file.onlyDwg'), 'error'); return; }
     if (file.size > MAX_FILE_SIZE) { showStatus(t('file.tooLarge'), 'error'); return; }
 
-    // Reset — release previous file data for GC
-    state.drawingData = null;
-    state.entitySummary = [];
+    // A newer upload supersedes an in-flight one; every await below re-checks the token
+    const token = ++loadToken;
+    state.isProcessing = true;
+    resetFileState();
+    clearSelection({ rerender: false });
     dom.validationPanel.classList.remove('visible');
-    state.roomData = [];
-    state.areaData = [];
-    state.validationErrors = [];
-    state.validationMode = null;
-    state.selectedRoom = null;
-    state.selectedItem = null;
-    state.highlightedItems = null;
-    state.nonZeroZEntities = [];
-    state.xrefBlocks = [];
-    state.dimensionInfo = [];
-    state.hiddenLayers.clear();
-    state.hiddenRoomIds.clear();
-    state.hiddenAreaIds.clear();
-    state.hiddenErrorIds.clear();
+    dom.metricsPanel.classList.remove('visible');
 
     try {
-        const { db, entities, layers, elapsed } = await processDwgFile(file);
+        const { db, entities, layers, elapsed, version } = await processDwgFile(file);
+        if (token !== loadToken) return;
 
-        // Store metadata for export
         state.lastFile = { name: file.name, size: file.size };
-        state.lastDbInfo = { version: db.header?.version || '-', layerCount: layers.length, entityCount: entities.length };
+        state.lastDbInfo = { version, layerCount: layers.length, entityCount: entities.length };
         state.lastElapsed = elapsed;
         state.lastUploadTime = new Date();
 
@@ -113,293 +64,205 @@ async function handleFile(file) {
         log(t('log.preparing'));
         state.drawingData = prepareDrawingData(entities, layers, db);
         log(t('log.objectsPrepared', { count: state.drawingData.renderList.length }), 'success');
-
-        // Build layer info for overview side panel
         buildLayerInfo(entities, layers);
         log(t('log.layersDetected', { count: state.layerInfo.length }));
+        summarizeEntities(entities);
 
-        // Panel must be visible before measuring canvas dimensions
+        // The canvas can only be measured once the panel is laid out
         dom.validationPanel.classList.add('visible');
-        // Wait one frame for layout to complete
-        await new Promise(r => requestAnimationFrame(r));
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        if (token !== loadToken) return;
         resizeCanvas();
         zoomExtents();
 
-        displayEntities(entities);
-
-        // Run validation (extract rooms, check rules, render tabs)
         log(t('log.validationStarting'));
         renderValidation();
-
         showStatus(t('log.successfullyProcessed', { name: file.name, elapsed }), 'success');
-
     } catch (err) {
+        if (token !== loadToken) return;
         showStatus(err.message, 'error');
         log(err.message, 'error');
         console.error(err);
+    } finally {
+        if (token === loadToken) state.isProcessing = false;
     }
 }
 
-// =============================================
-// Pan, Zoom & Tap (Pointer Events + Wheel)
-// =============================================
+dom.selectBtn.addEventListener('click', e => { e.stopPropagation(); dom.fileInput.click(); });
+dom.uploadZone.addEventListener('click', e => { if (!e.target.closest('button')) dom.fileInput.click(); });
+dom.fileInput.addEventListener('change', e => {
+    const file = e.target.files[0];
+    e.target.value = ''; // allow re-selecting the same file after fixing it in CAD
+    if (file) handleFile(file);
+});
 
-// Track active pointers for pinch detection
+dom.loadDemoBtn.addEventListener('click', async e => {
+    e.stopPropagation();
+    try {
+        log(t('file.demoLoading'));
+        showStatus(t('file.demoLoading'));
+        const resp = await fetch(DEMO_FILE);
+        if (!resp.ok) throw new Error(t('file.demoNotFound'));
+        const blob = await resp.blob();
+        handleFile(new File([blob], DEMO_FILE.split('/').pop(), { type: 'application/octet-stream' }));
+    } catch (err) {
+        showStatus(err.message, 'error');
+        log(err.message, 'error');
+    }
+});
+
+dom.uploadZone.addEventListener('dragover', e => { e.preventDefault(); dom.uploadZone.classList.add('dragover'); });
+dom.uploadZone.addEventListener('dragleave', () => dom.uploadZone.classList.remove('dragover'));
+dom.uploadZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dom.uploadZone.classList.remove('dragover');
+    if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
+// A file dropped outside the zone must not navigate the tab away from the session
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop', e => e.preventDefault());
+
+// =============================================
+// Viewer input: pan, zoom, tap
+// =============================================
 const activePointers = new Map();
+let wrapRect = null;
+
+function localPoint(e) {
+    return [e.clientX - wrapRect.left, e.clientY - wrapRect.top];
+}
 
 function handleCanvasTap(sx, sy) {
     const [wx, wy] = screenToWorld(sx, sy);
-    const tolerance = 8 / state.cam.zoom;
-
-    // In rooms/areas mode, prioritize room point-in-polygon so users
-    // interact with rooms, not arbitrary DWG entities (walls, etc.)
-    if (state.validationMode === 'rooms' || state.validationMode === 'areas') {
-        const data = state.validationMode === 'rooms' ? state.roomData : state.areaData;
-        const hiddenSet = state.validationMode === 'rooms' ? state.hiddenRoomIds : state.hiddenAreaIds;
-        const room = data.find(r => {
-            if (hiddenSet.has(r.id)) return false;
-            if (state.resultFilter === 'errors' && r.status !== 'error') return false;
-            if (state.resultFilter === 'warnings' && r.status !== 'warning') return false;
-            return pointInPoly(wx, wy, r.vertices);
-        });
-        if (room) {
-            state.selectedRoom = room;
-            state.selectedItem = null;
-            state.highlightedItems = null;
-            showPopupForItem(room.handle, room.centroid);
-            dom.vsideList.querySelectorAll('.vside-item').forEach(el => el.classList.remove('vside-item--selected'));
-            const match = dom.vsideList.querySelector(`[data-handle="${CSS.escape(room.handle)}"]`);
-            if (match) {
-                match.classList.add('vside-item--selected');
-                match.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-            }
-            render();
-            return;
-        }
-        // Click outside any visible room — deselect
-        state.selectedRoom = null;
-        state.selectedItem = null;
-        state.highlightedItems = null;
-        hideFeaturePopup();
-        dom.vsideList.querySelectorAll('.vside-item').forEach(el => el.classList.remove('vside-item--selected'));
-        render();
+    if (state.activeTab === 'rooms' || state.activeTab === 'areas') {
+        const entry = visibleOverlayEntries().find(e => pointInPolygonTolerant(wx, wy, e.vertices, e.bounds));
+        if (entry) selectPolygon(entry, { zoom: false }); else clearSelection();
         return;
     }
-
-    // Default mode: general entity hit testing
-    const hit = hitTest(wx, wy, tolerance);
-    if (hit) {
-        state.selectedItem = hit;
-        state.highlightedItems = null;
-        showFeaturePopup(hit, sx, sy);
-        syncSideSelection(hit.handle);
-    } else {
-        state.selectedItem = null;
-        state.selectedRoom = null;
-        state.highlightedItems = null;
-        hideFeaturePopup();
-        dom.vsideList.querySelectorAll('.vside-item').forEach(el => el.classList.remove('vside-item--selected'));
-    }
-
-    render();
+    const item = hitTest(wx, wy, HIT_TOLERANCE_PX / state.cam.zoom);
+    if (item) selectItem(item, sx, sy); else clearSelection();
 }
 
-// Wheel zoom (desktop)
-dom.canvasWrap.addEventListener('wheel', (e) => {
-    if (e.target.closest('.viewer__controls')) return;
+dom.canvasWrap.addEventListener('wheel', e => {
+    if (e.target.closest('.viewer__controls') || e.deltaY === 0) return;
     e.preventDefault();
-    hideFeaturePopup();
-    const rect = dom.canvasWrap.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
-
-    const [wx, wy] = screenToWorld(mx, my);
-
-    const factor = e.deltaY > 0 ? WHEEL_ZOOM_OUT : WHEEL_ZOOM_IN;
-    state.cam.zoom *= factor;
-    clampZoom();
-
-    state.cam.x = wx - (mx - rect.width / 2) / state.cam.zoom;
-    state.cam.y = wy + (my - rect.height / 2) / state.cam.zoom;
-
+    wrapRect = dom.canvasWrap.getBoundingClientRect();
+    const [mx, my] = localPoint(e);
+    clearSelection({ rerender: false });
+    zoomAt(mx, my, e.deltaY > 0 ? WHEEL_ZOOM_OUT : WHEEL_ZOOM_IN);
     scheduleRender();
 }, { passive: false });
 
-// Pointer down — start pan or pinch
-dom.canvasWrap.addEventListener('pointerdown', (e) => {
-    // Don't capture pointer when clicking overlay controls
-    if (e.target.closest('.viewer__controls')) return;
+dom.canvasWrap.addEventListener('pointerdown', e => {
+    if (e.target.closest('.viewer__controls') || e.button !== 0) return;
+    dom.canvasWrap.setPointerCapture(e.pointerId);
+    wrapRect = dom.canvasWrap.getBoundingClientRect();
     activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
     if (activePointers.size === 1) {
         state.isPanning = true;
         state.panStart = { x: e.clientX, y: e.clientY, camX: state.cam.x, camY: state.cam.y };
-        hideFeaturePopup();
-        dom.canvasWrap.setPointerCapture(e.pointerId);
     } else if (activePointers.size === 2) {
         state.isPanning = false;
-        const pts = [...activePointers.values()];
-        state.pinchStart = {
-            dist: Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y),
-            zoom: state.cam.zoom,
-            camX: state.cam.x,
-            camY: state.cam.y,
-        };
+        const [a, b] = [...activePointers.values()];
+        const [midX, midY] = localPoint({ clientX: (a.x + b.x) / 2, clientY: (a.y + b.y) / 2 });
+        const [wx, wy] = screenToWorld(midX, midY);
+        state.pinchStart = { dist: Math.hypot(b.x - a.x, b.y - a.y), zoom: state.cam.zoom, worldX: wx, worldY: wy };
     }
 });
 
-// Pointer move — pan or pinch-zoom
-dom.canvasWrap.addEventListener('pointermove', (e) => {
-    activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+dom.canvasWrap.addEventListener('pointermove', e => {
+    if (activePointers.has(e.pointerId)) activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
     if (activePointers.size === 2 && state.pinchStart) {
-        const pts = [...activePointers.values()];
-        const dist = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
-        const scale = dist / state.pinchStart.dist;
-        state.cam.zoom = state.pinchStart.zoom * scale;
-        clampZoom();
-
-        // Keep midpoint stable
-        const rect = dom.canvasWrap.getBoundingClientRect();
-        const midX = (pts[0].x + pts[1].x) / 2 - rect.left;
-        const midY = (pts[0].y + pts[1].y) / 2 - rect.top;
-        const [wx, wy] = screenToWorld(midX, midY);
-        state.cam.x = wx - (midX - rect.width / 2) / state.cam.zoom;
-        state.cam.y = wy + (midY - rect.height / 2) / state.cam.zoom;
-
+        const [a, b] = [...activePointers.values()];
+        const [midX, midY] = localPoint({ clientX: (a.x + b.x) / 2, clientY: (a.y + b.y) / 2 });
+        state.cam.zoom = clampZoom(state.pinchStart.zoom * Math.hypot(b.x - a.x, b.y - a.y) / state.pinchStart.dist);
+        anchorWorldPoint(state.pinchStart.worldX, state.pinchStart.worldY, midX, midY); // keeps the pinch centre under the fingers
         scheduleRender();
-    } else if (state.isPanning && activePointers.size === 1) {
-        const dx = e.clientX - state.panStart.x;
-        const dy = e.clientY - state.panStart.y;
-        state.cam.x = state.panStart.camX - dx / state.cam.zoom;
-        state.cam.y = state.panStart.camY + dy / state.cam.zoom;
+    } else if (state.isPanning && activePointers.size === 1 && state.panStart) {
+        state.cam.x = state.panStart.camX - (e.clientX - state.panStart.x) / state.cam.zoom;
+        state.cam.y = state.panStart.camY + (e.clientY - state.panStart.y) / state.cam.zoom;
         scheduleRender();
     }
 
-    // Coords display
     if (state.drawingData && activePointers.size <= 1) {
-        const rect = dom.canvasWrap.getBoundingClientRect();
-        const mx = e.clientX - rect.left;
-        const my = e.clientY - rect.top;
-        if (mx >= 0 && my >= 0 && mx <= rect.width && my <= rect.height) {
+        if (!wrapRect) wrapRect = dom.canvasWrap.getBoundingClientRect();
+        const [mx, my] = localPoint(e);
+        if (mx >= 0 && my >= 0 && mx <= wrapRect.width && my <= wrapRect.height) {
             const [wx, wy] = screenToWorld(mx, my);
             dom.coordsDisplay.textContent = `X: ${wx.toFixed(2)}  Y: ${wy.toFixed(2)}  Zoom: ${state.cam.zoom.toFixed(2)}x`;
         }
     }
 });
 
-// Pointer up / cancel — end pan, detect tap
-const handlePointerUp = (e) => {
-    const wasPointer = activePointers.get(e.pointerId);
+function endPointer(e) {
+    const start = activePointers.get(e.pointerId);
     activePointers.delete(e.pointerId);
+    if (e.type === 'pointercancel') activePointers.clear();
 
-    if (state.isPanning && wasPointer && state.panStart) {
-        const dx = e.clientX - state.panStart.x;
-        const dy = e.clientY - state.panStart.y;
-        const moved = Math.hypot(dx, dy);
-
-        // Tap detection
-        if (moved < TAP_THRESHOLD_PX && state.drawingData) {
-            const rect = dom.canvasWrap.getBoundingClientRect();
-            const sx = e.clientX - rect.left;
-            const sy = e.clientY - rect.top;
-            if (sx >= 0 && sy >= 0 && sx <= rect.width && sy <= rect.height) {
-                handleCanvasTap(sx, sy);
-            }
-        }
+    if (state.isPanning && start && state.panStart && e.type === 'pointerup' && state.drawingData) {
+        const moved = Math.hypot(e.clientX - state.panStart.x, e.clientY - state.panStart.y);
+        const [sx, sy] = localPoint(e);
+        if (moved < TAP_THRESHOLD_PX && sx >= 0 && sy >= 0 && sx <= wrapRect.width && sy <= wrapRect.height) handleCanvasTap(sx, sy);
     }
 
     state.isPanning = false;
     state.pinchStart = null;
-
-    // If one finger remains after lifting second, restart pan
     if (activePointers.size === 1) {
+        // One finger left after a pinch: continue as a pan from its current position
         const remaining = [...activePointers.values()][0];
         state.isPanning = true;
         state.panStart = { x: remaining.x, y: remaining.y, camX: state.cam.x, camY: state.cam.y };
     }
-};
-
-dom.canvasWrap.addEventListener('pointerup', handlePointerUp);
-dom.canvasWrap.addEventListener('pointercancel', handlePointerUp);
+}
+dom.canvasWrap.addEventListener('pointerup', endPointer);
+dom.canvasWrap.addEventListener('pointercancel', endPointer);
+dom.canvasWrap.addEventListener('lostpointercapture', e => activePointers.delete(e.pointerId));
 
 // =============================================
-// Buttons
+// Viewer buttons
 // =============================================
 document.getElementById('toggle-bg').addEventListener('click', () => {
     state.bgColor = state.bgColor === BG_DARK ? BG_LIGHT : BG_DARK;
     dom.canvasWrap.style.background = state.bgColor;
     render();
 });
-document.getElementById('zoom-in').addEventListener('click', () => { state.cam.zoom *= ZOOM_IN_FACTOR; clampZoom(); render(); });
-document.getElementById('zoom-out').addEventListener('click', () => { state.cam.zoom *= ZOOM_OUT_FACTOR; clampZoom(); render(); });
-document.getElementById('zoom-fit').addEventListener('click', zoomExtents);
+document.getElementById('zoom-in').addEventListener('click', () => { zoomBy(ZOOM_STEP); render(); });
+document.getElementById('zoom-out').addEventListener('click', () => { zoomBy(1 / ZOOM_STEP); render(); });
+document.getElementById('zoom-fit').addEventListener('click', () => { zoomExtents(); render(); });
 
-// Fullscreen toggle
-const fullscreenBtn = document.getElementById('fullscreen-btn');
-fullscreenBtn.addEventListener('click', () => {
-    if (!document.fullscreenElement) {
-        dom.validationPanel.requestFullscreen().catch(err => {
-            log(t('log.fullscreenFailed', { error: err.message }), 'error');
-        });
-    } else {
-        document.exitFullscreen();
-    }
+dom.fullscreenBtn.addEventListener('click', () => {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else dom.validationPanel.requestFullscreen().catch(err => log(t('log.fullscreenFailed', { error: err.message }), 'error'));
 });
 document.addEventListener('fullscreenchange', () => {
-    if (document.fullscreenElement) {
-        fullscreenBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>';
-        fullscreenBtn.title = t('viewer.exitFullscreen');
-    } else {
-        fullscreenBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>';
-        fullscreenBtn.title = t('viewer.fullscreen');
-    }
-    // Re-measure and re-render after layout change
-    setTimeout(() => { resizeCanvas(); render(); }, 100);
+    const active = !!document.fullscreenElement;
+    dom.validationPanel.classList.toggle('is-fullscreen', active);
+    dom.fullscreenBtn.title = t(active ? 'viewer.exitFullscreen' : 'viewer.fullscreen');
+    dom.fullscreenBtn.setAttribute('aria-label', dom.fullscreenBtn.title);
 });
 
-// Language selector
-document.querySelectorAll('.lang-selector__item').forEach(btn => {
-    btn.addEventListener('click', async () => {
-        document.querySelectorAll('.lang-selector__item').forEach(b => b.classList.remove('lang-selector__item--active'));
-        btn.classList.add('lang-selector__item--active');
-        await setLocale(btn.dataset.lang);
-        if (state.drawingData) renderValidation();
-    });
-});
-
-// Status filter segmented buttons
-document.getElementById('status-filter').addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-filter]');
-    if (!btn) return;
-    state.resultFilter = btn.getAttribute('data-filter');
-    document.querySelectorAll('#status-filter .status-filter__btn').forEach(b =>
-        b.classList.toggle('status-filter__btn--active', b === btn));
-    if (state.validationMode) switchValidationTab(state.validationMode);
-});
-
-// =============================================
-// Resize handler
-// =============================================
-window.addEventListener('resize', () => {
+// Any size change of the viewer (window, fullscreen, split layout) re-measures the canvas
+new ResizeObserver(() => {
     if (!state.drawingData) return;
     resizeCanvas();
     scheduleRender();
+}).observe(dom.canvasWrap);
+
+// =============================================
+// Result filter
+// =============================================
+dom.statusFilter.addEventListener('click', e => {
+    const btn = e.target.closest('[data-filter]');
+    if (!btn) return;
+    state.resultFilter = btn.getAttribute('data-filter');
+    for (const b of dom.statusFilter.querySelectorAll('.status-filter__btn')) {
+        const active = b === btn;
+        b.classList.toggle('status-filter__btn--active', active);
+        b.setAttribute('aria-pressed', String(active));
+    }
+    if (state.activeTab) switchValidationTab(state.activeTab);
 });
 
-// =============================================
-// Mobile: hamburger menu
-// =============================================
-const menuBtn = document.getElementById('header-menu-btn');
-if (menuBtn) {
-    menuBtn.addEventListener('click', () => {
-        const nav = document.querySelector('.header__nav');
-        const isOpen = nav.classList.toggle('open');
-        menuBtn.setAttribute('aria-expanded', isOpen);
-    });
-}
-
-// =============================================
-// Ready
-// =============================================
 log(t('app.ready'));

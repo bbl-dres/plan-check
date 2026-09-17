@@ -26,11 +26,11 @@
 
 ## Überblick
 
-Die **Prüfplattform Flächenmanagement** des Bundesamts für Bauten und Logistik (BBL) ermöglicht die automatische Validierung von DWG- und DXF-Grundrissplänen. Die Plattform prüft Raumpolygone, Flächenangaben und Planstruktur gemäss den Richtlinien des BBL-Flächenmanagements.
+Die **Prüfplattform Flächenmanagement** des Bundesamts für Bauten und Logistik (BBL) ermöglicht die automatische Validierung von DWG-Grundrissplänen. Die Plattform prüft Raumpolygone, Flächenangaben und Planstruktur gemäss den Richtlinien des BBL-Flächenmanagements.
 
 **Wichtigste Funktionen:**
 
-- Upload und Verarbeitung von DWG/DXF-Dateien direkt im Browser
+- Upload und Verarbeitung von DWG-Dateien direkt im Browser
 - Automatische Erkennung von Räumen und Flächen
 - Validierung nach definierten Prüfregeln
 - Interaktiver Grundrissplan-Viewer mit Zoom und Selektion
@@ -41,7 +41,7 @@ Die **Prüfplattform Flächenmanagement** des Bundesamts für Bauten und Logisti
 ## Erste Schritte
 
 1. Öffnen Sie die Prüfplattform in Ihrem Browser.
-2. Laden Sie eine DWG- oder DXF-Datei hoch (Drag & Drop oder Datei-Auswahl).
+2. Laden Sie eine DWG-Datei hoch (Drag & Drop oder Datei-Auswahl).
 3. Warten Sie, bis die Verarbeitung abgeschlossen ist.
 4. Navigieren Sie durch die Ergebnisse über die Validierungs-Tabs.
 5. Exportieren Sie bei Bedarf einen Bericht.
@@ -57,7 +57,6 @@ Die **Prüfplattform Flächenmanagement** des Bundesamts für Bauten und Logisti
 | Format | Dateierweiterung | Beschreibung |
 |--------|-----------------|--------------|
 | AutoCAD Drawing | `.dwg` | Natives AutoCAD-Format (empfohlen) |
-| Drawing Exchange Format | `.dxf` | Austauschformat für CAD-Daten |
 
 ### Einschränkungen
 
@@ -313,7 +312,7 @@ Die API erfordert einen API-Schlüssel (`X-API-Key`), der über das BBL-Portal b
 
 ### Werden meine Dateien auf einen Server hochgeladen?
 
-Nein. Die gesamte Verarbeitung findet lokal in Ihrem Browser statt. Ihre DWG/DXF-Dateien verlassen Ihr Gerät nicht.
+Nein. Die gesamte Verarbeitung findet lokal in Ihrem Browser statt. Ihre DWG-Dateien verlassen Ihr Gerät nicht.
 
 ### Welche AutoCAD-Versionen werden unterstützt?
 

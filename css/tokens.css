@@ -12,10 +12,9 @@
     /* Background Colors */
     --color-clear-day: #F2F7F9;
 
-    /* Grayscale — neutral scale.
-       Removed #000000 (unused), #D5D5D5 (near-duplicate of #CCCCCC). */
+    /* Grayscale */
     --color-night-rider: #333333;
-    --color-empress: #6B6B6B;  /* Darkened from #757575 → fixes WCAG AA on all backgrounds */
+    --color-empress: #6B6B6B;
     --color-silver: #CCCCCC;
     --color-gainsboro: #E5E5E5;
     --color-smoke: #F5F5F5;
@@ -25,63 +24,52 @@
     --color-primary: var(--color-cerulean);
     --color-primary-hover: #004D73;
     --color-primary-light: var(--color-clear-day);
-    --color-primary-alpha-8: rgba(0, 102, 153, 0.08);
     --color-primary-alpha-12: rgba(0, 102, 153, 0.12);
     --color-swiss-red: var(--color-venetian-red);
 
-    --color-text-primary: var(--color-night-rider);   /* #333333 — 12.6:1 on white (AAA) */
-    --color-text-secondary: var(--color-empress);      /* #6B6B6B — 5.4:1 on white, 5.0:1 on bg-page (AA) */
+    --color-text-primary: var(--color-night-rider);   /* 12.6:1 on white (AAA) */
+    --color-text-secondary: var(--color-empress);      /* 5.4:1 on white, 5.0:1 on bg-page (AA) */
     --color-text-inverse: var(--color-white);
 
     --color-bg-primary: var(--color-white);
     --color-bg-secondary: var(--color-smoke);
     --color-bg-page: var(--color-clear-day);
+    --color-bg-inverse: var(--color-night-rider);
 
     --color-border: var(--color-silver);
     --color-border-light: var(--color-gainsboro);
     --color-swatch-border: rgba(0, 0, 0, 0.08);
 
-    --color-bg-inverse: var(--color-night-rider);
+    --color-focus: #0066CC;                             /* 5.6:1 on white */
 
-    --color-focus: #0066CC;                             /* 5.6:1 on white — replaces #66AFE9 (was 2.35:1, failed 3:1) */
-
-    /* Semantic Colors - Traffic Light Scheme (WCAG AA ≥ 4.5:1 on -light bg & with white text) */
+    /* Traffic-light colours (WCAG AA ≥ 4.5:1 on their light background and with white text) */
     --color-success: #1B5E20;
     --color-success-light: #E8F5E9;
-    --color-success-border: #C8E6C9;
 
     --color-warning: #BF360C;
     --color-warning-light: #FFF3E0;
 
     --color-error: #B71C1C;
     --color-error-light: #FFEBEE;
-    --color-error-border: #FFCDD2;
-
-    --color-info: #1A5276;
-    --color-info-light: #D9EDF7;
-
-    /* Floor Plan Colors */
-    --color-room-selected: rgba(0, 191, 255, 0.6);
 
     /* Typography */
     --font-family-primary: 'Frutiger Neue LT W1G', 'Frutiger LT W01', 'Frutiger', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif;
     --font-family-mono: 'SF Mono', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
 
-    /* Font Size Scale (T-shirt sizing) */
-    --font-size-2xs: 0.75rem;   /* 12px - Overline labels, small metadata */
-    --font-size-xs: 0.8125rem;  /* 13px - Caption, footnotes */
-    --font-size-sm: 0.875rem;   /* 14px - Small text, labels */
-    --font-size-base: 1rem;     /* 16px - Body text */
-    --font-size-lg: 1.25rem;    /* 20px - Large body, H4 */
-    --font-size-xl: 1.5rem;     /* 24px - H3 */
-    --font-size-2xl: 2rem;      /* 32px - H2 */
-    --font-size-3xl: 2.5rem;    /* 40px - H1 */
+    /* Font Size Scale */
+    --font-size-2xs: 0.75rem;   /* 12px */
+    --font-size-xs: 0.8125rem;  /* 13px */
+    --font-size-sm: 0.875rem;   /* 14px */
+    --font-size-base: 1rem;     /* 16px */
+    --font-size-lg: 1.25rem;    /* 20px */
+    --font-size-xl: 1.5rem;     /* 24px */
+    --font-size-2xl: 2rem;      /* 32px */
+    --font-size-3xl: 2.5rem;    /* 40px */
 
     /* Semantic Font Sizes */
-    --font-size-caption: var(--font-size-xs);          /* 12px - Captions, hints */
-    --font-size-heading-4: var(--font-size-lg);        /* 20px - Card titles */
-    --font-size-heading-3: var(--font-size-xl);        /* 24px - Section headings */
-    --font-size-heading-2: var(--font-size-2xl);       /* 32px - Page sections */
+    --font-size-heading-4: var(--font-size-lg);
+    --font-size-heading-3: var(--font-size-xl);
+    --font-size-heading-2: var(--font-size-2xl);
 
     /* Font Weights */
     --font-weight-regular: 400;
@@ -111,15 +99,12 @@
     --space-10: 4rem;     /* 64px */
 
     /* Component-specific Spacing */
-    --button-padding-y: var(--space-2);            /* 8px */
-    --button-padding-x: var(--space-4);            /* 16px */
-
-    --input-icon-offset: 2.75rem;                  /* Space for icon in inputs */
+    --button-padding-y: var(--space-2);
+    --button-padding-x: var(--space-4);
 
     /* Animation */
     --duration-fast: 0.1s;
     --duration-normal: 0.15s;
-    --duration-medium: 0.25s;
     --duration-slow: 0.3s;
 
     /* Icons (Lucide) */
@@ -140,11 +125,8 @@
     --z-index-toast: 1000;
     --z-index-modal: 1100;
 
-    /* Control Heights */
-    --control-height-sm: 2rem;       /* 32px */
-    --control-height-md: 2.25rem;    /* 36px */
-    --control-height-lg: 2.5rem;     /* 40px */
-    --min-target-size: 2.25rem;      /* 36px — minimum accessible click/tap target */
+    /* Control Sizes */
+    --min-target-size: 2.25rem;       /* 36px — minimum accessible click/tap target */
     --min-target-size-touch: 2.75rem; /* 44px — mobile touch target */
 
     /* Shadows */
@@ -152,12 +134,9 @@
     --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
     --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.15);
     --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.2);
-    --shadow-dropdown: 0 6px 20px rgba(0, 0, 0, 0.12);
-    --shadow-focus: 0 0 0 3px var(--color-focus);     /* Consistent focus ring — replaces 8+ repeated box-shadow patterns */
+    --shadow-focus: 0 0 0 3px var(--color-focus);
 
     /* Overlays */
-    --overlay-light: rgba(0, 0, 0, 0.5);
-    --overlay-dark: rgba(0, 0, 0, 0.6);
     --overlay-glass: rgba(255, 255, 255, 0.7);
 
     /* Canvas Labels */

@@ -8,125 +8,137 @@
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
+    <aside class="prototype-banner" id="prototype-banner" role="note">
+        <span class="prototype-banner__label" data-i18n="banner.prototype">Prototyp</span>
+        <span data-i18n="banner.prototypeHint">Nur zu Demonstrationszwecken, nicht für den produktiven Einsatz.</span>
+    </aside>
+
     <header class="header" role="banner">
         <div class="header__content">
-            <a href="?" class="header__brand">
+            <a href="./" class="header__brand">
                 <div class="header__titles">
                     <span class="header__org" data-i18n="app.orgName">Bundesamt für Bauten und Logistik BBL</span>
                     <span class="header__app" data-i18n="app.title">Prüfplattform Flächenmanagement</span>
                 </div>
             </a>
-            <div class="lang-selector">
-                <button class="lang-selector__item lang-selector__item--active" data-lang="de">DE</button>
-                <button class="lang-selector__item" data-lang="fr">FR</button>
-                <button class="lang-selector__item" data-lang="it">IT</button>
-                <button class="lang-selector__item" data-lang="en">EN</button>
-            </div>
-            <button class="header__menu-btn" id="header-menu-btn" data-i18n-aria-label="nav.menu" aria-label="Menü" aria-expanded="false">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-            </button>
-            <nav class="header__nav">
+            <nav class="header__nav" id="header-nav" data-i18n-aria-label="nav.menu" aria-label="Menü">
                 <a href="https://github.com/bbl-dres/plan-check/blob/main/docs/anleitung-de.md" target="_blank" rel="noopener" class="header__nav-link" data-i18n="nav.guide">Anleitung und FAQ</a>
                 <a href="https://www.bbl.admin.ch/de/kontakt" target="_blank" rel="noopener" class="header__nav-link" data-i18n="nav.contact">Kontakt</a>
             </nav>
+            <div class="lang-selector" role="group" aria-label="Sprache / Langue / Lingua / Language">
+                <button type="button" class="lang-selector__item" data-lang="de" lang="de" aria-pressed="false">DE</button>
+                <button type="button" class="lang-selector__item" data-lang="fr" lang="fr" aria-pressed="false">FR</button>
+                <button type="button" class="lang-selector__item" data-lang="it" lang="it" aria-pressed="false">IT</button>
+                <button type="button" class="lang-selector__item" data-lang="en" lang="en" aria-pressed="false">EN</button>
+            </div>
+            <button type="button" class="header__menu-btn" id="header-menu-btn" data-i18n-aria-label="nav.menu" aria-label="Menü" aria-expanded="false" aria-controls="header-nav">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
         </div>
     </header>
 
-    <div class="container">
+    <main class="container">
         <!-- Upload -->
         <div class="upload-zone" id="upload-zone">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
             </svg>
             <p data-i18n="upload.dropHint">DWG-Datei hierher ziehen oder klicken</p>
-            <button class="btn btn--primary" id="select-btn" data-i18n="upload.selectBtn">Datei auswählen</button>
-            <input type="file" id="file-input" accept=".dwg,.dxf" hidden>
-            <p class="hint" data-i18n="upload.sizeHint">.dwg / .dxf, max. 50 MB</p>
-            <p class="upload-zone__demo-hint"><span data-i18n="upload.demoHint">Keine Datei?</span> <a href="#" id="load-demo" class="upload-zone__demo-link" data-i18n="upload.demoLink">Demo-Projekt laden</a></p>
+            <button type="button" class="btn btn--primary" id="select-btn" data-i18n="upload.selectBtn">Datei auswählen</button>
+            <input type="file" id="file-input" accept=".dwg" hidden aria-hidden="true" tabindex="-1">
+            <p class="hint" data-i18n="upload.sizeHint">.dwg, max. 50 MB</p>
+            <p class="upload-zone__demo-hint"><span data-i18n="upload.demoHint">Keine Datei?</span> <button type="button" id="load-demo" class="upload-zone__demo-link" data-i18n="upload.demoLink">Demo-Datei laden</button></p>
         </div>
 
+        <div class="status" id="status" role="status" aria-live="polite"></div>
 
-        <div class="status" id="status"></div>
-
-        <!-- Metrics (independent section) -->
-        <div class="panel open" id="metrics-panel">
-            <div class="panel__header panel__header--toggle"><span data-i18n="panel.result">Ergebnis</span> <span class="panel__chevron"></span></div>
+        <!-- Result metrics -->
+        <section class="panel open" id="metrics-panel">
+            <h2 class="panel__header">
+                <button type="button" class="panel__toggle" aria-expanded="true" aria-controls="metrics-grid"><span data-i18n="panel.result">Ergebnis</span><span class="panel__chevron" aria-hidden="true"></span></button>
+            </h2>
             <div class="info-grid" id="metrics-grid"></div>
-        </div>
+        </section>
 
-        <!-- Validation – Split View (side panel + integrated viewer) -->
-        <div class="panel open" id="validation-panel">
-            <div class="panel__header panel__header--toggle"><span data-i18n="panel.validation">Validierung</span> <span class="panel__chevron"></span></div>
-            <div class="validation-tabs">
-                <a href="#" class="validation-tabs__tab validation-tabs__tab--active" data-vtab="rules"><span data-i18n="tab.rules">Prüfregeln</span>&#160;(<span id="vtab-rules-count">0</span>/<span id="vtab-rules-total">40</span>)</a>
-                <a href="#" class="validation-tabs__tab" data-vtab="errors"><span data-i18n="tab.errors">Fehlermeldungen</span>&#160;(<span id="vtab-error-count">0</span>)</a>
-                <a href="#" class="validation-tabs__tab" data-vtab="overview"><span data-i18n="tab.layers">Layer</span>&#160;(<span id="vtab-layer-count">0</span>)</a>
-                <a href="#" class="validation-tabs__tab" data-vtab="rooms"><span data-i18n="tab.rooms">Räume</span>&#160;(<span id="vtab-room-count">0</span>)</a>
-                <a href="#" class="validation-tabs__tab" data-vtab="areas"><span data-i18n="tab.areas">Flächen</span>&#160;(<span id="vtab-area-count">0</span>)</a>
-                <a href="#" class="validation-tabs__tab" data-vtab="kpi" data-i18n="tab.kpi">Kennzahlen</a>
-                <div class="status-filter" id="status-filter" role="group" data-i18n-aria-label="filter.statusFilter" aria-label="Status Filter">
-                    <button class="status-filter__btn status-filter__btn--active" data-filter="all" data-i18n="filter.all">Alle</button>
-                    <button class="status-filter__btn" data-filter="warnings">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <!-- Validation: side panel + viewer -->
+        <section class="panel open" id="validation-panel">
+            <h2 class="panel__header">
+                <button type="button" class="panel__toggle" aria-expanded="true" aria-controls="validation-body"><span data-i18n="panel.validation">Validierung</span><span class="panel__chevron" aria-hidden="true"></span></button>
+            </h2>
+            <div class="validation-tabs" role="tablist">
+                <button type="button" role="tab" class="validation-tabs__tab validation-tabs__tab--active" data-vtab="rules" aria-selected="true"><span data-i18n="tab.rules">Prüfregeln</span>&#160;(<span id="vtab-rules-count">0</span>/<span id="vtab-rules-total">40</span>)</button>
+                <button type="button" role="tab" class="validation-tabs__tab" data-vtab="errors" aria-selected="false"><span data-i18n="tab.errors">Fehlermeldungen</span>&#160;(<span id="vtab-error-count">0</span>)</button>
+                <button type="button" role="tab" class="validation-tabs__tab" data-vtab="overview" aria-selected="false"><span data-i18n="tab.layers">Layer</span>&#160;(<span id="vtab-layer-count">0</span>)</button>
+                <button type="button" role="tab" class="validation-tabs__tab" data-vtab="rooms" aria-selected="false"><span data-i18n="tab.rooms">Räume</span>&#160;(<span id="vtab-room-count">0</span>)</button>
+                <button type="button" role="tab" class="validation-tabs__tab" data-vtab="areas" aria-selected="false"><span data-i18n="tab.areas">Flächen</span>&#160;(<span id="vtab-area-count">0</span>)</button>
+                <button type="button" role="tab" class="validation-tabs__tab" data-vtab="kpi" aria-selected="false" data-i18n="tab.kpi">Kennzahlen</button>
+                <div class="status-filter" id="status-filter" role="group" data-i18n-aria-label="filter.statusFilter" aria-label="Statusfilter">
+                    <button type="button" class="status-filter__btn status-filter__btn--active" data-filter="all" aria-pressed="true" data-i18n="filter.all">Alle</button>
+                    <button type="button" class="status-filter__btn" data-filter="warnings" aria-pressed="false">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                         <span data-i18n="filter.warnings">Warnungen</span>
                     </button>
-                    <button class="status-filter__btn" data-filter="errors">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                    <button type="button" class="status-filter__btn" data-filter="errors" aria-pressed="false">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
                         <span data-i18n="filter.errors">Fehler</span>
                     </button>
                 </div>
             </div>
-            <div class="validation-body">
+            <div class="validation-body" id="validation-body">
                 <div class="validation-split" id="validation-split">
-                    <div class="validation-side" id="validation-side">
+                    <div class="validation-side">
                         <div class="validation-side__toolbar">
-                            <input type="checkbox" class="layer-toggle" id="vside-toggle-all" checked data-i18n-title="viewer.toggleAll" title="Alle ein-/ausblenden">
-                            <input type="text" class="layers-search" id="vside-search" data-i18n-placeholder="search.generic" placeholder="Suchen...">
+                            <input type="checkbox" class="toggle-checkbox" id="vside-toggle-all" checked data-i18n-title="viewer.toggleAll" title="Alle ein-/ausblenden" data-i18n-aria-label="viewer.toggleAll" aria-label="Alle ein-/ausblenden">
+                            <input type="search" class="layers-search" id="vside-search" autocomplete="off" data-i18n-placeholder="search.generic" placeholder="Suchen..." data-i18n-aria-label="search.generic" aria-label="Suchen...">
                         </div>
                         <div class="validation-side__list" id="validation-side-list"></div>
                         <div class="validation-side__summary" id="validation-side-summary"></div>
                     </div>
                     <div class="validation-viewer">
                         <div class="viewer__canvas-wrap" id="canvas-wrap">
-                            <canvas id="dwg-canvas"></canvas>
+                            <canvas id="dwg-canvas" role="img" data-i18n-aria-label="panel.validation" aria-label="Validierung"></canvas>
                             <div class="viewer__controls">
-                                <button id="fullscreen-btn" data-i18n-title="viewer.fullscreen" title="Vollbild"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg></button>
+                                <button type="button" id="fullscreen-btn" data-i18n-title="viewer.fullscreen" title="Vollbild" data-i18n-aria-label="viewer.fullscreen" aria-label="Vollbild">
+                                    <svg class="icon-fullscreen-enter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+                                    <svg class="icon-fullscreen-exit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
+                                </button>
                                 <span class="viewer__sep"></span>
-                                <button id="toggle-bg" data-i18n-title="viewer.toggleBg" title="Hintergrund umschalten"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></button>
+                                <button type="button" id="toggle-bg" data-i18n-title="viewer.toggleBg" title="Hintergrund umschalten" data-i18n-aria-label="viewer.toggleBg" aria-label="Hintergrund umschalten"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></button>
                                 <span class="viewer__sep"></span>
-                                <button id="zoom-in" data-i18n-title="viewer.zoomIn" title="Vergrössern"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35M11 8v6m-3-3h6"/></svg></button>
-                                <button id="zoom-out" data-i18n-title="viewer.zoomOut" title="Verkleinern"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35M8 11h6"/></svg></button>
-                                <button id="zoom-fit" data-i18n-title="viewer.fitAll" title="Gesamtansicht"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
+                                <button type="button" id="zoom-in" data-i18n-title="viewer.zoomIn" title="Vergrössern" data-i18n-aria-label="viewer.zoomIn" aria-label="Vergrössern"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35M11 8v6m-3-3h6"/></svg></button>
+                                <button type="button" id="zoom-out" data-i18n-title="viewer.zoomOut" title="Verkleinern" data-i18n-aria-label="viewer.zoomOut" aria-label="Verkleinern"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35M8 11h6"/></svg></button>
+                                <button type="button" id="zoom-fit" data-i18n-title="viewer.fitAll" title="Gesamtansicht" data-i18n-aria-label="viewer.fitAll" aria-label="Gesamtansicht"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
                             </div>
-                            <div class="viewer__scale-bar" id="scale-bar" style="display:none">
+                            <div class="viewer__scale-bar" id="scale-bar" hidden aria-hidden="true">
                                 <div class="viewer__scale-bar-line" id="scale-bar-line"></div>
                                 <span class="viewer__scale-bar-label" id="scale-bar-label">0 m</span>
                             </div>
-                            <div class="viewer__coords" id="coords-display">X: 0 Y: 0</div>
-                            <div class="feature-popup" id="feature-popup"></div>
+                            <div class="viewer__coords" id="coords-display" aria-hidden="true"></div>
+                            <div class="feature-popup" id="feature-popup" role="dialog" aria-live="polite"></div>
                         </div>
                     </div>
                 </div>
                 <div class="validation-dashboard" id="validation-dashboard"></div>
             </div>
-        </div>
+        </section>
 
         <!-- Console -->
-        <div class="panel" id="console-panel">
-            <div class="panel__header panel__header--toggle"><span data-i18n="panel.console">Konsole</span> <span class="panel__chevron"></span></div>
-            <div class="console-body" id="console-log"></div>
-        </div>
+        <section class="panel panel--always-visible" id="console-panel">
+            <h2 class="panel__header">
+                <button type="button" class="panel__toggle" aria-expanded="false" aria-controls="console-log"><span data-i18n="panel.console">Konsole</span><span class="panel__chevron" aria-hidden="true"></span></button>
+            </h2>
+            <div class="console-body" id="console-log" role="log" aria-live="polite"></div>
+        </section>
+    </main>
 
-    </div>
-
-    <div class="api-docs" id="api-docs-container" style="display:none"></div>
+    <div class="api-docs" id="api-docs-container" hidden></div>
 
     <footer class="footer">
         <div class="footer__content">
             <span class="footer__version">v1.0.0</span>
             <div class="footer__links">
                 <a href="?view=api-docs" class="footer__link">API</a>
-                <a href="https://github.com/bbl-dres/plan-check" target="_blank" rel="noopener" class="footer__link" data-i18n="footer.sourceCode">Quellencode</a>
+                <a href="https://github.com/bbl-dres/plan-check" target="_blank" rel="noopener" class="footer__link" data-i18n="footer.sourceCode">Quellcode</a>
                 <a href="https://www.bbl.admin.ch/de/downloads-bauten" target="_blank" rel="noopener" class="footer__link" data-i18n="nav.downloads">Downloads BBL Bauten</a>
                 <a href="https://www.admin.ch/gov/de/start/rechtliches.html" target="_blank" rel="noopener" class="footer__link" data-i18n="footer.legal">Rechtliches</a>
             </div>

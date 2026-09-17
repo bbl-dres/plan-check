@@ -1,12 +1,13 @@
 // =============================================
-// Pure Utility Functions
+// Small DOM, formatting and colour helpers
 // =============================================
 
-import { ACI, dom } from './state.js';
+import { dom } from './state.js';
+import { getLocale } from './i18n.js';
 
-// Logger
+/** Appends a timestamped line to the console panel. type: info | success | warn | error */
 export function log(msg, type = 'info') {
-    const ts = new Date().toLocaleTimeString('de-CH');
+    const ts = new Date().toLocaleTimeString(getLocale() + '-CH');
     const line = document.createElement('div');
     line.className = `log-${type}`;
     line.textContent = `[${ts}] ${msg}`;
@@ -14,226 +15,114 @@ export function log(msg, type = 'info') {
     dom.consoleLog.scrollTop = dom.consoleLog.scrollHeight;
 }
 
+/** Shows the status bar. type: loading | success | error */
 export function showStatus(msg, type = 'loading') {
     dom.statusEl.className = `status status--${type}`;
     dom.statusEl.style.display = 'flex';
     if (type === 'loading') {
-        dom.statusEl.innerHTML = `<div class="spinner"></div><span></span>`;
+        dom.statusEl.innerHTML = '<div class="spinner"></div><span></span>';
         dom.statusEl.querySelector('span').textContent = msg;
     } else {
         dom.statusEl.textContent = msg;
     }
 }
 
-// Format file size
 export function fmtSize(bytes) {
     if (bytes <= 0) return '0 B';
-    const u = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return (bytes / Math.pow(1024, i)).toFixed(i > 0 ? 1 : 0) + ' ' + u[i];
+    const units = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.min(units.length - 1, Math.floor(Math.log(bytes) / Math.log(1024)));
+    return (bytes / Math.pow(1024, i)).toFixed(i > 0 ? 1 : 0) + ' ' + units[i];
 }
 
-// HTML escape
+const HTML_ESCAPES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+
 export function esc(s) {
-    const d = document.createElement('div');
-    d.textContent = s;
-    return d.innerHTML;
+    return String(s ?? '').replace(/[&<>"']/g, c => HTML_ESCAPES[c]);
 }
 
-// Swiss number formatting: 1234.5 → "1'234.5"
+/** Swiss number format: 1234.5 → "1’234.5"; non-finite values become "-". */
 export function fmtNum(v, decimals = 0) {
     if (v == null || !isFinite(v)) return '-';
     const fixed = decimals > 0 ? v.toFixed(decimals) : Math.round(v).toString();
     const [intPart, decPart] = fixed.split('.');
-    const formatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, "\u2019");
-    return decPart !== undefined ? formatted + '.' + decPart : formatted;
+    const grouped = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '’');
+    return decPart !== undefined ? grouped + '.' + decPart : grouped;
 }
 
-// ACI color index to hex
-export function aciToHex(i) { return ACI[i] || `hsl(${(i * 137) % 360}, 60%, 50%)`; }
-
-// Shoelace formula for polygon area
-export function computePolygonArea(verts) {
-    let area = 0;
-    const n = verts.length;
-    for (let i = 0; i < n; i++) {
-        const j = (i + 1) % n;
-        area += verts[i].x * verts[j].y;
-        area -= verts[j].x * verts[i].y;
-    }
-    return Math.abs(area) / 2;
+/** "517.1 m²" */
+export function fmtArea(v, decimals = 1) {
+    return fmtNum(v, decimals) + ' m²';
 }
 
-// Ray-casting point-in-polygon test
-export function pointInPoly(px, py, verts) {
-    let inside = false;
-    for (let i = 0, j = verts.length - 1; i < verts.length; j = i++) {
-        const xi = verts[i].x, yi = verts[i].y;
-        const xj = verts[j].x, yj = verts[j].y;
-        if (((yi > py) !== (yj > py)) &&
-            (px < (xj - xi) * (py - yi) / (yj - yi) + xi)) {
-            inside = !inside;
-        }
-    }
-    return inside;
+// ── Colours ──
+
+const ACI_FIXED = {
+    1: '#FF0000', 2: '#FFFF00', 3: '#00FF00', 4: '#00FFFF', 5: '#0000FF', 6: '#FF00FF',
+    7: '#FFFFFF', 8: '#414141', 9: '#808080',
+    250: '#333333', 251: '#5B5B5B', 252: '#848484', 253: '#ADADAD', 254: '#D6D6D6', 255: '#FFFFFF',
+};
+const ACI_VALUES = [1, 0.8, 0.6, 0.5, 0.3];
+const aciCache = new Map();
+
+function hsvToHex(h, s, v) {
+    const c = v * s, x = c * (1 - Math.abs((h / 60) % 2 - 1)), m = v - c;
+    let r = 0, g = 0, b = 0;
+    if (h < 60) [r, g, b] = [c, x, 0]; else if (h < 120) [r, g, b] = [x, c, 0]; else if (h < 180) [r, g, b] = [0, c, x];
+    else if (h < 240) [r, g, b] = [0, x, c]; else if (h < 300) [r, g, b] = [x, 0, c]; else [r, g, b] = [c, 0, x];
+    return '#' + [r, g, b].map(ch => Math.round((ch + m) * 255).toString(16).padStart(2, '0')).join('').toUpperCase();
 }
 
-// Point-to-segment distance
-export function distPointToSegment(px, py, x1, y1, x2, y2) {
-    const dx = x2 - x1, dy = y2 - y1;
-    const lenSq = dx * dx + dy * dy;
-    if (lenSq < 1e-12) return Math.hypot(px - x1, py - y1);
-    let t = ((px - x1) * dx + (py - y1) * dy) / lenSq;
-    t = Math.max(0, Math.min(1, t));
-    return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
+/**
+ * AutoCAD Color Index → hex. Indices 10–249 follow the standard palette
+ * (24 hues × 5 brightness levels, odd indices at half saturation). 0 and 256 are ByBlock/ByLayer
+ * and are resolved by the caller; they fall back to grey here.
+ */
+export function aciToHex(index) {
+    const i = Math.abs(Number(index) || 0);
+    if (ACI_FIXED[i]) return ACI_FIXED[i];
+    if (i < 10 || i > 249) return '#CCCCCC';
+    let hex = aciCache.get(i);
+    if (!hex) {
+        const hue = Math.floor((i - 10) / 10) * 15;
+        const value = ACI_VALUES[Math.floor((i % 10) / 2)];
+        hex = hsvToHex(hue, i % 2 === 0 ? 1 : 0.5, value);
+        aciCache.set(i, hex);
+    }
+    return hex;
 }
 
-// Cross product of vectors (b-a) x (c-a)
-function cross(ax, ay, bx, by, cx, cy) {
-    return (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
+/** 24-bit integer 0xRRGGBB → "#RRGGBB" */
+export function rgbIntToHex(rgb) {
+    return '#' + (rgb & 0xFFFFFF).toString(16).padStart(6, '0').toUpperCase();
 }
 
-// Check if two line segments (a→b) and (c→d) properly intersect
-export function segmentsIntersect(a, b, c, d) {
-    const d1 = cross(c.x, c.y, d.x, d.y, a.x, a.y);
-    const d2 = cross(c.x, c.y, d.x, d.y, b.x, b.y);
-    const d3 = cross(a.x, a.y, b.x, b.y, c.x, c.y);
-    const d4 = cross(a.x, a.y, b.x, b.y, d.x, d.y);
-    if (((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) &&
-        ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0))) {
-        return true;
-    }
-    return false;
+/** "#RRGGBB" → [r, g, b] */
+export function hexToRgb(hex) {
+    const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+    if (!m) return [0, 0, 0];
+    const n = parseInt(m[1], 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
 
-// Check if a closed polygon has self-intersections (O(n²) edge test)
-export function hasSelfIntersection(verts) {
-    const n = verts.length;
-    if (n < 4) return false;
-    for (let i = 0; i < n; i++) {
-        const i2 = (i + 1) % n;
-        for (let j = i + 2; j < n; j++) {
-            if (i === 0 && j === n - 1) continue; // adjacent edges share vertex
-            const j2 = (j + 1) % n;
-            if (segmentsIntersect(verts[i], verts[i2], verts[j], verts[j2])) return true;
-        }
-    }
-    return false;
+/** Value of a CSS custom property from tokens.css, e.g. themeToken('--color-error') → "#B71C1C". */
+export function themeToken(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
 
-// Compute SIA 416 KPI breakdown from room and area data (shared by UI, PDF, Excel)
-export function computeKpis(roomData, areaData) {
-    const hasRooms = roomData.length > 0;
-    const hasAreaPolys = areaData.length > 0;
-    const catSum = { HNF: 0, NNF: 0, VF: 0, FF: 0 };
-    for (const r of roomData) {
-        const cat = r.siaCategory || 'HNF';
-        if (cat in catSum) catSum[cat] += r.area;
-        else catSum.HNF += r.area;
-    }
-    const hnf = catSum.HNF;
-    const nnf = catSum.NNF;
-    const vf = catSum.VF;
-    const ff = catSum.FF;
-    const nf = hnf + nnf;
-    const ngf = nf + vf + ff;
-    const gf = hasAreaPolys ? areaData.reduce((s, a) => s + a.area, 0) : null;
-    const kf = (gf !== null && hasRooms) ? gf - ngf : null;
-    return { hnf, nnf, vf, ff, nf, ngf, gf, kf, hasRooms, hasAreaPolys, catSum };
+// ── Side panel selection ──
+
+/** Removes the selection highlight from every side-panel row. */
+export function clearSideSelection() {
+    dom.sideList.querySelectorAll('.vside-item--selected').forEach(el => el.classList.remove('vside-item--selected'));
 }
 
-// Hash vertex array for duplicate polygon detection
-export function hashVertices(verts) {
-    return verts.map(v => `${Math.round(v.x * 10)},${Math.round(v.y * 10)}`).join('|');
-}
-
-// Visual center of polygon (pole of inaccessibility) — finds the point
-// inside the polygon that is farthest from any edge. Works correctly
-// for concave, L-shaped, and other complex polygons where the simple
-// centroid may fall outside the shape.
-export function visualCenter(verts) {
-    if (verts.length < 3) {
-        let cx = 0, cy = 0;
-        for (const v of verts) { cx += v.x; cy += v.y; }
-        return { x: cx / (verts.length || 1), y: cy / (verts.length || 1) };
+/** Highlights the side-panel row for a handle (if present) and scrolls it into view. */
+export function selectSideRow(handle) {
+    clearSideSelection();
+    if (!handle) return;
+    const row = dom.sideList.querySelector(`[data-handle="${CSS.escape(String(handle))}"]`);
+    if (row) {
+        row.classList.add('vside-item--selected');
+        row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
-
-    // Bounding box
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    for (const v of verts) {
-        if (v.x < minX) minX = v.x;
-        if (v.y < minY) minY = v.y;
-        if (v.x > maxX) maxX = v.x;
-        if (v.y > maxY) maxY = v.y;
-    }
-
-    const width = maxX - minX;
-    const height = maxY - minY;
-    if (width < 1e-10 && height < 1e-10) return { x: minX, y: minY };
-
-    // Signed distance from point to polygon boundary (positive = inside)
-    function pointToPoly(px, py) {
-        let minDist = Infinity;
-        for (let i = 0, j = verts.length - 1; i < verts.length; j = i++) {
-            const d = distPointToSegment(px, py, verts[i].x, verts[i].y, verts[j].x, verts[j].y);
-            if (d < minDist) minDist = d;
-        }
-        return pointInPoly(px, py, verts) ? minDist : -minDist;
-    }
-
-    const cellSize = Math.min(width, height);
-    let h = cellSize / 2;
-    const precision = cellSize * 0.01;
-
-    // Initial cells covering bounding box
-    const queue = [];
-    for (let x = minX; x < maxX; x += cellSize) {
-        for (let y = minY; y < maxY; y += cellSize) {
-            const cx = x + h, cy = y + h;
-            const d = pointToPoly(cx, cy);
-            queue.push({ x: cx, y: cy, h, d, max: d + h * Math.SQRT2 });
-        }
-    }
-
-    // Start with centroid as initial best guess
-    let cx = 0, cy = 0;
-    for (const v of verts) { cx += v.x; cy += v.y; }
-    cx /= verts.length; cy /= verts.length;
-    let bestD = pointToPoly(cx, cy);
-    let bestX = cx, bestY = cy;
-
-    // Sort ascending by max potential (pop from end = highest potential)
-    queue.sort((a, b) => a.max - b.max);
-
-    let iters = 0;
-    while (queue.length > 0 && iters++ < 5000) {
-        const cell = queue.pop();
-
-        if (cell.d > bestD) {
-            bestD = cell.d;
-            bestX = cell.x;
-            bestY = cell.y;
-        }
-
-        // Can this cell improve on best?
-        if (cell.max - bestD <= precision) continue;
-
-        // Split into 4 children
-        h = cell.h / 2;
-        for (const [dx, dy] of [[-1, -1], [-1, 1], [1, -1], [1, 1]]) {
-            const nx = cell.x + dx * h;
-            const ny = cell.y + dy * h;
-            const d = pointToPoly(nx, ny);
-            // Binary insert to maintain sort order
-            const item = { x: nx, y: ny, h, d, max: d + h * Math.SQRT2 };
-            let lo = 0, hi = queue.length;
-            while (lo < hi) {
-                const mid = (lo + hi) >> 1;
-                if (queue[mid].max < item.max) lo = mid + 1; else hi = mid;
-            }
-            queue.splice(lo, 0, item);
-        }
-    }
-
-    return { x: bestX, y: bestY };
 }

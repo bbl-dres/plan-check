@@ -1,57 +1,46 @@
-// ─────────────────────────────────────────────
-// i18n — Lightweight internationalization module
-// ─────────────────────────────────────────────
+// =============================================
+// Lightweight internationalisation: flat JSON dictionaries per locale
+// =============================================
 
 const SUPPORTED = ['de', 'fr', 'it', 'en'];
-const DEFAULT   = 'de';
+const DEFAULT = 'de';
 const STORE_KEY = 'plan-check-lang';
 
-let locale   = DEFAULT;
+let locale = DEFAULT;
 let messages = {};
-const cache  = {};
+const cache = {};
 
-/**
- * Translate a key with optional {param} interpolation.
- * Pluralization: when params.count is provided and key is missing,
- * tries key_one (count===1) or key_other.
- */
-export function t(key, params) {
-    let str = messages[key];
-
+function lookup(dict, key, params) {
+    if (!dict) return undefined;
+    let str = dict[key];
+    // Plural forms: key_one / key_other when the plain key is absent
     if (str === undefined && params && 'count' in params) {
-        str = messages[key + (params.count === 1 ? '_one' : '_other')];
-    }
-
-    if (str === undefined) {
-        // Fallback to German cache if available
-        if (cache[DEFAULT] && cache[DEFAULT][key] !== undefined) {
-            str = cache[DEFAULT][key];
-            if (str === undefined && params && 'count' in params) {
-                str = cache[DEFAULT][key + (params.count === 1 ? '_one' : '_other')];
-            }
-        }
-        if (str === undefined) {
-            console.warn(`[i18n] Missing: "${key}" (${locale})`);
-            return `[${key}]`;
-        }
-    }
-
-    if (params) {
-        str = str.replace(/\{(\w+)\}/g, (_, k) =>
-            params[k] !== undefined ? String(params[k]) : `{${k}}`);
+        str = dict[key + (params.count === 1 ? '_one' : '_other')];
     }
     return str;
 }
 
-/** Current locale code. */
+/** True when the key exists in the current locale or the German fallback. */
+export function has(key) {
+    return lookup(messages, key) !== undefined || lookup(cache[DEFAULT], key) !== undefined;
+}
+
+/** Translates a key with optional {param} interpolation; falls back to German, then to "[key]". */
+export function t(key, params) {
+    let str = lookup(messages, key, params) ?? lookup(cache[DEFAULT], key, params);
+    if (str === undefined) {
+        console.warn(`[i18n] Missing: "${key}" (${locale})`);
+        return `[${key}]`;
+    }
+    if (params) {
+        str = str.replace(/\{(\w+)\}/g, (_, k) => (params[k] !== undefined ? String(params[k]) : `{${k}}`));
+    }
+    return str;
+}
+
 export function getLocale() { return locale; }
 
-/** Supported locale codes. */
-export function getSupportedLocales() { return SUPPORTED; }
-
-/**
- * Load a locale JSON, update state, persist choice, re-translate DOM.
- */
+/** Loads a locale (once), activates it, persists the choice and re-translates the static DOM. */
 export async function setLocale(lang) {
     if (!SUPPORTED.includes(lang)) lang = DEFAULT;
 
@@ -67,75 +56,51 @@ export async function setLocale(lang) {
         }
     }
 
-    locale   = lang;
+    locale = lang;
     messages = cache[lang];
 
-    try { localStorage.setItem(STORE_KEY, lang); } catch (_) { /* private mode */ }
+    try { localStorage.setItem(STORE_KEY, lang); } catch (_) { /* storage unavailable */ }
     document.documentElement.lang = lang;
     translatePage();
 
-    // Update URL parameter
     const url = new URL(window.location);
     url.searchParams.set('lang', lang);
     history.replaceState(null, '', url);
 }
 
-/**
- * Walk all data-i18n* attributes in the DOM and apply translations.
- */
-export function translatePage() {
-    for (const el of document.querySelectorAll('[data-i18n]')) {
-        const k = el.getAttribute('data-i18n');
-        if (k) el.textContent = t(k);
+const ATTRIBUTE_TARGETS = [
+    ['data-i18n', (el, v) => { el.textContent = v; }],
+    ['data-i18n-placeholder', (el, v) => { el.placeholder = v; }],
+    ['data-i18n-title', (el, v) => { el.title = v; }],
+    ['data-i18n-aria-label', (el, v) => el.setAttribute('aria-label', v)],
+    ['data-i18n-alt', (el, v) => { el.alt = v; }],
+    ['data-i18n-html', (el, v) => { el.innerHTML = v; }],
+];
+
+/** Applies translations to every element carrying a data-i18n* attribute. */
+function translatePage() {
+    for (const [attr, apply] of ATTRIBUTE_TARGETS) {
+        for (const el of document.querySelectorAll(`[${attr}]`)) {
+            const key = el.getAttribute(attr);
+            if (key) apply(el, t(key));
+        }
     }
-    for (const el of document.querySelectorAll('[data-i18n-placeholder]')) {
-        const k = el.getAttribute('data-i18n-placeholder');
-        if (k) el.placeholder = t(k);
-    }
-    for (const el of document.querySelectorAll('[data-i18n-title]')) {
-        const k = el.getAttribute('data-i18n-title');
-        if (k) el.title = t(k);
-    }
-    for (const el of document.querySelectorAll('[data-i18n-aria-label]')) {
-        const k = el.getAttribute('data-i18n-aria-label');
-        if (k) el.setAttribute('aria-label', t(k));
-    }
-    for (const el of document.querySelectorAll('[data-i18n-alt]')) {
-        const k = el.getAttribute('data-i18n-alt');
-        if (k) el.alt = t(k);
-    }
-    for (const el of document.querySelectorAll('[data-i18n-html]')) {
-        const k = el.getAttribute('data-i18n-html');
-        if (k) el.innerHTML = t(k);
-    }
-    // Update <title>
     const titleKey = document.querySelector('title')?.getAttribute('data-i18n');
     if (titleKey) document.title = t(titleKey);
 }
 
-/**
- * Detect initial locale from URL param → localStorage → navigator.language → default.
- */
+/** Initial locale: URL parameter, then stored choice, then German. German is always loaded as fallback. */
 export async function initI18n() {
     let lang = DEFAULT;
-
-    // 1. Check URL parameter (?lang=de)
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlLang = urlParams.get('lang');
+    const urlLang = new URLSearchParams(window.location.search).get('lang');
     if (urlLang && SUPPORTED.includes(urlLang)) {
         lang = urlLang;
     } else {
-        // 2. Check localStorage
         try {
             const stored = localStorage.getItem(STORE_KEY);
             if (stored && SUPPORTED.includes(stored)) lang = stored;
-        } catch (_) { /* private */ }
-
+        } catch (_) { /* storage unavailable */ }
     }
-
-    // Always pre-cache German as fallback
-    if (lang !== DEFAULT) {
-        await setLocale(DEFAULT);
-    }
+    if (lang !== DEFAULT) await setLocale(DEFAULT);
     await setLocale(lang);
 }

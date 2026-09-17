@@ -12,7 +12,7 @@
 > [!CAUTION]
 > Unofficial prototype for demonstration only. The sample data is fictional, validation is incomplete, and the tool is not a production approval service.
 
-Browser-based prototype for checking DWG and DXF floor plans against selected BBL CAD and area-management rules.
+Browser-based prototype for checking DWG floor plans against selected BBL CAD and area-management rules.
 
 ## Demo
 
@@ -28,7 +28,7 @@ Files are processed locally in the browser and are not uploaded to a server.
 
 ## Features
 
-- Parse supported DWG and DXF files in the browser.
+- Parse DWG files in the browser (the bundled parser build has no DXF reader).
 - Detect rooms and area polygons and apply configurable checks.
 - Inspect plans with pan, zoom, selection, and issue highlighting.
 - Review SIA 416 and DIN 277 area indicators.
@@ -49,7 +49,8 @@ Open <http://localhost:8000/>.
 - [Validation rules (DE)](docs/pruefregeln-de.md)
 - [Terminology comparison](docs/terminologie-vergleich.md)
 - [Prototype API reference](https://bbl-dres.github.io/plan-check/?view=api-docs)
+- [Code review and refactoring notes](docs/code-review.md)
 
 ## License
 
-[MIT License](LICENSE). The bundled LibreDWG-based runtime retains its applicable license terms.
+[MIT License](LICENSE). The bundled LibreDWG runtime in [js/vendor/libredwg-web/](js/vendor/libredwg-web/) is licensed under GPL-3.0; see its [README](js/vendor/libredwg-web/README.md) and [LICENSE](js/vendor/libredwg-web/LICENSE). All bundled and CDN-loaded components are listed in [THIRD_PARTY.md](THIRD_PARTY.md).

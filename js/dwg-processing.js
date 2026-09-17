@@ -1,716 +1,594 @@
 // =============================================
-// DWG Parsing & Data Preparation
+// DWG parsing (LibreDWG WebAssembly) and conversion into render primitives
+// Entity field names follow @mlightcad/libredwg-web 0.7.11 (Dwg* interfaces in lib/database).
 // =============================================
 
-import { state, dom } from './state.js';
-import { log, showStatus, fmtSize, fmtNum, aciToHex, esc, computePolygonArea } from './utils.js';
+import { state, INSUNITS_TO_MM } from './state.js';
+import { log, showStatus, fmtSize, aciToHex, rgbIntToHex } from './utils.js';
 import { t } from './i18n.js';
+import {
+    affineApply, affineMultiply, affineFromInsert, affineInfo,
+    createBounds, expandBounds, mergeBounds, boundsOfPoints, isFiniteBounds,
+    sampleArc, sampleEllipse, sampleSpline,
+} from './geometry.js';
 
-// ── LibreDWG Init ──
-async function initLibreDwg() {
-    if (state.libredwg) return state.libredwg;
-    log(t('log.wasmLoading'));
-    showStatus(t('log.wasmLoadingStatus'));
-    try {
-        const mod = await import('https://cdn.jsdelivr.net/npm/@mlightcad/libredwg-web@0.6.6/dist/libredwg-web.js');
-        state.libredwg = await mod.LibreDwg.create();
-        log(t('log.wasmLoaded'), 'success');
-        return state.libredwg;
-    } catch (err) {
-        log(t('log.wasmFailed', { error: err.message }), 'error');
-        throw err;
+/**
+ * @typedef {object} RenderItem
+ * Common fields: kind, layer, entityType, handle, color (CSS hex), byLayer (colour inherited from the layer),
+ * inBlock (expanded from a block reference or dimension block), bounds {minX, minY, maxX, maxY}.
+ *   kind 'line'    x1, y1, x2, y2
+ *   kind 'poly'    verts [{x, y, bulge}], closed, implicitlyClosed, width
+ *   kind 'circle'  cx, cy, r
+ *   kind 'arc'     cx, cy, r, startAngle, endAngle (counter-clockwise, radians)
+ *   kind 'text'    x, y (anchor), baseX, baseY (insertion point), text, lines, height, rotation,
+ *                  halign 'left'|'center'|'right', valign 'alphabetic'|'bottom'|'middle'|'top', widthFactor, fontName
+ *   kind 'point'   x, y
+ *   kind 'solid'   verts (filled polygon)
+ *   kind 'hatch'   paths [[{x, y, bulge}]], solid, patternName
+ */
+
+const DEFAULT_TEXT_HEIGHT = 2.5;
+const RAY_LENGTH = 1e6;
+const MAX_BLOCK_DEPTH = 16;
+const CLOSE_TOLERANCE_MM = 1;          // open polylines whose ends coincide within this distance count as closed
+const Z_EPSILON = 1e-6;
+const TEXT_WIDTH_PER_CHAR = 0.6;       // rough glyph width as a fraction of the text height
+const MODEL_SPACE = '*MODEL_SPACE';
+const PAPER_SPACE_PREFIX = '*PAPER_SPACE';
+const BLOCK_FLAG_XREF = 4;
+const ATTDEF_FLAG_INVISIBLE = 1;
+const ATTDEF_FLAG_CONSTANT = 2;
+const LWPOLYLINE_FLAG_CLOSED = 512;    // raw libredwg flag; bit 1 means "extrusion present"
+const POLYLINE_FLAG_CLOSED = 1;        // DXF group 70 for POLYLINE2D/3D and SPLINE
+
+// LibreDWG DWG_ERR_* bits with their message keys
+const DWG_ERROR_FLAGS = [
+    [1, 'dwg.crcError'], [2, 'dwg.unsupportedFeatures'], [4, 'dwg.unknownClasses'], [8, 'dwg.invalidType'],
+    [16, 'dwg.invalidHandle'], [32, 'dwg.invalidEED'], [64, 'dwg.outOfRange'], [128, 'dwg.classesNotFound'],
+    [256, 'dwg.sectionNotFound'], [512, 'dwg.pageNotFound'], [1024, 'dwg.internalError'], [2048, 'dwg.invalidFile'],
+    [4096, 'dwg.ioError'], [8192, 'dwg.memoryError'],
+];
+
+// ── LibreDWG loading ──
+
+let libraryPromise = null;
+
+/** Loads the WebAssembly module once; concurrent callers share the same promise. */
+function loadLibreDwg() {
+    if (!libraryPromise) {
+        log(t('log.wasmLoading'));
+        showStatus(t('log.wasmLoadingStatus'));
+        libraryPromise = import('./vendor/libredwg-web/dist/libredwg-web.js')
+            .then(mod => mod.LibreDwg.create())
+            .then(lib => { state.libredwg = lib; log(t('log.wasmLoaded'), 'success'); return lib; })
+            .catch(err => { libraryPromise = null; log(t('log.wasmFailed', { error: err.message }), 'error'); throw err; });
     }
+    return libraryPromise;
 }
 
-// ── DWG File Processing ──
+/**
+ * Reads a DWG into the WASM heap. LibreDWG reports parse problems only through
+ * console output ("Open dwg file with error code: N"), so the console is captured meanwhile.
+ */
+function readDwg(lib, buffer) {
+    const messages = [];
+    const original = { log: console.log, warn: console.warn, error: console.error };
+    const capture = fn => (...args) => { messages.push(args.map(String).join(' ')); fn.apply(console, args); };
+    console.log = capture(original.log);
+    console.warn = capture(original.warn);
+    console.error = capture(original.error);
+    let pointer;
+    try {
+        pointer = lib.dwg_read_data(buffer, 0);
+    } finally {
+        Object.assign(console, original);
+    }
+    const match = messages.map(m => /error code:\s*(\d+)/i.exec(m)).find(Boolean);
+    return { pointer, errorCode: match ? parseInt(match[1], 10) : 0 };
+}
+
+function describeReadFailure(code) {
+    if (!code) return t('dwg.readFailed');
+    const flags = DWG_ERROR_FLAGS.filter(([bit]) => code & bit).map(([, key]) => t(key)).join(', ');
+    return `${t('dwg.readFailed')} ${t('dwg.readFailedDetail', { code, flags })} ${t('dwg.arxHint')}`;
+}
+
+function isPaperSpaceName(name) {
+    return !!name && name.toUpperCase().startsWith(PAPER_SPACE_PREFIX);
+}
+
+/** Model-space entities only; db.entities also contains every paper-space layout. */
+function modelSpaceEntities(db) {
+    const records = db.tables?.BLOCK_RECORD?.entries || [];
+    const model = records.find(r => (r.name || '').toUpperCase() === MODEL_SPACE);
+    return model?.entities || db.entities || [];
+}
+
+/** Parses a DWG file and returns the converted database plus model-space entities and layers. */
 export async function processDwgFile(file) {
     const t0 = performance.now();
     log(t('log.fileInfo', { name: file.name, size: fmtSize(file.size) }));
 
     showStatus(t('log.fileReading'));
     const buffer = await file.arrayBuffer();
-
-    const dwgLib = await initLibreDwg();
-    const fileType = file.name.toLowerCase().endsWith('.dxf') ? 1 : 0;
+    const lib = await loadLibreDwg();
 
     showStatus(t('log.parsing'));
     log(t('log.parsing'));
-
-    // Intercept console output from LibreDWG WASM to capture error codes
-    const wasmErrors = [];
-    const origWarn = console.warn;
-    const origError = console.error;
-    const origLog = console.log;
-    const capture = (orig, ...args) => {
-        const msg = args.map(a => String(a)).join(' ');
-        if (/error code/i.test(msg)) wasmErrors.push(msg);
-        orig.apply(console, args);
-    };
-    console.warn = (...a) => capture(origWarn, ...a);
-    console.error = (...a) => capture(origError, ...a);
-    console.log = (...a) => capture(origLog, ...a);
-
-    let dwgPtr;
-    try {
-        dwgPtr = dwgLib.dwg_read_data(buffer, fileType);
-    } finally {
-        console.warn = origWarn;
-        console.error = origError;
-        console.log = origLog;
-    }
-
-    if (dwgPtr == null) {
-        const codeMatch = wasmErrors.length > 0 && wasmErrors[0].match(/error code:\s*(\d+)/i);
-        const code = codeMatch ? parseInt(codeMatch[1]) : 0;
-        let detail = '';
-        if (code > 0) {
-            const flags = [];
-            if (code & 1) flags.push(t('dwg.crcError'));
-            if (code & 2) flags.push(t('dwg.unsupportedFeatures'));
-            if (code & 4) flags.push(t('dwg.unknownClasses'));
-            if (code & 8) flags.push(t('dwg.invalidType'));
-            if (code & 16) flags.push(t('dwg.invalidHandle'));
-            if (code & 32) flags.push(t('dwg.invalidEED'));
-            if (code & 64) flags.push(t('dwg.outOfRange'));
-            if (code & 128) flags.push(t('dwg.classesNotFound'));
-            if (code & 256) flags.push(t('dwg.sectionNotFound'));
-            if (code & 512) flags.push(t('dwg.pageNotFound'));
-            if (code & 1024) flags.push(t('dwg.internalError'));
-            if (code & 2048) flags.push(t('dwg.invalidFile'));
-            if (code & 4096) flags.push(t('dwg.ioError'));
-            if (code & 8192) flags.push(t('dwg.memoryError'));
-            detail = ` (Code ${code}: ${flags.join(', ')}). ${t('dwg.arxHint')}`;
-        }
-        throw new Error(`${t('dwg.readFailed')}${detail}`);
-    }
-
-    if (wasmErrors.length > 0) {
-        const codeMatch = wasmErrors[0].match(/error code:\s*(\d+)/i);
-        const code = codeMatch ? parseInt(codeMatch[1]) : 0;
-        if (code > 0) {
-            log(t('dwg.wasmWarning', { code }), 'warn');
-        }
-    }
+    const { pointer, errorCode } = readDwg(lib, buffer);
+    if (pointer == null) throw new Error(describeReadFailure(errorCode));
+    if (errorCode > 0) log(t('dwg.wasmWarning', { code: errorCode }), 'warn');
     log(t('log.parsed'), 'success');
 
     showStatus(t('log.converting'));
-    const { database: db, stats } = dwgLib.convertEx(dwgPtr);
+    let db, stats, version;
+    try {
+        version = lib.dwg_get_version_type(pointer);
+        ({ database: db, stats } = lib.convertEx(pointer));
+    } finally {
+        lib.dwg_free(pointer);
+    }
     if (stats.unknownEntityCount > 0) log(t('log.unknownTypes', { count: stats.unknownEntityCount }), 'warn');
 
-    const entities = db.entities || [];
+    const entities = modelSpaceEntities(db);
     const layers = db.tables?.LAYER?.entries || [];
-    log(`${entities.length} Entities, ${layers.length} Layers`, 'success');
-
-    try { dwgLib.dwg_free(dwgPtr); } catch (e) { /* ok */ }
+    log(t('log.entitiesLayers', { entities: entities.length, layers: layers.length }), 'success');
 
     const elapsed = ((performance.now() - t0) / 1000).toFixed(2);
     log(t('log.processingTime', { elapsed }), 'success');
 
-    return { db, entities, layers, elapsed };
+    const versionLabel = version ? `${version.hdr} (${version.description})` : '-';
+    return { db, entities, layers, elapsed, version: versionLabel };
 }
 
-// ── Prepare Drawing Data for Canvas Rendering ──
-export function prepareDrawingData(entities, layers, db) {
-    const layerColorMap = {};
-    for (const l of layers) {
-        layerColorMap[l.name] = aciToHex(l.colorIndex);
-    }
+// ── Text helpers ──
 
-    function getColor(e) {
-        if (e.colorIndex && e.colorIndex !== 256 && e.colorIndex !== 0) return aciToHex(e.colorIndex);
-        return layerColorMap[e.layer] || '#CCCCCC';
-    }
+/** Strips MTEXT formatting codes and decodes the classic %% and \U+ escapes. */
+function decodeCadText(s) {
+    return String(s)
+        .replace(/\\P/g, '\n')
+        .replace(/\\~/g, ' ')
+        .replace(/\\[fFHWACcTQpq][^;]*;/g, '')
+        .replace(/\\S([^^;]*)\^([^;]*);/g, '$1/$2')
+        .replace(/\\[LlOoKk]/g, '')
+        .replace(/\\U\+([0-9A-Fa-f]{4})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+        .replace(/[{}]/g, '')
+        .replace(/\\\\/g, '\\')
+        .replace(/%%[dD]/g, '°')
+        .replace(/%%[cC]/g, 'Ø')
+        .replace(/%%[pP]/g, '±')
+        .replace(/%%[uUoO]/g, '');
+}
 
-    // Enhancement 3: $INSUNITS from header
-    state.insunits = db.header?.$INSUNITS ?? db.header?.INSUNITS ?? null;
+/** DXF TEXT justification → anchor point and canvas alignment. */
+function textAlignment(base, insertion, alignment) {
+    const halign = base.halign || 0, valign = base.valign || 0;
+    if (halign === 0 && valign === 0) return { anchor: insertion, halign: 'left', valign: 'alphabetic' };
+    const anchor = alignment || insertion;
+    const h = { 0: 'left', 1: 'center', 2: 'right', 3: 'left', 4: 'center', 5: 'left' }[halign] || 'left';
+    let v = { 0: 'alphabetic', 1: 'bottom', 2: 'middle', 3: 'top' }[valign] || 'alphabetic';
+    if (halign === 4) v = 'middle';
+    return { anchor: (halign === 3 || halign === 5) ? insertion : anchor, halign: h, valign: v };
+}
 
-    // Enhancement 8: STYLE table → styleFontMap
-    state.styleFontMap = {};
-    const styleEntries = db.tables?.STYLE?.entries || [];
-    for (const s of styleEntries) {
-        if (s.name) {
-            state.styleFontMap[s.name] = s.fontName || s.bigFontName || s.fileName || '';
-        }
-    }
-
-    // Enhancement 6: LAYOUT table → paperSpaceLayouts
-    state.paperSpaceLayouts = [];
-    const layoutEntries = db.tables?.LAYOUT?.entries || [];
-    for (const lay of layoutEntries) {
-        const name = lay.name || lay.layoutName || '';
-        if (name && name.toUpperCase() !== 'MODEL') {
-            state.paperSpaceLayouts.push(name);
-        }
-    }
-
-    // Helper: check if entity uses ByLayer color
-    function isByLayer(e) {
-        return !e.colorIndex || e.colorIndex === 256 || e.colorIndex === 0;
-    }
-
-    const blockMap = {};
-    let blockCount = 0;
-    const blockRecords = db.tables?.BLOCK_RECORD?.entries || [];
-    // Enhancement 5: XREF detection
-    state.xrefBlocks = [];
-    for (const br of blockRecords) {
-        if (br.name && br.entities && br.entities.length > 0) {
-            blockMap[br.name] = br;
-            blockCount++;
-        }
-        if (br.xrefPath || (br.flags && (br.flags & 4))) {
-            state.xrefBlocks.push({ name: br.name || '', xrefPath: br.xrefPath || '' });
-        }
-    }
-    if (blockCount > 0) log(t('log.blockDefs', { count: blockCount }));
-    if (state.xrefBlocks.length > 0) log(t('log.xrefBlocks', { count: state.xrefBlocks.length }));
-
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    function expand(x, y) {
-        if (x < minX) minX = x; if (x > maxX) maxX = x;
-        if (y < minY) minY = y; if (y > maxY) maxY = y;
-    }
-
-    const renderList = [];
-    let insertCount = 0;
-
-    function transformPoint(px, py, ins) {
-        const sx = (ins.xScale || 1);
-        const sy = (ins.yScale || 1);
-        // libredwg-web returns rotation in radians (not degrees)
-        const rot = (ins.rotation || 0);
-        const cos = Math.cos(rot);
-        const sin = Math.sin(rot);
-        const bx = ins.baseX || 0;
-        const by = ins.baseY || 0;
-        const rx = (px - bx) * sx;
-        const ry = (py - by) * sy;
-        return {
-            x: rx * cos - ry * sin + ins.insertionPoint.x,
-            y: rx * sin + ry * cos + ins.insertionPoint.y
-        };
-    }
-
-    // Enhancement 4: collect non-zero Z entities
-    state.nonZeroZEntities = [];
-    // Enhancement 9: collect DIMENSION info
-    state.dimensionInfo = [];
-
-    function addEntity(e, tf, parentLayer) {
-        if (e.isVisible === 1) return;
-
-        const color = getColor(e);
-        const l = e.layer || parentLayer || '0';
-        const et = e.type || 'UNKNOWN';
-        const handle = e.handle || '';
-        const byLayer = isByLayer(e);
-
-        // Enhancement 4: Z-coordinate check
-        function checkZ(pt) {
-            if (pt && pt.z && Math.abs(pt.z) > 1e-6) {
-                state.nonZeroZEntities.push({ handle, layer: l, type: et, z: pt.z });
-            }
-        }
-        if (e.startPoint) checkZ(e.startPoint);
-        if (e.endPoint) checkZ(e.endPoint);
-        if (e.insertionPoint) checkZ(e.insertionPoint);
-        if (e.center) checkZ(e.center);
-        if (e.vertices && e.vertices.length > 0) checkZ(e.vertices[0]);
-
-        function tp(px, py) {
-            if (!tf) return { x: px, y: py };
-            return transformPoint(px, py, tf);
-        }
-
-        // Detect mirroring: negative determinant of scale means reflection
-        const tfMirrored = tf && ((tf.xScale || 1) * (tf.yScale || 1)) < 0;
-        const tfSxNeg = tf && (tf.xScale || 1) < 0;
-
-        switch (e.type) {
-            case 'LINE':
-                if (e.startPoint && e.endPoint) {
-                    const p1 = tp(e.startPoint.x, e.startPoint.y);
-                    const p2 = tp(e.endPoint.x, e.endPoint.y);
-                    expand(p1.x, p1.y); expand(p2.x, p2.y);
-                    renderList.push({ t: 'line', l, et, handle, x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, c: color, byLayer });
-                }
-                break;
-
-            case 'LWPOLYLINE':
-                if (e.vertices && e.vertices.length > 1) {
-                    const verts = tf
-                        ? e.vertices.map(v => { const p = tp(v.x, v.y); return { x: p.x, y: p.y, bulge: tfMirrored ? -(v.bulge || 0) : v.bulge }; })
-                        : e.vertices;
-                    for (const v of verts) expand(v.x, v.y);
-                    let closed = !!(e.flag & 512) || !!(e.flag & 1);
-                    if (!closed && verts.length > 2) {
-                        const f = verts[0], la = verts[verts.length - 1];
-                        if (Math.abs(f.x - la.x) < 1e-6 && Math.abs(f.y - la.y) < 1e-6) closed = true;
-                    }
-                    const width = e.constantWidth || e.width || 0;
-                    renderList.push({ t: 'poly', l, et, handle, verts, closed, c: color, byLayer, width });
-                }
-                break;
-
-            case 'POLYLINE2D': {
-                if (e.vertices && e.vertices.length > 1) {
-                    const verts = e.vertices.map(v => {
-                        const p = tp(v.x, v.y);
-                        return { x: p.x, y: p.y, bulge: tfMirrored ? -(v.bulge || 0) : (v.bulge || 0) };
-                    });
-                    for (const v of verts) expand(v.x, v.y);
-                    const closed = !!(e.flag & 512) || !!(e.flag & 1);
-                    const width = e.constantWidth || e.width || 0;
-                    renderList.push({ t: 'poly', l, et, handle, verts, closed, c: color, byLayer, width });
-                }
-                break;
-            }
-
-            case 'POLYLINE3D': {
-                if (e.vertices && e.vertices.length > 1) {
-                    const verts = e.vertices.map(v => {
-                        const p = tp(v.x, v.y);
-                        return { x: p.x, y: p.y, bulge: 0 };
-                    });
-                    for (const v of verts) expand(v.x, v.y);
-                    const closed = !!(e.flag & 512) || !!(e.flag & 1);
-                    renderList.push({ t: 'poly', l, et, handle, verts, closed, c: color, byLayer });
-                }
-                break;
-            }
-
-            case 'CIRCLE':
-                if (e.center && e.radius) {
-                    const c = tp(e.center.x, e.center.y);
-                    const r = e.radius * Math.abs(tf ? (tf.xScale || 1) : 1);
-                    expand(c.x - r, c.y - r); expand(c.x + r, c.y + r);
-                    renderList.push({ t: 'circle', l, et, handle, cx: c.x, cy: c.y, r, c: color, byLayer });
-                }
-                break;
-
-            case 'ARC':
-                if (e.center && e.radius != null && e.startAngle != null && e.endAngle != null) {
-                    const c = tp(e.center.x, e.center.y);
-                    const r = e.radius * Math.abs(tf ? (tf.xScale || 1) : 1);
-                    const rotOff = tf ? (tf.rotation || 0) : 0;
-                    let sa, ea;
-                    if (tfMirrored) {
-                        // Mirror reflects angles and reverses arc direction (swap start/end)
-                        if (tfSxNeg) {
-                            sa = Math.PI - e.endAngle + rotOff;
-                            ea = Math.PI - e.startAngle + rotOff;
-                        } else {
-                            sa = -e.endAngle + rotOff;
-                            ea = -e.startAngle + rotOff;
-                        }
-                    } else {
-                        sa = e.startAngle + rotOff;
-                        ea = e.endAngle + rotOff;
-                    }
-                    expand(c.x - r, c.y - r); expand(c.x + r, c.y + r);
-                    renderList.push({ t: 'arc', l, et, handle, cx: c.x, cy: c.y, r, sa, ea, c: color, byLayer });
-                }
-                break;
-
-            case 'ELLIPSE':
-                if (e.center && e.majorAxisEndPoint) {
-                    const c = tp(e.center.x, e.center.y);
-                    // Transform the major axis vector through scale (then rotation is added)
-                    const sx = tf ? (tf.xScale || 1) : 1;
-                    const sy = tf ? (tf.yScale || 1) : 1;
-                    const mx = e.majorAxisEndPoint.x * sx;
-                    const my = e.majorAxisEndPoint.y * sy;
-                    const rx = Math.hypot(mx, my);
-                    const ry = rx * (e.axisRatio || e.minorToMajorRatio || 0.5);
-                    const rot = Math.atan2(my, mx) + (tf ? (tf.rotation || 0) : 0);
-                    expand(c.x - rx, c.y - rx); expand(c.x + rx, c.y + rx);
-                    renderList.push({ t: 'ellipse', l, et, handle, cx: c.x, cy: c.y, rx, ry, rot, c: color, byLayer });
-                }
-                break;
-
-            case 'SPLINE': {
-                let pts = null;
-                if (e.fitPoints && e.fitPoints.length > 1) {
-                    pts = e.fitPoints;
-                } else if (e.controlPoints && e.controlPoints.length > 1) {
-                    pts = e.controlPoints;
-                }
-                if (pts) {
-                    const verts = pts.map(p => {
-                        const tp2 = tp(p.x, p.y);
-                        return { x: tp2.x, y: tp2.y, bulge: 0 };
-                    });
-                    for (const v of verts) expand(v.x, v.y);
-                    const closed = !!(e.flag & 512) || !!(e.flag & 1);
-                    renderList.push({ t: 'poly', l, et, handle, verts, closed, c: color, byLayer });
-                }
-                break;
-            }
-
-            case 'TEXT': {
-                if (!e.text) break;
-                const useEnd = ((e.halign || 0) > 0 || (e.valign || 0) > 0);
-                const pt = useEnd ? (e.endPoint || e.startPoint) : (e.startPoint || e.insertionPoint);
-                if (!pt) break;
-                const p = tp(pt.x, pt.y);
-                const scale = Math.abs(tf ? (tf.xScale || 1) : 1);
-                const rotRad = (e.rotation || 0) + (tf ? (tf.rotation || 0) : 0);
-                expand(p.x, p.y);
-                const fontName = state.styleFontMap[e.styleName || e.style || ''] || '';
-                renderList.push({ t: 'text', l, et, handle, x: p.x, y: p.y, text: e.text, h: (e.textHeight || 2.5) * scale, rot: rotRad, c: color, byLayer, fontName });
-                break;
-            }
-
-            case 'MTEXT': {
-                const pt = e.insertionPoint;
-                if (pt && e.text) {
-                    const p = tp(pt.x, pt.y);
-                    const scale = Math.abs(tf ? (tf.xScale || 1) : 1);
-                    const rotRad = (e.rotation || 0) + (tf ? (tf.rotation || 0) : 0);
-                    expand(p.x, p.y);
-                    const clean = e.text
-                        .replace(/\\P/g, '\n')
-                        .replace(/\\~/g, ' ')
-                        .replace(/\\[fFHWACcTQpq][^;]*;/g, '')
-                        .replace(/\\S([^^;]*)\^([^;]*);/g, '$1/$2')
-                        .replace(/\\[LlOoKk]/g, '')
-                        .replace(/[{}]/g, '')
-                        .replace(/\\\\/g, '\\');
-                    const fontName = state.styleFontMap[e.styleName || e.style || ''] || '';
-                    renderList.push({ t: 'text', l, et: 'MTEXT', handle, x: p.x, y: p.y, text: clean, h: (e.textHeight || 2.5) * scale, rot: rotRad, c: color, byLayer, fontName });
-                }
-                break;
-            }
-
-            case 'ATTRIB': {
-                if (e.flags && (e.flags & 1)) break;
-                // libredwg-web: e.text is a DwgTextBase object with .text, .startPoint, .endPoint, .textHeight, etc.
-                const tb = (typeof e.text === 'object' && e.text !== null) ? e.text : null;
-                const textStr = tb ? tb.text : (typeof e.text === 'string' ? e.text : null);
-                if (!textStr) break;
-                const halign = tb ? (tb.halign || 0) : (e.halign || 0);
-                const valign = tb ? (tb.valign || 0) : (e.valign || 0);
-                const useEnd = (halign > 0 || valign > 0);
-                const pt = useEnd
-                    ? (e.alignmentPoint || (tb && tb.endPoint) || e.endPoint || (tb && tb.startPoint) || e.insertionPoint)
-                    : ((tb && tb.startPoint) || e.insertionPoint || (tb && tb.endPoint) || e.startPoint);
-                if (!pt) break;
-                const p = tp(pt.x, pt.y);
-                const scale = Math.abs(tf ? (tf.xScale || 1) : 1);
-                const rotation = (tb && tb.rotation) || e.rotation || 0;
-                const rotRad = rotation + (tf ? (tf.rotation || 0) : 0);
-                expand(p.x, p.y);
-                const sName = (tb && tb.styleName) || e.styleName || e.style || '';
-                const fontName = state.styleFontMap[sName] || '';
-                const tHeight = (tb && tb.textHeight) || e.textHeight || 2.5;
-                renderList.push({ t: 'text', l, et: 'ATTRIB', handle, x: p.x, y: p.y, text: textStr, h: tHeight * scale, rot: rotRad, c: color, byLayer, fontName });
-                break;
-            }
-
-            case 'POINT': {
-                const pt = e.location || e.point || e;
-                if (pt && pt.x != null) {
-                    const p = tp(pt.x, pt.y);
-                    expand(p.x, p.y);
-                    renderList.push({ t: 'point', l, et, handle, x: p.x, y: p.y, c: color, byLayer });
-                }
-                break;
-            }
-
-            case 'SOLID':
-            case '3DSOLID':
-            case 'TRACE': {
-                const pts = [e.firstCorner || e.point1, e.secondCorner || e.point2,
-                             e.thirdCorner || e.point3, e.fourthCorner || e.point4].filter(Boolean);
-                if (pts.length >= 3) {
-                    const tpts = pts.map(p => tp(p.x, p.y));
-                    for (const p of tpts) expand(p.x, p.y);
-                    renderList.push({ t: 'solid', l, et, handle, pts: tpts, c: color, byLayer });
-                }
-                break;
-            }
-
-            case 'HATCH': {
-                const boundaries = e.boundaryPaths || [];
-                const isSolidFill = e.isSolidFill || (e.patternName === 'SOLID') || (e.style === 1);
-                const paths = [];
-                for (const bp of boundaries) {
-                    if (bp.edges && bp.edges.length > 0) {
-                        const verts = [];
-                        for (const edge of bp.edges) {
-                            const etype = edge.type ?? edge.edgeType ?? -1;
-                            if (etype === 1) {
-                                const sp = tp(edge.startPoint?.x ?? edge.start?.x, edge.startPoint?.y ?? edge.start?.y);
-                                const ep = tp(edge.endPoint?.x ?? edge.end?.x, edge.endPoint?.y ?? edge.end?.y);
-                                if (verts.length === 0) verts.push(sp);
-                                verts.push(ep);
-                            } else if (etype === 2) {
-                                const cx = edge.center?.x ?? 0, cy = edge.center?.y ?? 0;
-                                const r = edge.radius ?? 0;
-                                const sa = edge.startAngle ?? 0;
-                                const ea = edge.endAngle ?? Math.PI * 2;
-                                const ccw = tfMirrored ? (edge.isCCW === false) : (edge.isCCW !== false);
-                                let sweep = ccw ? (ea - sa) : (sa - ea);
-                                if (sweep <= 0) sweep += Math.PI * 2;
-                                const steps = Math.max(12, Math.ceil(Math.abs(sweep) / (Math.PI / 16)));
-                                for (let si = 0; si <= steps; si++) {
-                                    const frac = si / steps;
-                                    const angle = ccw ? (sa + sweep * frac) : (sa - sweep * frac);
-                                    const pt = tp(cx + r * Math.cos(angle), cy + r * Math.sin(angle));
-                                    if (si === 0 && verts.length > 0) {
-                                        const last = verts[verts.length - 1];
-                                        if (Math.abs(last.x - pt.x) < 1e-4 && Math.abs(last.y - pt.y) < 1e-4) continue;
-                                    }
-                                    verts.push(pt);
-                                }
-                            } else if (etype === 3) {
-                                const cx = edge.center?.x ?? 0, cy = edge.center?.y ?? 0;
-                                const majorEnd = edge.majorAxisEndPoint || edge.endMajorAxis || { x: 1, y: 0 };
-                                const majorLen = Math.hypot(majorEnd.x, majorEnd.y);
-                                const minorLen = (edge.lengthOfMinorAxis || 0.5) * (majorLen || 1);
-                                const rot = Math.atan2(majorEnd.y, majorEnd.x);
-                                const sa = edge.startAngle || 0;
-                                const ea = edge.endAngle || Math.PI * 2;
-                                const ccw = edge.isCCW !== false;
-                                let sweep = ccw ? (ea - sa) : (sa - ea);
-                                if (sweep <= 0) sweep += Math.PI * 2;
-                                const steps = Math.max(12, Math.ceil(Math.abs(sweep) / (Math.PI / 16)));
-                                for (let si = 0; si <= steps; si++) {
-                                    const frac = si / steps;
-                                    const angle = ccw ? (sa + sweep * frac) : (sa - sweep * frac);
-                                    const lx = majorLen * Math.cos(angle);
-                                    const ly = minorLen * Math.sin(angle);
-                                    const px = cx + lx * Math.cos(rot) - ly * Math.sin(rot);
-                                    const py = cy + lx * Math.sin(rot) + ly * Math.cos(rot);
-                                    const pt = tp(px, py);
-                                    if (si === 0 && verts.length > 0) {
-                                        const last = verts[verts.length - 1];
-                                        if (Math.abs(last.x - pt.x) < 1e-4 && Math.abs(last.y - pt.y) < 1e-4) continue;
-                                    }
-                                    verts.push(pt);
-                                }
-                            } else if (etype === 4) {
-                                const pts = edge.fitDatum || edge.controlPoints || [];
-                                for (let si = 0; si < pts.length; si++) {
-                                    const sp = pts[si];
-                                    const pt = tp(sp.x, sp.y);
-                                    if (si === 0 && verts.length > 0) {
-                                        const last = verts[verts.length - 1];
-                                        if (Math.abs(last.x - pt.x) < 1e-4 && Math.abs(last.y - pt.y) < 1e-4) continue;
-                                    }
-                                    verts.push(pt);
-                                }
-                            }
-                        }
-                        if (verts.length > 1) {
-                            for (const v of verts) expand(v.x, v.y);
-                            const polyVerts = verts.map(v => ({ x: v.x, y: v.y, bulge: 0 }));
-                            renderList.push({ t: 'poly', l, et, handle, verts: polyVerts, closed: true, c: color, byLayer });
-                            if (isSolidFill) paths.push(polyVerts);
-                        }
-                    }
-                    if (bp.vertices && bp.vertices.length > 1) {
-                        const verts = tf
-                            ? bp.vertices.map(v => { const p = tp(v.x, v.y); return { x: p.x, y: p.y, bulge: v.bulge || 0 }; })
-                            : bp.vertices.map(v => ({ x: v.x, y: v.y, bulge: v.bulge || 0 }));
-                        for (const v of verts) expand(v.x, v.y);
-                        const closed = bp.isClosed !== false;
-                        renderList.push({ t: 'poly', l, et, handle, verts, closed, c: color, byLayer });
-                        if (isSolidFill) paths.push(verts);
-                    }
-                }
-                if (isSolidFill && paths.length > 0) {
-                    const pn = e.patternName || '';
-                    renderList.push({ t: 'hatchfill', l, et, handle, paths, c: color, byLayer, patternName: pn });
-                }
-                break;
-            }
-
-            case 'DIMENSION': {
-                // Enhancement 9: collect dimension info
-                state.dimensionInfo.push({
-                    handle,
-                    layer: l,
-                    associative: !!(e.flag && (e.flag & 1)),
-                });
-                if (e.name && blockMap[e.name]) {
-                    const block = blockMap[e.name];
-                    const ins = {
-                        insertionPoint: tf ? transformPoint(0, 0, tf) : { x: 0, y: 0 },
-                        xScale: tf ? (tf.xScale || 1) : 1,
-                        yScale: tf ? (tf.yScale || 1) : 1,
-                        rotation: tf ? (tf.rotation || 0) : 0
-                    };
-                    for (const be of block.entities) {
-                        addEntity(be, ins, l);
-                    }
-                } else {
-                    const pts = [];
-                    if (e.definitionPoint) pts.push(e.definitionPoint);
-                    if (e.subDefinitionPoint1) pts.push(e.subDefinitionPoint1);
-                    if (e.subDefinitionPoint2) pts.push(e.subDefinitionPoint2);
-                    for (let i = 0; i + 1 < pts.length; i++) {
-                        const p1 = tp(pts[i].x, pts[i].y);
-                        const p2 = tp(pts[i + 1].x, pts[i + 1].y);
-                        expand(p1.x, p1.y); expand(p2.x, p2.y);
-                        renderList.push({ t: 'line', l, et, handle, x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, c: color, byLayer });
-                    }
-                    if (e.textPoint && e.measurement != null) {
-                        const p = tp(e.textPoint.x, e.textPoint.y);
-                        expand(p.x, p.y);
-                        const txt = e.text || e.measurement.toFixed(0);
-                        renderList.push({ t: 'text', l, et, handle, x: p.x, y: p.y, text: txt, h: 2.5, rot: 0, c: color, byLayer });
-                    }
-                }
-                break;
-            }
-
-            case 'LEADER': {
-                if (e.vertices && e.vertices.length > 1) {
-                    const verts = e.vertices.map(v => {
-                        const p = tp(v.x, v.y);
-                        return { x: p.x, y: p.y, bulge: 0 };
-                    });
-                    for (const v of verts) expand(v.x, v.y);
-                    renderList.push({ t: 'poly', l, et, handle, verts, closed: false, c: color, byLayer });
-                }
-                break;
-            }
-
-            case 'MLINE': {
-                if (e.vertices && e.vertices.length > 1) {
-                    const verts = e.vertices.map(v => {
-                        const pt = v.point || v;
-                        const p = tp(pt.x, pt.y);
-                        return { x: p.x, y: p.y, bulge: 0 };
-                    });
-                    for (const v of verts) expand(v.x, v.y);
-                    renderList.push({ t: 'poly', l, et, handle, verts, closed: false, c: color, byLayer });
-                }
-                break;
-            }
-
-            case '3DFACE': {
-                const pts = [e.firstCorner, e.secondCorner, e.thirdCorner, e.fourthCorner].filter(Boolean);
-                if (pts.length >= 3) {
-                    const tpts = pts.map(p => tp(p.x, p.y));
-                    for (const p of tpts) expand(p.x, p.y);
-                    const verts = tpts.map(p => ({ x: p.x, y: p.y, bulge: 0 }));
-                    renderList.push({ t: 'poly', l, et, handle, verts, closed: true, c: color, byLayer });
-                }
-                break;
-            }
-
-            case 'RAY': {
-                if (e.basePoint && e.direction) {
-                    const p1 = tp(e.basePoint.x, e.basePoint.y);
-                    const len = 1e6;
-                    const p2 = tp(e.basePoint.x + e.direction.x * len, e.basePoint.y + e.direction.y * len);
-                    expand(p1.x, p1.y);
-                    renderList.push({ t: 'line', l, et, handle, x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, c: color, byLayer });
-                }
-                break;
-            }
-
-            case 'XLINE': {
-                if (e.basePoint && e.direction) {
-                    const len = 1e6;
-                    const p1 = tp(e.basePoint.x - e.direction.x * len, e.basePoint.y - e.direction.y * len);
-                    const p2 = tp(e.basePoint.x + e.direction.x * len, e.basePoint.y + e.direction.y * len);
-                    renderList.push({ t: 'line', l, et, handle, x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, c: color, byLayer });
-                }
-                break;
-            }
-
-            case 'INSERT': {
-                if (!e.insertionPoint || !e.name) break;
-                const block = blockMap[e.name];
-                insertCount++;
-                if (!block || !block.entities) break;
-
-                // Handle OCS extrusion: when normal is (0,0,-1), the X-axis is negated
-                // Normalize into equivalent scale/rotation so downstream mirroring logic works
-                let ipx = e.insertionPoint.x;
-                let ipy = e.insertionPoint.y;
-                let eXScale = e.xScale ?? 1;
-                let eYScale = e.yScale ?? 1;
-                let eRotation = e.rotation || 0;
-                const ez = e.extrusionDirection?.z;
-                if (ez != null && ez < 0) {
-                    ipx = -ipx;
-                    eYScale = -eYScale;
-                    eRotation = Math.PI - eRotation;
-                }
-
-                const origin = block.origin || block.basePoint;
-                const ins = {
-                    insertionPoint: tf ? transformPoint(ipx, ipy, tf) : { x: ipx, y: ipy },
-                    xScale: eXScale * (tf ? (tf.xScale || 1) : 1),
-                    yScale: eYScale * (tf ? (tf.yScale || 1) : 1),
-                    rotation: eRotation + (tf ? (tf.rotation || 0) : 0),
-                    baseX: origin?.x || 0,
-                    baseY: origin?.y || 0
-                };
-
-                const hasAttribs = e.attribs && e.attribs.length > 0;
-
-                for (const be of block.entities) {
-                    if (be.type === 'ATTDEF' || be.type === 'ATTRIB') continue;
-                    addEntity(be, ins, l);
-                }
-
-                if (hasAttribs) {
-                    for (const attr of e.attribs) {
-                        addEntity(attr, tf, l);
-                    }
-                }
-                break;
-            }
-        }
-    }
-
-    for (const e of entities) {
-        if (e.type === 'ATTRIB' || e.type === 'ATTDEF') continue;
-        addEntity(e, null, null);
-    }
-
-    if (!isFinite(minX)) { minX = 0; minY = 0; maxX = 1000; maxY = 1000; }
-
-    if (insertCount > 0) log(t('log.insertRefs', { count: insertCount }));
-    log(`Render list: ${renderList.length} primitives, bounds: (${minX.toFixed(0)}, ${minY.toFixed(0)}) - (${maxX.toFixed(0)}, ${maxY.toFixed(0)})`);
-
+/** MTEXT attachment point (1–9, top-left to bottom-right) → canvas alignment. */
+function mtextAlignment(attachmentPoint) {
+    const ap = Math.min(9, Math.max(1, attachmentPoint || 1)) - 1;
     return {
-        renderList,
-        bounds: { minX, minY, maxX, maxY, width: maxX - minX, height: maxY - minY }
+        halign: ['left', 'center', 'right'][ap % 3],
+        valign: ['top', 'middle', 'bottom'][Math.floor(ap / 3)],
     };
 }
 
-// ── Display Helpers ──
+// ── Drawing preparation ──
+
+/**
+ * Converts model-space entities into flat render primitives (block references expanded),
+ * collects drawing facts for the validation rules and returns { renderList, bounds, byHandle }.
+ */
+export function prepareDrawingData(entities, layers, db) {
+    const header = db.header || {};
+    state.insunits = header.INSUNITS ?? header.$INSUNITS ?? null;
+    state.unitScale = INSUNITS_TO_MM[state.insunits] ?? 1;
+    const closeTolerance = CLOSE_TOLERANCE_MM / state.unitScale;
+
+    const layerColor = {};
+    for (const l of layers) layerColor[l.name] = l.color != null ? rgbIntToHex(l.color) : aciToHex(l.colorIndex);
+
+    state.styleFontMap = {};
+    for (const s of db.tables?.STYLE?.entries || []) {
+        if (s.name) state.styleFontMap[s.name] = s.font || s.bigFont || '';
+    }
+
+    state.paperSpaceLayouts = (db.objects?.LAYOUT || [])
+        .map(l => l.layoutName || '')
+        .filter(name => name && name.toUpperCase() !== 'MODEL');
+
+    const blocks = new Map();
+    state.xrefBlocks = [];
+    state.paperSpaceEntityCount = 0;
+    for (const record of db.tables?.BLOCK_RECORD?.entries || []) {
+        const name = record.name || '';
+        if (isPaperSpaceName(name)) {
+            // Every layout owns one VIEWPORT entity by default; only other entities mean the layout is in use
+            state.paperSpaceEntityCount += (record.entities || []).filter(e => e.type !== 'VIEWPORT').length;
+            continue;
+        }
+        if (record.flags & BLOCK_FLAG_XREF) state.xrefBlocks.push({ name });
+        if (record.entities?.length && name.toUpperCase() !== MODEL_SPACE) blocks.set(name, record);
+    }
+    if (blocks.size > 0) log(t('log.blockDefs', { count: blocks.size }));
+    if (state.xrefBlocks.length > 0) log(t('log.xrefBlocks', { count: state.xrefBlocks.length }));
+
+    const renderList = [];
+    const byHandle = new Map();
+    const bounds = createBounds();
+    const seenZ = new Set();
+    const seenDimensions = new Set();
+    state.nonZeroZEntities = [];
+    state.dimensionInfo = [];
+    let insertCount = 0;
+
+    function push(item) {
+        if (!isFiniteBounds(item.bounds)) return;
+        renderList.push(item);
+        mergeBounds(bounds, item.bounds);
+        if (item.handle) {
+            const list = byHandle.get(item.handle);
+            if (list) list.push(item); else byHandle.set(item.handle, [item]);
+        }
+    }
+
+    /** ByBlock takes the reference's colour, ByLayer the (effective) layer's, true colour wins over both. */
+    function resolveColor(e, layer, ctx) {
+        if (e.color != null) return { color: rgbIntToHex(e.color), byLayer: false };
+        const index = e.colorIndex;
+        if (index === 0) return { color: ctx.color || layerColor[layer] || '#CCCCCC', byLayer: false };
+        if (index == null || index === 256) return { color: layerColor[layer] || '#CCCCCC', byLayer: true };
+        return { color: aciToHex(index), byLayer: false };
+    }
+
+    function recordZ(e, base) {
+        for (const pt of [e.startPoint, e.endPoint, e.insertionPoint, e.center, e.position, e.vertices?.[0]]) {
+            if (pt && Math.abs(pt.z || 0) > Z_EPSILON && !seenZ.has(base.handle)) {
+                seenZ.add(base.handle);
+                state.nonZeroZEntities.push({ handle: base.handle, layer: base.layer, type: base.entityType, z: pt.z });
+                return;
+            }
+        }
+    }
+
+    function polyItem(base, verts, closed, extra = {}) {
+        push({ kind: 'poly', ...base, verts, closed, bounds: boundsOfPoints(verts), ...extra });
+    }
+
+    /**
+     * ctx: { m: affine matrix or null, layer: reference layer, color: reference colour,
+     *        depth: block nesting depth, chain: Set of block names being expanded }
+     */
+    function addEntity(e, ctx) {
+        if (!e || e.isVisible === false) return;
+        const flip = !!(e.extrusionDirection && e.extrusionDirection.z < 0); // OCS with normal (0,0,-1): mirror X
+        const layer = (e.layer === '0' && ctx.layer) ? ctx.layer : (e.layer || '0');
+        const { color, byLayer } = resolveColor(e, layer, ctx);
+        const base = { layer, entityType: e.type || 'UNKNOWN', handle: e.handle || '', color, byLayer, inBlock: ctx.depth > 0 };
+        const m = ctx.m;
+        const info = m ? affineInfo(m) : { mirrored: false, scale: 1, uniform: true };
+        const mirrored = flip !== info.mirrored;
+        const tp = (x, y) => (m ? affineApply(m, flip ? -x : x, y) : { x: flip ? -x : x, y });
+        const toVerts = (points, keepBulge) => points.map(v => {
+            const p = tp(v.x, v.y);
+            return { x: p.x, y: p.y, bulge: keepBulge && v.bulge ? (mirrored ? -v.bulge : v.bulge) : 0 };
+        });
+        const localRotation = r => (flip ? Math.PI - r : r) + (m ? Math.atan2(m[1], m[0]) : 0);
+        recordZ(e, base);
+
+        switch (e.type) {
+            case 'LINE': {
+                if (!e.startPoint || !e.endPoint) break;
+                const p1 = tp(e.startPoint.x, e.startPoint.y), p2 = tp(e.endPoint.x, e.endPoint.y);
+                push({ kind: 'line', ...base, x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, bounds: boundsOfPoints([p1, p2]) });
+                break;
+            }
+            case 'RAY':
+            case 'XLINE': {
+                if (!e.firstPoint || !e.unitDirection) break;
+                const d = e.unitDirection, f = e.firstPoint;
+                const from = e.type === 'RAY' ? f : { x: f.x - d.x * RAY_LENGTH, y: f.y - d.y * RAY_LENGTH };
+                const p1 = tp(from.x, from.y), p2 = tp(f.x + d.x * RAY_LENGTH, f.y + d.y * RAY_LENGTH);
+                // Construction lines must not blow up the drawing extents
+                const anchor = tp(f.x, f.y);
+                push({ kind: 'line', ...base, x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, bounds: boundsOfPoints([anchor]) });
+                break;
+            }
+            case 'LWPOLYLINE':
+            case 'POLYLINE2D':
+            case 'POLYLINE3D': {
+                if (!e.vertices || e.vertices.length < 2) break;
+                const verts = toVerts(e.vertices, e.type !== 'POLYLINE3D');
+                const flagClosed = e.type === 'LWPOLYLINE' ? !!(e.flag & LWPOLYLINE_FLAG_CLOSED) : !!(e.flag & POLYLINE_FLAG_CLOSED);
+                let implicitlyClosed = false;
+                if (!flagClosed && verts.length > 2) {
+                    const f = verts[0], l = verts[verts.length - 1];
+                    implicitlyClosed = Math.hypot(f.x - l.x, f.y - l.y) <= closeTolerance;
+                }
+                let width = e.constantWidth || 0;
+                for (const v of e.vertices) width = Math.max(width, v.startWidth || 0, v.endWidth || 0);
+                width = Math.max(width, e.startWidth || 0, e.endWidth || 0);
+                polyItem(base, verts, flagClosed || implicitlyClosed, { implicitlyClosed, width });
+                break;
+            }
+            case 'CIRCLE': {
+                if (!e.center || !(e.radius > 0)) break;
+                const c = tp(e.center.x, e.center.y);
+                if (info.uniform) {
+                    const r = e.radius * info.scale;
+                    push({ kind: 'circle', ...base, cx: c.x, cy: c.y, r, bounds: { minX: c.x - r, minY: c.y - r, maxX: c.x + r, maxY: c.y + r } });
+                } else {
+                    polyItem(base, toVerts(sampleArc(e.center.x, e.center.y, e.radius, 0, Math.PI * 2, true, 32), false), true);
+                }
+                break;
+            }
+            case 'ARC': {
+                if (!e.center || !(e.radius > 0) || e.startAngle == null || e.endAngle == null) break;
+                if (!info.uniform) {
+                    polyItem(base, toVerts(sampleArc(e.center.x, e.center.y, e.radius, e.startAngle, e.endAngle, true), false), false);
+                    break;
+                }
+                const c = tp(e.center.x, e.center.y);
+                const r = e.radius * info.scale;
+                let ps = tp(e.center.x + e.radius * Math.cos(e.startAngle), e.center.y + e.radius * Math.sin(e.startAngle));
+                let pe = tp(e.center.x + e.radius * Math.cos(e.endAngle), e.center.y + e.radius * Math.sin(e.endAngle));
+                if (mirrored) [ps, pe] = [pe, ps]; // a mirrored arc runs the other way round
+                push({
+                    kind: 'arc', ...base, cx: c.x, cy: c.y, r,
+                    startAngle: Math.atan2(ps.y - c.y, ps.x - c.x), endAngle: Math.atan2(pe.y - c.y, pe.x - c.x),
+                    bounds: { minX: c.x - r, minY: c.y - r, maxX: c.x + r, maxY: c.y + r },
+                });
+                break;
+            }
+            case 'ELLIPSE': {
+                if (!e.center || !e.majorAxisEndPoint) break;
+                const full = e.startAngle == null || e.endAngle == null || Math.abs((e.endAngle - e.startAngle) % (Math.PI * 2)) < 1e-9;
+                const pts = sampleEllipse(e.center.x, e.center.y, e.majorAxisEndPoint.x, e.majorAxisEndPoint.y,
+                    e.axisRatio || 1, e.startAngle || 0, full ? Math.PI * 2 : e.endAngle, true);
+                polyItem(base, toVerts(pts, false), full);
+                break;
+            }
+            case 'SPLINE': {
+                let pts = null;
+                if (e.controlPoints && e.controlPoints.length > 1) pts = sampleSpline(e.degree, e.knots, e.controlPoints, e.weights);
+                else if (e.fitPoints && e.fitPoints.length > 1) pts = e.fitPoints;
+                if (!pts || pts.length < 2) break;
+                polyItem(base, toVerts(pts, false), !!(e.flag & POLYLINE_FLAG_CLOSED));
+                break;
+            }
+            case 'LEADER': {
+                if (e.vertices && e.vertices.length > 1) polyItem(base, toVerts(e.vertices, false), false);
+                break;
+            }
+            case 'MLINE': {
+                const pts = (e.vertices || []).map(v => v.vertex).filter(p => p && Number.isFinite(p.x));
+                if (pts.length > 1) polyItem(base, toVerts(pts, false), false);
+                break;
+            }
+            case 'POINT': {
+                if (!e.position) break;
+                const p = tp(e.position.x, e.position.y);
+                push({ kind: 'point', ...base, x: p.x, y: p.y, bounds: boundsOfPoints([p]) });
+                break;
+            }
+            case 'SOLID':
+            case 'TRACE':
+            case '3DFACE': {
+                // SOLID/TRACE corners are stored in bow-tie order (1-2-4-3); 3DFACE in ring order
+                const order = e.type === '3DFACE' ? [e.corner1, e.corner2, e.corner3, e.corner4] : [e.corner1, e.corner2, e.corner4, e.corner3];
+                const pts = order.filter(Boolean);
+                if (pts.length < 3) break;
+                const verts = toVerts(pts, false);
+                push({ kind: 'solid', ...base, verts, bounds: boundsOfPoints(verts) });
+                break;
+            }
+            case 'TEXT': {
+                addText(base, ctx, e, e.startPoint, e.endPoint);
+                break;
+            }
+            case 'ATTRIB':
+            case 'ATTDEF': {
+                if (e.flags & ATTDEF_FLAG_INVISIBLE) break;
+                const tb = (e.text && typeof e.text === 'object') ? e.text : null;
+                if (!tb) break;
+                addText(base, ctx, tb, tb.startPoint, e.alignmentPoint || tb.endPoint);
+                break;
+            }
+            case 'MTEXT': {
+                if (!e.insertionPoint || !e.text) break;
+                const p = tp(e.insertionPoint.x, e.insertionPoint.y);
+                const rotation = e.direction ? Math.atan2(e.direction.y, e.direction.x) : (e.rotation || 0);
+                const { halign, valign } = mtextAlignment(e.attachmentPoint);
+                pushText(base, {
+                    x: p.x, y: p.y, baseX: p.x, baseY: p.y,
+                    text: decodeCadText(e.text), height: (e.textHeight || DEFAULT_TEXT_HEIGHT) * info.scale,
+                    rotation: localRotation(rotation), halign, valign, widthFactor: 1, lineSpacing: e.lineSpacing || 1,
+                    fontName: state.styleFontMap[e.styleName || ''] || '',
+                });
+                break;
+            }
+            case 'HATCH': {
+                addHatch(base, e, tp, mirrored);
+                break;
+            }
+            case 'DIMENSION': {
+                if (!seenDimensions.has(base.handle)) {
+                    seenDimensions.add(base.handle);
+                    state.dimensionInfo.push({ handle: base.handle, layer });
+                }
+                const block = e.name ? blocks.get(e.name) : null;
+                if (block) {
+                    expandBlock(block, { ...ctx, layer, color, depth: ctx.depth + 1 });
+                } else {
+                    const pts = [e.definitionPoint, e.subDefinitionPoint1, e.subDefinitionPoint2].filter(Boolean);
+                    for (let i = 0; i + 1 < pts.length; i++) {
+                        const p1 = tp(pts[i].x, pts[i].y), p2 = tp(pts[i + 1].x, pts[i + 1].y);
+                        push({ kind: 'line', ...base, x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, bounds: boundsOfPoints([p1, p2]) });
+                    }
+                    if (e.textPoint && e.measurement != null) {
+                        const p = tp(e.textPoint.x, e.textPoint.y);
+                        pushText(base, {
+                            x: p.x, y: p.y, baseX: p.x, baseY: p.y, text: e.text || e.measurement.toFixed(0),
+                            height: DEFAULT_TEXT_HEIGHT * info.scale, rotation: localRotation(e.textRotation || 0),
+                            halign: 'center', valign: 'middle', widthFactor: 1, lineSpacing: 1, fontName: '',
+                        });
+                    }
+                }
+                break;
+            }
+            case 'INSERT': {
+                if (!e.insertionPoint || !e.name) break;
+                insertCount++;
+                const block = blocks.get(e.name);
+                if (!block || ctx.depth >= MAX_BLOCK_DEPTH || ctx.chain.has(e.name)) break;
+
+                const ip = e.insertionPoint;
+                let sx = e.xScale ?? 1, sy = e.yScale ?? 1, rot = e.rotation || 0, ix = ip.x;
+                if (flip) { ix = -ix; sy = -sy; rot = Math.PI - rot; } // OCS flip expressed as scale/rotation
+                const basePt = block.basePoint || { x: 0, y: 0 };
+                const local = affineFromInsert(ix, ip.y, sx, sy, rot, basePt.x, basePt.y);
+                const matrix = m ? affineMultiply(m, local) : local;
+                const chain = new Set(ctx.chain).add(e.name);
+                const cols = Math.max(1, e.columnCount || 1), rows = Math.max(1, e.rowCount || 1);
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        // MINSERT cells are offset in block space before scaling and rotation
+                        const cell = (r === 0 && c === 0) ? matrix
+                            : affineMultiply(matrix, [1, 0, 0, 1, c * (e.columnSpacing || 0), r * (e.rowSpacing || 0)]);
+                        expandBlock(block, { m: cell, layer, color, depth: ctx.depth + 1, chain });
+                    }
+                }
+                // Attribute values are stored in world coordinates on the reference itself
+                for (const attr of e.attribs || []) addEntity(attr, ctx);
+                break;
+            }
+            default:
+                break;
+        }
+    }
+
+    function expandBlock(block, ctx) {
+        for (const be of block.entities) {
+            if (be.type === 'ATTRIB') continue;
+            if (be.type === 'ATTDEF' && !(be.flags & ATTDEF_FLAG_CONSTANT)) continue;
+            addEntity(be, ctx);
+        }
+    }
+
+    /** TEXT and ATTRIB share the DwgTextBase shape: text, startPoint (insertion), endPoint (alignment), height, rotation, justification. */
+    function addText(base, ctx, tb, insertion, alignment) {
+        if (!tb.text || !insertion) return;
+        const { anchor, halign, valign } = textAlignment(tb, insertion, alignment);
+        const info = ctx.m ? affineInfo(ctx.m) : { scale: 1 };
+        const flip = !!(tb.extrusionDirection && tb.extrusionDirection.z < 0);
+        const tp = (x, y) => (ctx.m ? affineApply(ctx.m, flip ? -x : x, y) : { x: flip ? -x : x, y });
+        const a = tp(anchor.x, anchor.y), b = tp(insertion.x, insertion.y);
+        const rotation = (flip ? Math.PI - (tb.rotation || 0) : (tb.rotation || 0)) + (ctx.m ? Math.atan2(ctx.m[1], ctx.m[0]) : 0);
+        pushText(base, {
+            x: a.x, y: a.y, baseX: b.x, baseY: b.y, text: decodeCadText(tb.text),
+            height: (tb.textHeight || DEFAULT_TEXT_HEIGHT) * info.scale, rotation, halign, valign,
+            widthFactor: tb.xScale || 1, lineSpacing: 1, fontName: state.styleFontMap[tb.styleName || ''] || '',
+        });
+    }
+
+    function pushText(base, spec) {
+        const lines = spec.text.split('\n');
+        const longest = Math.max(...lines.map(l => l.length), 1);
+        const width = longest * spec.height * TEXT_WIDTH_PER_CHAR * spec.widthFactor;
+        const heightAll = spec.height * (1 + (lines.length - 1) * 1.67 * spec.lineSpacing);
+        const reach = Math.max(width, heightAll); // rotation-independent envelope
+        push({
+            kind: 'text', ...base, ...spec, lines,
+            bounds: { minX: spec.x - reach, minY: spec.y - reach, maxX: spec.x + reach, maxY: spec.y + reach },
+        });
+    }
+
+    function addHatch(base, e, tp, mirrored) {
+        const paths = [];
+        const b = createBounds();
+        for (const bp of e.boundaryPaths || []) {
+            let verts = [];
+            if (bp.vertices && bp.vertices.length > 1) {
+                verts = bp.vertices.map(v => { const p = tp(v.x, v.y); return { x: p.x, y: p.y, bulge: v.bulge ? (mirrored ? -v.bulge : v.bulge) : 0 }; });
+            } else if (bp.edges && bp.edges.length > 0) {
+                const pushUnique = pt => {
+                    const last = verts[verts.length - 1];
+                    if (!last || Math.abs(last.x - pt.x) > 1e-6 || Math.abs(last.y - pt.y) > 1e-6) verts.push({ x: pt.x, y: pt.y, bulge: 0 });
+                };
+                for (const edge of bp.edges) {
+                    let localPts = [];
+                    if (edge.type === 1 && edge.start && edge.end) {
+                        localPts = [edge.start, edge.end];
+                    } else if (edge.type === 2 && edge.center) {
+                        localPts = sampleArc(edge.center.x, edge.center.y, edge.radius || 0, edge.startAngle || 0, edge.endAngle ?? Math.PI * 2, edge.isCCW !== false);
+                    } else if (edge.type === 3 && edge.center && edge.end) {
+                        localPts = sampleEllipse(edge.center.x, edge.center.y, edge.end.x, edge.end.y, edge.lengthOfMinorAxis || 1, edge.startAngle || 0, edge.endAngle ?? Math.PI * 2, edge.isCCW !== false);
+                    } else if (edge.type === 4) {
+                        localPts = (edge.fitDatum && edge.fitDatum.length > 1) ? edge.fitDatum : (edge.controlPoints || []);
+                    }
+                    for (const lp of localPts) pushUnique(tp(lp.x, lp.y));
+                }
+            }
+            if (verts.length > 1) {
+                paths.push(verts);
+                for (const v of verts) expandBounds(b, v.x, v.y);
+            }
+        }
+        if (paths.length === 0) return;
+        push({ kind: 'hatch', ...base, paths, solid: e.solidFill === 1 || e.patternName === 'SOLID', patternName: e.patternName || '', bounds: b });
+    }
+
+    const rootCtx = { m: null, layer: null, color: null, depth: 0, chain: new Set() };
+    for (const e of entities) {
+        if (e.type === 'ATTRIB' || e.type === 'ATTDEF') continue; // rendered through their INSERT
+        addEntity(e, rootCtx);
+    }
+
+    if (!isFiniteBounds(bounds)) { bounds.minX = 0; bounds.minY = 0; bounds.maxX = 1000; bounds.maxY = 1000; }
+    if (insertCount > 0) log(t('log.insertRefs', { count: insertCount }));
+
+    return {
+        renderList,
+        byHandle,
+        bounds: { ...bounds, width: bounds.maxX - bounds.minX, height: bounds.maxY - bounds.minY },
+    };
+}
+
+/** Layer list for the side panel with entity counts; layers that are off or frozen start hidden. */
 export function buildLayerInfo(entities, layers) {
     state.hiddenLayers.clear();
     const counts = {};
     for (const e of entities) counts[e.layer || '0'] = (counts[e.layer || '0'] || 0) + 1;
-    state.layerInfo = layers.map(l => ({
-        name: l.name,
-        colorHex: aciToHex(l.colorIndex),
-        count: counts[l.name] || 0,
-    }));
+    state.layerInfo = layers.map(l => {
+        const hidden = !!(l.off || l.frozen);
+        if (hidden) state.hiddenLayers.add(l.name);
+        return {
+            name: l.name,
+            colorHex: l.color != null ? rgbIntToHex(l.color) : aciToHex(l.colorIndex),
+            count: counts[l.name] || 0,
+            off: !!l.off,
+            frozen: !!l.frozen,
+        };
+    });
 }
 
-export function displayEntities(entities) {
-    const typeCounts = {};
-    const typeLayers = {};
+/** Entity type histogram (with the layers each type occurs on) for the KPI tab and the reports. */
+export function summarizeEntities(entities) {
+    const counts = {};
+    const layersByType = {};
     for (const e of entities) {
-        const t = e.type || 'UNKNOWN';
-        typeCounts[t] = (typeCounts[t] || 0) + 1;
-        if (!typeLayers[t]) typeLayers[t] = new Set();
-        if (e.layer) typeLayers[t].add(e.layer);
+        const type = e.type || 'UNKNOWN';
+        counts[type] = (counts[type] || 0) + 1;
+        (layersByType[type] ??= new Set()).add(e.layer || '0');
     }
-    state.entitySummary = Object.entries(typeCounts)
+    state.entitySummary = Object.entries(counts)
         .sort((a, b) => b[1] - a[1])
-        .map(([type, count]) => ({
-            type,
-            count,
-            layers: typeLayers[type] ? Array.from(typeLayers[type]) : [],
-        }));
+        .map(([type, count]) => ({ type, count, layers: [...layersByType[type]] }));
 }
