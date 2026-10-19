@@ -743,7 +743,7 @@ function buildDonut(segments, total) {
     const circumference = 2 * Math.PI * r;
     let offset = 0;
     let svg = '<div class="val-donut"><svg viewBox="0 0 160 160" role="img">';
-    svg += `<circle cx="80" cy="80" r="${r}" fill="none" stroke="#E5E5E5" stroke-width="${strokeWidth}"/>`;
+    svg += `<circle cx="80" cy="80" r="${r}" fill="none" style="stroke: var(--bg-track)" stroke-width="${strokeWidth}"/>`;
     for (const seg of segments) {
         const share = seg.value / total;
         const dash = share * circumference;

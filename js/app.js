@@ -12,6 +12,7 @@ import { screenToWorld, zoomAt, zoomBy, zoomExtents, clampZoom, anchorWorldPoint
 import { selectPolygon, selectItem, clearSelection } from './selection.js';
 import { renderValidation, switchValidationTab, initValidationUi } from './validation.js';
 import { pointInPolygonTolerant } from './geometry.js';
+import { initHowItWorks, updateFilmLanguage, pauseFilm } from './how-it-works.js';
 
 const DEMO_FILE = 'assets/test-files/CAD.V01-CAFM-Plan-DE.dwg';
 const TAP_THRESHOLD_PX = 8;      // pointer travel that still counts as a tap
@@ -22,15 +23,24 @@ const WHEEL_ZOOM_OUT = 0.85;
 
 initDom();
 initValidationUi();
-initHeader({ onLocaleChange: () => { if (state.drawingData) renderValidation({ keepTab: true }); } });
+initHowItWorks();
+initHeader({ onLocaleChange: () => { updateFilmLanguage(); if (state.drawingData) renderValidation({ keepTab: true }); } });
 
 // =============================================
 // Panels
 // =============================================
+const howPanel = document.getElementById('how-panel');
+
+function setPanelOpen(panel, open) {
+    panel.classList.toggle('open', open);
+    panel.querySelector('.panel__toggle').setAttribute('aria-expanded', String(open));
+    if (panel === howPanel && !open) pauseFilm();
+}
+
 for (const btn of document.querySelectorAll('.panel__toggle')) {
     btn.addEventListener('click', () => {
-        const open = btn.closest('.panel').classList.toggle('open');
-        btn.setAttribute('aria-expanded', String(open));
+        const panel = btn.closest('.panel');
+        setPanelOpen(panel, !panel.classList.contains('open'));
     });
 }
 
@@ -50,6 +60,7 @@ async function handleFile(file) {
     clearSelection({ rerender: false });
     dom.validationPanel.classList.remove('visible');
     dom.metricsPanel.classList.remove('visible');
+    setPanelOpen(howPanel, false);    // the results take the film's place; it stays one click away
 
     try {
         const { db, entities, layers, elapsed, version } = await processDwgFile(file);

@@ -104,7 +104,7 @@ export function hexToRgb(hex) {
     return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
 
-/** Value of a CSS custom property from tokens.css, e.g. themeToken('--color-error') → "#B71C1C". */
+/** Value of a CSS custom property from tokens.css, e.g. themeToken('--danger') → "#d0433b". */
 export function themeToken(name) {
     return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }

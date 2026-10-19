@@ -1,24 +1,17 @@
 // =============================================
-// Header controls shared by every view: language selector and mobile menu
+// Header controls shared by every view: language select and mobile menu
 // =============================================
 
 import { setLocale, getLocale } from './i18n.js';
 
-/** Wires the language buttons and the hamburger menu; onLocaleChange runs after a language switch. */
+/** Wires the language select and the hamburger menu; onLocaleChange runs after a language switch. */
 export function initHeader({ onLocaleChange } = {}) {
-    const buttons = document.querySelectorAll('.lang-selector__item');
-    const syncButtons = () => {
-        for (const btn of buttons) {
-            const active = btn.dataset.lang === getLocale();
-            btn.classList.toggle('lang-selector__item--active', active);
-            btn.setAttribute('aria-pressed', String(active));
-        }
-    };
-    syncButtons();
-    for (const btn of buttons) {
-        btn.addEventListener('click', async () => {
-            await setLocale(btn.dataset.lang);
-            syncButtons();
+    const select = document.getElementById('lang-select');
+    if (select) {
+        select.value = getLocale();
+        select.addEventListener('change', async () => {
+            await setLocale(select.value);
+            select.value = getLocale();
             onLocaleChange?.();
         });
     }

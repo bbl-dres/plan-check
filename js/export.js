@@ -116,16 +116,16 @@ function downscaleCanvas(canvas) {
 function pdfTheme() {
     const rgb = (name, fallback) => hexToRgb(themeToken(name) || fallback);
     return {
-        primary: rgb('--color-primary', '#006699'),
-        primaryLight: rgb('--color-primary-light', '#F2F7F9'),
-        text: rgb('--color-text-primary', '#333333'),
-        muted: rgb('--color-text-secondary', '#6B6B6B'),
-        border: rgb('--color-border', '#CCCCCC'),
-        zebra: rgb('--color-bg-secondary', '#F5F5F5'),
-        error: rgb('--color-error', '#B71C1C'),
-        warning: rgb('--color-warning', '#BF360C'),
-        success: rgb('--color-success', '#1B5E20'),
-        successLight: rgb('--color-success-light', '#E8F5E9'),
+        primary: rgb('--accent-text', '#00567d'),
+        primaryLight: rgb('--accent-light', '#e2f1fa'),
+        text: rgb('--text', '#1a1d21'),
+        muted: rgb('--muted', '#646b74'),
+        border: rgb('--border', '#dfe2e6'),
+        zebra: rgb('--bg', '#f5f6f7'),
+        error: rgb('--danger-text', '#8a2a24'),
+        warning: rgb('--warning-text-strong', '#8a5a00'),
+        success: rgb('--success-text', '#1f7a45'),
+        successLight: rgb('--success-bg', '#e6f4ec'),
     };
 }
 

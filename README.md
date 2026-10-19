@@ -34,6 +34,7 @@ Files are processed locally in the browser and are not uploaded to a server.
 - Review SIA 416 and DIN 277 area indicators.
 - Export PDF and Excel validation reports.
 - Open the prototype API reference from the same interface.
+- Watch a short explainer film of the workflow on the landing page (German, French, Italian, English): export the DWG from your CAD or BIM program, upload it, fix the errors in your program, check again.
 
 ## Run locally
 
@@ -42,6 +43,15 @@ python -m http.server 8000
 ```
 
 Open <http://localhost:8000/>.
+
+### Explainer film
+
+The film on the landing page is rendered from [media/how-it-works.html](media/how-it-works.html), a timeline page that can also be opened directly to review it (`?lang=de|fr|it|en`). Its interface texts are copied from `locales/*.json` on each render.
+
+```bash
+pip install playwright imageio-ffmpeg && python -m playwright install chromium
+python media/render.py            # all four languages -> media/how-it-works-<lang>.webm and .jpg
+```
 
 ## Documentation
 

@@ -8,7 +8,6 @@
 
   "nav.downloads": "Downloads FOBL Buildings",
   "nav.guide": "Instructions and FAQ",
-  "nav.contact": "Contact",
   "nav.menu": "Menu",
 
   "upload.dropHint": "Drag DWG file here or click",
@@ -20,6 +19,15 @@
   "panel.result": "Result",
   "panel.validation": "Validation",
   "panel.console": "Console",
+  "panel.how": "How it works",
+
+  "how.filmLabel": "Film: how the checking platform works",
+  "how.play": "Play",
+  "how.pause": "Pause",
+  "how.replay": "Replay",
+  "how.fullscreen": "Full screen",
+  "how.timeline": "Timeline of the film",
+  "how.know": "One DWG file per floor · checked locally in the browser, nothing is uploaded · report as PDF or Excel",
 
   "tab.rules": "Validation rules",
   "tab.errors": "Error messages",

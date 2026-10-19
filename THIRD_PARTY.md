@@ -24,7 +24,9 @@ These libraries are not stored in the repository. The browser fetches them on fi
 
 ## Fonts
 
-The stylesheets reference the Swiss federal corporate font "Frutiger Neue LT W1G" by name only. No font files are bundled; browsers fall back to the system font stack declared in `css/tokens.css`.
+The stylesheets reference "IBM Plex Sans" (SIL Open Font License 1.1) by name only, as plan-extract does. No font files are bundled and the app loads none; browsers use it when it is installed and otherwise fall back to the system font stack declared in `css/tokens.css`.
+
+The explainer film ([media/how-it-works.html](media/how-it-works.html)) loads IBM Plex Sans from Google Fonts while it is rendered by [media/render.py](media/render.py), so the font is part of the rendered videos; the app itself does not contact Google Fonts.
 
 ## Standards and guidelines referenced
 

@@ -8,7 +8,6 @@
 
   "nav.downloads": "Téléchargements OFCL Constructions",
   "nav.guide": "Instructions et FAQ",
-  "nav.contact": "Contact",
   "nav.menu": "Menu",
 
   "upload.dropHint": "Glisser un fichier DWG ici ou cliquer",
@@ -20,6 +19,15 @@
   "panel.result": "Résultat",
   "panel.validation": "Validation",
   "panel.console": "Console",
+  "panel.how": "Fonctionnement",
+
+  "how.filmLabel": "Film : le fonctionnement de la plateforme de contrôle",
+  "how.play": "Lire",
+  "how.pause": "Pause",
+  "how.replay": "Revoir",
+  "how.fullscreen": "Plein écran",
+  "how.timeline": "Chronologie du film",
+  "how.know": "Un fichier DWG par étage · contrôle local dans le navigateur, rien n’est téléversé · rapport en PDF ou Excel",
 
   "tab.rules": "Règles de vérification",
   "tab.errors": "Messages d'erreur",

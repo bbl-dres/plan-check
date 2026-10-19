@@ -350,4 +350,4 @@ Die Plattform funktioniert in allen modernen Browsern: Chrome, Firefox, Edge und
 
 ### An wen kann ich mich bei Fragen wenden?
 
-Kontaktieren Sie das BBL über die [Kontaktseite](https://www.bbl.admin.ch/de/kontakt) oder nutzen Sie den Link «Kontakt» in der Kopfzeile der Plattform.
+Kontaktieren Sie das BBL über die [Kontaktseite](https://www.bbl.admin.ch/de/kontakt).

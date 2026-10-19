@@ -8,7 +8,6 @@
 
   "nav.downloads": "Download UFCL Costruzioni",
   "nav.guide": "Istruzioni e FAQ",
-  "nav.contact": "Contatto",
   "nav.menu": "Menu",
 
   "upload.dropHint": "Trascinare qui un file DWG oppure cliccare",
@@ -20,6 +19,15 @@
   "panel.result": "Risultato",
   "panel.validation": "Validazione",
   "panel.console": "Console",
+  "panel.how": "Come funziona",
+
+  "how.filmLabel": "Filmato: come funziona la piattaforma di verifica",
+  "how.play": "Riproduci",
+  "how.pause": "Pausa",
+  "how.replay": "Dall'inizio",
+  "how.fullscreen": "Schermo intero",
+  "how.timeline": "Linea temporale del filmato",
+  "how.know": "Un file DWG per piano · verifica locale nel browser, nulla viene caricato · rapporto in PDF o Excel",
 
   "tab.rules": "Regole di verifica",
   "tab.errors": "Messaggi di errore",

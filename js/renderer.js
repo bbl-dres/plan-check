@@ -41,19 +41,21 @@ function overlayColors() {
     if (overlay) return overlay;
     const token = (name, fallback) => themeToken(name) || fallback;
     const rgba = (hex, a) => `rgba(${hexToRgb(hex).join(', ')}, ${a})`;
-    const primary = token('--color-primary', '#006699');
-    const error = token('--color-error', '#B71C1C');
-    const warning = token('--color-warning', '#BF360C');
-    const success = token('--color-success', '#1B5E20');
+    const primary = token('--accent', '#007daa');
+    const error = token('--danger', '#d0433b');
+    const warning = token('--warning', '#d99a1e');
+    const success = token('--success', '#2e9e5b');
     overlay = {
         highlight: '#0099CC', highlightGlow: 'rgba(0, 153, 204, 0.6)',
         selected: { fill: rgba(primary, 0.35), stroke: primary },
         error: { fill: rgba(error, 0.3), stroke: error },
         warning: { fill: rgba(warning, 0.3), stroke: warning },
         ok: { fill: rgba(success, 0.25), stroke: success },
-        labelBg: token('--color-label-bg', 'rgba(255, 255, 255, 0.88)'),
-        labelText: token('--color-text-primary', '#333333'),
-        labelSecondary: token('--color-text-secondary', '#6B6B6B'),
+        labelBg: token('--surface-translucent', 'rgba(255, 255, 255, 0.9)'),
+        labelText: token('--text', '#1a1d21'),
+        font: token('--font', 'system-ui, sans-serif'),
+        fontMono: token('--font-mono', 'monospace'),
+        labelSecondary: token('--muted', '#646b74'),
     };
     return overlay;
 }
@@ -101,7 +103,7 @@ export function drawScaleBarOnCanvas() {
     ctx.scale(dpr, dpr);
 
     const x = padX, y = height - padY;
-    ctx.font = `${fontSize}px ui-monospace, SFMono-Regular, monospace`;
+    ctx.font = `${fontSize}px ${overlayColors().fontMono}`;
     const labelW = ctx.measureText(step.label).width;
     ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
     ctx.beginPath();
@@ -342,10 +344,10 @@ function drawPolygonOverlays(ctx, cam) {
         ctx.fill();
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.font = `600 ${worldFont}px system-ui, sans-serif`;
+        ctx.font = `600 ${worldFont}px ${ov.font}`;
         ctx.fillStyle = ov.labelText;
         ctx.fillText(entry.aoid, 0, -worldFont * 0.2);
-        ctx.font = `${worldFont * 0.7}px system-ui, sans-serif`;
+        ctx.font = `${worldFont * 0.7}px ${ov.font}`;
         ctx.fillStyle = ov.labelSecondary;
         ctx.fillText(fmtArea(entry.area, 1), 0, worldFont * 0.55);
         ctx.restore();

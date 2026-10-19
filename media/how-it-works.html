@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How it works · the explainer film</title>
+<!-- The explainer of the landing page, as one self-contained page (after plan-extract's app/media/how-it-works.html):
+     one timeline (seconds) drives every element from a pure function of time, so the film can be scrubbed, paused and
+     restarted; no voice, no music. render.py turns it into media/how-it-works-<lang>.webm, which the landing page plays.
+     The story is the workflow of the platform: a plan is exported as DWG from the author's own CAD or BIM program
+     (a neutral one, no product is named), uploaded and checked against the CAD guideline; errors (red) must be fixed,
+     warnings are hints (docs/anleitung-de.md); the author corrects the plan in the program, exports again, and the
+     second check passes. What the checker shows follows js/validation.js and js/rules.js: rooms with an error are red,
+     the score is the share of rules passed. The look is the app's (css/tokens.css, the values copied below: the page
+     must open from disk); the interface texts are the app's own (locales/*.json), the captions are the film's.
+     Open the file to review it: ?lang=de|fr|it|en, ?autoplay to start at once, ?paused to wait, ?nocontrols to hide the
+     review bar (rendering), ?loop to repeat, ?speed=1.3 to try a faster pace. The stage is 1280 x 720 and scales to the
+     window. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --accent: #007daa; --accent-hover: #006e9a; --accent-text: #00567d; --accent-light: #e2f1fa; --accent-border: #87b6cd; --on-accent: #fff;
+  --text: #1a1d21; --muted: #646b74; --text-disabled: #9aa1ab; --border: #dfe2e6; --border-light: #f0f1f3; --bg: #f5f6f7; --bg-track: #eef0f2; --surface: #fff;
+  --success: #2e9e5b; --success-bg: #e6f4ec; --success-text: #1f7a45; --warning: #d99a1e; --warning-text-strong: #8a5a00;
+  --danger: #d0433b; --danger-bg: #fbe9e7; --danger-text: #8a2a24;
+  --swiss-red: #dc0018; --ink: #2c2f36; --wall: #3a3f47; --axis: #9aa1ab; --room-layer: #c800c8;
+  /* the neutral CAD or BIM program of the author: a dark canvas, so it never looks like the platform */
+  --tool-bg: #2a313b; --tool-bar: #1d2229; --tool-panel: #23282f; --tool-canvas: #1b2027; --tool-line: #3a424d; --tool-text: #e6eaef;
+  --tool-muted: #8f99a6; --tool-hi: #3d5f9e; --tool-sel: #5b8def;
+  --font: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  --r-xs: 3px; --r-sm: 6px; --r-ctl: 8px; --r-lg: 10px; --r-xl: 12px; --r-pill: 999px;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, .06); --shadow-md: 0 6px 20px rgba(0, 0, 0, .1); --shadow-lg: 0 16px 40px rgba(0, 0, 0, .28);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: #e9ebee; font-family: var(--font); color: var(--text); }
+body { display: grid; grid-template-rows: 1fr auto; place-items: center; gap: 12px; padding: 16px; }
+.frame { position: relative; width: 1280px; height: 720px; transform-origin: top left; }
+.stage { position: absolute; inset: 0; overflow: hidden; background: var(--bg); border-radius: var(--r-xl); box-shadow: var(--shadow-md); font-size: 14px; line-height: 1.45; }
+.stage > * { position: absolute; }
+.hidden { visibility: hidden; }
+svg { display: block; }
+/* the app frame: the header of plan-check */
+.topbar { left: 0; right: 0; top: 0; height: 64px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; }
+.brand { display: flex; flex-direction: column; gap: 4px; line-height: 1.25; }
+.brand .org { font-weight: 600; }
+.brand .app { color: var(--muted); }
+.topbar .right { display: flex; gap: 10px; }
+.btn { height: 32px; padding: 0 14px; border: 1px solid var(--border); border-radius: var(--r-ctl); background: var(--surface); font: inherit; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; color: var(--text); }
+.btn-primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); font-weight: 600; }
+.btn-lg { height: 40px; padding: 0 16px; }
+.dl > span.pressed { transform: translateY(1px); filter: brightness(.92); }
+.select { padding: 0 8px 0 12px; gap: 10px; }
+.screen { left: 0; right: 0; top: 64px; bottom: 92px; overflow: hidden; }
+.page { position: absolute; left: 24px; right: 24px; top: 0; height: 1100px; }
+.page > * { position: absolute; left: 0; right: 0; }
+/* the caption strip: large, one idea, readable on a phone */
+.caption { left: 0; right: 0; bottom: 0; height: 92px; background: var(--surface); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: center; padding: 0 40px; text-align: center; z-index: 8; }
+.caption .text { font-size: 30px; font-weight: 600; line-height: 1.25; letter-spacing: -.01em; }
+/* the title and end cards */
+.card-full { inset: 0; display: grid; place-items: center; text-align: center; background: var(--surface); padding: 0 80px; z-index: 30; }
+.card-full h1 { font-size: 48px; margin: 0 0 12px; font-weight: 600; letter-spacing: -.01em; line-height: 1.15; }
+.card-full p { font-size: 24px; color: var(--muted); margin: 0; }
+.card-full .mark { font-size: 15px; color: var(--accent-text); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 18px; }
+/* upload */
+.zone { top: 16px; height: 210px; border: 2px dashed var(--accent-border); border-radius: var(--r-xl); background: var(--surface); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
+.zone .title { font-size: 15px; font-weight: 600; }
+.zone small { font-size: 12px; color: var(--muted); }
+.zone .demo { font-size: 13px; color: var(--muted); }
+.zone .demo u { color: var(--accent-text); font-weight: 600; }
+.zone.over { background: var(--accent-light); border-color: var(--accent); }
+.file { left: 0; top: 0; display: flex; align-items: center; gap: 10px; padding: 10px 16px 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); box-shadow: var(--shadow-md); font-weight: 600; font-size: 14px; transform-origin: top left; z-index: 12; white-space: nowrap; }
+.status { top: 242px; height: 40px; border-radius: var(--r-lg); padding: 0 14px; display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.status.loading { background: var(--accent-light); color: var(--accent-text); }
+.status.ok { background: var(--success-bg); color: var(--success-text); }
+.spinner { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; flex: none; }
+/* the panels */
+.panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; box-shadow: var(--shadow-sm); }
+.ph { height: 40px; padding: 0 16px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); }
+.panel.closed { box-shadow: none; }
+.panel.closed .ph { border-bottom: 0; }
+.panel.closed .ph svg { transform: rotate(-90deg); }
+.metrics { top: 298px; height: 122px; }
+.grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); height: 80px; }
+.cell { background: var(--surface); padding: 12px 16px; display: flex; flex-direction: column; justify-content: center; }
+.cell .l { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+.cell .v { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.cell .v.ok { color: var(--success-text); }
+.cell .v.warn { color: var(--warning-text-strong); }
+.dl { display: flex; gap: 8px; }
+.dl > span { height: 32px; padding: 0 12px; border: 1px solid var(--accent-border); border-radius: var(--r-ctl); color: var(--accent-text); font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
+.val { top: 436px; height: 506px; }
+.tabs { height: 44px; display: flex; padding: 0 16px; border-bottom: 1px solid var(--border); align-items: stretch; }
+.tab { padding: 0 12px; font-size: 13px; font-weight: 600; color: var(--muted); display: flex; align-items: center; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+.tab.on { color: var(--text); border-bottom-color: var(--accent); }
+.seg { margin-left: auto; align-self: center; display: flex; border: 1px solid var(--border); border-radius: var(--r-ctl); overflow: hidden; }
+.seg span { height: 30px; padding: 0 12px; font-size: 12px; display: flex; align-items: center; gap: 6px; }
+.seg span + span { border-left: 1px solid var(--border); }
+.seg .on { background: var(--accent); color: var(--on-accent); font-weight: 600; }
+.split { position: absolute; top: 85px; left: 0; right: 0; height: 420px; }
+.side { position: absolute; left: 0; top: 0; bottom: 0; width: 400px; border-right: 1px solid var(--border); }
+.toolbar { height: 52px; padding: 0 16px; border-bottom: 1px solid var(--border); display: flex; gap: 12px; align-items: center; }
+.search { flex: 1; height: 36px; border: 1px solid var(--border); border-radius: var(--r-ctl); padding: 0 10px; font-size: 13px; color: var(--text-disabled); display: flex; align-items: center; }
+.cb { width: 16px; height: 16px; border-radius: 3px; background: var(--accent); flex: none; display: grid; place-items: center; }
+.list { position: absolute; top: 52px; left: 0; right: 0; bottom: 0; overflow: hidden; }
+.sep { height: 36px; background: var(--bg); border-bottom: 1px solid var(--border); padding: 0 16px; display: flex; gap: 12px; align-items: center; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.sep svg { width: 14px; height: 14px; }
+.sep .n { margin-left: auto; font-family: var(--font-mono); }
+.row { height: 37px; padding: 0 16px; display: flex; gap: 12px; align-items: center; font-size: 13px; border-bottom: 1px solid var(--border-light); white-space: nowrap; }
+.row .code { font-family: var(--font-mono); font-size: 12px; background: var(--accent-light); color: var(--accent-text); padding: 3px 8px; border-radius: var(--r-sm); width: 90px; flex: none; }
+.row .d { color: var(--muted); overflow: hidden; text-overflow: ellipsis; flex: 1; }
+.row .ic { width: 18px; text-align: center; font-weight: 600; flex: none; }
+.ic.ok { color: var(--success-text); }
+.ic.warn { color: var(--warning-text-strong); }
+.ic.err { color: var(--danger); }
+.row .a { margin-left: auto; font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.row.hover { background: var(--bg); }
+.viewer { position: absolute; left: 400px; right: 0; top: 0; bottom: 0; background: var(--surface); overflow: hidden; }
+.viewer > svg { width: 832px; height: 420px; }
+.controls { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 2px; padding: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); box-shadow: var(--shadow-md); }
+.controls span { width: 32px; height: 32px; display: grid; place-items: center; color: var(--text); }
+.controls i { height: 1px; background: var(--border); margin: 4px 0; }
+.scalebar { position: absolute; left: 12px; bottom: 8px; display: flex; align-items: flex-end; gap: 4px; font: 12px var(--font-mono); color: var(--muted); background: rgba(255, 255, 255, .9); padding: 4px 10px; border-radius: var(--r-sm); }
+.scalebar b { display: block; height: 6px; border: 1.5px solid var(--muted); border-top: 0; }
+.toast { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; padding: 12px 18px; border-radius: var(--r-lg); background: var(--success-bg); color: var(--success-text); box-shadow: var(--shadow-md); font-size: 14px; font-weight: 600; z-index: 5; }
+/* the author's CAD or BIM program: a window over the browser */
+.tool { left: 40px; top: 22px; width: 1200px; height: 584px; background: var(--tool-bg); border-radius: var(--r-lg); overflow: hidden; box-shadow: var(--shadow-lg); z-index: 6; font-size: 13px; color: var(--tool-text); }
+.tool .tb { position: absolute; left: 0; right: 0; top: 0; height: 34px; background: var(--tool-bar); display: flex; align-items: center; gap: 10px; padding: 0 14px; color: var(--tool-muted); font-size: 12px; }
+.tool .tb .glyph { width: 18px; height: 18px; border-radius: 4px; background: var(--tool-sel); color: #fff; display: grid; place-items: center; }
+.tool .tb .wc { margin-left: auto; display: flex; gap: 18px; }
+.tool .mb { position: absolute; left: 0; right: 0; top: 34px; height: 30px; background: #262c34; border-bottom: 1px solid var(--tool-line); display: flex; align-items: center; padding: 0 6px; }
+.tool .mb span { padding: 3px 10px; border-radius: 4px; }
+.tool .mb span.on { background: var(--tool-hi); color: #fff; }
+.tool .pal { position: absolute; left: 0; top: 64px; bottom: 0; width: 44px; background: var(--tool-panel); border-right: 1px solid var(--tool-line); display: flex; flex-direction: column; align-items: center; gap: 6px; padding-top: 10px; }
+.tool .pal span { width: 30px; height: 30px; border-radius: 6px; display: grid; place-items: center; color: var(--tool-muted); }
+.tool .pal span.on { background: var(--tool-hi); color: #fff; }
+.tool .cv { position: absolute; left: 44px; top: 64px; width: 916px; bottom: 0; background: var(--tool-canvas); overflow: hidden; }
+.tool .cv > svg { width: 916px; height: 520px; }
+.tool .props { position: absolute; right: 0; top: 64px; bottom: 0; width: 240px; background: var(--tool-panel); border-left: 1px solid var(--tool-line); padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+.tool .props h3 { margin: 0; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--tool-muted); font-weight: 600; }
+.tool .props .f { display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: var(--tool-muted); }
+.tool .props .f b { font-weight: 400; color: var(--tool-text); font-size: 13px; }
+.tool .props .in { height: 30px; border: 1px solid #4a5462; border-radius: 4px; background: var(--tool-canvas); display: flex; align-items: center; padding: 0 8px; color: var(--tool-text); font: 12px var(--font-mono); }
+.tool .props .in.focus { border-color: var(--tool-sel); box-shadow: 0 0 0 2px rgba(91, 141, 239, .35); }
+.tool .props .in .sel { background: var(--tool-hi); }
+.tool .props .in .caret { display: inline-block; width: 1px; height: 14px; background: var(--tool-text); margin-left: 1px; }
+.tool .dd { position: absolute; background: #2f3640; border: 1px solid #4a5462; border-radius: 6px; box-shadow: 0 8px 24px rgba(0, 0, 0, .4); padding: 4px; min-width: 190px; z-index: 3; }
+.tool .dd div { padding: 6px 10px; border-radius: 4px; display: flex; justify-content: space-between; gap: 24px; white-space: nowrap; }
+.tool .dd div.on { background: var(--tool-hi); color: #fff; }
+.tool .dd hr { border: 0; border-top: 1px solid #4a5462; margin: 4px 0; }
+.tool .tt { position: absolute; right: 256px; bottom: 16px; background: #2f3640; border: 1px solid #4a5462; border-radius: 8px; padding: 10px 14px; display: flex; gap: 8px; align-items: center; box-shadow: 0 8px 24px rgba(0, 0, 0, .4); }
+.tool .tt span:first-child { color: #7fd1a0; display: inline-flex; }
+/* the cursor and its click ripple */
+.cursor { left: 0; top: 0; width: 22px; height: 28px; z-index: 20; pointer-events: none; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .35)); }
+.ripple { left: 0; top: 0; width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--accent); z-index: 19; pointer-events: none; opacity: 0; }
+/* the review bar */
+.bar { width: 1280px; max-width: 100%; display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--muted); flex-wrap: wrap; }
+.bar button { height: 32px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--r-ctl); background: var(--surface); font: inherit; font-size: 13px; cursor: pointer; }
+.bar button.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+.bar input[type=range] { flex: 1; min-width: 160px; accent-color: var(--accent); }
+.bar .scenes, .bar .langs { display: flex; gap: 4px; }
+.bar .scenes span { font-size: 11px; padding: 2px 6px; border-radius: 4px; background: var(--surface); border: 1px solid var(--border); cursor: pointer; }
+.bar .scenes span.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+.bar .time { font-variant-numeric: tabular-nums; min-width: 72px; text-align: right; }
+.bar.nocontrols { display: none; }
+</style>
+</head>
+<body>
+<div class="frame" id="frame"><div class="stage" id="stage"></div></div>
+<div class="bar" id="bar">
+  <button id="play">Pause</button><button id="restart">Restart</button>
+  <input id="scrub" type="range" min="0" max="40" step="0.05" value="0" aria-label="time">
+  <span class="time" id="time">0.0 s</span>
+  <span class="scenes" id="scenes"></span>
+  <span class="langs" id="langs"></span>
+</div>
+<script>
+// ------------------------------------------------------------------------------------------------- texts
+const Q = new URLSearchParams(location.search);
+const LANGS = ['de', 'fr', 'it', 'en'];
+const LANG = LANGS.includes(Q.get('lang')) ? Q.get('lang') : 'de';
+const SPEED = Math.max(.25, Math.min(4, parseFloat(Q.get('speed')) || 1));   // ?speed=1.3 to judge the pace
+// the film's own texts: the cards, the captions (one idea each, readable on a phone), the scene names of the review
+// bar, and the menus of the author's program (a neutral one: no product is named)
+const FILM = {
+  de: {
+    sub: 'DWG-Pläne gegen die CAD-Richtlinie BBL prüfen – direkt im Browser.',
+    c1: 'Den Plan im eigenen CAD- oder BIM-Programm als DWG exportieren.',
+    c2: 'Die DWG hochladen – geprüft wird lokal im Browser.',
+    c3: 'Fehler (rot) müssen behoben werden, Warnungen sind Hinweise.',
+    c4: 'Im Plan ist rot markiert, welche Räume betroffen sind.',
+    c5: 'Im eigenen Programm korrigieren und erneut exportieren.',
+    c6: 'Keine Fehler mehr – Bericht als PDF oder Excel herunterladen.',
+    c7: 'Jetzt mit der Demo-Datei probieren.',
+    t1: 'Export', t2: 'Hochladen', t3: 'Prüfung', t4: 'Fehler im Plan', t5: 'Korrigieren', t6: 'Erneut prüfen',
+    tool: 'CAD-/BIM-Programm', project: 'Verwaltungsgebäude – 5. OG', floor: '5. OG',
+    mFile: 'Datei', mEdit: 'Bearbeiten', mView: 'Ansicht', mInsert: 'Einfügen', mHelp: 'Hilfe',
+    iNew: 'Neu', iOpen: 'Öffnen…', iSave: 'Speichern', iExport: 'Exportieren', iDelete: 'Löschen', fixArc: 'Bogen durch Gerade ersetzen',
+    props: 'Eigenschaften', pType: 'Typ', pRoom: 'Raum', pNumber: 'Raumnummer', pArea: 'Fläche', pFloor: 'Geschoss', exported: '{name} exportiert',
+  },
+  fr: {
+    sub: 'Contrôler des plans DWG selon la directive CAO de l’OFCL, dans le navigateur.',
+    c1: 'Exporter le plan en DWG depuis son propre logiciel de CAO ou BIM.',
+    c2: 'Téléverser le DWG : il est contrôlé localement dans le navigateur.',
+    c3: 'Les erreurs (en rouge) doivent être corrigées, les avertissements sont des indications.',
+    c4: 'Le plan montre en rouge les locaux concernés.',
+    c5: 'Corriger dans son logiciel et exporter à nouveau.',
+    c6: 'Plus d’erreurs : télécharger le rapport en PDF ou Excel.',
+    c7: 'Essayez avec le fichier de démonstration.',
+    t1: 'Export', t2: 'Téléverser', t3: 'Contrôle', t4: 'Erreurs sur le plan', t5: 'Corriger', t6: 'Nouveau contrôle',
+    tool: 'Logiciel CAO/BIM', project: 'Bâtiment administratif – 5e étage', floor: '5e étage',
+    mFile: 'Fichier', mEdit: 'Édition', mView: 'Affichage', mInsert: 'Insertion', mHelp: 'Aide',
+    iNew: 'Nouveau', iOpen: 'Ouvrir…', iSave: 'Enregistrer', iExport: 'Exporter', iDelete: 'Supprimer', fixArc: 'Remplacer l’arc par une droite',
+    props: 'Propriétés', pType: 'Type', pRoom: 'Local', pNumber: 'Numéro de local', pArea: 'Surface', pFloor: 'Étage', exported: '{name} exporté',
+  },
+  it: {
+    sub: 'Verificare piani DWG secondo la direttiva CAD dell’UFCL, nel browser.',
+    c1: 'Esportare il piano in DWG dal proprio programma CAD o BIM.',
+    c2: 'Caricare il DWG: viene verificato localmente nel browser.',
+    c3: 'Gli errori (in rosso) vanno corretti, gli avvertimenti sono indicazioni.',
+    c4: 'Il piano mostra in rosso i locali interessati.',
+    c5: 'Correggere nel proprio programma ed esportare di nuovo.',
+    c6: 'Nessun errore: scaricare il rapporto in PDF o Excel.',
+    c7: 'Provate con il file dimostrativo.',
+    t1: 'Esportazione', t2: 'Caricamento', t3: 'Verifica', t4: 'Errori nel piano', t5: 'Correggere', t6: 'Nuova verifica',
+    tool: 'Programma CAD/BIM', project: 'Edificio amministrativo – 5° piano', floor: '5° piano',
+    mFile: 'File', mEdit: 'Modifica', mView: 'Visualizza', mInsert: 'Inserisci', mHelp: 'Aiuto',
+    iNew: 'Nuovo', iOpen: 'Apri…', iSave: 'Salva', iExport: 'Esporta', iDelete: 'Elimina', fixArc: 'Sostituire l’arco con una retta',
+    props: 'Proprietà', pType: 'Tipo', pRoom: 'Locale', pNumber: 'Numero del locale', pArea: 'Superficie', pFloor: 'Piano', exported: '{name} esportato',
+  },
+  en: {
+    sub: 'Check DWG plans against the FOBL CAD guideline, right in the browser.',
+    c1: 'Export the plan as DWG from your own CAD or BIM program.',
+    c2: 'Upload the DWG: it is checked locally in the browser.',
+    c3: 'Errors (red) must be fixed, warnings are hints.',
+    c4: 'The plan marks the affected rooms in red.',
+    c5: 'Correct it in your own program and export again.',
+    c6: 'No errors left: download the report as PDF or Excel.',
+    c7: 'Try it with the demo file.',
+    t1: 'Export', t2: 'Upload', t3: 'Check', t4: 'Errors on the plan', t5: 'Correct', t6: 'Check again',
+    tool: 'CAD/BIM program', project: 'Office building – 5th floor', floor: '5th floor',
+    mFile: 'File', mEdit: 'Edit', mView: 'View', mInsert: 'Insert', mHelp: 'Help',
+    iNew: 'New', iOpen: 'Open…', iSave: 'Save', iExport: 'Export', iDelete: 'Delete', fixArc: 'Replace arc with straight line',
+    props: 'Properties', pType: 'Type', pRoom: 'Room', pNumber: 'Room number', pArea: 'Area', pFloor: 'Floor', exported: '{name} exported',
+  },
+};
+// the interface texts: every quoted locale key of this page, copied from locales/<lang>.json by render.py (which runs
+// before each render; `python media/render.py --texts` alone refreshes them). Do not edit between the markers.
+// APP:begin
+const APP = {
+  de: {
+    "app.orgName": "Bundesamt für Bauten und Logistik BBL",
+    "app.title": "Prüfplattform Flächenmanagement",
+    "filter.all": "Alle",
+    "filter.errors": "Fehler",
+    "filter.warnings": "Warnungen",
+    "log.parsing": "DWG wird geparst...",
+    "log.pdfExported": "PDF-Bericht exportiert.",
+    "log.rendering": "Zeichnung wird gerendert...",
+    "log.successfullyProcessed": "{name} erfolgreich verarbeitet in {elapsed}s",
+    "log.wasmLoadingStatus": "LibreDWG WebAssembly wird geladen...",
+    "metric.ngf": "NGF",
+    "metric.report": "Bericht",
+    "metric.rooms": "Räume",
+    "metric.score": "Score ({passed}/{total})",
+    "nav.guide": "Anleitung und FAQ",
+    "panel.console": "Konsole",
+    "panel.how": "So funktioniert es",
+    "panel.result": "Ergebnis",
+    "panel.validation": "Validierung",
+    "popup.layer": "Layer",
+    "rule.AOID_002": "AOID ist nicht eindeutig",
+    "rule.LAYER_001": "Pflicht-Layer fehlt: R_RAUMPOLYGON",
+    "rule.LAYER_002": "Pflicht-Layer fehlt: R_AOID",
+    "rule.LAYER_003": "Pflicht-Layer fehlt: R_GESCHOSSPOLYGON",
+    "rule.LAYER_004": "Pflicht-Layer fehlt: A_ARCHITEKTUR",
+    "rule.LAYER_008": "Unbekannter Layer vorhanden",
+    "rule.POLY_001": "Raumpolygon ist nicht geschlossen",
+    "rule.POLY_002": "Raumpolygon enthält Bogensegmente",
+    "rule.STYLE_002": "Farbe ist nicht VONLAYER",
+    "rule.TEXT_001": "Textelement auf unzulässigem Layer",
+    "search.rooms": "Raum suchen...",
+    "search.rules": "Prüfregel suchen...",
+    "tab.areas": "Flächen",
+    "tab.errors": "Fehlermeldungen",
+    "tab.kpi": "Kennzahlen",
+    "tab.layers": "Layer",
+    "tab.notPassed": "Nicht bestanden",
+    "tab.passed": "Bestanden",
+    "tab.rooms": "Räume",
+    "tab.rules": "Prüfregeln",
+    "upload.demoHint": "Keine Datei?",
+    "upload.demoLink": "Demo-Datei laden",
+    "upload.dropHint": "DWG-Datei hierher ziehen oder klicken",
+    "upload.selectBtn": "Datei auswählen",
+    "upload.sizeHint": ".dwg, max. 50 MB",
+  },
+  fr: {
+    "app.orgName": "Office fédéral des constructions et de la logistique OFCL",
+    "app.title": "Plateforme de vérification — Gestion des surfaces",
+    "filter.all": "Tous",
+    "filter.errors": "Erreurs",
+    "filter.warnings": "Avertissements",
+    "log.parsing": "Analyse du DWG...",
+    "log.pdfExported": "Rapport PDF exporté.",
+    "log.rendering": "Rendu du dessin...",
+    "log.successfullyProcessed": "{name} traité avec succès en {elapsed}s",
+    "log.wasmLoadingStatus": "Chargement de LibreDWG WebAssembly...",
+    "metric.ngf": "NGF",
+    "metric.report": "Rapport",
+    "metric.rooms": "Locaux",
+    "metric.score": "Score ({passed}/{total})",
+    "nav.guide": "Instructions et FAQ",
+    "panel.console": "Console",
+    "panel.how": "Fonctionnement",
+    "panel.result": "Résultat",
+    "panel.validation": "Validation",
+    "popup.layer": "Calque",
+    "rule.AOID_002": "L'AOID n'est pas unique",
+    "rule.LAYER_001": "Calque obligatoire manquant : R_RAUMPOLYGON",
+    "rule.LAYER_002": "Calque obligatoire manquant : R_AOID",
+    "rule.LAYER_003": "Calque obligatoire manquant : R_GESCHOSSPOLYGON",
+    "rule.LAYER_004": "Calque obligatoire manquant : A_ARCHITEKTUR",
+    "rule.LAYER_008": "Calque inconnu présent",
+    "rule.POLY_001": "Le polygone de local n'est pas fermé",
+    "rule.POLY_002": "Le polygone de local contient des segments d'arc",
+    "rule.STYLE_002": "La couleur n'est pas DUCALQUE",
+    "rule.TEXT_001": "Élément texte sur un calque non autorisé",
+    "search.rooms": "Rechercher un local...",
+    "search.rules": "Rechercher une règle...",
+    "tab.areas": "Surfaces",
+    "tab.errors": "Messages d'erreur",
+    "tab.kpi": "Indicateurs",
+    "tab.layers": "Calques",
+    "tab.notPassed": "Non réussi",
+    "tab.passed": "Réussi",
+    "tab.rooms": "Locaux",
+    "tab.rules": "Règles de vérification",
+    "upload.demoHint": "Pas de fichier ?",
+    "upload.demoLink": "Charger le fichier de démonstration",
+    "upload.dropHint": "Glisser un fichier DWG ici ou cliquer",
+    "upload.selectBtn": "Sélectionner un fichier",
+    "upload.sizeHint": ".dwg, max. 50 Mo",
+  },
+  it: {
+    "app.orgName": "Ufficio federale delle costruzioni e della logistica UFCL",
+    "app.title": "Piattaforma di verifica — Gestione delle superfici",
+    "filter.all": "Tutti",
+    "filter.errors": "Errori",
+    "filter.warnings": "Avvertimenti",
+    "log.parsing": "Analisi del DWG...",
+    "log.pdfExported": "Rapporto PDF esportato.",
+    "log.rendering": "Rendering del disegno...",
+    "log.successfullyProcessed": "{name} elaborato con successo in {elapsed}s",
+    "log.wasmLoadingStatus": "Caricamento di LibreDWG WebAssembly...",
+    "metric.ngf": "NGF",
+    "metric.report": "Rapporto",
+    "metric.rooms": "Locali",
+    "metric.score": "Score ({passed}/{total})",
+    "nav.guide": "Istruzioni e FAQ",
+    "panel.console": "Console",
+    "panel.how": "Come funziona",
+    "panel.result": "Risultato",
+    "panel.validation": "Validazione",
+    "popup.layer": "Layer",
+    "rule.AOID_002": "L'AOID non è univoco",
+    "rule.LAYER_001": "Layer obbligatorio mancante: R_RAUMPOLYGON",
+    "rule.LAYER_002": "Layer obbligatorio mancante: R_AOID",
+    "rule.LAYER_003": "Layer obbligatorio mancante: R_GESCHOSSPOLYGON",
+    "rule.LAYER_004": "Layer obbligatorio mancante: A_ARCHITEKTUR",
+    "rule.LAYER_008": "Layer sconosciuto presente",
+    "rule.POLY_001": "Il poligono del locale non è chiuso",
+    "rule.POLY_002": "Il poligono del locale contiene segmenti d'arco",
+    "rule.STYLE_002": "Il colore non è DALAYER",
+    "rule.TEXT_001": "Elemento di testo su un layer non consentito",
+    "search.rooms": "Cercare locale...",
+    "search.rules": "Cercare regola...",
+    "tab.areas": "Superfici",
+    "tab.errors": "Messaggi di errore",
+    "tab.kpi": "Indicatori",
+    "tab.layers": "Layer",
+    "tab.notPassed": "Non superato",
+    "tab.passed": "Superato",
+    "tab.rooms": "Locali",
+    "tab.rules": "Regole di verifica",
+    "upload.demoHint": "Nessun file?",
+    "upload.demoLink": "Carica il file dimostrativo",
+    "upload.dropHint": "Trascinare qui un file DWG oppure cliccare",
+    "upload.selectBtn": "Selezionare un file",
+    "upload.sizeHint": ".dwg, max. 50 MB",
+  },
+  en: {
+    "app.orgName": "Federal Office for Buildings and Logistics FOBL",
+    "app.title": "Area Management Verification Platform",
+    "filter.all": "All",
+    "filter.errors": "Errors",
+    "filter.warnings": "Warnings",
+    "log.parsing": "Parsing DWG...",
+    "log.pdfExported": "PDF report exported.",
+    "log.rendering": "Rendering drawing...",
+    "log.successfullyProcessed": "{name} successfully processed in {elapsed}s",
+    "log.wasmLoadingStatus": "Loading LibreDWG WebAssembly...",
+    "metric.ngf": "NGF",
+    "metric.report": "Report",
+    "metric.rooms": "Rooms",
+    "metric.score": "Score ({passed}/{total})",
+    "nav.guide": "Instructions and FAQ",
+    "panel.console": "Console",
+    "panel.how": "How it works",
+    "panel.result": "Result",
+    "panel.validation": "Validation",
+    "popup.layer": "Layer",
+    "rule.AOID_002": "AOID is not unique",
+    "rule.LAYER_001": "Required layer missing: R_RAUMPOLYGON",
+    "rule.LAYER_002": "Required layer missing: R_AOID",
+    "rule.LAYER_003": "Required layer missing: R_GESCHOSSPOLYGON",
+    "rule.LAYER_004": "Required layer missing: A_ARCHITEKTUR",
+    "rule.LAYER_008": "Unknown layer present",
+    "rule.POLY_001": "Room polygon is not closed",
+    "rule.POLY_002": "Room polygon contains arc segments",
+    "rule.STYLE_002": "Color is not BYLAYER",
+    "rule.TEXT_001": "Text element on prohibited layer",
+    "search.rooms": "Search rooms...",
+    "search.rules": "Search rules...",
+    "tab.areas": "Areas",
+    "tab.errors": "Error messages",
+    "tab.kpi": "Key figures",
+    "tab.layers": "Layers",
+    "tab.notPassed": "Not passed",
+    "tab.passed": "Passed",
+    "tab.rooms": "Rooms",
+    "tab.rules": "Validation rules",
+    "upload.demoHint": "No file?",
+    "upload.demoLink": "Load demo file",
+    "upload.dropHint": "Drag DWG file here or click",
+    "upload.selectBtn": "Select file",
+    "upload.sizeHint": ".dwg, max. 50 MB",
+  },
+};
+// APP:end
+const TX = { ...APP[LANG], ...FILM[LANG] };
+const t = (k, vars) => { let s = TX[k] ?? k; if (vars) s = s.replace(/\{(\w+)\}/g, (m, v) => vars[v] ?? m); return s; };
+document.documentElement.lang = LANG;
+
+// ------------------------------------------------------------------------------------------------- helpers
+const SVG = 'http://www.w3.org/2000/svg';
+function h(tag, attrs, ...kids) {
+  const el = tag.startsWith('svg:') ? document.createElementNS(SVG, tag.slice(4)) : document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v == null || v === false) continue;
+    if (k === 'class') el.setAttribute('class', v); else if (k === 'style') el.style.cssText = v; else if (k === 'html') el.innerHTML = v; else el.setAttribute(k, v);
+  }
+  for (const c of kids.flat()) if (c != null) el.append(c.nodeType ? c : document.createTextNode(String(c)));
+  return el;
+}
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+const ease = (p) => p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+const lerp = (a, b, p) => a + (b - a) * p;
+/** Swiss number format of the app (js/utils.js fmtNum): 1’234.5 */
+const fmt = (v, d = 1) => { const [i, f] = v.toFixed(d).split('.'); return i.replace(/\B(?=(\d{3})+(?!\d))/g, '’') + (f ? '.' + f : ''); };
+const m2 = (v) => fmt(v) + ' m²';
+/** A span of time: p in 0..1 across it (0 before, 1 after). */
+const span = (now, t0, t1) => clamp((now - t0) / (t1 - t0), 0, 1);
+/** Fade in over `a`, hold, fade out over `b` (p of visibility 0..1). */
+const window_ = (now, t0, t1, a = .4, b = .4) => now < t0 || now > t1 ? 0 : Math.min(1, (now - t0) / a, (t1 - now) / b);
+const within = (now, a, b) => now >= a && now < b;
+const show = (el, on) => el.classList.toggle('hidden', !on);
+const op = (el, v) => { el.style.opacity = v; show(el, v > 0); };
+const icon = (path, size = 16, extra = '') => `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${extra}>${path}</svg>`;
+const I = {
+  upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>',
+  download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+  chevron: '<polyline points="6 9 12 15 18 9"/>', right: '<polyline points="9 18 15 12 9 6"/>',
+  warn: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+  err: '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>',
+  check: '<polyline points="20 6 9 17 4 12"/>',
+  full: '<path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>',
+  zin: '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35M11 8v6m-3-3h6"/>',
+  zout: '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35M8 11h6"/>',
+  fit: '<path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>',
+  file: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>',
+  cube: '<path d="M12 2 21 7v10l-9 5-9-5V7z"/><path d="M3 7l9 5 9-5M12 12v10"/>',
+  pointer: '<path d="M4 3l7 17 2.5-7.5L21 10z"/>', wall: '<rect x="3" y="9" width="18" height="6"/>', door: '<path d="M4 20h16M6 20V4h8v16"/><path d="M14 4a10 10 0 0 1 6 9"/>',
+  room: '<rect x="4" y="4" width="16" height="16" rx="1"/><path d="M8 12h8"/>', text: '<path d="M5 6V4h14v2M12 4v16M9 20h6"/>', measure: '<path d="M3 17 17 3l4 4L7 21z"/><path d="M7 13l2 2M10 10l2 2M13 7l2 2"/>',
+};
+const chev = () => h('span', { html: icon(I.chevron, 14) });
+
+// ------------------------------------------------------------------------------------------------- the plan
+// A floor of an office building as a CAFM plan at 1:100. Drawing units are viewer px at zoom 1 (832 x 420); 1 unit =
+// 7.5 cm, so the building is 36 x 14.25 m. Nine rooms: four offices on top, the stair and three offices below, the
+// corridor between. The exported plan has two errors the author has to fix: the room polygon of 05.004 ends in an arc
+// (POLY_002, an error), and the room 05.007 carries the number 05.006 a second time (AOID_002, an error, on both rooms).
+const MPU = 0.075, VW = 832, VH = 420;
+const AX = [110, 230, 350, 470, 590], Y0 = 120, YC0 = 200, YC1 = 230, Y1 = 310, IN = 3, ARC = 14;
+const rooms = [
+  ...[0, 1, 2, 3].map((i) => ({ x: AX[i], y: Y0, w: 120, h: 80, kind: 'HNF' })),
+  ...[0, 1, 2, 3].map((i) => ({ x: AX[i], y: YC1, w: 120, h: 80, kind: i === 0 ? 'VF' : 'HNF' })),
+  { x: AX[0], y: YC0, w: 480, h: 30, kind: 'VF' },
+].map((r, i) => ({ ...r, i, aoid: `9999.AA.05.${String(i + 1).padStart(3, '0')}`, area: (r.w - 2 * IN) * (r.h - 2 * IN) * MPU * MPU }));
+const ARC_ROOM = rooms[3], DUP_ROOM = rooms[6], DUP_OF = rooms[5];
+const ARC_LOSS = (1 - Math.PI / 4) * ARC * ARC * MPU * MPU;      // the arc cuts the corner off the room
+/** What the checker reports for the first and the second upload (the score is the share of the 40 rules passed). */
+const RUN = [
+  { passed: 35, issues: 6, status: { 3: 'error', 5: 'error', 6: 'error' }, arc: true, dup: true,
+    failed: [['err', 'rule.AOID_002'], ['err', 'rule.POLY_002'], ['warn', 'rule.LAYER_008'], ['warn', 'rule.STYLE_002'], ['warn', 'rule.TEXT_001']],
+    passed1: ['rule.LAYER_001', 'rule.LAYER_002', 'rule.LAYER_003', 'rule.LAYER_004', 'rule.POLY_001'] },
+  { passed: 37, issues: 3, status: {}, arc: false, dup: false,
+    failed: [['warn', 'rule.LAYER_008'], ['warn', 'rule.STYLE_002'], ['warn', 'rule.TEXT_001']],
+    passed1: ['rule.LAYER_001', 'rule.LAYER_002', 'rule.LAYER_003', 'rule.LAYER_004', 'rule.POLY_001', 'rule.POLY_002', 'rule.AOID_002'] },
+];
+for (const run of RUN) {
+  run.score = Math.round(100 * run.passed / 40);
+  run.area = (r) => r.area - (run.arc && r === ARC_ROOM ? ARC_LOSS : 0);
+  run.aoid = (r) => (run.dup && r === DUP_ROOM ? DUP_OF.aoid : r.aoid);
+  run.ngf = rooms.reduce((a, r) => a + run.area(r), 0);
+}
+/** The outline of a room polygon (inset from the walls); the arc, while there is one, rounds its outer top-right corner. */
+function roomD(r, arc) {
+  const x0 = r.x + IN, y0 = r.y + IN, x1 = r.x + r.w - IN, y1 = r.y + r.h - IN;
+  return arc > .1 ? `M ${x0} ${y0} H ${x1 - arc} A ${arc} ${arc} 0 0 1 ${x1} ${y0 + arc} V ${y1} H ${x0} Z` : `M ${x0} ${y0} H ${x1} V ${y1} H ${x0} Z`;
+}
+const NS = { 'vector-effect': 'non-scaling-stroke' };
+const line = (x1, y1, x2, y2, st) => h('svg:line', { x1, y1, x2, y2, ...NS, style: st });
+const rect = (x, y, w, hh, st) => h('svg:rect', { x, y, width: w, height: hh, ...NS, style: st });
+const text = (x, y, s, st, anchor = 'middle') => h('svg:text', { x, y, 'text-anchor': anchor, style: st }, s);
+const DOOR = 18;                                                  // door leaves, near the right end of each room
+const doorAt = rooms.slice(0, 8).map((r) => ({ x: r.x + r.w - 10 - DOOR, y: r.y === Y0 ? YC0 : YC1, up: r.y === Y0 }));
+/** Walls, doors and windows of the floor into `g`, in the colours given (the platform's plan and the author's program). */
+function building(g, wallFill, inkCol, gapFill) {
+  const band = (x1, y1, x2, y2, th) => h('svg:rect', { x: Math.min(x1, x2) - (x1 === x2 ? th / 2 : 0), y: Math.min(y1, y2) - (y1 === y2 ? th / 2 : 0), width: x1 === x2 ? th : Math.abs(x2 - x1), height: y1 === y2 ? th : Math.abs(y2 - y1), style: `fill: ${wallFill}` });
+  g.append(band(AX[0] - 3, Y0, AX[4] + 3, Y0, 6), band(AX[0] - 3, Y1, AX[4] + 3, Y1, 6), band(AX[0], Y0, AX[0], Y1, 6), band(AX[4], Y0, AX[4], Y1, 6));
+  for (const x of AX.slice(1, 4)) g.append(band(x, Y0, x, YC0, 3), band(x, YC1, x, Y1, 3));
+  for (const yy of [YC0, YC1]) {
+    let from = AX[0];
+    for (const d of doorAt.filter((d) => d.y === yy)) { g.append(band(from, yy, d.x, yy, 3)); from = d.x + DOOR; }
+    g.append(band(from, yy, AX[4], yy, 3));
+  }
+  for (const d of doorAt) {
+    const s = d.up ? -1 : 1, hx = d.x + DOOR;
+    g.append(line(hx, d.y, hx, d.y + s * DOOR, `stroke: ${inkCol}; stroke-width: 1`),
+      h('svg:path', { d: `M ${hx} ${d.y + s * DOOR} A ${DOOR} ${DOOR} 0 0 ${d.up ? 0 : 1} ${d.x} ${d.y}`, ...NS, style: `stroke: ${inkCol}; stroke-width: .5; fill: none` }));
+  }
+  for (const r of rooms.slice(0, 8)) {
+    const y = r.y === Y0 ? Y0 : Y1, st = `stroke: ${inkCol}; stroke-width: .5`;
+    g.append(h('svg:rect', { x: r.x + 30, y: y - 3, width: 60, height: 6, style: `fill: ${gapFill}` }), line(r.x + 30, y - 1, r.x + 90, y - 1, st), line(r.x + 30, y + 1, r.x + 90, y + 1, st), line(r.x + 30, y - 3, r.x + 30, y + 3, st), line(r.x + 90, y - 3, r.x + 90, y + 3, st));
+  }
+}
+
+// --- the platform's viewer: the DWG as LibreDWG reads it, with the checker's overlays on top
+const svgPlan = h('svg:svg', { viewBox: `0 0 ${VW} ${VH}` });
+const cam = h('svg:g');
+svgPlan.append(cam);
+const gFrame = h('svg:g'), gAxes = h('svg:g'), gWalls = h('svg:g'), gFurn = h('svg:g', { opacity: .55 }), gPoly = h('svg:g'), gStamp = h('svg:g'), gOver = h('svg:g'), gLabels = h('svg:g');
+cam.append(gFrame, gAxes, gFurn, gWalls, gPoly, gStamp, gOver, gLabels);
+const ink = 'stroke: var(--ink); fill: none; stroke-width: .8';
+gFrame.append(rect(40, 18, 752, 384, ink));
+const TB = { x: 646, y: 252, w: 136, h: 140 };
+gFrame.append(rect(TB.x, TB.y, TB.w, TB.h, ink), line(TB.x, TB.y + 30, TB.x + TB.w, TB.y + 30, ink), line(TB.x, TB.y + 70, TB.x + TB.w, TB.y + 70, ink),
+  line(TB.x, TB.y + 104, TB.x + TB.w, TB.y + 104, ink), line(TB.x + 92, TB.y, TB.x + 92, TB.y + 30, ink),
+  text(TB.x + 5, TB.y + 12, '9999.AA', 'font: 600 7px var(--font); fill: var(--ink)', 'start'), text(TB.x + 5, TB.y + 22, 'Verwaltungsgebäude', 'font: 5.5px var(--font); fill: var(--ink)', 'start'),
+  text(TB.x + 114, TB.y + 20, '5. OG', 'font: 600 10px var(--font); fill: var(--ink)'),
+  text(TB.x + 5, TB.y + 44, 'Grundriss', 'font: 7px var(--font); fill: var(--ink)', 'start'), text(TB.x + 5, TB.y + 59, '5. Obergeschoss', 'font: 600 9px var(--font); fill: var(--ink)', 'start'),
+  text(TB.x + 5, TB.y + 84, 'M 1:100 · 01.03.2026', 'font: 6px var(--font); fill: var(--ink)', 'start'), text(TB.x + 5, TB.y + 95, 'CAD.V01-CAFM', 'font: 6px var(--font); fill: var(--ink)', 'start'),
+  h('svg:rect', { x: TB.x + 6, y: TB.y + 112, width: 18, height: 18, fill: 'var(--swiss-red)' }),
+  h('svg:path', { d: `M ${TB.x + 13} ${TB.y + 115.5} h4 v4 h4 v4 h-4 v4 h-4 v-4 h-4 v-4 h4 z`, fill: '#fff' }),
+  text(TB.x + 30, TB.y + 119, 'Bundesamt für Bauten', 'font: 5.5px var(--font); fill: var(--ink)', 'start'), text(TB.x + 30, TB.y + 127, 'und Logistik BBL', 'font: 5.5px var(--font); fill: var(--ink)', 'start'));
+gFrame.append(h('svg:circle', { cx: 700, cy: 92, r: 13, ...NS, style: ink }), h('svg:path', { d: 'M 700 76 L 706 100 L 700 95 L 694 100 Z', fill: 'var(--ink)' }), text(700, 72, 'N', 'font: 600 7px var(--font); fill: var(--ink)'));
+for (let i = 0; i < 5; i++) gFrame.append(rect(660 + i * 22, 214, 22, 4, `stroke: var(--ink); stroke-width: .6; fill: ${i % 2 ? 'none' : 'var(--ink)'}`));
+gFrame.append(text(660, 210, '0', 'font: 5.5px var(--font); fill: var(--ink)', 'start'), text(770, 210, '8 m', 'font: 5.5px var(--font); fill: var(--ink)', 'end'));
+const axisSt = 'stroke: var(--axis); stroke-width: .7; stroke-dasharray: 10 3 2 3';
+const bubble = (x, y, s) => [h('svg:circle', { cx: x, cy: y, r: 9, ...NS, style: 'stroke: var(--ink); stroke-width: .7; fill: var(--surface)' }), text(x, y + 3, s, 'font: 7.5px var(--font); fill: var(--ink)')];
+AX.forEach((x, i) => { gAxes.append(line(x, 82, x, 348, axisSt), ...bubble(x, 72, String(i + 1)), ...bubble(x, 358, String(i + 1))); });
+[[Y0, 'A'], [Y1, 'B']].forEach(([y, s]) => { gAxes.append(line(84, y, 616, y, axisSt), ...bubble(74, y, s), ...bubble(626, y, s)); });
+building(gWalls, 'var(--wall)', 'var(--ink)', 'var(--surface)');
+const furnSt = 'stroke: var(--ink); stroke-width: .5; fill: none';
+for (const r of rooms.slice(0, 8)) {
+  if (r.kind === 'VF') { for (let i = 0; i < 9; i++) gFurn.append(line(r.x + 20 + i * 9, r.y + 12, r.x + 20 + i * 9, r.y + 68, furnSt)); gFurn.append(rect(r.x + 20, r.y + 12, 81, 56, furnSt), line(r.x + 20, r.y + 40, r.x + 101, r.y + 40, furnSt)); continue; }
+  const top = r.y === Y0, dy = top ? r.y + 14 : r.y + 44;
+  for (const dx of [16, 62]) gFurn.append(rect(r.x + dx, dy, 40, 20, furnSt), h('svg:circle', { cx: r.x + dx + 20, cy: top ? dy + 28 : dy - 8, r: 5, ...NS, style: furnSt }));
+}
+// R_RAUMPOLYGON (magenta, as in the demo file), the R_AOID stamps, a text on A_ELEKTRO (TEXT_001, a warning)
+const polyEls = rooms.map((r) => h('svg:path', { d: roomD(r, 0), ...NS, style: 'stroke: var(--room-layer); stroke-width: .9; fill: none' }));
+gPoly.append(...polyEls);
+const stampEls = rooms.map((r) => text(r.x + r.w / 2, r.y + r.h / 2 + (r.h > 40 ? 6 : 2), r.aoid, 'font: 4.5px var(--font); fill: var(--ink)'));
+gStamp.append(...stampEls, text(388, 150, 'EL 230V', 'font: 5px var(--font); fill: var(--ink)', 'start'));
+// the checker's overlays in the rooms tab: each room by its status (ok green, error red, as js/renderer.js), its label
+const OVER = { ok: 'fill: rgba(46, 158, 91, .25); stroke: var(--success); stroke-width: 1.5', error: 'fill: rgba(208, 67, 59, .32); stroke: var(--danger); stroke-width: 2' };
+const overEls = rooms.map((r) => h('svg:path', { d: roomD(r, 0), ...NS, opacity: 0 }));
+gOver.append(...overEls);
+const labelEls = rooms.map((r) => {
+  const cx = r.x + r.w / 2, cy = r.y + r.h / 2, lw = 44, lh = r.h > 40 ? 15 : 12;
+  const a = text(cx, cy - (lh > 12 ? 1 : 0.5), r.aoid, 'font: 600 4.6px var(--font); fill: var(--text)'), b = text(cx, cy + (lh > 12 ? 5.2 : 4.4), '', 'font: 3.6px var(--font); fill: var(--muted)');
+  const g = h('svg:g', { opacity: 0 }, h('svg:rect', { x: cx - lw / 2, y: cy - lh / 2, width: lw, height: lh, rx: 1.5, style: 'fill: rgba(255, 255, 255, .9)' }), a, b);
+  g.aoidEl = a; g.areaEl = b; gLabels.append(g); return g;
+});
+const viewer = h('div', { class: 'viewer' }, svgPlan,
+  h('div', { class: 'controls' }, h('span', { html: icon(I.full) }), h('i'), h('span', { html: icon(I.sun) }), h('i'), h('span', { html: icon(I.zin) }), h('span', { html: icon(I.zout) }), h('span', { html: icon(I.fit) })));
+const scaleLabel = h('span', null, '5 m'), scaleLine = h('b', { style: 'width: 67px' });
+viewer.append(h('div', { class: 'scalebar' }, scaleLine, scaleLabel));
+
+// --- the author's program: the same floor, as the author drew it (rooms filled, numbers on them), on a dark canvas
+const TOOL = { x: 40, y: 22 }, CV = { x: TOOL.x + 44, y: TOOL.y + 64 }, TS = 1.6, TX0 = -102, TY0 = -82;
+const toolXY = (ux, uy) => [CV.x + TX0 + TS * ux, CV.y + TY0 + TS * uy];   // drawing units -> stage px, the window at rest
+const svgTool = h('svg:svg', { viewBox: '0 0 916 520' });
+const tg = h('svg:g', { transform: `translate(${TX0} ${TY0}) scale(${TS})` });
+svgTool.append(tg);
+const tAxes = h('svg:g'), tRooms = h('svg:g'), tWalls = h('svg:g'), tLabels = h('svg:g'), tSel = h('svg:g');
+tg.append(tAxes, tRooms, tWalls, tLabels, tSel);
+AX.forEach((x) => tAxes.append(line(x, 96, x, 334, 'stroke: var(--tool-line); stroke-width: 1; stroke-dasharray: 6 4')));
+[Y0, Y1].forEach((y) => tAxes.append(line(86, y, 614, y, 'stroke: var(--tool-line); stroke-width: 1; stroke-dasharray: 6 4')));
+const FILL = { HNF: 'rgba(78, 121, 167, .32)', VF: 'rgba(237, 201, 72, .22)' };
+const tRoomEls = rooms.map((r) => h('svg:path', { d: roomD(r, 0), ...NS, style: `fill: ${FILL[r.kind]}; stroke: #6f8fb3; stroke-width: 1` }));
+tRooms.append(...tRoomEls);
+building(tWalls, '#c9d1db', '#8f99a6', 'var(--tool-canvas)');
+const tLabelEls = rooms.map((r) => {
+  const cx = r.x + r.w / 2, cy = r.y + r.h / 2;
+  const big = r.h > 40;                                           // the corridor carries its number alone
+  const a = text(cx, cy + (big ? -1 : 2.5), r.aoid, `font: 600 ${big ? 7.5 : 6.5}px var(--font-mono); fill: var(--tool-text)`);
+  tLabels.append(a);
+  if (big) tLabels.append(text(cx, cy + 8, m2(r.area), 'font: 5.5px var(--font); fill: var(--tool-muted)'));
+  return a;
+});
+const tSelRect = h('svg:path', { ...NS, style: 'fill: none; stroke: var(--tool-sel); stroke-width: 2' }), tSelDots = [0, 1, 2, 3].map(() => h('svg:rect', { width: 3.4, height: 3.4, style: 'fill: var(--tool-sel)' }));
+tSel.append(tSelRect, ...tSelDots);
+const menuItem = (s, extra) => h('div', null, h('span', null, s), extra || null);
+const mFile = h('span', null, t('mFile'));
+const iExport = menuItem(t('iExport'), h('span', { html: icon(I.right, 12) })), iDwg = menuItem('DWG');
+const ddFile = h('div', { class: 'dd', style: 'left: 6px; top: 62px' }, menuItem(t('iNew')), menuItem(t('iOpen')), menuItem(t('iSave')), h('hr'), iExport, menuItem('PDF'));
+const ddExport = h('div', { class: 'dd', style: 'min-width: 120px' }, iDwg, menuItem('DXF'), menuItem('IFC'));
+const ctxFix = menuItem(t('fixArc'));
+const ddCtx = h('div', { class: 'dd' }, ctxFix, menuItem(t('iDelete')));
+const field = (k, v) => h('div', { class: 'f' }, h('span', null, t(k)), h('b', null, v));
+const inVal = h('span'), inCaret = h('span', { class: 'caret' }), input = h('div', { class: 'in' }, inVal, inCaret);
+const pType = h('b'), pArea = h('b');
+const props = h('div', { class: 'props' }, h('h3', null, t('props')), h('div', { class: 'f' }, h('span', null, t('pType')), pType),
+  h('div', { class: 'f' }, h('span', null, t('pNumber')), input), h('div', { class: 'f' }, h('span', null, t('pArea')), pArea), field('pFloor', t('floor')), field('popup.layer', 'R_RAUMPOLYGON'));
+const toolToast = h('div', { class: 'tt' }, h('span', { html: icon(I.check, 16) }), h('span', null, t('exported', { name: 'CAFM-Plan-5OG.dwg' })));
+const tool = h('div', { class: 'tool', style: `left: ${TOOL.x}px; top: ${TOOL.y}px` },
+  h('div', { class: 'tb' }, h('span', { class: 'glyph', html: icon(I.cube, 12) }), h('span', null, `${t('project')} — ${t('tool')}`), h('span', { class: 'wc' }, '—', '☐', '✕')),
+  h('div', { class: 'mb' }, mFile, h('span', null, t('mEdit')), h('span', null, t('mView')), h('span', null, t('mInsert')), h('span', null, t('mHelp'))),
+  h('div', { class: 'pal' }, ...['pointer', 'wall', 'door', 'room', 'text', 'measure'].map((k, i) => h('span', { class: i === 0 ? 'on' : '', html: icon(I[k], 16) }))),
+  h('div', { class: 'cv' }, svgTool), props, ddFile, ddExport, ddCtx, toolToast);
+
+// ------------------------------------------------------------------------------------------------- the page
+const stage = document.getElementById('stage');
+const topbar = h('div', { class: 'topbar' }, h('div', { class: 'brand' }, h('span', { class: 'org' }, t('app.orgName')), h('span', { class: 'app' }, t('app.title'))),
+  h('div', { class: 'right' }, h('span', { class: 'btn' }, t('nav.guide')), h('span', { class: 'btn select' }, LANG.toUpperCase(), h('span', { html: icon(I.chevron, 12) }))));
+const screen = h('div', { class: 'screen' });
+const page = h('div', { class: 'page' });
+screen.append(page);
+const caption = h('div', { class: 'caption' }, h('span', { class: 'text', id: 'ctext' }));
+const titleCard = h('div', { class: 'card-full' }, h('div', null, h('div', { class: 'mark' }, 'plan-check'), h('h1', null, t('app.title')), h('p', null, t('sub'))));
+const endCard = h('div', { class: 'card-full' }, h('div', null, h('h1', null, 'bbl-dres.github.io/plan-check'), h('p', null, t('c7'))));
+// --- upload
+const FILE = 'CAFM-Plan-5OG.dwg';
+const zone = h('div', { class: 'zone' }, h('span', { style: 'color: var(--muted)', html: icon(I.upload, 44, 'stroke-width="1.5"') }), h('div', { class: 'title' }, t('upload.dropHint')),
+  h('span', { class: 'btn btn-primary btn-lg' }, t('upload.selectBtn')), h('small', null, t('upload.sizeHint')), h('div', { class: 'demo' }, t('upload.demoHint'), ' ', h('u', null, t('upload.demoLink'))));
+const fileChip = h('div', { class: 'file' }, h('span', { style: 'color: var(--accent-text)', html: icon(I.file, 22) }), FILE);
+const statusText = h('span'), spin = h('span', { class: 'spinner' }), statusOk = h('span', { html: icon(I.check, 16) });
+const status = h('div', { class: 'status' }, spin, statusOk, statusText);
+// --- the result metrics
+const vRooms = h('div', { class: 'v' }), vNgf = h('div', { class: 'v' }), vScore = h('div', { class: 'v' }), lScore = h('div', { class: 'l' });
+const pdfBtn = h('span', null, h('span', { html: icon(I.download, 14) }), 'PDF');
+const metrics = h('div', { class: 'panel metrics' }, h('div', { class: 'ph' }, t('panel.result'), chev()),
+  h('div', { class: 'grid' }, h('div', { class: 'cell' }, h('div', { class: 'l' }, t('metric.rooms')), vRooms), h('div', { class: 'cell' }, h('div', { class: 'l' }, t('metric.ngf')), vNgf),
+    h('div', { class: 'cell' }, lScore, vScore),
+    h('div', { class: 'cell' }, h('div', { class: 'l' }, t('metric.report')), h('div', { class: 'dl' }, pdfBtn, h('span', null, h('span', { html: icon(I.download, 14) }), 'Excel')))));
+// --- the validation panel: tabs, the rules and the rooms of each upload, the viewer
+const tabEl = {}, tabLabel = {};
+for (const k of ['rules', 'errors', 'layers', 'rooms', 'areas', 'kpi']) { tabLabel[k] = h('span'); tabEl[k] = h('span', { class: 'tab' }, tabLabel[k]); }
+const seg = h('div', { class: 'seg' }, h('span', { class: 'on' }, t('filter.all')), h('span', null, h('span', { html: icon(I.warn, 14) }), t('filter.warnings')), h('span', null, h('span', { html: icon(I.err, 14) }), t('filter.errors')));
+const tabs = h('div', { class: 'tabs' }, ...Object.values(tabEl), seg);
+const toggleAll = h('span', { class: 'cb', html: icon(I.check, 12, 'stroke="#fff" stroke-width="3"') });
+const search = h('div', { class: 'search' });
+const toolbar = h('div', { class: 'toolbar' }, toggleAll, search);
+const GLYPH = { ok: '✓', warn: '⚠', err: '✖' };                   // the status icons of js/validation.js
+const ic = (k) => h('span', { class: 'ic ' + k }, GLYPH[k]);
+const ruleRow = (k, key) => h('div', { class: 'row' }, ic(k), h('span', { class: 'code' }, key.slice(5)), h('span', { class: 'd' }, t(key)));
+const rulesLists = RUN.map((run) => {
+  const failed = run.failed.map(([k, key]) => ruleRow(k, key));
+  const el = h('div', { class: 'list' }, h('div', { class: 'sep' }, chev(), t('tab.notPassed'), h('span', { class: 'n' }, `${40 - run.passed}/40`)), ...failed,
+    h('div', { class: 'sep' }, chev(), t('tab.passed'), h('span', { class: 'n' }, `${run.passed}/40`)), ...run.passed1.map((key) => ruleRow('ok', key)));
+  el.failed = failed; return el;
+});
+const RANK = { error: 0, warning: 1, ok: 2 };                      // js/validation.js sortByStatus: errors first
+const roomsLists = RUN.map((run) => {
+  const order = rooms.slice().sort((a, b) => RANK[run.status[a.i] || 'ok'] - RANK[run.status[b.i] || 'ok']);
+  const rows = order.map((r) => h('div', { class: 'row' }, h('span', { class: 'cb', html: icon(I.check, 12, 'stroke="#fff" stroke-width="3"') }),
+    ic(run.status[r.i] === 'error' ? 'err' : 'ok'), h('span', null, run.aoid(r)), h('span', { class: 'a' }, m2(run.area(r)))));
+  const el = h('div', { class: 'list' }, ...rows);
+  el.rows = rows; return el;
+});
+const side = h('div', { class: 'side' }, toolbar, ...rulesLists, ...roomsLists);
+const split = h('div', { class: 'split' }, side, viewer);
+const val = h('div', { class: 'panel val' }, h('div', { class: 'ph' }, t('panel.validation'), chev()), tabs, split);
+const howP = h('div', { class: 'panel closed', style: 'top: 958px; height: 42px' }, h('div', { class: 'ph' }, t('panel.how'), chev()));
+const conP = h('div', { class: 'panel closed', style: 'top: 1016px; height: 42px' }, h('div', { class: 'ph' }, t('panel.console'), chev()));
+const toast = h('div', { class: 'toast' }, h('span', { html: icon(I.check, 18) }), t('log.pdfExported'));
+page.append(zone, status, metrics, val, howP, conP);
+screen.append(toast);
+const cursor = h('div', { class: 'cursor', html: '<svg viewBox="0 0 22 28" width="22" height="28"><path d="M3 2 L3 22 L8.5 17 L12 26 L15.5 24.5 L12 16 L19 16 Z" fill="#fff" stroke="#1a1d21" stroke-width="1.6" stroke-linejoin="round"/></svg>' });
+const ripple = h('div', { class: 'ripple' });
+stage.append(topbar, screen, tool, caption, titleCard, endCard, fileChip, cursor, ripple);
+
+// ------------------------------------------------------------------------------------------------- the timeline
+// scenes (seconds): title, export, upload, the check with its errors, the errors on the plan, the correction in the
+// author's program, the second check, end
+const T0 = 2.0, T1 = 6.5, T2 = 10.0, T3 = 15.5, T4 = 20.5, T5 = 27.0, T6 = 36.0, TOTAL = 37.5;
+const SCENES = [[T0, 't1'], [T1, 't2'], [T2, 't3'], [T3, 't4'], [T4, 't5'], [T5, 't6']];
+const CAPTIONS = [[T0, T1, 'c1'], [T1, T2, 'c2'], [T2, T3, 'c3'], [T3, T4, 'c4'], [T4, T5, 'c5'], [T5, T6, 'c6']];
+const ctext = document.getElementById('ctext');
+// the page scrolls: the upload on top, the result with the start of the validation, the validation whole
+const SC_UP = 0, SC_RES = 226, SC_VAL = 420;
+// the camera of the viewer: [centre x, centre y, zoom]; ERR frames the three red rooms
+const CAM_FIT = [VW / 2, VH / 2, 1], CAM_ERR = [425, 215, 1.55];
+// the uploads: the first is checked at 9.0 s, the second at 29.9 s; the panels hide while a file is read (js/app.js)
+const DONE1 = 9.0, DROP2 = 28.8, DONE2 = 29.9;
+let scroll = 0;
+function scrollTo(v) { scroll = v; page.style.transform = `translateY(${-v}px)`; }
+function camAt(c) { cam.setAttribute('transform', `translate(${VW / 2 - c[0] * c[2]} ${VH / 2 - c[1] * c[2]}) scale(${c[2]})`); }
+const camLerp = (a, b, p) => [lerp(a[0], b[0], p), lerp(a[1], b[1], p), Math.exp(lerp(Math.log(a[2]), Math.log(b[2]), p))];
+/** A point of an element in stage px (its centre, or `dx` px from its left edge). Page elements: with the page
+    scrolled to `at`; elements of the program: with its window at rest. The cursor's targets come from the layout, so
+    a translation of any length lands on them. */
+function pointOf(el, at = scroll, dx = null) {
+  const s = stage.getBoundingClientRect(), r = el.getBoundingClientRect(), k = s.width / 1280;
+  const x = (r.left - s.left) / k + (dx ?? r.width / k / 2), y = (r.top - s.top + r.height / 2) / k;
+  if (tool.contains(el)) { const w = tool.getBoundingClientRect(); return [x - (w.left - s.left) / k + TOOL.x, y - (w.top - s.top) / k + TOOL.y]; }
+  return [x, y + (scroll - at)];
+}
+function cursorAt(p) { cursor.style.transform = `translate(${p[0]}px, ${p[1]}px)`; }
+/** The cursor along keyframes [[t, point], ...]: it moves between two points, rests on a repeated one. */
+function cursorPath(now, keys) {
+  if (now <= keys[0][0]) return keys[0][1];
+  for (let i = 1; i < keys.length; i++) {
+    const [t0, a] = keys[i - 1], [t1, b] = keys[i];
+    if (now <= t1) { const p = ease(span(now, t0, t1)); return [lerp(a[0], b[0], p), lerp(a[1], b[1], p)]; }
+  }
+  return keys[keys.length - 1][1];
+}
+function click(now, at, xy) {                            // a ripple at the cursor for .5 s
+  const p = span(now, at, at + .5);
+  if (now < at || p >= 1) return false;
+  ripple.style.transform = `translate(${xy[0] - 18}px, ${xy[1] - 18}px) scale(${.3 + p * 1.2})`; ripple.style.opacity = 1 - p;
+  return true;
+}
+/** The file chip: where it is and how big (it pops out of the program's notice, is dragged onto the drop zone, drops). */
+const CHIP_FROM = [TOOL.x + 1200 - 256 - 250, TOOL.y + 584 - 16 - 92], ZONE_AT = [640 - 110, 64 + 16 + 105 - 22];
+function chipAt(now, pop, move, drop) {
+  const p = ease(span(now, move, move + .8)), xy = [lerp(CHIP_FROM[0], ZONE_AT[0], p), lerp(CHIP_FROM[1], ZONE_AT[1], p)];
+  const sIn = ease(span(now, pop, pop + .3)), sOut = 1 - span(now, drop, drop + .25);
+  return { xy, scale: (.6 + .4 * sIn) * (.6 + .4 * sOut), opacity: Math.min(sIn, sOut), on: now >= pop && now < drop + .25 };
+}
+const grip = (xy) => [xy[0] + 44, xy[1] + 30];
+
+function render(now) {
+  // the captions, the cards and the frame
+  const cap = CAPTIONS.find(([a, b]) => now >= a && now < b);
+  ctext.textContent = cap ? t(cap[2]) : '';
+  caption.style.opacity = cap ? window_(now, cap[0], cap[1], .3, .3) : 0;
+  op(titleCard, window_(now, 0, T0 + .1, .4, .5));
+  op(endCard, window_(now, T6, TOTAL + 1, .5, .1));
+  const inApp = now >= T0 - .3 && now < T6 + .3;
+  show(topbar, inApp); show(screen, inApp);
+  const run = now < DONE2 ? RUN[0] : RUN[1];
+  // --- the author's program: on screen for the export and for the correction, slides away to the browser
+  const toolIn = now < 9 ? 1 - ease(span(now, 5.6, 6.2)) : ease(span(now, T4, T4 + .5)) * (1 - ease(span(now, 27.2, 27.8)));
+  tool.style.opacity = toolIn; tool.style.transform = `translateY(${(1 - toolIn) * 40}px)`; show(tool, toolIn > 0 && now < T6);
+  const fileOpen = within(now, 3.2, 4.1) || within(now, 25.6, 26.4), exportOpen = within(now, 3.6, 4.1) || within(now, 26.0, 26.4);
+  show(ddFile, fileOpen); show(ddExport, exportOpen); mFile.classList.toggle('on', fileOpen); iExport.classList.toggle('on', exportOpen);
+  ddExport.style.left = `${ddFile.offsetLeft + ddFile.offsetWidth - 2}px`; ddExport.style.top = `${ddFile.offsetTop + iExport.offsetTop - 4}px`;   // beside its item
+  iDwg.classList.toggle('on', within(now, 3.85, 4.1) || within(now, 26.15, 26.4));
+  const tt = Math.max(window_(now, 4.2, 5.5, .2, .3), window_(now, 26.45, 27.5, .2, .3));
+  toolToast.style.opacity = tt; show(toolToast, tt > 0);
+  // the correction: the number of the second room is typed anew, the arc of 05.004 is replaced by a straight line
+  const NEW = DUP_ROOM.aoid, typed = span(now, 22.8, 23.4);
+  const labelDup = now < 23.45 ? DUP_OF.aoid : NEW;
+  tLabelEls[DUP_ROOM.i].textContent = labelDup;
+  const arcT = now < 24.75 ? ARC : ARC * (1 - ease(span(now, 24.75, 25.0)));
+  tRoomEls[ARC_ROOM.i].setAttribute('d', roomD(ARC_ROOM, arcT));
+  const selRoom = within(now, 21.7, 24.2) ? DUP_ROOM : within(now, 24.2, 25.6) ? ARC_ROOM : null;
+  show(tSel, !!selRoom);
+  if (selRoom) {
+    tSelRect.setAttribute('d', roomD(selRoom, selRoom === ARC_ROOM ? arcT : 0));
+    const x0 = selRoom.x + IN, y0 = selRoom.y + IN, x1 = selRoom.x + selRoom.w - IN, y1 = selRoom.y + selRoom.h - IN;
+    [[x0, y0], [x1, y0], [x1, y1], [x0, y1]].forEach(([x, y], i) => { tSelDots[i].setAttribute('x', x - 1.7); tSelDots[i].setAttribute('y', y - 1.7); });
+  }
+  pType.textContent = selRoom ? t('pRoom') : '—';
+  pArea.textContent = selRoom ? m2(selRoom === ARC_ROOM ? selRoom.area - ARC_LOSS * (arcT / ARC) : selRoom.area) : '—';
+  const editing = within(now, 22.5, 23.6);
+  input.classList.toggle('focus', editing);
+  inCaret.style.display = editing ? '' : 'none';
+  if (selRoom === DUP_ROOM) {
+    if (now < 22.8) { inVal.textContent = DUP_OF.aoid; inVal.className = within(now, 22.55, 22.8) ? 'sel' : ''; }
+    else { inVal.textContent = NEW.slice(0, Math.ceil(typed * NEW.length)); inVal.className = ''; }
+  } else { inVal.textContent = selRoom ? selRoom.aoid : '—'; inVal.className = ''; }
+  const ctxOn = within(now, 24.25, 24.75);
+  show(ddCtx, ctxOn);
+  const corner = toolXY(ARC_ROOM.x + ARC_ROOM.w - IN - 4, ARC_ROOM.y + IN + 4);
+  ddCtx.style.left = `${corner[0] - TOOL.x + 8}px`; ddCtx.style.top = `${corner[1] - TOOL.y + 8}px`;
+  ctxFix.classList.toggle('on', within(now, 24.55, 24.75));
+  // --- the browser: scroll, upload, status
+  scrollTo(now < 10.0 ? SC_UP : now < 10.8 ? lerp(SC_UP, SC_RES, ease(span(now, 10.0, 10.8))) : now < T3 ? SC_RES : now < 16.1 ? lerp(SC_RES, SC_VAL, ease(span(now, T3, 16.1)))
+    : now < 21.2 ? SC_VAL : now < 30.5 ? SC_UP : now < 31.3 ? lerp(SC_UP, SC_VAL, ease(span(now, 30.5, 31.3))) : now < 33.4 ? SC_VAL : lerp(SC_VAL, SC_RES, ease(span(now, 33.4, 34.0))));
+  const c1 = chipAt(now, 4.6, 6.3, 7.35), c2 = chipAt(now, 26.8, 27.9, 28.65), chip = now < 20 ? c1 : c2;
+  show(fileChip, chip.on); fileChip.style.opacity = chip.opacity; fileChip.style.transform = `translate(${chip.xy[0]}px, ${chip.xy[1]}px) scale(${chip.scale})`;
+  zone.classList.toggle('over', within(now, 6.9, 7.5) || within(now, 28.4, 28.9));
+  const loading = within(now, 7.5, DONE1) || within(now, DROP2, DONE2);
+  status.className = 'status ' + (loading ? 'loading' : 'ok'); show(status, now >= 7.5);
+  spin.style.display = loading ? '' : 'none'; statusOk.style.display = loading ? 'none' : '';
+  spin.style.transform = `rotate(${now * 450}deg)`;
+  statusText.textContent = now < 8.1 ? t('log.wasmLoadingStatus') : now < 8.6 ? t('log.parsing') : now < DONE1 ? t('log.rendering')
+    : now < DROP2 ? t('log.successfullyProcessed', { name: FILE, elapsed: '0.38' }) : now < 29.4 ? t('log.parsing') : now < DONE2 ? t('log.rendering')
+    : t('log.successfullyProcessed', { name: FILE, elapsed: '0.31' });
+  // --- the result: the metrics and the validation panel; hidden while the second file is read
+  const pv = now < DROP2 ? ease(span(now, 9.1, 9.5)) : 1 - span(now, DROP2, DROP2 + .2) + ease(span(now, DONE2, DONE2 + .4));
+  for (const p of [metrics, val]) { p.style.opacity = pv; show(p, pv > 0); }
+  for (const p of [howP, conP]) { p.style.opacity = ease(span(now, 9.1, 9.5)); show(p, now >= 9.1); }
+  const cp = now < DROP2 ? ease(span(now, 9.3, 10.3)) : 1;
+  vRooms.textContent = Math.round(rooms.length * cp); vNgf.textContent = m2(run.ngf * cp);
+  vScore.textContent = `${Math.round(run.score * cp)}%`; vScore.className = 'v ' + (run.score >= 90 ? 'ok' : 'warn');   // js/rules.js: 90 good, 60 fair
+  lScore.textContent = t('metric.score', { passed: run.passed, total: 40 });
+  tabLabel.rules.textContent = `${t('tab.rules')} (${run.passed}/40)`; tabLabel.errors.textContent = `${t('tab.errors')} (${run.issues})`;
+  tabLabel.layers.textContent = `${t('tab.layers')} (15)`; tabLabel.rooms.textContent = `${t('tab.rooms')} (${rooms.length})`;
+  tabLabel.areas.textContent = `${t('tab.areas')} (1)`; tabLabel.kpi.textContent = t('tab.kpi');
+  // --- the tabs: the rules, then the rooms; after the second upload the rules again (js/validation.js), then the rooms
+  const tab = now < 16.95 ? 'rules' : now < DONE2 ? 'rooms' : now < 32.15 ? 'rules' : 'rooms';
+  for (const [k, el] of Object.entries(tabEl)) el.classList.toggle('on', k === tab);
+  const ri = run === RUN[0] ? 0 : 1;
+  rulesLists.forEach((el, i) => show(el, tab === 'rules' && i === ri)); roomsLists.forEach((el, i) => show(el, tab === 'rooms' && i === ri));
+  toggleAll.style.display = tab === 'rooms' ? '' : 'none';
+  search.textContent = tab === 'rooms' ? t('search.rooms') : t('search.rules');
+  // --- the viewer: the plan of the upload; in the rooms tab each room in the colour of its status
+  const camera = now < 18.2 || now >= DONE2 ? CAM_FIT : now < 19.0 ? camLerp(CAM_FIT, CAM_ERR, ease(span(now, 18.2, 19.0))) : CAM_ERR;
+  camAt(camera);
+  const sb = camera[2] >= 1.5 ? ['2 m', 2 / MPU * camera[2]] : ['5 m', 5 / MPU * camera[2]];
+  scaleLabel.textContent = sb[0]; scaleLine.style.width = `${Math.round(sb[1])}px`;
+  const roomsOn = tab === 'rooms', fillAt = now < DONE2 ? 17.1 : 32.25;
+  rooms.forEach((r, i) => {
+    const d = roomD(r, run.arc && r === ARC_ROOM ? ARC : 0), stat = run.status[i] === 'error' ? 'error' : 'ok';
+    polyEls[i].setAttribute('d', d); overEls[i].setAttribute('d', d); overEls[i].style.cssText = OVER[stat];
+    stampEls[i].textContent = run.aoid(r);
+    const v = roomsOn ? ease(span(now, fillAt + i * .1, fillAt + .3 + i * .1)) : 0;
+    overEls[i].setAttribute('opacity', v); labelEls[i].setAttribute('opacity', v);
+    labelEls[i].aoidEl.textContent = run.aoid(r); labelEls[i].areaEl.textContent = m2(run.area(r));
+  });
+  gPoly.setAttribute('opacity', roomsOn ? .25 : 1); gStamp.setAttribute('opacity', roomsOn ? 0 : 1);
+  // --- the cursor: exports, drags, points at the errors, opens the rooms, corrects, exports, drags, opens the rooms, the PDF
+  const r0 = rulesLists[0], rm0 = roomsLists[0], rm1 = roomsLists[1];
+  const P = {
+    start: toolXY(380, 180), file: pointOf(mFile), exp: pointOf(iExport, scroll, 40), dwg: pointOf(iDwg, scroll, 30),
+    errA: pointOf(r0.failed[0], SC_RES, 200), errB: pointOf(r0.failed[1], SC_RES, 200), tabRooms: pointOf(tabEl.rooms, SC_VAL),
+    redRow: pointOf(rm0.rows[1], SC_VAL, 170), room: toolXY(DUP_ROOM.x + 40, DUP_ROOM.y + 46), input: pointOf(input, scroll, 150),
+    corner: toolXY(ARC_ROOM.x + ARC_ROOM.w - IN - 4, ARC_ROOM.y + IN + 4), fix: pointOf(ctxFix, scroll, 60), pdf: pointOf(pdfBtn, SC_RES),
+  };
+  const g1 = grip(c1.xy), g2 = grip(c2.xy);
+  const KEYS = [[2.6, P.start], [3.1, P.file], [3.3, P.file], [3.6, P.exp], [3.7, P.exp], [4.0, P.dwg], [4.4, P.dwg], [5.0, grip(CHIP_FROM)], [6.3, grip(CHIP_FROM)], [7.3, grip(ZONE_AT)],
+    [11.0, [900, 470]], [11.7, P.errA], [12.6, P.errA], [13.1, P.errB], [16.1, P.errB], [16.7, P.tabRooms], [19.0, P.tabRooms], [19.6, P.redRow], [21.0, P.redRow],
+    [21.6, P.room], [21.9, P.room], [22.4, P.input], [23.6, P.input], [24.1, P.corner], [24.3, P.corner], [24.6, P.fix], [25.1, P.fix], [25.5, P.file], [25.7, P.file],
+    [25.95, P.exp], [26.05, P.exp], [26.3, P.dwg], [26.5, P.dwg], [27.0, grip(CHIP_FROM)], [27.9, grip(CHIP_FROM)], [28.7, grip(ZONE_AT)], [31.3, grip(ZONE_AT)],
+    [31.9, P.tabRooms], [33.6, P.tabRooms], [34.4, P.pdf]];
+  let cxy = cursorPath(now, KEYS);
+  if (within(now, 6.3, 7.35)) cxy = g1; if (within(now, 27.9, 28.65)) cxy = g2;   // the cursor holds the chip while it drags
+  cursorAt(cxy);
+  show(cursor, inApp && (within(now, 2.6, 7.6) || within(now, 11.0, DROP2 + .2) || within(now, 31.2, T6)));
+  r0.failed[0].classList.toggle('hover', within(now, 11.7, 12.7)); r0.failed[1].classList.toggle('hover', within(now, 13.1, T3));
+  rm0.rows[1].classList.toggle('hover', within(now, 19.6, T4));
+  pdfBtn.classList.toggle('pressed', within(now, 34.6, 34.85));
+  ripple.style.opacity = 0;
+  for (const [at, p] of [[3.2, P.file], [4.1, P.dwg], [16.8, P.tabRooms], [21.7, P.room], [22.5, P.input], [24.2, P.corner], [24.7, P.fix], [25.6, P.file], [26.4, P.dwg], [32.1, P.tabRooms], [34.6, P.pdf]]) if (click(now, at, p)) break;
+  // --- the report: the PDF is written, a notice says so
+  const tp = window_(now, 34.8, T6 + .2, .3, .2);
+  toast.style.opacity = tp; toast.style.transform = `translate(-50%, ${(1 - ease(span(now, 34.8, 35.15))) * 12}px)`; show(toast, tp > 0);
+}
+
+// ------------------------------------------------------------------------------------------------- play, scrub, fit
+let tNow = 0, playing = true, last = performance.now();
+const scrub = document.getElementById('scrub'), timeEl = document.getElementById('time'), playBtn = document.getElementById('play');
+scrub.max = TOTAL;
+const scenesEl = document.getElementById('scenes'), langsEl = document.getElementById('langs');
+for (const [at, key] of SCENES) scenesEl.append(h('span', { 'data-at': at }, t(key)));
+scenesEl.addEventListener('click', (e) => { const s = e.target.closest('span'); if (s) seek(+s.dataset.at); });
+for (const l of LANGS) { const b = h('button', { class: l === LANG ? 'on' : '' }, l.toUpperCase()); b.onclick = () => { const u = new URL(location.href); u.searchParams.set('lang', l); location.href = u; }; langsEl.append(b); }
+function seek(sec) { tNow = clamp(sec, 0, TOTAL); render(tNow); scrub.value = tNow; timeEl.textContent = `${tNow.toFixed(1)} / ${TOTAL.toFixed(1)} s`;
+  for (const s of scenesEl.children) s.classList.toggle('on', tNow >= +s.dataset.at && tNow < (+(s.nextSibling && s.nextSibling.dataset.at) || T6)); }
+function loop(ts) {
+  const dt = Math.min(.1, (ts - last) / 1000); last = ts;
+  if (playing) { tNow += dt * SPEED; if (tNow >= TOTAL) { if (Q.has('loop')) tNow = 0; else { tNow = TOTAL; playing = false; playBtn.textContent = 'Play'; } } seek(tNow); }
+  requestAnimationFrame(loop);
+}
+playBtn.onclick = () => { playing = !playing; playBtn.textContent = playing ? 'Pause' : 'Play'; if (playing && tNow >= TOTAL) tNow = 0; };
+document.getElementById('restart').onclick = () => { tNow = 0; playing = true; playBtn.textContent = 'Pause'; seek(0); };
+scrub.oninput = () => { playing = false; playBtn.textContent = 'Play'; seek(+scrub.value); };
+document.addEventListener('keydown', (e) => { if (e.key === ' ') { e.preventDefault(); playBtn.click(); } if (e.key === 'ArrowRight') seek(tNow + 1); if (e.key === 'ArrowLeft') seek(tNow - 1); });
+function fit() { const bare = Q.has('nocontrols'); const s = Math.min((innerWidth - (bare ? 0 : 32)) / 1280, (innerHeight - (bare ? 0 : 90)) / 720, 1); const f = document.getElementById('frame'); f.style.transform = `scale(${s})`; f.style.marginBottom = `${(s - 1) * 720}px`; f.style.marginRight = `${(s - 1) * 1280}px`; }
+addEventListener('resize', fit); fit();
+if (Q.has('nocontrols')) { document.getElementById('bar').classList.add('nocontrols'); document.body.style.padding = '0'; document.body.style.gap = '0'; document.body.style.background = 'var(--bg)'; stage.style.borderRadius = '0'; stage.style.boxShadow = 'none'; fit(); }
+playing = Q.has('autoplay') || !Q.has('paused');
+playBtn.textContent = playing ? 'Pause' : 'Play';
+window.seek = seek; window.film = { total: TOTAL, scenes: SCENES, pause: () => { playing = false; playBtn.textContent = 'Play'; } };
+seek(0);
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

@@ -8,7 +8,6 @@
 
   "nav.downloads": "Downloads BBL Bauten",
   "nav.guide": "Anleitung und FAQ",
-  "nav.contact": "Kontakt",
   "nav.menu": "Menü",
 
   "upload.dropHint": "DWG-Datei hierher ziehen oder klicken",
@@ -20,6 +19,15 @@
   "panel.result": "Ergebnis",
   "panel.validation": "Validierung",
   "panel.console": "Konsole",
+  "panel.how": "So funktioniert es",
+
+  "how.filmLabel": "Film: so funktioniert die Prüfplattform",
+  "how.play": "Abspielen",
+  "how.pause": "Pause",
+  "how.replay": "Von vorn",
+  "how.fullscreen": "Vollbild",
+  "how.timeline": "Zeitleiste des Films",
+  "how.know": "Eine DWG-Datei pro Geschoss · geprüft wird lokal im Browser, nichts wird hochgeladen · Bericht als PDF oder Excel",
 
   "tab.rules": "Prüfregeln",
   "tab.errors": "Fehlermeldungen",

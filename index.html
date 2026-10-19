@@ -23,14 +23,13 @@
             </a>
             <nav class="header__nav" id="header-nav" data-i18n-aria-label="nav.menu" aria-label="Menü">
                 <a href="https://github.com/bbl-dres/plan-check/blob/main/docs/anleitung-de.md" target="_blank" rel="noopener" class="header__nav-link" data-i18n="nav.guide">Anleitung und FAQ</a>
-                <a href="https://www.bbl.admin.ch/de/kontakt" target="_blank" rel="noopener" class="header__nav-link" data-i18n="nav.contact">Kontakt</a>
             </nav>
-            <div class="lang-selector" role="group" aria-label="Sprache / Langue / Lingua / Language">
-                <button type="button" class="lang-selector__item" data-lang="de" lang="de" aria-pressed="false">DE</button>
-                <button type="button" class="lang-selector__item" data-lang="fr" lang="fr" aria-pressed="false">FR</button>
-                <button type="button" class="lang-selector__item" data-lang="it" lang="it" aria-pressed="false">IT</button>
-                <button type="button" class="lang-selector__item" data-lang="en" lang="en" aria-pressed="false">EN</button>
-            </div>
+            <select id="lang-select" class="select lang-select" aria-label="Sprache · Langue · Lingua · Language">
+                <option value="de" lang="de">DE</option>
+                <option value="fr" lang="fr">FR</option>
+                <option value="it" lang="it">IT</option>
+                <option value="en" lang="en">EN</option>
+            </select>
             <button type="button" class="header__menu-btn" id="header-menu-btn" data-i18n-aria-label="nav.menu" aria-label="Menü" aria-expanded="false" aria-controls="header-nav">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
             </button>
@@ -43,8 +42,8 @@
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
             </svg>
-            <p data-i18n="upload.dropHint">DWG-Datei hierher ziehen oder klicken</p>
-            <button type="button" class="btn btn--primary" id="select-btn" data-i18n="upload.selectBtn">Datei auswählen</button>
+            <p class="upload-zone__title" data-i18n="upload.dropHint">DWG-Datei hierher ziehen oder klicken</p>
+            <button type="button" class="btn btn--primary btn--lg" id="select-btn" data-i18n="upload.selectBtn">Datei auswählen</button>
             <input type="file" id="file-input" accept=".dwg" hidden aria-hidden="true" tabindex="-1">
             <p class="hint" data-i18n="upload.sizeHint">.dwg, max. 50 MB</p>
             <p class="upload-zone__demo-hint"><span data-i18n="upload.demoHint">Keine Datei?</span> <button type="button" id="load-demo" class="upload-zone__demo-link" data-i18n="upload.demoLink">Demo-Datei laden</button></p>
@@ -119,6 +118,30 @@
                     </div>
                 </div>
                 <div class="validation-dashboard" id="validation-dashboard"></div>
+            </div>
+        </section>
+
+        <!-- How it works: the explainer film (media/how-it-works-<lang>.webm, rendered from media/how-it-works.html by
+             media/render.py) in a player of the page's own, as in plan-extract; js/how-it-works.js wires it -->
+        <section class="panel panel--always-visible open" id="how-panel">
+            <h2 class="panel__header">
+                <button type="button" class="panel__toggle" aria-expanded="true" aria-controls="how-body"><span data-i18n="panel.how">So funktioniert es</span><span class="panel__chevron" aria-hidden="true"></span></button>
+            </h2>
+            <div class="how-body" id="how-body">
+                <div class="how-player" id="how-player">
+                    <div class="how-stage paused" id="how-stage">
+                        <video class="how-film" id="how-film" preload="metadata" playsinline tabindex="0" data-i18n-aria-label="how.filmLabel" aria-label="Film: so funktioniert die Prüfplattform"></video>
+                        <span class="how-play" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><polygon points="6 4 20 12 6 20" fill="currentColor"/></svg></span>
+                    </div>
+                    <div class="how-bar">
+                        <button type="button" class="how-btn" id="how-toggle" data-i18n-aria-label="how.play" aria-label="Abspielen"></button>
+                        <input type="range" class="how-time" id="how-time" min="0" max="37.5" step="0.1" value="0" data-i18n-aria-label="how.timeline" aria-label="Zeitleiste des Films">
+                        <span class="how-clock" id="how-clock">0:00 / 0:37</span>
+                        <button type="button" class="how-btn" id="how-replay" data-i18n-aria-label="how.replay" aria-label="Von vorn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button>
+                        <button type="button" class="how-btn" id="how-fullscreen" data-i18n-aria-label="how.fullscreen" aria-label="Vollbild"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg></button>
+                    </div>
+                </div>
+                <p class="how-know" data-i18n="how.know">Eine DWG-Datei pro Geschoss · geprüft wird lokal im Browser, nichts wird hochgeladen · Bericht als PDF oder Excel</p>
             </div>
         </section>
 

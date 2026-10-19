@@ -1,147 +1,124 @@
 /* ========================================
    BBL Plan-Check — Area Management Platform
    Design Tokens
-   Swiss Federal Design System
    ======================================== */
 
+/* The design tokens of plan-extract (app/css/tokens.css): the same names and values, so the two bbl-dres apps look
+   alike. Every colour, size, space, radius and shadow used by styles.css, by the canvas (js/renderer.js) and by the
+   PDF report (js/export.js) lives here. The canvas and jsPDF read colours as hex, so the accent is written as the hex
+   of plan-extract's oklch values. Semantic tokens (success, warning, danger, info) are the only ones the components
+   use for states: the -text ones for text (4.5:1 on white), the bright ones for dots, swatches and the canvas. */
 :root {
-    /* Primary Colors (Official Swiss Federal CD) */
-    --color-venetian-red: #DC0018;
-    --color-cerulean: #006699;
+    /* brand */
+    --swiss-red: #dc0018;                /* the prototype banner, as in the other bbl-dres apps */
+    --accent: #007daa;                   /* oklch(0.55 0.12 230) */
+    --accent-hover: #006e9a;             /* oklch(0.5 0.12 230) */
+    --accent-text: #00567d;              /* oklch(0.42 0.11 230) */
+    --accent-light: #e2f1fa;             /* oklch(0.95 0.02 230) */
+    --accent-border: #87b6cd;            /* oklch(0.75 0.06 230) */
+    --accent-disabled: #b9c4d6;
 
-    /* Background Colors */
-    --color-clear-day: #F2F7F9;
+    /* neutrals */
+    --text: #1a1d21;
+    --muted: #646b74;
+    --text-disabled: #9aa1ab;
+    --icon-muted: #b4bac3;
+    --border: #dfe2e6;
+    --border-light: #f0f1f3;
+    --bg: #f5f6f7;
+    --bg-track: #eef0f2;
+    --surface: #fff;
+    --on-accent: #fff;
+    --swatch-border: rgba(0, 0, 0, .08);  /* the edge of a colour swatch, so a white layer colour still shows */
 
-    /* Grayscale */
-    --color-night-rider: #333333;
-    --color-empress: #6B6B6B;
-    --color-silver: #CCCCCC;
-    --color-gainsboro: #E5E5E5;
-    --color-smoke: #F5F5F5;
-    --color-white: #FFFFFF;
+    /* semantic */
+    --success: #2e9e5b;
+    --success-bg: #e6f4ec;
+    --success-text: #1f7a45;
+    --warning: #d99a1e;
+    --warning-bg: #fdf6e3;
+    --warning-border: #e8c777;
+    --warning-text: #5c3d00;
+    --warning-text-strong: #8a5a00;     /* warning labels and icons on white */
+    --danger: #d0433b;
+    --danger-bg: #fbe9e7;
+    --danger-border: #efb3ad;
+    --danger-text: #8a2a24;
+    --info: #1f78b4;
 
-    /* Semantic Colors */
-    --color-primary: var(--color-cerulean);
-    --color-primary-hover: #004D73;
-    --color-primary-light: var(--color-clear-day);
-    --color-primary-alpha-12: rgba(0, 102, 153, 0.12);
-    --color-swiss-red: var(--color-venetian-red);
+    /* canvas */
+    --surface-translucent: rgba(255, 255, 255, .9);   /* labels and notes over the drawing */
 
-    --color-text-primary: var(--color-night-rider);   /* 12.6:1 on white (AAA) */
-    --color-text-secondary: var(--color-empress);      /* 5.4:1 on white, 5.0:1 on bg-page (AA) */
-    --color-text-inverse: var(--color-white);
+    /* type */
+    --font: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+    --fs-2xs: 11px;                      /* uppercase labels, section headers */
+    --fs-xs: 12px;                       /* secondary lines, code, the console */
+    --fs-sm: 13px;                       /* controls, lists, tables */
+    --fs-base: 14px;                     /* body */
+    --fs-md: 15px;                       /* emphasised titles */
+    --fs-lg: 17px;                       /* group headings */
+    --fs-xl: 20px;                       /* big figures */
+    --fs-2xl: 22px;                      /* page titles */
+    --lh: 1.45;
+    --lh-tight: 1.25;
+    --lh-code: 1.7;
+    --tracking-label: .06em;
+    --weight-regular: 400;
+    --weight-semibold: 600;
 
-    --color-bg-primary: var(--color-white);
-    --color-bg-secondary: var(--color-smoke);
-    --color-bg-page: var(--color-clear-day);
-    --color-bg-inverse: var(--color-night-rider);
+    /* space (4 px grid, with the half steps the dense rows need) */
+    --sp-1: 4px;
+    --sp-1h: 6px;
+    --sp-2: 8px;
+    --sp-2h: 10px;
+    --sp-3: 12px;
+    --sp-3h: 14px;
+    --sp-4: 16px;
+    --sp-5: 20px;
+    --sp-6: 24px;
+    --sp-7: 32px;
+    --sp-8: 48px;
 
-    --color-border: var(--color-silver);
-    --color-border-light: var(--color-gainsboro);
-    --color-swatch-border: rgba(0, 0, 0, 0.08);
+    /* radius: one per level. xs swatches and bars; sm rows and chips inside a list; ctl every control (buttons, inputs,
+       selects, segmented controls); lg cards, panels, boxes, popups; xl the drop zone and dialogs; pill badges and round
+       floating buttons */
+    --r-xs: 3px;
+    --r-sm: 6px;
+    --r-md: 8px;
+    --r-ctl: var(--r-md);
+    --r-lg: 10px;
+    --r-xl: 12px;
+    --r-pill: 999px;
 
-    --color-focus: #0066CC;                             /* 5.6:1 on white */
+    /* shadow */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, .06);
+    --shadow-md: 0 6px 20px rgba(0, 0, 0, .1);
+    --shadow-lg: 0 16px 40px rgba(0, 0, 0, .2);
 
-    /* Traffic-light colours (WCAG AA ≥ 4.5:1 on their light background and with white text) */
-    --color-success: #1B5E20;
-    --color-success-light: #E8F5E9;
+    /* control heights */
+    --ctl-sm: 28px;
+    --ctl-md: 32px;
+    --ctl-input: 36px;                   /* also the smallest click target of a row */
+    --ctl-lg: 40px;
+    --ctl-xl: 44px;                      /* also the touch target on phones */
+    --focus-ring: 2px solid var(--accent);    /* 4.7:1 on white: a focus ring needs 3:1 */
 
-    --color-warning: #BF360C;
-    --color-warning-light: #FFF3E0;
+    /* icons */
+    --icon-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");   /* chevron down (Feather); a closed panel turns it */
+    --icon-sm: 14px;
+    --icon-md: 16px;
+    --icon-lg: 18px;
 
-    --color-error: #B71C1C;
-    --color-error-light: #FFEBEE;
+    /* layers of the page, from the viewer upwards */
+    --z-stage-ui: 2;
+    --z-popup: 3;
 
-    /* Typography */
-    --font-family-primary: 'Frutiger Neue LT W1G', 'Frutiger LT W01', 'Frutiger', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif;
-    --font-family-mono: 'SF Mono', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
+    /* motion */
+    --dur-fast: .15s;
+    --dur-slow: .4s;
 
-    /* Font Size Scale */
-    --font-size-2xs: 0.75rem;   /* 12px */
-    --font-size-xs: 0.8125rem;  /* 13px */
-    --font-size-sm: 0.875rem;   /* 14px */
-    --font-size-base: 1rem;     /* 16px */
-    --font-size-lg: 1.25rem;    /* 20px */
-    --font-size-xl: 1.5rem;     /* 24px */
-    --font-size-2xl: 2rem;      /* 32px */
-    --font-size-3xl: 2.5rem;    /* 40px */
-
-    /* Semantic Font Sizes */
-    --font-size-heading-4: var(--font-size-lg);
-    --font-size-heading-3: var(--font-size-xl);
-    --font-size-heading-2: var(--font-size-2xl);
-
-    /* Font Weights */
-    --font-weight-regular: 400;
-    --font-weight-medium: 500;
-    --font-weight-semibold: 600;
-    --font-weight-bold: 700;
-
-    /* Line Heights */
-    --line-height-none: 1;
-    --line-height-tight: 1.25;
-    --line-height-snug: 1.375;
-    --line-height-normal: 1.5;
-    --line-height-relaxed: 1.75;
-
-    /* Letter Spacing */
-    --letter-spacing-caps: 0.04em;
-
-    /* Spacing Scale (8px base unit) */
-    --space-1: 0.25rem;   /* 4px */
-    --space-2: 0.5rem;    /* 8px */
-    --space-3: 0.75rem;   /* 12px */
-    --space-4: 1rem;      /* 16px */
-    --space-5: 1.5rem;    /* 24px */
-    --space-6: 2rem;      /* 32px */
-    --space-7: 2.5rem;    /* 40px */
-    --space-8: 3rem;      /* 48px */
-    --space-10: 4rem;     /* 64px */
-
-    /* Component-specific Spacing */
-    --button-padding-y: var(--space-2);
-    --button-padding-x: var(--space-4);
-
-    /* Animation */
-    --duration-fast: 0.1s;
-    --duration-normal: 0.15s;
-    --duration-slow: 0.3s;
-
-    /* Icons (Lucide) */
-    --icon-size-sm: 16px;
-    --icon-size-md: 20px;
-    --icon-size-lg: 24px;
-
-    /* Border Radius */
-    --radius-sm: 2px;
-    --radius-md: 4px;
-    --radius-lg: 8px;
-    --radius-full: 50%;
-
-    /* Z-Index Scale */
-    --z-index-controls: 10;
-    --z-index-popup: 100;
-    --z-index-dropdown: 200;
-    --z-index-toast: 1000;
-    --z-index-modal: 1100;
-
-    /* Control Sizes */
-    --min-target-size: 2.25rem;       /* 36px — minimum accessible click/tap target */
-    --min-target-size-touch: 2.75rem; /* 44px — mobile touch target */
-
-    /* Shadows */
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-    --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.15);
-    --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.2);
-    --shadow-focus: 0 0 0 3px var(--color-focus);
-
-    /* Overlays */
-    --overlay-glass: rgba(255, 255, 255, 0.7);
-
-    /* Canvas Labels */
-    --color-label-bg: rgba(255, 255, 255, 0.88);
-
-    /* Layout */
-    --container-max-width: 1400px;
+    /* layout */
+    --w-container: 1400px;
+    --w-how: 640px;                      /* the explainer film, as wide as plan-extract's */
 }
